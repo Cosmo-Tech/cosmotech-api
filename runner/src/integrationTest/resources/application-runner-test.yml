@@ -26,8 +26,8 @@ csm:
   platform:
     identityProvider:
       code: on_premise_one
-      authorizationUrl: "changeme"
-      tokenUrl: "changeme"
+      authorizationUrl: "http://fake_url:8080/authorize"
+      tokenUrl: "http://fake_url:8080/token"
     runOutsideKubernetes: true
     metrics:
       enabled: false

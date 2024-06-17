@@ -10,6 +10,7 @@ spring:
       # Leave it as blank as there's no auth with test container
       password:
       client-type: jedis
+  cloud:
     aws:
       credentials:
         access-key: "s3_username"
@@ -24,6 +25,10 @@ spring:
 csm:
   platform:
     runOutsideKubernetes: true
+    identityProvider:
+      code: on_premise_one
+      authorizationUrl: "http://fake_url:8080/authorize"
+      tokenUrl: "http://fake_url:8080/token"
     metrics:
       enabled: false
     api:

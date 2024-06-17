@@ -69,13 +69,19 @@ class ContainerFactoryTests {
             defaultScopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             tokenUrl = "http://this_is_a_fake_token_url.com",
-        )
+            containerScopes = mapOf("/.default" to "Default Scope"))
     every { csmPlatformProperties.twincache } returns
         CsmPlatformProperties.CsmTwinCacheProperties(
             host = "this_is_a_host",
             port = "6973",
             password = "this_is_a_password",
         )
+    every { csmPlatformProperties.containerRegistry } returns
+        CsmPlatformProperties.CsmPlatformContainerRegistries(
+            registryUrl = "twinengines.azurecr.io",
+            checkSolutionImage = true,
+            registryPassword = "password",
+            registryUserName = "username")
 
     every { csmPlatformProperties.internalResultServices } returns
         CsmPlatformProperties.CsmServiceResult(
@@ -161,6 +167,7 @@ class ContainerFactoryTests {
         envVars =
             mapOf(
                 "IDENTITY_PROVIDER" to "keycloak",
+                "CSM_API_SCOPE" to "/.default",
                 "CSM_API_URL" to csmPlatformProperties.api.baseUrl,
                 "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
                 "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
@@ -177,7 +184,10 @@ class ContainerFactoryTests {
                 "CSM_CONTAINER_MODE" to RunTemplateOrchestrator.csmOrc.value,
                 "CSM_ENTRYPOINT_LEGACY" to "false",
                 "CSM_PROBES_MEASURES_TOPIC" to eventHubUri,
-                "CSM_SIMULATION" to runTemplate.csmSimulation!!),
+                "CSM_SIMULATION" to runTemplate.csmSimulation!!,
+                "CSM_AMQPCONSUMER_USER" to "username",
+                "CSM_AMQPCONSUMER_PASSWORD" to "password",
+            ),
         entrypoint = "entrypoint.py",
         nodeLabel = runTemplate.computeSize!!.removeSuffix("pool"),
         runSizing =
