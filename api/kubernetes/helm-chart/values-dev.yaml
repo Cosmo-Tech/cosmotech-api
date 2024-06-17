@@ -41,7 +41,6 @@ argo:
 config:
   logging:
     level:
-      com.azure: INFO
       com.cosmotech: DEBUG
   csm:
     platform:
@@ -55,20 +54,6 @@ config:
             - ReadWriteOnce
           requests:
             storage: 1Gi
-      azure:
-        credentials:
-          # TODO Breaking change: Move deprecated tenantId, clientId and clientSecret under the new 'core' field
-          tenantId: "changeme"
-          clientId: "changeme"
-          clientSecret: "changeme"
-        dataWarehouseCluster:
-          baseUri: "https://changeme.kusto.windows.net"
-          options:
-            ingestionUri: "https://changeme.kusto.windows.net"
-        eventBus:
-          baseUri: "amqps://changeme.servicebus.windows.net"
-        containerRegistries:
-          solutions: "localhost:5000"
       containerRegistry:
         registryUrl: "https://csmenginesdev.azurecr.io"
         registryUserName: "user-name"
