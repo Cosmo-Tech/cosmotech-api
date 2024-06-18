@@ -2,13 +2,6 @@ logging:
   level:
     com.azure: WARN
 
-security:
-  oauth2:
-    resource:
-      user-info-uri: https://graph.microsoft.com/oidc/userinfo
-      jwk:
-        key-set-uri: https://login.microsoftonline.com/common/discovery/v2.0/keys
-
 csm:
   platform:
     vendor: azure
@@ -19,14 +12,6 @@ csm:
     azure:
       appIdUri: "http://dev.api.cosmotech.com"
       credentials:
-        # Deprecated - use csm.platform.azure.credentials.core.tenantId instead
-        tenantId: "credentials-tenant-id"
-        # Deprecated - use csm.platform.azure.credentials.core.clientId instead
-        clientId: "credentials-client-id"
-        # Deprecated - use csm.platform.azure.credentials.core.clientSecret instead
-        clientSecret: "credentials-secret-id"
-        # Deprecated - use csm.platform.azure.credentials.core.aadPodIdBinding instead
-        aadPodIdBinding: "phoenix-pod-identity"
         core:
           tenantId: "${csm.platform.azure.credentials.tenantId}"
           clientId: "${csm.platform.azure.credentials.clientId}"
@@ -80,6 +65,11 @@ csm:
 
 
 spring:
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          jwk-set-uri: "https://login.microsoftonline.com/common/discovery/v2.0/keys"
   cloud:
     azure:
       # Required to auto-configure the beans provided by the Azure Spring Boot AutoConfigurations
