@@ -69,7 +69,13 @@ class ContainerFactoryTests {
             defaultScopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             tokenUrl = "http://this_is_a_fake_token_url.com",
-            containerScopes = mapOf("/.default" to "Default Scope"))
+            containerScopes = mapOf("/.default" to "Default Scope"),
+            serverBaseUrl = "http://localhost:8080",
+            identity =
+                CsmPlatformProperties.CsmIdentityProvider.CsmIdentity(
+                    tenantId = "my_tenant_id",
+                    clientId = "my_client_id",
+                    clientSecret = "my_client_secret"))
     every { csmPlatformProperties.twincache } returns
         CsmPlatformProperties.CsmTwinCacheProperties(
             host = "this_is_a_host",
@@ -175,6 +181,10 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_PORT" to csmPlatformProperties.twincache.port,
                 "TWIN_CACHE_PASSWORD" to csmPlatformProperties.twincache.password,
                 "TWIN_CACHE_USERNAME" to csmPlatformProperties.twincache.username,
+                "IDP_CLIENT_ID" to csmPlatformProperties.identityProvider.identity.clientId,
+                "IDP_CLIENT_SECRET" to csmPlatformProperties.identityProvider.identity.clientSecret,
+                "IDP_BASE_URL" to csmPlatformProperties.identityProvider.serverBaseUrl,
+                "IDP_TENANT_ID" to csmPlatformProperties.identityProvider.identity.tenantId,
                 "CSM_SIMULATION_ID" to CSM_SIMULATION_ID,
                 "CSM_ORGANIZATION_ID" to organization.id!!,
                 "CSM_WORKSPACE_ID" to workspace.id!!,

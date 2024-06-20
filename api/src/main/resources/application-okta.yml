@@ -2,20 +2,20 @@
 
 okta:
   oauth2:
-    issuer: ${csm.platform.okta.issuer}
-    clientId: ${csm.platform.okta.clientId}
-    clientSecret: ${csm.platform.okta.clientSecret}
-    audience: ${csm.platform.okta.audience}
+    issuer: "${csm.platform.identityProvider.serverBaseUrl}/oauth2/default"
+    clientId: ${csm.platform.identityProvider.identity.clientId}
+    clientSecret: ${csm.platform.identityProvider.identity.clientSecret}
+    audience: ${csm.platform.identityProvider.audience}
 
 spring:
   security:
     oauth2:
       resource-server:
         jwt:
-          issuer-uri: "https://myOktaDomain/oauth2/default"
-          jwk-set-uri: "https://myOktaDomain/oauth2/default/v1/keys"
+          issuer-uri: "${csm.platform.identityProvider.serverBaseUrl}/oauth2/default"
+          jwk-set-uri: "${csm.platform.identityProvider.serverBaseUrl}/oauth2/default/v1/keys"
           audiences:
-            - "api://default"
+            - ${csm.platform.identityProvider.audience}
 
 csm:
   platform:
@@ -24,4 +24,4 @@ csm:
       application-id-jwt-claim: "cid"
       mail-jwt-claim: "sub"
       roles-jwt-claim: "groups"
-      allowed-tenants: ["cosmotech"]
+      allowed-tenants: ${csm.platform.authorization.allowedTenants}
