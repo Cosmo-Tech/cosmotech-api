@@ -28,9 +28,10 @@ import org.springframework.stereotype.Component
 
 private const val CONTAINER_CSM_ORC = "CSMOrchestrator"
 internal const val IDENTITY_PROVIDER = "IDENTITY_PROVIDER"
-internal const val OKTA_CLIENT_ID = "OKTA_CLIENT_ID"
-internal const val OKTA_CLIENT_SECRET = "OKTA_CLIENT_SECRET"
-internal const val OKTA_CLIENT_ISSUER = "OKTA_CLIENT_ISSUER"
+internal const val IDP_CLIENT_ID = "IDP_CLIENT_ID"
+internal const val IDP_CLIENT_SECRET = "IDP_CLIENT_SECRET"
+internal const val IDP_BASE_URL = "IDP_BASE_URL"
+internal const val IDP_TENANT_ID = "IDP_TENANT_ID"
 internal const val TWIN_CACHE_HOST = "TWIN_CACHE_HOST"
 internal const val TWIN_CACHE_PASSWORD = "TWIN_CACHE_PASSWORD"
 internal const val TWIN_CACHE_USERNAME = "TWIN_CACHE_USERNAME"
@@ -334,16 +335,6 @@ internal fun getMinimalCommonEnvVars(
     csmPlatformProperties: CsmPlatformProperties
 ): MutableMap<String, String> {
 
-  val oktaEnvVars: MutableMap<String, String> = mutableMapOf()
-  if (csmPlatformProperties.identityProvider.code == "okta") {
-    oktaEnvVars.putAll(
-        mapOf(
-            OKTA_CLIENT_ID to (csmPlatformProperties.okta?.clientId!!),
-            OKTA_CLIENT_SECRET to (csmPlatformProperties.okta?.clientSecret!!),
-            OKTA_CLIENT_ISSUER to (csmPlatformProperties.okta?.issuer!!),
-        ))
-  }
-
   val twinCacheEnvVars: MutableMap<String, String> = mutableMapOf()
   val twinCacheInfo = csmPlatformProperties.twincache
   twinCacheEnvVars.putAll(
@@ -357,12 +348,16 @@ internal fun getMinimalCommonEnvVars(
   val commonEnvVars =
       mapOf(
           IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider.code),
+          IDP_TENANT_ID to csmPlatformProperties.identityProvider.identity.tenantId,
+          IDP_CLIENT_ID to csmPlatformProperties.identityProvider.identity.clientId,
+          IDP_CLIENT_SECRET to csmPlatformProperties.identityProvider.identity.clientSecret,
+          IDP_BASE_URL to csmPlatformProperties.identityProvider.serverBaseUrl,
           API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
           API_BASE_SCOPE_VAR to containerScopes,
           DATASET_PATH_VAR to DATASET_PATH,
           PARAMETERS_PATH_VAR to PARAMETERS_PATH,
       )
-  return (commonEnvVars + oktaEnvVars + twinCacheEnvVars).toMutableMap()
+  return (commonEnvVars + twinCacheEnvVars).toMutableMap()
 }
 
 internal fun getCommonEnvVars(
