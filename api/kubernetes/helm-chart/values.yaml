@@ -193,3 +193,17 @@ config:
         secretAccessKey: "changeme"
       authorization:
         allowed-tenants: []
+      identityProvider:
+        code: keycloak
+        authorizationUrl: "changeme"
+        tokenUrl: "changeme"
+        defaultScopes:
+          openid: "OpenId Scope"
+        containerScopes:
+          changeme: "changeme"
+        serverBaseUrl: "changeme"
+        audience: "changeme"
+        identity:
+          clientId: "changeme"
+          clientSecret: "changeme"
+          tenantId: "changeme"
