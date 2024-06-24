@@ -32,6 +32,7 @@ import io.kubernetes.client.openapi.models.V1ResourceRequirements
 import io.kubernetes.client.openapi.models.V1Toleration
 import io.kubernetes.client.openapi.models.V1Volume
 import io.kubernetes.client.openapi.models.V1VolumeMount
+import io.kubernetes.client.openapi.models.V1VolumeResourceRequirements
 
 private const val CSM_DAG_ENTRYPOINT = "entrypoint"
 private const val CSM_DEFAULT_WORKFLOW_NAME = "default-workflow-"
@@ -202,7 +203,7 @@ private fun buildVolumeClaims(
                       if (workflowsConfig.storageClass.isNullOrBlank()) null
                       else workflowsConfig.storageClass)
                   .resources(
-                      V1ResourceRequirements()
+                      V1VolumeResourceRequirements()
                           .requests(workflowsConfig.requests.mapValues { Quantity(it.value) })))
   return listOf(dataDir)
 }
