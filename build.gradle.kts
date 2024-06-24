@@ -66,6 +66,7 @@ val swaggerParserVersion = "2.1.22"
 val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
 val awsSpringVersion = "3.1.1"
+val kubernetesClientVersion = "21.0.0"
 
 // Checks
 val detektVersion = "1.23.5"
@@ -282,6 +283,7 @@ subprojects {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
+    implementation("io.kubernetes:client-java:${kubernetesClientVersion}")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}")
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")

@@ -11,8 +11,8 @@ import io.kubernetes.client.openapi.models.V1EnvVar
 import io.kubernetes.client.openapi.models.V1ObjectMeta
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
-import io.kubernetes.client.openapi.models.V1ResourceRequirements
 import io.kubernetes.client.openapi.models.V1VolumeMount
+import io.kubernetes.client.openapi.models.V1VolumeResourceRequirements
 import io.mockk.every
 import io.mockk.mockk
 import kotlin.test.BeforeTest
@@ -388,7 +388,7 @@ class WorkflowBuildersTests {
   fun `Create Workflow with StartContainers generate name default`() {
     val sc = getStartContainers()
     val workflow = buildWorkflow(csmPlatformProperties, sc, null)
-    val expected = V1ObjectMeta().generateName("default-workflow-")
+    val expected = V1ObjectMeta().generateName("default-workflow-").labels(null)
     assertEquals(expected, workflow.metadata)
   }
 
@@ -396,7 +396,7 @@ class WorkflowBuildersTests {
   fun `Create Workflow with StartContainers generate name Scenario`() {
     val sc = getStartContainersNamed()
     val workflow = buildWorkflow(csmPlatformProperties, sc, null)
-    val expected = V1ObjectMeta().generateName("Scenario-1-")
+    val expected = V1ObjectMeta().generateName("Scenario-1-").labels(null)
     assertEquals(expected, workflow.metadata)
   }
 
@@ -411,7 +411,7 @@ class WorkflowBuildersTests {
                 V1PersistentVolumeClaimSpec()
                     .accessModes(emptyList())
                     .storageClassName(null)
-                    .resources(V1ResourceRequirements().requests(emptyMap())))
+                    .resources(V1VolumeResourceRequirements().requests(emptyMap())))
     val expected = listOf(dataDir)
     assertEquals(expected, workflowSpec.volumeClaimTemplates)
   }
@@ -431,7 +431,8 @@ class WorkflowBuildersTests {
                     .accessModes(listOf("ReadWriteMany"))
                     .storageClassName("cosmotech-api-test-phoenix")
                     .resources(
-                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("300Gi")))))
+                        V1VolumeResourceRequirements()
+                            .requests(mapOf("storage" to Quantity("300Gi")))))
     val expected = listOf(dataDir)
     assertEquals(expected, workflowSpec.volumeClaimTemplates)
   }

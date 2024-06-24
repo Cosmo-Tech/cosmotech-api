@@ -183,7 +183,7 @@ internal class WorkspaceServiceImpl(
     try {
       deleteAllS3WorkspaceObjects(organizationId, workspace)
       secretManager.deleteSecret(
-          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
+          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspaceId))
 
       workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
     } finally {
@@ -284,10 +284,10 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspaceSecret: WorkspaceSecret
   ) {
-    val workspaceKey = getVerifiedWorkspace(organizationId, workspaceId).key
+    getVerifiedWorkspace(organizationId, workspaceId)
     secretManager.createOrReplaceSecret(
         csmPlatformProperties.namespace,
-        getWorkspaceSecretName(organizationId, workspaceKey),
+        getWorkspaceSecretName(organizationId, workspaceId),
         mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to (workspaceSecret.dedicatedEventHubKey ?: "")))
   }
 
