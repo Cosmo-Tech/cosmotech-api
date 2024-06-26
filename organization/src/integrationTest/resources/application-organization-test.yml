@@ -28,6 +28,13 @@ csm:
       code: on_premise_one
       authorizationUrl: "http://fake_url:8080/authorize"
       tokenUrl: "http://fake_url:8080/token"
+      containerScopes:
+        '[https://api.cosmotech.com]': "Default scope"
+      serverBaseUrl: "http://fake_url:8080"
+      identity:
+        clientId: "my_client_id"
+        clientSecret: "my_client_secret"
+        tenantId: "my_tenant_id"
     runOutsideKubernetes: true
     metrics:
       enabled: false
