@@ -29,7 +29,7 @@ class WorkspaceEventHubStrategyDedicated(
       organizationId: String,
       workspace: Workspace,
   ): String {
-    val secretName = getWorkspaceSecretName(organizationId, workspace.key)
+    val secretName = getWorkspaceSecretName(organizationId, workspace.id!!)
     val secretData = secretManager.readSecret(csmPlatformProperties.namespace, secretName)
     return secretData[WORKSPACE_EVENTHUB_ACCESSKEY_SECRET]
         ?: throw IllegalStateException(
