@@ -206,7 +206,7 @@ internal class WorkspaceServiceImpl(
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
       secretManager.deleteSecret(
-          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspaceId))
+          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
 
       workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
     } finally {
@@ -308,10 +308,10 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspaceSecret: WorkspaceSecret
   ) {
-    getVerifiedWorkspace(organizationId, workspaceId)
+    val workspaceKey = getVerifiedWorkspace(organizationId, workspaceId).key
     secretManager.createOrReplaceSecret(
         csmPlatformProperties.namespace,
-        getWorkspaceSecretName(organizationId, workspaceId),
+        getWorkspaceSecretName(organizationId, workspaceKey),
         mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to (workspaceSecret.dedicatedEventHubKey ?: "")))
   }
 
