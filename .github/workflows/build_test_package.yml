@@ -571,6 +571,7 @@ jobs:
           PHOENIXAKSDEV_ADX_BASE_URI: ${{ secrets.PHOENIXAKSDEV_ADX_BASE_URI }}
           PHOENIXAKSDEV_ADX_INGESTION_BASE_URI: ${{ secrets.PHOENIXAKSDEV_ADX_INGESTION_BASE_URI }}
           PHOENIXAKSDEV_EVENT_HUBS_BASE_URI: ${{ secrets.PHOENIXAKSDEV_EVENT_HUBS_BASE_URI }}
+          IDP_DOMAIN: ${{ secrets.PHOENIXDEV_IDP_DOMAIN }}
         run: .github/scripts/install-helm-chart.sh ${{ env.API_VERSION_FROM_REF_NAME }} ${{ env.IMAGE_TAG_FROM_REF_NAME }}
 
       - name: Test Helm Release (current Version)

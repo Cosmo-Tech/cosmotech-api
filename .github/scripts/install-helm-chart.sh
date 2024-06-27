@@ -30,6 +30,18 @@ config:
       allow-bean-definition-overriding: true
   csm:
     platform:
+      identityProvider:
+        code: okta
+        # Use to overwrite openAPI configuration
+        authorizationUrl: "https://${IDP_DOMAIN}/oauth2/default/v1/authorize"
+        tokenUrl: "https://${IDP_DOMAIN}/oauth2/default/v1/token"
+        defaultScopes:
+          openid: "OpenId Scope"
+        serverBaseUrl: "https://${IDP_DOMAIN}"
+        audience: "api://default"
+        identity:
+          clientId: "my_client_id"
+          clientSecret: "my_client_secret"
       authorization:
         mailJwtClaim: "email"
         rolesJwtClaim: "customRoles"
