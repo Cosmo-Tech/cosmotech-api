@@ -44,6 +44,18 @@ config:
       com.cosmotech: DEBUG
   csm:
     platform:
+      identityProvider:
+        code: okta
+        # Use to overwrite openAPI configuration
+        authorizationUrl: "https://myOktaDomain/oauth2/default/v1/authorize"
+        tokenUrl: "https://myOktaDomain/oauth2/default/v1/token"
+        defaultScopes:
+          openid: "OpenId Scope"
+        serverBaseUrl: "https://myOktaDomain"
+        audience: "api://default"
+        identity:
+          clientId: "my_client_id"
+          clientSecret: "my_client_secret"
       argo:
         workflows:
           # Use any default storage class available
