@@ -39,21 +39,20 @@ Cosmo Tech Platform API
 | config.csm.platform.argo.workflows.requests.storage | string | `"100Gi"` |  |
 | config.csm.platform.argo.workflows.storage-class | string | `nil` | Name of the storage class for Workflows volumes. Useful if you want to use a different storage class, installed and managed externally. In this case, you should set argo.storage.class.install to false. |
 | config.csm.platform.authorization.allowed-tenants | list | `[]` |  |
-| config.csm.platform.azure.containerRegistries.solutions | string | `""` |  |
-| config.csm.platform.azure.credentials.clientId | string | `"changeme"` | Core App Registration Client ID. Deprecated. Use `config.csm.platform.azure.credentials.core.clientId` instead |
-| config.csm.platform.azure.credentials.clientSecret | string | `"changeme"` | Core App Registration Client Secret. Deprecated. Use `config.csm.platform.azure.credentials.core.clientSecret` instead |
-| config.csm.platform.azure.credentials.customer.clientId | string | `"changeme"` | Customer-provided App Registration Client ID. Workaround for connecting to Azure Digital Twins in the context of a Managed App |
-| config.csm.platform.azure.credentials.customer.clientSecret | string | `"changeme"` | Customer-provided App Registration Client Secret. Workaround for connecting to Azure Digital Twins in the context of a Managed App |
-| config.csm.platform.azure.credentials.customer.tenantId | string | `"changeme"` | Customer-provided App Registration Tenant ID. Workaround for connecting to Azure Digital Twins in the context of a Managed App |
-| config.csm.platform.azure.credentials.tenantId | string | `"changeme"` | Core App Registration Tenant ID. Deprecated. Use `config.csm.platform.azure.credentials.core.tenantId` instead |
-| config.csm.platform.azure.dataWarehouseCluster.baseUri | string | `"changeme"` |  |
-| config.csm.platform.azure.dataWarehouseCluster.options.ingestionUri | string | `"changeme"` |  |
-| config.csm.platform.azure.eventBus.baseUri | string | `"changeme"` |  |
+| config.csm.platform.identityProvider.audience | string | `"changeme"` |  |
+| config.csm.platform.identityProvider.authorizationUrl | string | `"changeme"` |  |
+| config.csm.platform.identityProvider.code | string | `"keycloak"` |  |
+| config.csm.platform.identityProvider.containerScopes.changeme | string | `"changeme"` |  |
+| config.csm.platform.identityProvider.defaultScopes.openid | string | `"OpenId Scope"` |  |
+| config.csm.platform.identityProvider.identity.clientId | string | `"changeme"` |  |
+| config.csm.platform.identityProvider.identity.clientSecret | string | `"changeme"` |  |
+| config.csm.platform.identityProvider.identity.tenantId | string | `"changeme"` |  |
+| config.csm.platform.identityProvider.serverBaseUrl | string | `"changeme"` |  |
+| config.csm.platform.identityProvider.tokenUrl | string | `"changeme"` |  |
 | config.csm.platform.s3.accessKeyId | string | `"changeme"` |  |
 | config.csm.platform.s3.bucketName | string | `"changeme"` |  |
 | config.csm.platform.s3.endpointUrl | string | `"http://s3-server:9000"` |  |
 | config.csm.platform.s3.secretAccessKey | string | `"changeme"` |  |
-| config.csm.platform.vendor | string | `"azure"` |  |
 | deploymentStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":"50%"},"type":"RollingUpdate"}` | Deployment strategy |
 | deploymentStrategy.rollingUpdate.maxSurge | int | `1` | maximum number of Pods that can be created over the desired number of Pods |
 | deploymentStrategy.rollingUpdate.maxUnavailable | string | `"50%"` | maximum number of Pods that can be unavailable during the update process |
