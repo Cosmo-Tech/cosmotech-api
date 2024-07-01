@@ -26,11 +26,6 @@ ingress:
 # to run on environments with little resources, such as Minikube or Kind.
 resources: null
 
-argo:
-  storage:
-    class:
-      install: false
-
 config:
   logging:
     level:
