@@ -37,11 +37,6 @@ resources:
 #    # az acr credential show -n csmengines --query="passwords[0].value" -o tsv
 #    password: "changeme"
 
-argo:
-  storage:
-    class:
-      install: true
-
 config:
   csm:
     platform:

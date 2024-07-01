@@ -33,11 +33,6 @@ resources:
     cpu: 500m
     memory: 512Mi
 
-argo:
-  storage:
-    class:
-      install: false
-
 config:
   logging:
     level:

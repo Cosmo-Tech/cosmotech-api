@@ -144,8 +144,4 @@ csm:
       {{- else }}
       image-pull-secrets: []
       {{- end }}
-      {{- if .Values.argo.storage.class.install }}
-      workflows:
-        storage-class: {{ include "cosmotech-api.fullname" . }}-{{ .Release.Namespace }}
-      {{- end }}
 {{- end }}
