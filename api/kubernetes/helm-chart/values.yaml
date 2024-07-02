@@ -6,7 +6,7 @@
 #
 
 # -- number of pods replicas
-replicaCount: 3
+replicaCount: 1
 
 image:
   # -- container image to use for deployment
@@ -126,6 +126,14 @@ resources:
     cpu: 500m
     memory: 512Mi
 
+persistence:
+  # -- Enable the data storage persistence
+  enabled: true
+  # -- PVC storage request for the data volume
+  size: 8Gi
+  # -- PVC storage class for the data volume, currently requires a ReadWriteMany capability
+  storageClass: ""
+
 autoscaling:
   enabled: false
   minReplicas: 1
@@ -166,11 +174,6 @@ config:
           requests:
             # File storage minimal claim is 100Gi for Premium classes
             storage: 100Gi
-      s3:
-        endpointUrl: "http://s3-server:9000"
-        bucketName: "changeme"
-        accessKeyId: "changeme"
-        secretAccessKey: "changeme"
       authorization:
         allowed-tenants: []
       identityProvider:

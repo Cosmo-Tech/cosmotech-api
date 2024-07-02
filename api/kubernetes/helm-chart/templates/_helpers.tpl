@@ -99,6 +99,13 @@ E.g:
 {{- end }}
 {{- end }}
 
+{{/*
+Location of the persistence data
+*/}}
+{{- define "cosmotech-api.blobPersistencePath" -}}
+"/var/lib/cosmotech-api/data"
+{{- end }}
+
 {{- define "cosmotech-api.baseConfig" -}}
 spring:
   application:
@@ -144,4 +151,6 @@ csm:
       {{- else }}
       image-pull-secrets: []
       {{- end }}
+    blobPersistence:
+      path: {{ include "cosmotech-api.blobPersistencePath" . }}
 {{- end }}

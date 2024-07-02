@@ -1,0 +1,19 @@
+{{if .Values.persistence.enabled}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "cosmotech-api.fullname" . }}-blob-storage
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "cosmotech-api.labels" . | nindent 4 }}
+  annotations:
+    email: "platform@cosmotech.com"
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.persistence.size }}
+  storageClassName: {{ .Values.persistence.storageClass }}
+{{end}}

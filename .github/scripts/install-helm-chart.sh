@@ -21,6 +21,10 @@ server:
   error:
     include-stacktrace: always
 
+# Disable persistence, for now it requires ReadWriteMany capability that is not supported on our kind setup
+persistence:
+  enabled: false
+
 image:
   repository: localhost:5000/cosmotech-api
   tag: ${IMAGE_TAG}

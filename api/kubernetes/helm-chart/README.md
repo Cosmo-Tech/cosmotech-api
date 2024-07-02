@@ -44,10 +44,6 @@ Cosmo Tech Platform API
 | config.csm.platform.identityProvider.identity.tenantId | string | `"changeme"` |  |
 | config.csm.platform.identityProvider.serverBaseUrl | string | `"changeme"` |  |
 | config.csm.platform.identityProvider.tokenUrl | string | `"changeme"` |  |
-| config.csm.platform.s3.accessKeyId | string | `"changeme"` |  |
-| config.csm.platform.s3.bucketName | string | `"changeme"` |  |
-| config.csm.platform.s3.endpointUrl | string | `"http://s3-server:9000"` |  |
-| config.csm.platform.s3.secretAccessKey | string | `"changeme"` |  |
 | deploymentStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":"50%"},"type":"RollingUpdate"}` | Deployment strategy |
 | deploymentStrategy.rollingUpdate.maxSurge | int | `1` | maximum number of Pods that can be created over the desired number of Pods |
 | deploymentStrategy.rollingUpdate.maxUnavailable | string | `"50%"` | maximum number of Pods that can be unavailable during the update process |
@@ -66,9 +62,12 @@ Cosmo Tech Platform API
 | ingress.tls | list | `[]` |  |
 | nameOverride | string | `""` | value overriding the name of the Chart. Defaults to the Chart name. Truncated at 63 chars because some Kubernetes name fields are limited to this. |
 | nodeSelector | object | `{}` |  |
+| persistence.enabled | bool | `true` | Enable the data storage persistence |
+| persistence.size | string | `"8Gi"` | PVC storage request for the data volume |
+| persistence.storageClass | string | `""` | PVC storage class for the data volume, currently requires a ReadWriteMany capability |
 | podAnnotations | object | `{}` | annotations to set the Deployment pod |
 | podSecurityContext | object | `{"runAsNonRoot":true}` | the pod security context, i.e. applicable to all containers part of the pod |
-| replicaCount | int | `3` | number of pods replicas |
+| replicaCount | int | `1` | number of pods replicas |
 | resources | object | `{"limits":{"cpu":"1000m","memory":"1024Mi"},"requests":{"cpu":"500m","memory":"512Mi"}}` | resources limits and requests for the pod placement |
 | securityContext | object | `{"readOnlyRootFilesystem":true}` | the security context at the pod container level |
 | service.managementPort | int | `8081` | service management port |

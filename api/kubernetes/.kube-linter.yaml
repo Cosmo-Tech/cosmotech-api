@@ -14,6 +14,7 @@ checks:
     - "use-namespace"
     - "access-to-secrets"
     - "access-to-create-pods"
+    - "minimum-three-replicas"
 
 ## customChecks defines custom checks.
 #customChecks:

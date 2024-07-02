@@ -46,6 +46,11 @@ spec:
         - name: helm-config
           secret:
             secretName: {{ include "cosmotech-api.fullname" . }}
+        {{if .Values.persistence.enabled}}
+        - name: blob-storage
+          persistentVolumeClaim:
+            claimName: {{ include "cosmotech-api.fullname" . }}-blob-storage
+        {{end}}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -77,6 +82,11 @@ spec:
             - mountPath: /config
               name: helm-config
               readOnly: true
+            {{if .Values.persistence.enabled}}
+            - mountPath: {{ include "cosmotech-api.blobPersistencePath" . }}
+              name: blob-storage
+              readOnly: false
+            {{end}}
           ports:
             - name: http
               containerPort: 8080
