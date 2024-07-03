@@ -37,7 +37,6 @@ import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.repository.WorkspaceRepository
-import io.awspring.cloud.s3.S3Template
 import io.mockk.MockKAnnotations
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -49,11 +48,16 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
-import java.io.InputStream
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -62,26 +66,21 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
 import org.springframework.data.repository.findByIdOrNull
-import software.amazon.awssdk.services.s3.S3Client
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
-const val S3_BUCKET_NAME = "test-bucket"
 
 @ExtendWith(MockKExtension::class)
 @Suppress("LargeClass")
 class WorkspaceServiceImplTests {
 
   @MockK private lateinit var solutionService: SolutionApiServiceInterface
-  @MockK private lateinit var resource: Resource
-  @MockK private lateinit var inputStream: InputStream
   @RelaxedMockK private lateinit var organizationService: OrganizationApiServiceInterface
   @Suppress("unused") @MockK private lateinit var secretManager: SecretManager
 
-  @Suppress("unused") @RelaxedMockK private lateinit var s3Client: S3Client
-  @RelaxedMockK private lateinit var s3Template: S3Template
+  private lateinit var blobPersistencePath: String
 
   @Suppress("unused") @MockK private var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
   @Suppress("unused") @MockK private var idGenerator: CsmIdGenerator = mockk(relaxed = true)
@@ -105,7 +104,7 @@ class WorkspaceServiceImplTests {
   @InjectMockKs private lateinit var workspaceServiceImpl: WorkspaceServiceImpl
 
   @BeforeEach
-  fun setUp() {
+  fun beforeEach() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
@@ -130,10 +129,15 @@ class WorkspaceServiceImplTests {
     every { csmPlatformProperties.rbac.enabled } returns true
     every { csmPlatformProperties.upload } returns csmPlatformPropertiesUpload
 
-    every { csmPlatformProperties.s3.bucketName } returns S3_BUCKET_NAME
-    every { s3Template.objectExists(any(), any()) } returns false
+    blobPersistencePath = Files.createTempDirectory("cosmotech-api-test-data-").toString()
+    every { csmPlatformProperties.blobPersistence.path } returns blobPersistencePath
 
     MockKAnnotations.init(this)
+  }
+
+  @AfterEach
+  fun afterEach() {
+    File(blobPersistencePath).deleteRecursively()
   }
 
   @Test
@@ -151,15 +155,8 @@ class WorkspaceServiceImplTests {
         workspaceServiceImpl.uploadWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, null)
     assertNotNull(workspaceFile.fileName)
     assertEquals("my_file.txt", workspaceFile.fileName)
-
-    verify(exactly = 1) {
-      s3Template.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt")
-    }
-    verify(exactly = 1) {
-      s3Template.upload(
-          S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt", file.inputStream)
-    }
-    confirmVerified(s3Template)
+    assertTrue(
+        Files.exists(Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID, "my_file.txt")))
   }
 
   @Test
@@ -179,15 +176,8 @@ class WorkspaceServiceImplTests {
         workspaceServiceImpl.uploadWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, "  ")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my_file.txt", workspaceFile.fileName)
-
-    verify(exactly = 1) {
-      s3Template.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt")
-    }
-    verify(exactly = 1) {
-      s3Template.upload(
-          S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt", file.inputStream)
-    }
-    confirmVerified(s3Template)
+    assertTrue(
+        Files.exists(Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID, "my_file.txt")))
   }
 
   @Test
@@ -206,18 +196,10 @@ class WorkspaceServiceImplTests {
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my/destination/")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/destination/my_file.txt", workspaceFile.fileName)
-
-    verify(exactly = 1) {
-      s3Template.objectExists(
-          S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/my_file.txt")
-    }
-    verify(exactly = 1) {
-      s3Template.upload(
-          S3_BUCKET_NAME,
-          "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/my_file.txt",
-          file.inputStream)
-    }
-    confirmVerified(s3Template)
+    assertTrue(
+        Files.exists(
+            Path.of(
+                blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID, "my/destination/my_file.txt")))
   }
 
   @Test
@@ -236,15 +218,9 @@ class WorkspaceServiceImplTests {
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my/destination/file")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/destination/file", workspaceFile.fileName)
-
-    verify(exactly = 1) {
-      s3Template.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/file")
-    }
-    verify(exactly = 1) {
-      s3Template.upload(
-          S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/file", file.inputStream)
-    }
-    confirmVerified(s3Template)
+    assertTrue(
+        Files.exists(
+            Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID, "my/destination/file")))
   }
 
   @Test
@@ -263,18 +239,10 @@ class WorkspaceServiceImplTests {
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my//other/destination////////file")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/other/destination/file", workspaceFile.fileName)
-
-    verify(exactly = 1) {
-      s3Template.objectExists(
-          S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/other/destination/file")
-    }
-    verify(exactly = 1) {
-      s3Template.upload(
-          S3_BUCKET_NAME,
-          "$ORGANIZATION_ID/$WORKSPACE_ID/my/other/destination/file",
-          file.inputStream)
-    }
-    confirmVerified(s3Template)
+    assertTrue(
+        Files.exists(
+            Path.of(
+                blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID, "my/other/destination/file")))
   }
 
   @Test
@@ -283,10 +251,7 @@ class WorkspaceServiceImplTests {
       workspaceServiceImpl.uploadWorkspaceFile(
           ORGANIZATION_ID, WORKSPACE_ID, mockk(), false, "my/../other/destination/../../file")
     }
-
-    verify(exactly = 0) { s3Template.objectExists(any(), any()) }
-    verify(exactly = 0) { s3Template.upload(any(), any(), any()) }
-    confirmVerified(s3Template)
+    assertFalse(Files.exists(Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID)))
   }
 
   @Test
@@ -295,9 +260,7 @@ class WorkspaceServiceImplTests {
       workspaceServiceImpl.downloadWorkspaceFile(
           ORGANIZATION_ID, WORKSPACE_ID, "my/../../other/destination/file")
     }
-
-    verify(exactly = 0) { s3Template.download(any(), any()) }
-    confirmVerified(s3Template)
+    assertFalse(Files.exists(Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID)))
   }
 
   @Test
@@ -465,8 +428,12 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC download workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
+              val filePath =
+                  Path.of(blobPersistencePath, it.organization.id!!, it.workspace.id!!, "name")
+              Files.createDirectories(filePath.getParent())
+              Files.createFile(filePath)
               workspaceServiceImpl.downloadWorkspaceFile(
-                  it.organization.id!!, it.workspace.id!!, "")
+                  it.organization.id!!, it.workspace.id!!, "name")
             }
           }
 
@@ -482,11 +449,8 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC upload workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
-              every { resource.filename } returns "name"
-              every { resource.inputStream } returns inputStream
-              every { resource.contentLength() } returns 0
               workspaceServiceImpl.uploadWorkspaceFile(
-                  it.organization.id!!, it.workspace.id!!, resource, true, "")
+                  it.organization.id!!, it.workspace.id!!, mockk(relaxed = true), true, "name")
             }
           }
 

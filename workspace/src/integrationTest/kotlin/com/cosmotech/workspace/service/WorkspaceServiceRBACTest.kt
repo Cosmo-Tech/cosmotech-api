@@ -37,15 +37,17 @@ import com.cosmotech.workspace.domain.WorkspaceSecret
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.redis.om.spring.RediSearchIndexer
-import io.awspring.cloud.s3.S3Template
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import java.io.InputStream
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.*
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -60,7 +62,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import software.amazon.awssdk.services.s3.S3Client
 
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
@@ -73,11 +74,9 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
-  @RelaxedMockK private lateinit var s3Client: S3Client
-  @RelaxedMockK private lateinit var s3Template: S3Template
+  private lateinit var blobPersistencePath: String
   @MockK private lateinit var secretManagerMock: SecretManager
-  @MockK private lateinit var resource: Resource
-  @MockK private lateinit var inputStream: InputStream
+  @RelaxedMockK private lateinit var resource: Resource
 
   @RelaxedMockK private lateinit var resourceScanner: ResourceScanner
 
@@ -88,19 +87,24 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @BeforeEach
-  fun setUp() {
+  fun beforeEach() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
-    ReflectionTestUtils.setField(workspaceApiService, "s3Client", s3Client)
-    ReflectionTestUtils.setField(workspaceApiService, "s3Template", s3Template)
+    File(csmPlatformProperties.blobPersistence.path).deleteRecursively()
+
     ReflectionTestUtils.setField(workspaceApiService, "secretManager", secretManagerMock)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
+  }
+
+  @AfterEach
+  fun afterEach() {
+    File(csmPlatformProperties.blobPersistence.path).deleteRecursively()
   }
 
   @TestFactory
@@ -632,9 +636,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               ReflectionTestUtils.setField(workspaceApiService, "resourceScanner", resourceScanner)
               every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
-              every { resource.getFilename() } returns ""
-              every { resource.contentLength() } returns 1
-              every { resource.getInputStream() } returns inputStream
 
               if (shouldThrow) {
                 val exception =
@@ -648,7 +649,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.uploadWorkspaceFile(
-                      organizationSaved.id!!, workspaceSaved.id!!, resource, true, "")
+                      organizationSaved.id!!, workspaceSaved.id!!, resource, true, "name")
                 }
               }
             }
@@ -683,9 +684,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               ReflectionTestUtils.setField(workspaceApiService, "resourceScanner", resourceScanner)
               every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
-              every { resource.getFilename() } returns ""
-              every { resource.contentLength() } returns 1
-              every { resource.getInputStream() } returns inputStream
 
               if (shouldThrow) {
                 val exception =
@@ -699,7 +697,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.uploadWorkspaceFile(
-                      organizationSaved.id!!, workspaceSaved.id!!, resource, true, "")
+                      organizationSaved.id!!, workspaceSaved.id!!, resource, true, "name")
                 }
               }
             }
@@ -835,9 +833,17 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
+                val filePath =
+                    Path.of(
+                        csmPlatformProperties.blobPersistence.path,
+                        organizationSaved.id!!,
+                        workspaceSaved.id!!,
+                        "name")
+                Files.createDirectories(filePath.getParent())
+                Files.createFile(filePath)
                 assertDoesNotThrow {
                   workspaceApiService.downloadWorkspaceFile(
-                      organizationSaved.id!!, workspaceSaved.id!!, "")
+                      organizationSaved.id!!, workspaceSaved.id!!, "name")
                 }
               }
             }
@@ -881,9 +887,17 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
+                val filePath =
+                    Path.of(
+                        csmPlatformProperties.blobPersistence.path,
+                        organizationSaved.id!!,
+                        workspaceSaved.id!!,
+                        "name")
+                Files.createDirectories(filePath.getParent())
+                Files.createFile(filePath)
                 assertDoesNotThrow {
                   workspaceApiService.downloadWorkspaceFile(
-                      organizationSaved.id!!, workspaceSaved.id!!, "")
+                      organizationSaved.id!!, workspaceSaved.id!!, "name")
                 }
               }
             }

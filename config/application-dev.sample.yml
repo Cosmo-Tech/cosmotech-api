@@ -58,11 +58,8 @@ csm:
       host: "localhost"
       username: "eventbus_admin_username"
       password: "eventbus_admin_password"
-    s3:
-      endpointUrl: "http://localhost:9000"
-      bucketName: "cosmotech-api"
-      accessKeyId: "s3_username"
-      secretAccessKey: "s3_password"
+    blobPersistence:
+      path: /tmp/cosmotech-api-data-dev
     argo:
       base-uri: "http://localhost:2746"
     azure:

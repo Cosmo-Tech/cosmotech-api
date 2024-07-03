@@ -64,7 +64,6 @@ val springDocVersion = "2.5.0"
 val swaggerParserVersion = "2.1.22"
 val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
-val awsSpringVersion = "3.1.1"
 val kubernetesClientVersion = "21.0.0"
 
 // Checks
@@ -324,9 +323,6 @@ subprojects {
     integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
-
-    implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:$awsSpringVersion"))
-    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringVersion")
   }
 
   tasks.withType<KotlinCompile> {

@@ -6,15 +6,6 @@ spring:
       # Leave it as blank as there's no auth with test container
       password:
       client-type: jedis
-  cloud:
-    aws:
-      credentials:
-        access-key: "s3_username"
-        secret-key: "s3_password"
-      s3:
-        region: "dummy"
-        path-style-access-enabled: true
-        endpoint: "http://localhost:9000"
   main:
     banner-mode: "off"
 
@@ -98,11 +89,5 @@ csm:
         default-page-size: 20
     rbac:
       enabled: true
-    s3:
-      endpointUrl: "http://localhost:9000"
-      bucketName: "test-bucket"
-      accessKeyId: "s3_username"
-      secretAccessKey: "s3_password"
-
-
-
+    blobPersistence:
+      path: /tmp/cosmotech-api-runner-test-data
