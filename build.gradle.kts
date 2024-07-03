@@ -279,7 +279,10 @@ subprojects {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
     implementation("org.springframework.boot:spring-boot-starter-undertow") {
-      constraints { implementation("org.jboss.xnio:xnio-api:3.8.16.Final") }
+      constraints {
+        implementation("org.jboss.xnio:xnio-api:3.8.16.Final")
+        implementation("io.undertow:undertow-core:2.3.14.Final")
+      }
     }
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
