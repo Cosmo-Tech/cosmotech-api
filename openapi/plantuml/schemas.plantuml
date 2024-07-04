@@ -220,12 +220,6 @@ entity RunContainer {
     solutionContainer: Boolean
     nodeLabel: String
     runSizing: ContainerResourceSizing
-    artifacts: List<RunContainerArtifact>
-}
-
-entity RunContainerArtifact {
-    name: String
-    path: String
 }
 
 entity RunContainerLogs {
@@ -602,7 +596,6 @@ SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 RunContainer -- ContainerResourceSizing : runSizing
-RunContainer -- "0..*" RunContainerArtifact : artifacts
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues

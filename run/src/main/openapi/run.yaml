@@ -659,11 +659,6 @@ components:
           description: the node label request
         runSizing:
           $ref: "#/components/schemas/ContainerResourceSizing"
-        artifacts:
-          type: array
-          description: the list of artifacts
-          items:
-            $ref: '#/components/schemas/RunContainerArtifact'
       required:
         - name
         - image
@@ -691,16 +686,6 @@ components:
       required:
         - cpu
         - memory
-    RunContainerArtifact:
-      type: object
-      description: a runner run container artifact
-      properties:
-        name:
-          type: string
-          description: the artifact name
-        path:
-          type: string
-          description: the artifact path (relative to /var/csmoutput)
     RunLogs:
       type: object
       description: the run logs returned by all containers

@@ -19,7 +19,6 @@ import com.cosmotech.run.domain.RunStatusNode
 import com.cosmotech.run.workflow.WorkflowContextData
 import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.run.workflow.WorkflowStatus
-import com.cosmotech.run.workflow.WorkflowStatusAndArtifact
 import io.argoproj.workflow.ApiClient
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
@@ -31,7 +30,6 @@ import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowCreateReque
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowList
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStatus
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStopRequest
-import java.lang.StringBuilder
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
@@ -42,8 +40,6 @@ import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
-import retrofit2.Retrofit
-import retrofit2.converter.scalars.ScalarsConverterFactory
 
 @Service("runArgo")
 @ConditionalOnExpression("#{! '\${csm.platform.argo.base-uri}'.trim().isEmpty()}")
@@ -79,18 +75,6 @@ internal class RunArgoWorkflowService(
         .sslSocketFactory(sslContext.socketFactory, trustAllCerts)
         .hostnameVerifier { _, _ -> true }
         .build()
-  }
-
-  private val unsafeScalarRetrofit: Retrofit by lazy {
-    Retrofit.Builder()
-        .addConverterFactory(ScalarsConverterFactory.create())
-        .baseUrl(csmPlatformProperties.argo.baseUri)
-        .client(unsafeOkHttpClient)
-        .build()
-  }
-
-  private val artifactsByUidService: ArgoArtifactsByUidService by lazy {
-    this.unsafeScalarRetrofit.create(ArgoArtifactsByUidService::class.java)
   }
 
   private val apiClient: ApiClient by lazy {
@@ -201,41 +185,6 @@ internal class RunArgoWorkflowService(
       logger.debug("Response headers: {}", e.responseHeaders)
       throw IllegalStateException(e)
     }
-  }
-
-  override fun findWorkflowStatusAndArtifact(
-      labelSelector: String,
-      artifactNameFilter: String
-  ): List<WorkflowStatusAndArtifact> {
-    var workflowList: IoArgoprojWorkflowV1alpha1WorkflowList? =
-        findWorkflowListByLabel(labelSelector)
-
-    return workflowList?.items?.map { workflow ->
-      val workflowId = workflow.metadata.uid!!
-      val status = workflow.status?.phase
-      val artifactContent = StringBuilder()
-      // Listing Workflows does not return everything in each Workflow object =>
-      // need to make an additional call to Argo via getActiveWorkflow()
-      getActiveWorkflow(workflowId, workflow.metadata.name!!).status?.nodes?.forEach {
-          (nodeKey, nodeValue) ->
-        nodeValue.outputs
-            ?.artifacts
-            ?.filter { it.name == artifactNameFilter }
-            ?.forEach {
-              it.s3.let {
-                artifactContent.append(
-                    artifactsByUidService
-                        .getArtifactByUid(workflowId, nodeKey, artifactNameFilter)
-                        .execute()
-                        .body()
-                        ?: "")
-              }
-            }
-      }
-      WorkflowStatusAndArtifact(
-          workflowId = workflowId, status = status, artifactContent = artifactContent.toString())
-    }
-        ?: listOf()
   }
 
   override fun findWorkflowStatusByLabel(

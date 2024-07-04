@@ -156,7 +156,6 @@ All URIs are relative to *https://dev.api.cosmotech.com*
  - [ResourceSizeInfo](./Models/ResourceSizeInfo.md)
  - [Run](./Models/Run.md)
  - [RunContainer](./Models/RunContainer.md)
- - [RunContainerArtifact](./Models/RunContainerArtifact.md)
  - [RunContainerLogs](./Models/RunContainerLogs.md)
  - [RunData](./Models/RunData.md)
  - [RunDataQuery](./Models/RunDataQuery.md)

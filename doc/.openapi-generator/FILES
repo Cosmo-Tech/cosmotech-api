@@ -36,7 +36,6 @@ Models/QueryResult.md
 Models/ResourceSizeInfo.md
 Models/Run.md
 Models/RunContainer.md
-Models/RunContainerArtifact.md
 Models/RunContainerLogs.md
 Models/RunData.md
 Models/RunDataQuery.md

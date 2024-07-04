@@ -11,18 +11,14 @@ import com.cosmotech.run.container.toContainerResourceSizing
 import com.cosmotech.run.domain.RunContainer
 import com.cosmotech.run.domain.RunStartContainers
 import com.cosmotech.run.utils.getNodeLabelSize
-import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1ArchiveStrategy
-import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Artifact
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTask
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTemplate
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Metadata
-import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Outputs
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Template
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Workflow
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowSpec
 import io.kubernetes.client.custom.Quantity
 import io.kubernetes.client.openapi.models.V1Container
-import io.kubernetes.client.openapi.models.V1EmptyDirVolumeSource
 import io.kubernetes.client.openapi.models.V1EnvVar
 import io.kubernetes.client.openapi.models.V1LocalObjectReference
 import io.kubernetes.client.openapi.models.V1ObjectMeta
@@ -30,7 +26,6 @@ import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
 import io.kubernetes.client.openapi.models.V1ResourceRequirements
 import io.kubernetes.client.openapi.models.V1Toleration
-import io.kubernetes.client.openapi.models.V1Volume
 import io.kubernetes.client.openapi.models.V1VolumeMount
 import io.kubernetes.client.openapi.models.V1VolumeResourceRequirements
 
@@ -66,8 +61,7 @@ internal fun buildTemplate(
           V1VolumeMount()
               .name(VOLUME_CLAIM)
               .mountPath(VOLUME_PARAMETERS_PATH)
-              .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH),
-          V1VolumeMount().name("out").mountPath("/var/csmoutput"))
+              .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH))
 
   val sizingInfo = runContainer.runSizing ?: BASIC_SIZING.toContainerResourceSizing()
 
@@ -95,18 +89,6 @@ internal fun buildTemplate(
           .metadata(IoArgoprojWorkflowV1alpha1Metadata().labels(runContainer.labels))
           .container(container)
           .nodeSelector(runContainer.getNodeLabelSize())
-          .addVolumesItem(V1Volume().emptyDir(V1EmptyDirVolumeSource()).name("out"))
-
-  val artifacts =
-      runContainer.artifacts?.map {
-        IoArgoprojWorkflowV1alpha1Artifact()
-            .name(it.name)
-            .path("/var/csmoutput/${it.path}")
-            .archive(IoArgoprojWorkflowV1alpha1ArchiveStrategy().none(Object()))
-      }
-  if (!artifacts.isNullOrEmpty()) {
-    template.outputs(IoArgoprojWorkflowV1alpha1Outputs().artifacts(artifacts))
-  }
 
   return template
 }

@@ -24,17 +24,6 @@ interface WorkflowService : HealthIndicator {
   ): Run
 
   /**
-   * Find WorkflowStatus by label and artifact name filter
-   * @param labelSelector a string used to filter workflow (by label)
-   * @param artifactNameFilter a string used to filter workflow (by artifactName)
-   * @return a list of all WorkflowStatus corresponding to the labelSelector and artifactName
-   */
-  fun findWorkflowStatusAndArtifact(
-      labelSelector: String,
-      artifactNameFilter: String
-  ): List<WorkflowStatusAndArtifact>
-
-  /**
    * Find WorkflowStatus by label
    * @param labelSelector a label used to filter workflow
    * @param skipArchive Do not search workflows in archive
@@ -66,12 +55,6 @@ interface WorkflowService : HealthIndicator {
    */
   fun stopWorkflow(run: Run): RunStatus
 }
-
-data class WorkflowStatusAndArtifact(
-    val workflowId: String,
-    val status: String? = null,
-    val artifactContent: String? = null
-)
 
 data class WorkflowContextData(
     val organizationId: String? = null,

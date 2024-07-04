@@ -450,8 +450,7 @@ class WorkflowBuildersTests {
             V1VolumeMount()
                 .name(VOLUME_CLAIM)
                 .mountPath("/mnt/scenariorun-parameters")
-                .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH),
-            V1VolumeMount().name("out").mountPath("/var/csmoutput"))
+                .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH))
     assertEquals(expected, template.container?.volumeMounts)
   }
 
