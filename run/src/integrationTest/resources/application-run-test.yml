@@ -126,9 +126,9 @@ csm:
     rbac:
       enabled: true
     containerRegistry:
-      provider: "local"
-      registryUrl: "http://localhost:5000"
-      registryUserName: "default"
-      registryPassword: "my-wonderful-password"
+      scheme: http
+      host: "localhost:5000"
+      username: "default"
+      password: "my-wonderful-password"
     blobPersistence:
       path: /tmp/cosmotech-api-run-test-data

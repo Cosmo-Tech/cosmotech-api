@@ -171,9 +171,7 @@ class RunContainerFactory(
 
     val imageName =
         getImageName(
-            csmPlatformProperties.containerRegistry.registryUrl,
-            solution.repository,
-            solution.version)
+            csmPlatformProperties.containerRegistry.host, solution.repository, solution.version)
 
     val envVars =
         getCommonEnvVars(

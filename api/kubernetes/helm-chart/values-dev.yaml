@@ -49,7 +49,3 @@ config:
             - ReadWriteOnce
           requests:
             storage: 1Gi
-      containerRegistry:
-        registryUrl: "https://csmenginesdev.azurecr.io"
-        registryUserName: "user-name"
-        registryPassword: "a-super-secret-password"

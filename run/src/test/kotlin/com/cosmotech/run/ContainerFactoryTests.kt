@@ -83,11 +83,12 @@ class ContainerFactoryTests {
             password = "this_is_a_password",
         )
     every { csmPlatformProperties.containerRegistry } returns
-        CsmPlatformProperties.CsmPlatformContainerRegistries(
-            registryUrl = "twinengines.azurecr.io",
+        CsmPlatformProperties.CsmPlatformContainerRegistry(
+            scheme = "https",
+            host = "twinengines.azurecr.io",
             checkSolutionImage = true,
-            registryPassword = "password",
-            registryUserName = "username")
+            password = "password",
+            username = "username")
 
     every { csmPlatformProperties.internalResultServices } returns
         CsmPlatformProperties.CsmServiceResult(
