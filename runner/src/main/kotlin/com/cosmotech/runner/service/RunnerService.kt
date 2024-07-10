@@ -29,9 +29,12 @@ import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
+import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.repository.RunnerRepository
 import com.cosmotech.solution.SolutionApiServiceInterface
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.getRbac
@@ -201,6 +204,34 @@ class RunnerService(
               accessControlList = mutableListOf(RunnerAccessControl(userId, ROLE_ADMIN)))
     }
 
+    fun initParameters(): RunnerInstance = apply {
+      val parentId = this.runner.parentId
+      val runnerId = this.runner.id
+      if (parentId != null) {
+        val parentRunner =
+            runnerRepository
+                .findBy(this.runner.organizationId!!, this.runner.workspaceId!!, parentId)
+                .orElseThrow {
+                  IllegalArgumentException(
+                      "Parent Id $parentId define on $runnerId does not exists")
+                }
+        val solution =
+            workspace?.solution?.solutionId?.let {
+              solutionApiService.findSolutionById(organization?.id!!, it)
+            }
+        val runTemplateId = this.runner.runTemplateId
+        val runTemplate =
+            solution?.runTemplates?.find { runTemplate -> runTemplate.id == runTemplateId }
+        if (runTemplateId != null && runTemplate == null) {
+          throw IllegalArgumentException("Run Template not found: $runTemplateId")
+        }
+        val inheritedParameterValues =
+            constructParametersValuesFromRunTemplateAndParent(
+                parentId, solution, runTemplate, parentRunner, this.runner)
+        this.runner.parametersValues?.addAll(inheritedParameterValues)
+      }
+    }
+
     fun setAccessControl(runnerAccessControl: RunnerAccessControl) {
       // create a rbacSecurity object from runner Rbac by adding user with id and role in
       // runnerAccessControl
@@ -254,6 +285,57 @@ class RunnerService(
               ?.map { RbacAccessControl(it.id, it.role) }
               ?.toMutableList()
               ?: mutableListOf())
+    }
+
+    @Suppress("NestedBlockDepth")
+    private fun constructParametersValuesFromRunTemplateAndParent(
+        parentId: String?,
+        solution: Solution?,
+        runTemplate: RunTemplate?,
+        parent: Runner,
+        runner: Runner
+    ): MutableList<RunnerRunTemplateParameterValue> {
+      val parametersValuesList = mutableListOf<RunnerRunTemplateParameterValue>()
+      logger.debug("Copying parameters values from parent $parentId")
+
+      logger.debug("Getting runTemplate parameters ids")
+      val runTemplateParametersIds =
+          solution
+              ?.parameterGroups
+              ?.filter { parameterGroup ->
+                runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
+              }
+              ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
+      if (!runTemplateParametersIds.isNullOrEmpty()) {
+        val parentParameters = parent.parametersValues?.associate { it.parameterId to it }
+        val runnerParameters = runner.parametersValues?.associate { it.parameterId to it }
+        // TODO Handle default value
+        runTemplateParametersIds.forEach { parameterId ->
+          if (runnerParameters?.contains(parameterId) != true) {
+            logger.debug(
+                "Parameter $parameterId is not defined in the Runner. " +
+                    "Checking if it is defined in its parent $parentId")
+            if (parentParameters?.contains(parameterId) == true) {
+              logger.debug("Copying parameter value from parent for parameter $parameterId")
+              val parameterValue = parentParameters[parameterId]
+              if (parameterValue != null) {
+                parameterValue.isInherited = true
+                parametersValuesList.add(parameterValue)
+              } else {
+                logger.warn(
+                    "Parameter $parameterId not found in parent ($parentId) parameters values")
+              }
+            } else {
+              logger.debug(
+                  "Skipping parameter $parameterId, defined neither in the parent nor in this Runner")
+            }
+          } else {
+            logger.debug(
+                "Skipping parameter $parameterId since it is already defined in this Runner")
+          }
+        }
+      }
+      return parametersValuesList
     }
 
     private fun propagateAccessControlToDatasets(userId: String, role: String) {
