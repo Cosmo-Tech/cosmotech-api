@@ -35,16 +35,9 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.RunnerApiServiceInterface
-import com.cosmotech.runner.domain.Runner
-import com.cosmotech.runner.domain.RunnerAccessControl
-import com.cosmotech.runner.domain.RunnerRole
-import com.cosmotech.runner.domain.RunnerSecurity
-import com.cosmotech.runner.domain.RunnerValidationStatus
+import com.cosmotech.runner.domain.*
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.Solution
-import com.cosmotech.solution.domain.SolutionAccessControl
-import com.cosmotech.solution.domain.SolutionSecurity
+import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
@@ -60,6 +53,7 @@ import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -111,6 +105,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var organization: Organization
   lateinit var workspace: Workspace
   lateinit var runner: Runner
+  lateinit var parentRunner: Runner
 
   lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
@@ -118,8 +113,17 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var organizationSaved: Organization
   lateinit var workspaceSaved: Workspace
   lateinit var runnerSaved: Runner
+  lateinit var parentRunnerSaved: Runner
 
   lateinit var jedis: UnifiedJedis
+
+  val runTemplateParameterValue1 =
+      RunnerRunTemplateParameterValue(
+          parameterId = "param1", value = "param1value", isInherited = true, varType = "String")
+
+  val runTemplateParameterValue2 =
+      RunnerRunTemplateParameterValue(
+          parameterId = "param2", value = "param2value", varType = "String")
 
   @BeforeAll
   fun beforeAll() {
@@ -163,13 +167,27 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     workspace = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
 
-    runner =
+    parentRunner =
         makeRunner(
             organizationSaved.id!!,
             workspaceSaved.id!!,
             solutionSaved.id!!,
             "Runner",
-            mutableListOf(datasetSaved.id!!))
+            mutableListOf(datasetSaved.id!!),
+            parametersValues = mutableListOf(runTemplateParameterValue1))
+
+    parentRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, parentRunner)
+
+    runner =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            name = "Runner",
+            parentId = parentRunnerSaved.id!!,
+            datasetList = mutableListOf(datasetSaved.id!!),
+            parametersValues = mutableListOf(runTemplateParameterValue2))
 
     runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
   }
@@ -197,7 +215,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should find all Runners and assert there are 2")
     var runnerList =
         runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
-    assertTrue(runnerList.size == 2)
+    assertEquals(3, runnerList.size)
 
     logger.info("should find a Runner by Id and assert it is the one created")
     val runnerRetrieved =
@@ -219,7 +237,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved2.id!!)
     val runnerListAfterDelete =
         runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
-    assertTrue(runnerListAfterDelete.size == 1)
+    assertEquals(2, runnerListAfterDelete.size)
 
     // We create more runner than there can be on one page of default size to assert
     // deleteAllRunners still works with high quantities of runners
@@ -248,22 +266,22 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should find all Runners and assert there are $numberOfRunners")
     var runnerList =
         runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
-    assertEquals(numberOfRunners, runnerList.size)
+    assertEquals(defaultPageSize, runnerList.size)
 
     logger.info("should find all Runners and assert it equals defaultPageSize: $defaultPageSize")
     runnerList = runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, 0, null)
-    assertEquals(runnerList.size, defaultPageSize)
+    assertEquals(defaultPageSize, runnerList.size)
 
     logger.info("should find all Runners and assert there are expected size: $expectedSize")
     runnerList =
         runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, 0, expectedSize)
-    assertEquals(runnerList.size, expectedSize)
+    assertEquals(expectedSize, runnerList.size)
 
     logger.info("should find all Runners and assert it returns the second / last page")
     runnerList =
         runnerApiService.listRunners(
             organizationSaved.id!!, workspaceSaved.id!!, 1, defaultPageSize)
-    assertEquals(numberOfRunners - defaultPageSize, runnerList.size)
+    assertEquals(1, runnerList.size)
   }
 
   @Test
@@ -580,6 +598,60 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test runner creation with unknown runtemplateId`() {
+    val runnerWithWrongRunTemplateId =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            name = "Runner_With_unknown_runtemplate_id",
+            parentId = "unknown_parent_id",
+            runTemplateId = "unknown_runtemplate_id",
+            datasetList = mutableListOf(datasetSaved.id!!),
+            parametersValues = mutableListOf(runTemplateParameterValue2))
+
+    val assertThrows =
+        assertThrows<IllegalArgumentException> {
+          runnerApiService.createRunner(
+              organizationSaved.id!!, workspaceSaved.id!!, runnerWithWrongRunTemplateId)
+        }
+    assertEquals(
+        "Run Template not found: ${runnerWithWrongRunTemplateId.runTemplateId}",
+        assertThrows.message)
+  }
+
+  @Test
+  fun `test runner creation with unknown parentId`() {
+    val parentId = "unknown_parent_id"
+    val runnerWithWrongParentId =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            name = "Runner_With_unknown_parent",
+            parentId = parentId,
+            datasetList = mutableListOf(datasetSaved.id!!),
+            parametersValues = mutableListOf(runTemplateParameterValue2))
+
+    val assertThrows =
+        assertThrows<IllegalArgumentException> {
+          runnerApiService.createRunner(
+              organizationSaved.id!!, workspaceSaved.id!!, runnerWithWrongParentId)
+        }
+    assertTrue(assertThrows.message!!.startsWith("Parent Id $parentId define on"))
+  }
+
+  @Test
+  fun `test inherited parameters values`() {
+    val runnerSavedParametersValues = runnerSaved.parametersValues
+    assertNotNull(runnerSavedParametersValues)
+    assertEquals(2, runnerSavedParametersValues.size)
+    assertEquals(
+        mutableListOf(runTemplateParameterValue2, runTemplateParameterValue1),
+        runnerSavedParametersValues)
+  }
+
+  @Test
   fun `startRun send event and save lastRun info`() {
     val expectedRunId = "run-genid12345"
     every { eventPublisher.publishEvent(any<RunStart>()) } answers
@@ -638,7 +710,14 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         name = "My solution",
         organizationId = organizationId,
         ownerId = "ownerId",
-        runTemplates = mutableListOf(RunTemplate("runTemplateId")),
+        parameterGroups =
+            mutableListOf(
+                RunTemplateParameterGroup(
+                    id = "testParameterGroups", parameters = mutableListOf("param1", "param2"))),
+        runTemplates =
+            mutableListOf(
+                RunTemplate(
+                    id = "runTemplateId", parameterGroups = mutableListOf("testParameterGroups"))),
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
@@ -695,11 +774,13 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
       workspaceId: String = workspaceSaved.id!!,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
-      datasetList: MutableList<String> = mutableListOf<String>(),
+      datasetList: MutableList<String> = mutableListOf(),
       parentId: String? = null,
       userName: String = defaultName,
       role: String = ROLE_USER,
-      validationStatus: RunnerValidationStatus = RunnerValidationStatus.Draft
+      runTemplateId: String = "runTemplateId",
+      validationStatus: RunnerValidationStatus = RunnerValidationStatus.Draft,
+      parametersValues: MutableList<RunnerRunTemplateParameterValue> = mutableListOf()
   ): Runner {
     return Runner(
         id = UUID.randomUUID().toString(),
@@ -707,10 +788,11 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         organizationId = organizationId,
         workspaceId = workspaceId,
         solutionId = solutionId,
-        runTemplateId = "runTemplateId",
+        runTemplateId = runTemplateId,
         ownerId = "ownerId",
         datasetList = datasetList,
         parentId = parentId,
+        parametersValues = parametersValues,
         validationStatus = validationStatus,
         security =
             RunnerSecurity(
