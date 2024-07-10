@@ -226,7 +226,7 @@ class RunnerService(
           throw IllegalArgumentException("Run Template not found: $runTemplateId")
         }
         val inheritedParameterValues =
-            constructParametersValuesFromRunTemplateAndParent(
+            constructParametersValuesFromParent(
                 parentId, solution, runTemplate, parentRunner, this.runner)
         this.runner.parametersValues?.addAll(inheritedParameterValues)
       }
@@ -288,7 +288,7 @@ class RunnerService(
     }
 
     @Suppress("NestedBlockDepth")
-    private fun constructParametersValuesFromRunTemplateAndParent(
+    private fun constructParametersValuesFromParent(
         parentId: String?,
         solution: Solution?,
         runTemplate: RunTemplate?,
@@ -306,16 +306,24 @@ class RunnerService(
                 runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
               }
               ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
+
       if (!runTemplateParametersIds.isNullOrEmpty()) {
-        val parentParameters = parent.parametersValues?.associate { it.parameterId to it }
-        val runnerParameters = runner.parametersValues?.associate { it.parameterId to it }
-        // TODO Handle default value
-        runTemplateParametersIds.forEach { parameterId ->
-          if (runnerParameters?.contains(parameterId) != true) {
-            logger.debug(
-                "Parameter $parameterId is not defined in the Runner. " +
-                    "Checking if it is defined in its parent $parentId")
-            if (parentParameters?.contains(parameterId) == true) {
+        val parentParameters =
+            parent.parametersValues?.associate { it.parameterId to it } ?: mutableMapOf()
+        val runnerParameters =
+            runner.parametersValues?.associate { it.parameterId to it } ?: mutableMapOf()
+
+        // TODO:
+        //  Here parameters values are only retrieved from parent runner
+        //  At the moment default parameters values defined in solution.parameters are not handled
+        //  This behaviour is inherited from previously removed Scenario module (in which it was not
+        // handled too)
+        //  Depending on request and priority, it could be defined in next API versions
+
+        runTemplateParametersIds
+            .filter { !runnerParameters.contains(it) }
+            .filter { parentParameters.contains(it) }
+            .forEach { parameterId ->
               logger.debug("Copying parameter value from parent for parameter $parameterId")
               val parameterValue = parentParameters[parameterId]
               if (parameterValue != null) {
@@ -325,15 +333,7 @@ class RunnerService(
                 logger.warn(
                     "Parameter $parameterId not found in parent ($parentId) parameters values")
               }
-            } else {
-              logger.debug(
-                  "Skipping parameter $parameterId, defined neither in the parent nor in this Runner")
             }
-          } else {
-            logger.debug(
-                "Skipping parameter $parameterId since it is already defined in this Runner")
-          }
-        }
       }
       return parametersValuesList
     }
