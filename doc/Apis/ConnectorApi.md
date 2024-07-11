@@ -6,7 +6,6 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 |------------- | ------------- | -------------|
 | [**findAllConnectors**](ConnectorApi.md#findAllConnectors) | **GET** /connectors | List all Connectors |
 | [**findConnectorById**](ConnectorApi.md#findConnectorById) | **GET** /connectors/{connector_id} | Get the details of a connector |
-| [**findConnectorByName**](ConnectorApi.md#findConnectorByName) | **GET** /connectors/name/{connector_name} | Get the details of a connector |
 | [**registerConnector**](ConnectorApi.md#registerConnector) | **POST** /connectors | Register a new connector |
 | [**unregisterConnector**](ConnectorApi.md#unregisterConnector) | **DELETE** /connectors/{connector_id} | Unregister a connector |
 
@@ -48,31 +47,6 @@ Get the details of a connector
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **connector\_id** | **String**| the Connector identifier | [default to null] |
-
-### Return type
-
-[**Connector**](../Models/Connector.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-<a name="findConnectorByName"></a>
-# **findConnectorByName**
-> Connector findConnectorByName(connector\_name)
-
-Get the details of a connector
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **connector\_name** | **String**| the Connector name | [default to null] |
 
 ### Return type
 

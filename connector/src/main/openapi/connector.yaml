@@ -118,29 +118,6 @@ paths:
           description: Request successful
         "404":
           description: the Connector specified is unknown or you don't have access to it
-  /connectors/name/{connector_name}:
-    parameters:
-      - name: connector_name
-        in: path
-        description: the Connector name
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: findConnectorByName
-      tags:
-        - connector
-      summary: Get the details of a connector
-      responses:
-        "200":
-          description: the Connector details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Connector'
-              examples:
-                ADTConnector:
-                  $ref: '#/components/examples/ADTConnector'
 
 components:
   securitySchemes:
