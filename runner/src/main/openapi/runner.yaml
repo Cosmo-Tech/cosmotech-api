@@ -213,9 +213,10 @@ paths:
         "202":
           description: the Run id started
           content:
-            application/json:
+            text/plain:
               schema:
                 type: string
+                example: r-p75189n1m43k
         "404":
           description: the Runner specified is unknown or you don't have access to it
 
