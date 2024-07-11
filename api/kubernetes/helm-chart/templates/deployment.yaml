@@ -26,7 +26,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        networking/traffic-allowed: "yes"
+        {{- include "cosmotech-api.defaultNetworkPolicy" . | nindent 8 }}
         {{- include "cosmotech-api.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.imageCredentials.registry }}
