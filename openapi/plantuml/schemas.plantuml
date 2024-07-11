@@ -222,13 +222,6 @@ entity RunContainer {
     runSizing: ContainerResourceSizing
 }
 
-entity RunContainerLogs {
-    nodeId: String
-    containerName: String
-    children: List<String>
-    logs: String
-}
-
 entity RunData {
     database_name: String
     table_name: String
@@ -240,8 +233,12 @@ entity RunDataQuery {
 }
 
 entity RunLogs {
-    runId: String
-    containers: Map
+    * runId: String
+    * logs: List<RunLogsEntry>
+}
+
+entity RunLogsEntry {
+    * line: String
 }
 
 entity RunResourceRequested {
@@ -593,6 +590,7 @@ ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
 RunStartContainers -- "0..*" RunContainer : containers
 SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
+RunLogs -- "0..*" RunLogsEntry : logs
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 RunContainer -- ContainerResourceSizing : runSizing

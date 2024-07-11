@@ -163,12 +163,7 @@ csm:
           - text/x-yaml
           - application/json
     loki:
-      # base Url of Loki where to query logs
       baseUrl: http://loki.phoenix.svc.cluster.local:3100
-      # endpoint query of Loki
-      queryPath: /loki/api/v1/query_range
-      # duration in days to query logs
-      queryDaysAgo: 1
     containerRegistry:
       scheme: http
       host: localhost:5000

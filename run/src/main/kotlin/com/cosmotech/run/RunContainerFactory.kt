@@ -26,7 +26,7 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import org.springframework.stereotype.Component
 
-private const val CONTAINER_CSM_ORC = "CSMOrchestrator"
+const val CONTAINER_CSM_ORC = "csmorchestrator"
 internal const val IDENTITY_PROVIDER = "IDENTITY_PROVIDER"
 internal const val IDP_CLIENT_ID = "IDP_CLIENT_ID"
 internal const val IDP_CLIENT_SECRET = "IDP_CLIENT_SECRET"

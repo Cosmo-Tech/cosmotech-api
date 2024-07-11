@@ -688,40 +688,30 @@ components:
         - memory
     RunLogs:
       type: object
-      description: the run logs returned by all containers
+      description: the output logs of a run
       properties:
         runId:
           type: string
           readOnly: true
           description: the Run Id
-        containers:
-          type: object
-          readOnly: true
-          description: the container map of logs
-          additionalProperties:
-            $ref: '#/components/schemas/RunContainerLogs'
-    RunContainerLogs:
-      type: object
-      description: logs for a given container
-      properties:
-        nodeId:
-          type: string
-          readOnly: true
-          description: the node Id which has executed this log
-        containerName:
-          type: string
-          readOnly: true
-          description: the container name
-        children:
+        logs:
           type: array
           readOnly: true
-          description: the list of children node id
+          description: run log entries in chronological order
           items:
-            type: string
-        logs:
+            $ref: "#/components/schemas/RunLogsEntry"
+      required:
+        - runId
+        - logs
+    RunLogsEntry:
+      type: object
+      description: single run log entry
+      properties:
+        line:
           type: string
-          readOnly: true
-          description: the node logs in plain text
+          description: log line data
+      required:
+        - line
     RunDataQuery:
       type: object
       description: a data result query in SQL
@@ -819,17 +809,10 @@ components:
       description: Brewery Run logs with plain text example
       value:
         runId: "1"
-        containers:
-          fetchDatasetContainers:
-            nodeId: azertyuiop-123
-            containerName: azertyuiop
-            children:
-              - wxcvbn
-            logs: cannot read source file
-          runLogs:
-            nodeid: wxcvbn-123
-            containerName: wxcvbn
-            logs: cannot run solution
+        logs:
+          - line: Start run
+          - line: Running brewery simulation...
+          - line: Run done
     BreweryRunStatus:
       summary: Brewery status example
       description: Brewery Runner Run status example

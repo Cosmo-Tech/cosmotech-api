@@ -5,12 +5,13 @@ package com.cosmotech.run.workflow.argo
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.loki.LokiService
+import com.cosmotech.run.CONTAINER_CSM_ORC
 import com.cosmotech.run.ORGANIZATION_ID_LABEL
 import com.cosmotech.run.RUNNER_ID_LABEL
 import com.cosmotech.run.WORKSPACE_ID_LABEL
 import com.cosmotech.run.domain.Run
-import com.cosmotech.run.domain.RunContainerLogs
 import com.cosmotech.run.domain.RunLogs
+import com.cosmotech.run.domain.RunLogsEntry
 import com.cosmotech.run.domain.RunResourceRequested
 import com.cosmotech.run.domain.RunStartContainers
 import com.cosmotech.run.domain.RunState
@@ -31,6 +32,7 @@ import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowList
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStatus
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStopRequest
 import java.security.cert.X509Certificate
+import java.time.Instant
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
 import okhttp3.OkHttpClient
@@ -269,20 +271,23 @@ internal class RunArgoWorkflowService(
   override fun getRunLogs(run: Run): RunLogs {
     val workflowId = run.workflowId
     val workflowName = run.workflowName
-    var containersLogs = mutableMapOf<String, RunContainerLogs>()
+    var containersLogs = listOf<RunLogsEntry>()
     if (workflowId != null && workflowName != null) {
-      val workflow = getActiveWorkflow(workflowId, workflowName)
-      workflow.status?.nodes?.forEach { (nodeKey, nodeValue) ->
-        containersLogs[nodeValue.displayName.toString()] =
-            RunContainerLogs(
-                nodeId = nodeKey,
-                containerName = nodeValue.displayName,
-                children = nodeValue.children,
-                logs =
-                    lokiService.getPodLogs(csmPlatformProperties.argo.workflows.namespace, nodeKey))
-      }
+      getActiveWorkflow(workflowId, workflowName)
+          .status
+          ?.nodes
+          ?.firstNotNullOf { (_, v) -> v.takeIf { it.displayName == CONTAINER_CSM_ORC } }
+          ?.let {
+            containersLogs =
+                lokiService
+                    .getPodLogs(
+                        csmPlatformProperties.argo.workflows.namespace,
+                        it.id,
+                        it.startedAt ?: Instant.now())
+                    .map { RunLogsEntry(line = it) }
+          }
     }
-    return RunLogs(runId = run.id, containers = containersLogs)
+    return RunLogs(runId = run.id, logs = containersLogs)
   }
 
   @Suppress("TooGenericExceptionCaught")

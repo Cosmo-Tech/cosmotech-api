@@ -36,10 +36,10 @@ Models/QueryResult.md
 Models/ResourceSizeInfo.md
 Models/Run.md
 Models/RunContainer.md
-Models/RunContainerLogs.md
 Models/RunData.md
 Models/RunDataQuery.md
 Models/RunLogs.md
+Models/RunLogsEntry.md
 Models/RunResourceRequested.md
 Models/RunSearch.md
 Models/RunSearchState.md

@@ -169,7 +169,7 @@ class ContainerFactoryTests {
             workspace.id!!
 
     return RunContainer(
-        name = "CSMOrchestrator",
+        name = CONTAINER_CSM_ORC,
         image = "twinengines.azurecr.io/" + solution.repository + ":" + solution.version,
         envVars =
             mapOf(
