@@ -165,6 +165,12 @@ If you use another Identity Provider like Okta, you must set the gradle property
 ./gradlew :cosmotech-api:bootRun -PidentityProvider=okta
 ```
 
+If you need to call endpoints that require access to a kubernetes cluster, it will use the current context from your kurnetes local config file.
+If you want to use a different context/cluster without changing your default settings, you may pass the `localKubernetesContext` property to the JVM:
+```shell
+./gradlew :cosmotech-api:bootRun -PjvmArgs=-DlocalKubernetesContext=<MY_CONTEXT>
+```
+
 ## Deploying
 
 This project comes with a set of [Helm](https://helm.sh/) Charts to make it deployable to local or remote Kubernetes clusters.

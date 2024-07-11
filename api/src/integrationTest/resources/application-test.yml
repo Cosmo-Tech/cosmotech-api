@@ -24,7 +24,6 @@ csm:
         clientId: "my_client_id"
         clientSecret: "my_client_secret"
         tenantId: "my_tenant_id"
-    runOutsideKubernetes: true
     metrics:
       enabled: false
     api:
