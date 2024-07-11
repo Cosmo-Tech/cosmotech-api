@@ -76,6 +76,9 @@ service:
   # -- service management port
   managementPort: 8081
 
+networkPolicy:
+  enabled: true
+
 api:
   # A Cosmo Tech Helm Release (e.g., latest, vX) is linked to an API Version;
   # so it must define its own path rules here.
