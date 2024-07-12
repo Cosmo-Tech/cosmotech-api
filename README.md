@@ -117,11 +117,11 @@ gpr.key=[GITHUB_PAT]
 ### Running the build
 
 ```shell
-./gradlew build
+./gradlew build -x test -x integrationTest
 ```
 
 The [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html) script takes 
-care of downloading the Gradle distribution if needed and all dependencies declared in the project.
+care of downloading the Gradle distribution if needed and all dependencies declared in the project. The `-x test -x integrationTest` options are not necessary, they skip the tests, but are helpful if building locally with limited resources.
 
 **Generated items**
 
@@ -145,13 +145,8 @@ cp config/application-dev.sample.yml config/application-dev.yml
 
 Also note that the `azure` Profile is activated by default. As such, the [application-azure.yml](api/src/main/resources/application-azure.yml) file is also read as part of the application configuration.
 
-Now you can run the API Server with :
 
-```shell
-java -jar api/build/libs/cosmotech-api-<VERSION>-uberjar.jar
-```
-
-You can also run the application via the `bootRun` Gradle task, like so:
+You can run the application via the `bootRun` Gradle task, like so:
 
 ```shell
 ./gradlew :cosmotech-api:bootRun
