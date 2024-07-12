@@ -61,6 +61,7 @@ Cosmo Tech Platform API
 | ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
 | ingress.tls | list | `[]` |  |
 | nameOverride | string | `""` | value overriding the name of the Chart. Defaults to the Chart name. Truncated at 63 chars because some Kubernetes name fields are limited to this. |
+| networkPolicy.enabled | bool | `true` |  |
 | nodeSelector | object | `{}` |  |
 | persistence.enabled | bool | `true` | Enable the data storage persistence |
 | persistence.size | string | `"8Gi"` | PVC storage request for the data volume |
