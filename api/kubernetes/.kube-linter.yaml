@@ -15,6 +15,7 @@ checks:
     - "access-to-secrets"
     - "access-to-create-pods"
     - "minimum-three-replicas"
+    - "non-isolated-pod"
 
 ## customChecks defines custom checks.
 #customChecks:
