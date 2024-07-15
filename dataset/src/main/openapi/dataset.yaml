@@ -577,7 +577,7 @@ paths:
             items:
               type: string
       responses:
-        '200':
+        '204':
           description: Successful response
 
   /organizations/{organization_id}/datasets/{dataset_id}/batch:
