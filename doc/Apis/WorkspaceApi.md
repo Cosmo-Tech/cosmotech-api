@@ -135,7 +135,7 @@ null (empty response body)
 
 <a name="deleteWorkspace"></a>
 # **deleteWorkspace**
-> Workspace deleteWorkspace(organization\_id, workspace\_id)
+> deleteWorkspace(organization\_id, workspace\_id)
 
 Delete a workspace
 
@@ -148,7 +148,7 @@ Delete a workspace
 
 ### Return type
 
-[**Workspace**](../Models/Workspace.md)
+null (empty response body)
 
 ### Authorization
 
@@ -157,7 +157,7 @@ Delete a workspace
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
 <a name="deleteWorkspaceFile"></a>
 # **deleteWorkspaceFile**
