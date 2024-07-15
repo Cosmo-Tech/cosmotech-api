@@ -200,7 +200,7 @@ internal class WorkspaceServiceImpl(
     }
   }
 
-  override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
+  override fun deleteWorkspace(organizationId: String, workspaceId: String) {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_DELETE)
 
     try {
@@ -215,8 +215,6 @@ internal class WorkspaceServiceImpl(
         this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, workspaceId))
       }
     }
-
-    return workspace
   }
 
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {

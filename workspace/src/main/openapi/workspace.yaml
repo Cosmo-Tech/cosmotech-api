@@ -162,15 +162,8 @@ paths:
         - workspace
       summary: Delete a workspace
       responses:
-        "200":
+        "204":
           description: the workspace details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workspace'
-              examples:
-                Workspace:
-                  $ref: '#/components/examples/BreweryWorkspace'
         "400":
           description: Bad request
         "404":
