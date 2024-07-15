@@ -30,7 +30,7 @@ Cosmo Tech Platform API
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
 | autoscaling.targetMemoryUtilizationPercentage | int | `80` |  |
 | config.csm.platform.argo.base-uri | string | `"http://argo-server:2746"` |  |
-| config.csm.platform.argo.workflows.access-modes[0] | string | `"ReadWriteMany"` | Any in the following list: ReadWriteOnce, ReadOnlyMany, ReadWriteMany, ReadWriteOncePod (K8s 1.22+). ReadWriteMany is recommended, as we are likely to have parallel pods accessing the volume |
+| config.csm.platform.argo.workflows.access-modes[0] | string | `"ReadWriteOnce"` | Any in the following list: ReadWriteOnce, ReadOnlyMany, ReadWriteMany, ReadWriteOncePod (K8s 1.22+). |
 | config.csm.platform.argo.workflows.requests.storage | string | `"100Gi"` |  |
 | config.csm.platform.argo.workflows.storage-class | string | `nil` | Name of the storage class for Workflows volumes. Useful if you want to use a different storage class managed externally |
 | config.csm.platform.authorization.allowed-tenants | list | `[]` |  |

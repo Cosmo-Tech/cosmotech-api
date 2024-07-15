@@ -172,8 +172,7 @@ config:
           storage-class: null
           access-modes:
             # -- Any in the following list: ReadWriteOnce, ReadOnlyMany, ReadWriteMany, ReadWriteOncePod (K8s 1.22+).
-            # ReadWriteMany is recommended, as we are likely to have parallel pods accessing the volume
-            - ReadWriteMany
+            - ReadWriteOnce
           requests:
             # File storage minimal claim is 100Gi for Premium classes
             storage: 100Gi
