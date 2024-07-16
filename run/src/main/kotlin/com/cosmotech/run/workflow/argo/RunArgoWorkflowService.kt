@@ -33,6 +33,7 @@ import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStatus
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStopRequest
 import java.lang.StringBuilder
 import java.security.cert.X509Certificate
+import java.time.Instant
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
 import okhttp3.OkHttpClient
@@ -330,7 +331,10 @@ internal class RunArgoWorkflowService(
                 containerName = nodeValue.displayName,
                 children = nodeValue.children,
                 logs =
-                    lokiService.getPodLogs(csmPlatformProperties.argo.workflows.namespace, nodeKey))
+                    lokiService.getPodLogs(
+                        csmPlatformProperties.argo.workflows.namespace,
+                        nodeKey,
+                        nodeValue.startedAt ?: Instant.now()))
       }
     }
     return RunLogs(runId = run.id, containers = containersLogs)
