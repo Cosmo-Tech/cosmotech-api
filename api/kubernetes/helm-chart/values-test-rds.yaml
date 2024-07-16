@@ -1,0 +1,134 @@
+api:
+  multiTenant: true
+  servletContextPath: /cosmotech-api
+  version: v3-2
+argo:
+  imageCredentials:
+    password: 
+    registry: acrwarpwarspacerdsdev92il5e.azurecr.io
+    username: acrwarpwarspacerdsdev92il5e
+config:
+  api:
+    serviceMonitor:
+      enabled: true
+      namespace: cosmotech-monitoring
+  csm:
+    platform:
+      argo:
+        base-uri: http://argo-warspace-rds-dev-argo-workflows-server.warspace-rds-dev.svc.cluster.local:2746
+        workflows:
+          namespace: warspace-rds-dev
+          service-account-name: argo-warspace-rds-dev-service-account
+      authorization:
+        allowed-tenants: e413b834-8be8-4822-a370-be619545cb49
+        allowedApiKeyConsumers:
+        - apiKey: ""
+          associatedRole: ""
+          name: ""
+          securedUris: []
+      azure:
+        appIdUri: https://warp.api.cosmotech.com/warspace-rds-dev
+        containerRegistries:
+          solutions: acrwarpwarspacerdsdev92il5e.azurecr.io
+        cosmos: {}
+        credentials:
+          clientId: ef3f81c4-ec85-4e24-a154-8948c6e4896f
+          clientSecret: 
+          customer:
+            clientId: dba109fe-691d-4ac4-b4fb-4b000041296c
+            clientSecret: 
+            tenantId: e413b834-8be8-4822-a370-be619545cb49
+          tenantId: e413b834-8be8-4822-a370-be619545cb49
+        dataWarehouseCluster:
+          options: {}
+        eventBus: {}
+        storage:
+          account-key: 
+          account-name: warpwarspacerdsdev92il5
+      containerRegistry:
+        provider: azure
+        registryPassword: 
+        registryUrl: https://acrwarpwarspacerdsdev92il5e.azurecr.io
+        registryUserName: acrwarpwarspacerdsdev92il5e
+      identityProvider:
+        authorizationUrl: https://login.microsoftonline.com/e413b834-8be8-4822-a370-be619545cb49/oauth2/v2.0/authorize
+        code: azure
+        containerScopes:
+          '[https://warp.api.cosmotech.com/warspace-rds-dev/.default]': warp-warspace-rds-dev
+            scope
+        defaultScopes:
+          '[https://warp.api.cosmotech.com/warspace-rds-dev/platform]': warp-warspace-rds-dev
+            scope
+        tokenUrl: https://login.microsoftonline.com/e413b834-8be8-4822-a370-be619545cb49/oauth2/v2.0/token
+      internalResultServices:
+        enabled: true
+        eventBus:
+          host: rabbitmq-warspace-rds-dev.warspace-rds-dev.svc.cluster.local
+          listener:
+            password: 
+            username: cosmotech_api_listener
+          port: 5672
+          sender:
+            password: 
+            username: cosmotech_run_sender
+        storage:
+          admin:
+            password: 
+            username: cosmotech_api_admin
+          host: postgrescsmv2-warspace-rds-dev-postgresql.warspace-rds-dev.svc.cluster.local
+          port: 5432
+          reader:
+            password: 
+            username: cosmotech_api_reader
+          writer:
+            password: 
+            username: cosmotech_api_writer
+      loki:
+        baseUrl: http://loki.cosmotech-monitoring.svc.cluster.local:3100
+      namespace: warspace-rds-dev
+      twincache:
+        host: cosmotechredis-warspace-rds-dev-master.warspace-rds-dev.svc.cluster.local
+        password: 
+        port: 6379
+        username: default
+  logging:
+    level:
+      com.cosmotech: DEBUG
+      com.redis: WARN
+      org.springframework: WARN
+      web: WARN
+  server:
+    error:
+      include-stacktrace: always
+image:
+  repository: ghcr.io/cosmo-tech/cosmotech-api
+  tag: 3.2.7-test
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod-warspace-rds-dev
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.org/client-max-body-size: "0"
+  enabled: true
+  hosts:
+  - host: warp.api.cosmotech.com
+  # tls:
+  # - hosts:
+  #   - warp.api.cosmotech.com
+  #   secretName: letsencrypt-prod-warspace-rds-dev
+nodeSelector:
+  cosmotech.com/tier: services
+replicaCount: 1
+resources:
+  limits:
+    memory: 2048Mi
+  requests:
+    memory: 1024Mi
+tolerations:
+- effect: NoSchedule
+  key: vendor
+  operator: Equal
+  value: cosmotech
