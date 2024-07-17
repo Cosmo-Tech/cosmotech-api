@@ -18,7 +18,7 @@
 | **tags** | **List** | the list of tags | [optional] [default to null] |
 | **parameters** | [**List**](RunTemplateParameter.md) | the list of Run Template Parameters | [optional] [default to null] |
 | **parameterGroups** | [**List**](RunTemplateParameterGroup.md) | the list of parameters groups for the Run Templates | [optional] [default to null] |
-| **runTemplates** | [**List**](RunTemplate.md) | list of Run Template | [optional] [default to null] |
+| **runTemplates** | [**List**](RunTemplate.md) | list of Run Template | [default to []] |
 | **security** | [**SolutionSecurity**](SolutionSecurity.md) |  | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
