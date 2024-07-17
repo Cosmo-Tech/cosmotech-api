@@ -198,6 +198,24 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test runner creation with null datasetList`() {
+    val runnerWithNullDatasetList =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "RunnerWithNullDatasetList",
+            datasetList = null)
+    val runnerWithNullDatasetListSaved =
+        runnerApiService.createRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, runnerWithNullDatasetList)
+
+    assertNotNull(runnerWithNullDatasetListSaved)
+    assertNotNull(runnerWithNullDatasetListSaved.datasetList)
+    assertEquals(0, runnerWithNullDatasetListSaved.datasetList!!.size)
+  }
+
+  @Test
   fun `test CRUD operations on Runner as Platform Admin`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
@@ -774,7 +792,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
       workspaceId: String = workspaceSaved.id!!,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
-      datasetList: MutableList<String> = mutableListOf(),
+      datasetList: MutableList<String>? = mutableListOf(),
       parentId: String? = null,
       userName: String = defaultName,
       role: String = ROLE_USER,

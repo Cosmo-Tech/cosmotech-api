@@ -845,16 +845,17 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-    @Test
-    fun `test scenario creation with null datasetList`() {
-        val scenarioWithNullDatasetList = makeScenario(datasetList = null)
-        val scenarioWithNullDatasetListSaved =
-            scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenarioWithNullDatasetList)
+  @Test
+  fun `test scenario creation with null datasetList`() {
+    val scenarioWithNullDatasetList = makeScenario(datasetList = null)
+    val scenarioWithNullDatasetListSaved =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioWithNullDatasetList)
 
-        assertNotNull (scenarioWithNullDatasetListSaved)
-        assertNotNull(scenarioWithNullDatasetListSaved.datasetList)
-        assertEquals(0, scenarioWithNullDatasetListSaved.datasetList!!.size)
-    }
+    assertNotNull(scenarioWithNullDatasetListSaved)
+    assertNotNull(scenarioWithNullDatasetListSaved.datasetList)
+    assertEquals(0, scenarioWithNullDatasetListSaved.datasetList!!.size)
+  }
 
   @Test
   fun `when workspace datasetCopy is false, linked datasets should not be deleted`() {
