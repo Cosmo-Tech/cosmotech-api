@@ -34,6 +34,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -380,6 +381,48 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test create solution with null runTemplates`() {
+
+    val solutionWithNullRunTemplates = makeSolution(organizationSaved.id!!, runTemplates = null)
+    val solutionWithNullRunTemplatesSaved =
+        solutionApiService.createSolution(organizationSaved.id!!, solutionWithNullRunTemplates)
+
+    assertNotNull(solutionWithNullRunTemplatesSaved)
+    assertNotNull(solutionWithNullRunTemplatesSaved.runTemplates)
+    assertEquals(0, solutionWithNullRunTemplatesSaved.runTemplates!!.size)
+  }
+
+  @Test
+  fun `test create solution with empty runTemplates list`() {
+
+    val solutionWithNullRunTemplates =
+        makeSolution(organizationSaved.id!!, runTemplates = mutableListOf())
+    val solutionWithNullRunTemplatesSaved =
+        solutionApiService.createSolution(organizationSaved.id!!, solutionWithNullRunTemplates)
+
+    assertNotNull(solutionWithNullRunTemplatesSaved)
+    assertNotNull(solutionWithNullRunTemplatesSaved.runTemplates)
+    assertEquals(0, solutionWithNullRunTemplatesSaved.runTemplates!!.size)
+  }
+
+  @Test
+  fun `test update solution RunTemplate with wrong runTemplateId`() {
+
+    val baseSolution = makeSolution(organizationSaved.id!!)
+    val baseSolutionSaved = solutionApiService.createSolution(organizationSaved.id!!, baseSolution)
+
+    val assertThrows =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.updateSolutionRunTemplate(
+              organizationSaved.id!!,
+              baseSolutionSaved.id!!,
+              "WrongRunTemplateId",
+              RunTemplate(id = "FakeRunTemplateId"))
+        }
+    assertEquals("Run Template 'WrongRunTemplateId' *not* found", assertThrows.message)
+  }
+
+  @Test
   fun `test get security endpoint`() {
     // should return the current security
     val solutionSecurity =
@@ -447,6 +490,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
   fun makeSolution(
       organizationId: String = organizationSaved.id!!,
+      runTemplates: MutableList<RunTemplate>? = mutableListOf()
   ): Solution {
     return Solution(
         id = "solutionId",
@@ -454,6 +498,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         name = "My solution",
         organizationId = organizationId,
         ownerId = "ownerId",
+        runTemplates = runTemplates,
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
