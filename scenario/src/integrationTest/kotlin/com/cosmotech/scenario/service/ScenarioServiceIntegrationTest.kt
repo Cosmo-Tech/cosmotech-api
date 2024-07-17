@@ -845,6 +845,17 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+    @Test
+    fun `test scenario creation with null datasetList`() {
+        val scenarioWithNullDatasetList = makeScenario(datasetList = null)
+        val scenarioWithNullDatasetListSaved =
+            scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenarioWithNullDatasetList)
+
+        assertNotNull (scenarioWithNullDatasetListSaved)
+        assertNotNull(scenarioWithNullDatasetListSaved.datasetList)
+        assertEquals(0, scenarioWithNullDatasetListSaved.datasetList!!.size)
+    }
+
   @Test
   fun `when workspace datasetCopy is false, linked datasets should not be deleted`() {
     workspace =
@@ -1032,7 +1043,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       workspaceId: String = workspaceSaved.id!!,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
-      datasetList: MutableList<String> = mutableListOf<String>(),
+      datasetList: MutableList<String>? = mutableListOf(),
       parentId: String? = null,
       userName: String = "roleName",
       role: String = ROLE_USER,
