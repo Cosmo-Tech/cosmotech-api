@@ -1,0 +1,137 @@
+api:
+  multiTenant: false
+  servletContextPath: /cosmotech-api
+  version: v2-4
+argo:
+  imageCredentials:
+    password: 
+    registry: acrwarspacephoenixdevpl0s7e.azurecr.io
+    username: acrwarspacephoenixdevpl0s7e
+config:
+  api:
+    serviceMonitor:
+      enabled: true
+      namespace: cosmotech-monitoring
+  csm:
+    platform:
+      argo:
+        base-uri: http://argo-phoenix-adx-dev-argo-workflows-server.phoenix-adx-dev.svc.cluster.local:2746
+        workflows:
+          namespace: phoenix-adx-dev
+          service-account-name: argo-phoenix-adx-dev-service-account
+      authorization:
+        allowed-tenants: e413b834-8be8-4822-a370-be619545cb49
+        allowedApiKeyConsumers:
+        - apiKey: ""
+          associatedRole: ""
+          name: ""
+          securedUris: []
+      azure:
+        appIdUri: https://warp.api.cosmotech.com/phoenix-adx-dev
+        containerRegistries:
+          solutions: acrwarspacephoenixdevpl0s7e.azurecr.io
+        cosmos:
+          key: null
+          uri: null
+        credentials:
+          clientId: 
+          clientSecret: 
+          customer:
+            clientId: 0b5bc10e-7cd2-4899-8df5-51019e89b978
+            clientSecret: 
+            tenantId: e413b834-8be8-4822-a370-be619545cb49
+          tenantId: e413b834-8be8-4822-a370-be619545cb49
+        dataWarehouseCluster:
+          baseUri: https://kustowarspacephoenixd.westeurope.kusto.windows.net
+          options:
+            ingestionUri: https://ingest-kustowarspacephoenixd.westeurope.kusto.windows.net
+        eventBus:
+          baseUri: amqps://evname-warspacephoenixdev.servicebus.windows.net
+        storage:
+          account-key: 
+          account-name: warspacephoenixdevpl0s7
+      containerRegistry:
+        provider: azure
+        registryPassword: 
+        registryUrl: https://acrwarspacephoenixdevpl0s7e.azurecr.io
+        registryUserName: acrwarspacephoenixdevpl0s7e
+      identityProvider:
+        authorizationUrl: https://login.microsoftonline.com/e413b834-8be8-4822-a370-be619545cb49/oauth2/v2.0/authorize
+        code: azure
+        containerScopes:
+          '[https://warp.api.cosmotech.com/phoenix-adx-dev/.default]': warspace-dev scope
+        defaultScopes:
+          '[https://warp.api.cosmotech.com/phoenix-adx-dev/platform]': warspace-dev scope
+        tokenUrl: https://login.microsoftonline.com/e413b834-8be8-4822-a370-be619545cb49/oauth2/v2.0/token
+      internalResultServices:
+        enabled: false
+        eventBus:
+          host: .phoenix-adx-dev.svc.cluster.local
+          listener:
+            password: null
+            username: null
+          port: 5672
+          sender:
+            password: null
+            username: null
+        storage:
+          admin:
+            password: 
+            username: cosmotech_api_admin
+          host: postgrescsmv2-phoenix-adx-dev-postgresql.phoenix-adx-dev.svc.cluster.local
+          port: 5432
+          reader:
+            password: 
+            username: cosmotech_api_reader
+          writer:
+            password: 
+            username: cosmotech_api_writer
+      loki:
+        baseUrl: http://loki.cosmotech-monitoring.svc.cluster.local:3100
+      namespace: phoenix-adx-dev
+      twincache:
+        host: cosmotechredis-phoenix-adx-dev-master.phoenix-adx-dev.svc.cluster.local
+        password: 
+        port: 6379
+        username: default
+  logging:
+    level:
+      com.cosmotech: DEBUG
+      com.redis: WARN
+      org.springframework: WARN
+      web: WARN
+  server:
+    error:
+      include-stacktrace: always
+image:
+  repository: ghcr.io/cosmo-tech/cosmotech-api
+  tag: 2.4.13-test
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod-warspace-dev
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.org/client-max-body-size: "0"
+  enabled: true
+  hosts:
+  - host: warp.api.cosmotech.com
+  # tls:
+  # - hosts:
+  #   - warp.api.cosmotech.com
+  #   secretName: letsencrypt-prod-warspace-dev
+nodeSelector:
+  cosmotech.com/tier: services
+replicaCount: 1
+resources:
+  limits:
+    memory: 2048Mi
+  requests:
+    memory: 1024Mi
+tolerations:
+- effect: NoSchedule
+  key: vendor
+  operator: Equal
+  value: cosmotech
