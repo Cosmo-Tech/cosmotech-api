@@ -149,6 +149,7 @@ class RunnerService(
           Runner(
               id = idGenerator.generate("runner"),
               ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+              datasetList = mutableListOf(),
               organizationId = organization!!.id,
               workspaceId = workspace!!.id,
               creationDate = now,
@@ -171,7 +172,7 @@ class RunnerService(
           runner.runTemplateId!!))
           throw IllegalArgumentException("Run Template not found: ${runner.runTemplateId}")
 
-      val beforeMutateDatasetList = this.runner.datasetList
+      val beforeMutateDatasetList = this.runner.datasetList ?: mutableListOf()
 
       val excludeFields =
           arrayOf("id", "ownerId", "organizationId", "workspaceId", "creationDate", "security")
@@ -179,7 +180,7 @@ class RunnerService(
 
       // take newly added datasets and propagate existing ACL on it
       this.runner.datasetList
-          ?.filterNot { beforeMutateDatasetList?.contains(it) ?: false }
+          ?.filterNot { beforeMutateDatasetList.contains(it) }
           ?.forEach { newDatasetId ->
             this.runner.security?.accessControlList?.forEach {
               this.propagateAccessControlToDataset(newDatasetId, it.id, it.role)
