@@ -793,6 +793,7 @@ components:
             $ref: '#/components/schemas/RunTemplateParameterGroup'
         runTemplates:
           type: array
+          default: []
           description: list of Run Template
           items:
             $ref: '#/components/schemas/RunTemplate'
@@ -800,7 +801,8 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
             - $ref: '#/components/schemas/SolutionSecurity'
-  #       required:
+      required:
+        - runTemplates
   #         - key
   #         - name
   #         - repository

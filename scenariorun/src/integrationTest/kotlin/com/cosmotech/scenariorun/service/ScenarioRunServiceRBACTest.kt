@@ -175,7 +175,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -259,7 +259,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id!!,
                           workspaceSaved.id!!,
                           solutionSaved.id!!,
-                          solutionSaved.runTemplates!!.first().id,
+                          solutionSaved.runTemplates.first().id,
                           mutableListOf(datasetSaved.id!!),
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN)
@@ -334,7 +334,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -409,7 +409,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -481,7 +481,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -562,7 +562,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -637,7 +637,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -712,7 +712,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -784,7 +784,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -859,7 +859,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
@@ -940,7 +940,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1017,7 +1017,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1101,7 +1101,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1177,7 +1177,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1253,7 +1253,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1326,7 +1326,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1402,7 +1402,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
@@ -1478,7 +1478,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1554,7 +1554,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1630,7 +1630,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1703,7 +1703,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1779,7 +1779,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
@@ -1861,7 +1861,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -1937,7 +1937,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2013,7 +2013,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2086,7 +2086,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2162,7 +2162,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
@@ -2238,7 +2238,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2314,7 +2314,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2390,7 +2390,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2463,7 +2463,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2539,7 +2539,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
@@ -2615,7 +2615,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2691,7 +2691,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2767,7 +2767,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2840,7 +2840,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -2916,7 +2916,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
@@ -2992,7 +2992,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3067,7 +3067,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3142,7 +3142,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3214,7 +3214,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3289,7 +3289,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3368,7 +3368,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3447,7 +3447,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3523,7 +3523,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3602,7 +3602,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
@@ -3681,7 +3681,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3756,7 +3756,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3831,7 +3831,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3903,7 +3903,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -3978,7 +3978,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
@@ -4059,7 +4059,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -4135,7 +4135,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -4211,7 +4211,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -4284,7 +4284,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
@@ -4360,7 +4360,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id!!,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
-                      solutionSaved.runTemplates!!.first().id,
+                      solutionSaved.runTemplates.first().id,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)

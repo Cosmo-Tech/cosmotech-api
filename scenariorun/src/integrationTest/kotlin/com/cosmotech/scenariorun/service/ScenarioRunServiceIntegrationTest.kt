@@ -156,7 +156,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id!!,
             workspaceSaved.id!!,
             solutionSaved.id!!,
-            solutionSaved.runTemplates?.get(0)?.id!!,
+            solutionSaved.runTemplates[0].id,
             "Scenario",
             mutableListOf(datasetSaved.id!!))
     every { datasetApiService.findDatasetById(any(), any()) } returns
@@ -375,7 +375,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
       organizationId: String = organizationSaved.id!!,
       workspaceId: String = workspaceSaved.id!!,
       solutionId: String = solutionSaved.id!!,
-      runTemplateId: String = solutionSaved.runTemplates?.get(0)?.id!!,
+      runTemplateId: String = solutionSaved.runTemplates[0].id,
       name: String = "scenario",
       datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
   ): Scenario {

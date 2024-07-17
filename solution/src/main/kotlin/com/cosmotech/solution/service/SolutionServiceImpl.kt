@@ -105,7 +105,7 @@ class SolutionServiceImpl(
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
 
-    if (!solution.runTemplates.isNullOrEmpty()) {
+    if (solution.runTemplates.isNotEmpty()) {
       solution.runTemplates = mutableListOf()
       solutionRepository.save(solution)
     }
@@ -137,7 +137,7 @@ class SolutionServiceImpl(
   ): Boolean {
     val solution = findSolutionById(organizationId, solutionId)
 
-    return solution.runTemplates?.any { runTemplateId == it.id } ?: false
+    return solution.runTemplates.any { runTemplateId == it.id }
   }
 
   override fun addOrReplaceParameterGroups(
@@ -193,8 +193,7 @@ class SolutionServiceImpl(
       return runTemplate
     }
 
-    val runTemplateMap =
-        existingSolution.runTemplates?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+    val runTemplateMap = existingSolution.runTemplates.associateBy { it.id }.toMutableMap()
     runTemplateMap.putAll(runTemplate.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.runTemplates = runTemplateMap.values.toMutableList()
     solutionRepository.save(existingSolution)
@@ -240,7 +239,7 @@ class SolutionServiceImpl(
   ) {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
 
-    if (existingSolution.runTemplates?.removeIf { it.id == runTemplateId } == false) {
+    if (!existingSolution.runTemplates.removeIf { it.id == runTemplateId }) {
       throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
     }
     solutionRepository.save(existingSolution)
@@ -294,13 +293,13 @@ class SolutionServiceImpl(
   ): List<RunTemplate> {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     val runTemplateToChange =
-        existingSolution.runTemplates?.firstOrNull { it.id == runTemplateId }
+        existingSolution.runTemplates.firstOrNull { it.id == runTemplateId }
             ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
 
     runTemplateToChange.compareToAndMutateIfNeeded(runTemplate).isNotEmpty()
     solutionRepository.save(existingSolution)
 
-    return existingSolution.runTemplates!!.toList()
+    return existingSolution.runTemplates.toList()
   }
 
   @EventListener(OrganizationUnregistered::class)

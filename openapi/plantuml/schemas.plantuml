@@ -709,7 +709,7 @@ entity Solution {
     tags: List<String>
     parameters: List<RunTemplateParameter>
     parameterGroups: List<RunTemplateParameterGroup>
-    runTemplates: List<RunTemplate>
+    * runTemplates: List<RunTemplate>
     security: SolutionSecurity
 }
 
