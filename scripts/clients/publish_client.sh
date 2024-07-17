@@ -1,7 +1,7 @@
 #!/bin/bash
 
 display_usage() {
-  usage="./$(basename "$0") {javascript,typescript,python,java,csharp} USER RELEASE_NOTE [GIT_TOKEN]"
+  usage="./$(basename "$0") {typescript,python} USER RELEASE_NOTE [GIT_TOKEN]"
   echo "== Cosmo Tech client library publish script =="
   echo "USAGE:"
   echo "$usage"
@@ -11,7 +11,7 @@ display_usage() {
 
 if [ -z "$1" ]
 then
-  echo "You must provide a client name: javascript, typescript, python, java, csharp"
+  echo "You must provide a client name: typescript, python"
   display_usage
   exit 1
 fi

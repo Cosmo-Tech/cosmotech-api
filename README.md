@@ -27,11 +27,11 @@ It is written in [Kotlin](https://kotlinlang.org/), makes use of the [Spring Boo
 In this version, several functionnalities were added:
 - RBAC/ACL functionnality: the possibility to manage rights/permissions for users on Organization/Workspace/Scenario
 - TwinCache functionnality: the possibility to cache input dataset in a cache solution
-- fine grade customization : 
+- fine grade customization :
   - Image pull policy
   - claim used for users email and users roles
   - data ingestion (ADX) timeout
-  
+
 You can find the parameters to set in configuration:
 
 ```
@@ -69,14 +69,9 @@ This API is continuously deployed at the following URLs, so you can easily explo
 
 ## Client Libraries
 
-[![JavaScript](https://img.shields.io/badge/JavaScript-cosmotech--api--javascript--client-yellowgreen)](https://github.com/Cosmo-Tech/cosmotech-api-javascript-client)
 [![TypeScript](https://img.shields.io/badge/TypeScript-cosmotech--api--typescript--client-brightgreen)](https://github.com/Cosmo-Tech/cosmotech-api-typescript-client)
 
-[![Java](https://img.shields.io/badge/Java-cosmotech--api--java--client-blue)](https://github.com/Cosmo-Tech/cosmotech-api-java-client)
-
 [![Python](https://img.shields.io/badge/Python-cosmotech--api--python--client-orange)](https://github.com/Cosmo-Tech/cosmotech-api-python-client)
-
-[![C#](https://img.shields.io/badge/C%23-cosmotech--api--csharp--client-lightgrey)](https://github.com/Cosmo-Tech/cosmotech-api-csharp-client)
 
 Note that the repositories for all these client libraries are automatically updated and kept in sync, if there is any change in the OpenAPI definition files (in the `main` branch of this repo).
 
@@ -120,7 +115,7 @@ gpr.key=[GITHUB_PAT]
 ./gradlew build -x test -x integrationTest
 ```
 
-The [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html) script takes 
+The [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html) script takes
 care of downloading the Gradle distribution if needed and all dependencies declared in the project. The `-x test -x integrationTest` options are not necessary, they skip the tests, but are helpful if building locally with limited resources.
 
 **Generated items**
@@ -215,7 +210,7 @@ The following optional environment variables can be set to alter this script beh
 - ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server
 - NGINX_INGRESS_CONTROLLER_ENABLED | boolean (default is false) | indicating whether an NGINX Ingress Controller should be deployed and an Ingress resource created too
 - NGINX_INGRESS_CONTROLLER_REPLICA_COUNT | int (default is 1) | number of pods for the NGINX Ingress Controller
-- NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP | IP Address String | optional public IP Address to use as LoadBalancer IP. You can create one with this Azure CLI command: az network public-ip create --resource-group <my-rg>> --name <a-name> --sku Standard --allocation-method static --query publicIp.ipAddress -o tsv 
+- NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP | IP Address String | optional public IP Address to use as LoadBalancer IP. You can create one with this Azure CLI command: az network public-ip create --resource-group <my-rg>> --name <a-name> --sku Standard --allocation-method static --query publicIp.ipAddress -o tsv
 - NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS | Additional Helm options for the NGINX Ingress Controller | Additional options to pass to Helm when creating the Ingress Controller, e.g.: --set controller.service.annotations."service.beta.kubernetes.io/azure-load-balancer-resource-group"=my-azure-resource-group
 - CERT_MANAGER_ENABLED  | boolean (default is false). Deprecated - use TLS_CERTIFICATE_TYPE instead | indicating whether cert-manager should be deployed. It is in charge of requesting and managing renewal of Let's Encrypt certificates
 - CERT_MANAGER_INSTALL_WAIT_TIMEOUT | string (default is 3m) | how much time to wait for the cert-manager Helm Chart to be successfully deployed
@@ -253,7 +248,7 @@ See the dedicated [README](api/kubernetes/helm-chart/README.md) for more details
 * Spawn a local cluster. Skip if you already have configured a local cluster.
 
 Otherwise, you may want to leverage the [scripts/kubernetes/create-local-k8s-cluster.sh](scripts/kubernetes/create-local-k8s-cluster.sh) script,
-  which provisions a local [Kind](https://kind.sigs.k8s.io/) cluster, along with a private local container 
+  which provisions a local [Kind](https://kind.sigs.k8s.io/) cluster, along with a private local container
 registry and an [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/).
 
 To use it, simply [install Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation), and run the script, like so (`<cluster_name>` is optional and defaults to `local-k8s-cluster`):
@@ -262,7 +257,7 @@ To use it, simply [install Kind](https://kind.sigs.k8s.io/docs/user/quick-start/
 /bin/sh -c scripts/kubernetes/create-local-k8s-cluster.sh [<cluster_name>]
 ```
 This creates a Kubernetes context named `kind-<cluster_name>`.
-  
+
 * Build and push the container image to the local registry, e.g.:
 
 ```shell
@@ -290,8 +285,8 @@ This uses the default [values-dev.yaml](api/kubernetes/helm-chart/values-dev.yam
 **Usage**
 
 ```
-❯ ./api/kubernetes/deploy_via_helm-dev.sh --help                                                                                         
-                                             
+❯ ./api/kubernetes/deploy_via_helm-dev.sh --help
+
 This script takes at least 3 parameters.
 
 The following optional environment variables can be set to alter this script behavior:
@@ -312,7 +307,7 @@ We leverage the following tools to enforce code formatting and for code static a
 - [Detekt](https://detekt.github.io/detekt/)
 - [KubeLinter](https://github.com/stackrox/kube-linter) and [helm lint](https://helm.sh/docs/helm/helm_lint/)
 
-These checks are automatically enforced as part of the continuous integration runs on GitHub.  
+These checks are automatically enforced as part of the continuous integration runs on GitHub.
 
 ### Coding Style
 
@@ -324,10 +319,10 @@ You can reformat your changes at any time using the `spotlessApply` Gradle task,
 ./gradlew spotlessApply
 ```
 
-Under the hood, this leverages [ktfmt](https://github.com/facebookincubator/ktfmt) for Kotlin code 
+Under the hood, this leverages [ktfmt](https://github.com/facebookincubator/ktfmt) for Kotlin code
 and [google-java-format](https://github.com/google/google-java-format) for Java code.
 
-This makes an attempt to reformat the code to meet the style requirements. 
+This makes an attempt to reformat the code to meet the style requirements.
 So make sure to push any resulting changes.
 
 To check that your changes comply with the coding style, run:
@@ -337,7 +332,7 @@ To check that your changes comply with the coding style, run:
 
 ### Static Code Analysis
 
-[Detekt](https://detekt.github.io/detekt/) helps identify code smells in Kotlin code. 
+[Detekt](https://detekt.github.io/detekt/) helps identify code smells in Kotlin code.
 And [KubeLinter](https://github.com/stackrox/kube-linter) does the same in Kubernetes YAML resources and Helm Charts.
 Container images built are also scanned for common vulnerabilities (CVEs) and best practices violations, using the [Container Scan Action](https://github.com/Azure/container-scan).
 
@@ -350,7 +345,7 @@ To run a local analysis with Detekt, simply run the `detekt` Gradle task:
 ./gradlew detekt
 ```
 
-You will then find the reports for the different sub-projects in the `build/reports/detekt` folder, under different formats: Plain text, HTML, and [SARIF](https://sarifweb.azurewebsites.net/). 
+You will then find the reports for the different sub-projects in the `build/reports/detekt` folder, under different formats: Plain text, HTML, and [SARIF](https://sarifweb.azurewebsites.net/).
 
 #### KubeLinter
 
