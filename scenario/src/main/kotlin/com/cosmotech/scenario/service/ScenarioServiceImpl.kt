@@ -152,7 +152,7 @@ internal class ScenarioServiceImpl(
       throw IllegalArgumentException("Run Template not found: ${scenario.runTemplateId}")
     }
 
-    var datasetList = scenario.datasetList
+    var datasetList = scenario.datasetList ?: mutableListOf()
     val parentId = scenario.parentId
     var rootId: String? = null
     val newParametersValuesList = scenario.parametersValues?.toMutableList() ?: mutableListOf()
@@ -160,7 +160,7 @@ internal class ScenarioServiceImpl(
     if (parentId != null) {
       logger.debug("Applying / Overwriting Dataset list from parent $parentId")
       val parent = getVerifiedScenario(organizationId, workspaceId, parentId)
-      datasetList = parent.datasetList
+      datasetList = parent.datasetList ?: mutableListOf()
       rootId = parent.rootId
       if (rootId == null) {
         rootId = parentId
@@ -187,7 +187,7 @@ internal class ScenarioServiceImpl(
     if (workspace.datasetCopy == true) {
       datasetList =
           datasetList
-              ?.map {
+              .map {
                 val dataset = datasetService.findDatasetById(organizationId, it)
                 when {
                   dataset.twingraphId == null -> it
@@ -202,7 +202,7 @@ internal class ScenarioServiceImpl(
                   else -> throw CsmClientException("Dataset ${dataset.id} is not ready")
                 }
               }
-              ?.toMutableList()
+              .toMutableList()
     }
 
     val now = Instant.now().toEpochMilli()
