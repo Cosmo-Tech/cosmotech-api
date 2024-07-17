@@ -19,18 +19,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - language: java
-            gradle_task: generateJavaClient
-            repo: cosmotech-api-java-client
-          - language: javascript
-            gradle_task: generateJSClient
-            repo: cosmotech-api-javascript-client
           - language: python
             gradle_task: generatePythonClient
             repo: cosmotech-api-python-client
-          - language: csharp
-            gradle_task: generateCSharpClient
-            repo: cosmotech-api-csharp-client
           - language: typescript
             gradle_task: generateTypescriptClient
             repo: cosmotech-api-typescript-client

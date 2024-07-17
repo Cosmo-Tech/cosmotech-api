@@ -114,33 +114,6 @@ tasks.getByName<OpenApiMergerTask>("mergeOpenApiFiles") {
   outputFileProperty.set(file("$rootDir/openapi/openapi.yaml"))
 }
 
-tasks.register<GenerateTask>("openApiJSGenerate") {
-  dependsOn("mergeOpenApiFiles")
-  inputSpec.set("${rootDir}/openapi/openapi.yaml")
-  outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/javascript")
-  generatorName.set("javascript")
-  additionalProperties.set(
-      mapOf(
-          "projectName" to "@cosmotech/api",
-          "projectDescription" to "Cosmo Tech Platform API client",
-          "moduleName" to "CosmotechApi",
-          "usePromises" to "true"))
-}
-
-tasks.register<Copy>("copyJSGitPushScript") {
-  dependsOn("openApiJSGenerate")
-  from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("${layout.buildDirectory.get()}/generated-sources/openapi/javascript/scripts")
-}
-
-tasks.register<Copy>("copyJSLicense") {
-  dependsOn("openApiJSGenerate")
-  from("${rootDir}/scripts/clients/build_override/LICENSE")
-  into("${layout.buildDirectory.get()}/generated-sources/openapi/javascript")
-}
-
-tasks.register("generateJSClient") { dependsOn("copyJSGitPushScript", "copyJSLicense") }
-
 tasks.register<GenerateTask>("openApiTypescriptGenerate") {
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
@@ -194,68 +167,6 @@ tasks.register<Copy>("copyPythonLicense") {
 
 tasks.register("generatePythonClient") { dependsOn("copyPythonGitPushScript", "copyPythonLicense") }
 
-tasks.register<GenerateTask>("openApiJavaGenerate") {
-  dependsOn("mergeOpenApiFiles")
-  inputSpec.set("${rootDir}/openapi/openapi.yaml")
-  outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/java")
-  generatorName.set("java")
-  additionalProperties.set(
-      mapOf(
-          "apiPackage" to "com.cosmotech.client.api",
-          "artifactDescription" to "Cosmo Tech API Java Client",
-          "artifactId" to "cosmotech-api-java-client",
-          "artifactUrl" to "https://github.com/Cosmo-Tech/cosmotech-api-java-client",
-          "developerEmail" to "team.engineering@cosmotech.com",
-          "developerName" to "Cosmo Tech",
-          "developerOrganization" to "Cosmo Tech",
-          "developerOrganizationUrl" to "https://cosmotech.com/",
-          "groupId" to "com.cosmotech",
-          "invokerPackage" to "com.cosmotech.client",
-          "licenseName" to "MIT",
-          "licenseUrl" to
-              "https://github.com/Cosmo-Tech/cosmotech-api-java-client/blob/master/LICENSE",
-          "modelPackage" to "com.cosmotech.client.model",
-          "scmConnection" to "scm:git:git@github.com:Cosmo-Tech/cosmotech-api-java-client",
-          "scmDeveloperConnection" to "scm:git:git@github.com:Cosmo-Tech/cosmotech-api-java-client",
-          "scmUrl" to "https://github.com/Cosmo-Tech/cosmotech-api-java-client"))
-}
-
-tasks.register<Copy>("copyJavaGitPushScript") {
-  dependsOn("openApiJavaGenerate")
-  from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("${layout.buildDirectory.get()}/generated-sources/openapi/java/scripts")
-}
-
-tasks.register<Copy>("copyJavaLicense") {
-  dependsOn("openApiJavaGenerate")
-  from("${rootDir}/scripts/clients/build_override/LICENSE")
-  into("${layout.buildDirectory.get()}/generated-sources/openapi/java")
-}
-
-tasks.register("generateJavaClient") { dependsOn("copyJavaGitPushScript", "copyJavaLicense") }
-
-tasks.register<GenerateTask>("openApiCSharpGenerate") {
-  dependsOn("mergeOpenApiFiles")
-  inputSpec.set("${rootDir}/openapi/openapi.yaml")
-  outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/csharp")
-  generatorName.set("csharp")
-  additionalProperties.set(mapOf("packageName" to "Com.Cosmotech"))
-}
-
-tasks.register<Copy>("copyCSharpGitPushScript") {
-  dependsOn("openApiCSharpGenerate")
-  from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("${layout.buildDirectory.get()}/generated-sources/openapi/csharp/scripts")
-}
-
-tasks.register<Copy>("copyCSharpLicense") {
-  dependsOn("openApiCSharpGenerate")
-  from("${rootDir}/scripts/clients/build_override/LICENSE")
-  into("${layout.buildDirectory.get()}/generated-sources/openapi/csharp")
-}
-
-tasks.register("generateCSharpClient") { dependsOn("copyCSharpGitPushScript", "copyCSharpLicense") }
-
 tasks.register<GenerateTask>("openApiUmlGenerate") {
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
@@ -280,10 +191,7 @@ tasks.getByName<ValidateTask>("openApiValidate") {
 tasks.register("generateClients") {
   dependsOn(
       "generateTypescriptClient",
-      "generateJSClient",
       "generatePythonClient",
-      "generateJavaClient",
-      "generateCSharpClient",
       "openApiUmlGenerate",
       "openApiMarkdownGenerate")
 }
