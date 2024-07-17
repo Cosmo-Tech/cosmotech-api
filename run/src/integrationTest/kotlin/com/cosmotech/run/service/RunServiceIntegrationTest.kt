@@ -156,7 +156,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
             organizationSaved.id!!,
             workspaceSaved.id!!,
             solutionSaved.id!!,
-            solutionSaved.runTemplates?.get(0)?.id!!,
+            solutionSaved.runTemplates[0].id,
             "Runner",
             mutableListOf(datasetSaved.id!!))
 
@@ -257,7 +257,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
       organizationId: String = organizationSaved.id!!,
       workspaceId: String = workspaceSaved.id!!,
       solutionId: String = solutionSaved.id!!,
-      runTemplateId: String = solutionSaved.runTemplates?.get(0)?.id!!,
+      runTemplateId: String = solutionSaved.runTemplates[0].id,
       name: String = "runner",
       datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
   ): Runner {
