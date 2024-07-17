@@ -211,7 +211,8 @@ class SolutionServiceImpl(
             id = idGenerator.generate("solution", prependPrefix = "sol-"),
             organizationId = organizationId,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            security = solutionSecurity))
+            security = solutionSecurity,
+            runTemplates = solution.runTemplates ?: mutableListOf()))
   }
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
@@ -281,7 +282,7 @@ class SolutionServiceImpl(
   ): List<RunTemplate> {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     val runTemplateToChange =
-        existingSolution.runTemplates?.first { it.id == runTemplateId }
+        existingSolution.runTemplates?.firstOrNull { it.id == runTemplateId }
             ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
 
     runTemplateToChange.compareToAndMutateIfNeeded(runTemplate).isNotEmpty()
