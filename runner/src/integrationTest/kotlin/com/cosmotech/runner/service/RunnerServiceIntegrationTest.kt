@@ -670,6 +670,77 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test inherited parameters values with null parameterValues on parent runner`() {
+
+    val parentRunnerWithoutParameters =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "ParentRunnerWithParameters",
+            mutableListOf(datasetSaved.id!!),
+            parametersValues = null)
+
+    val parentRunnerWithoutParametersSaved =
+        runnerApiService.createRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, parentRunnerWithoutParameters)
+
+    val runnerWithoutParameters =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            name = "RunnerWithoutParameters",
+            parentId = parentRunnerWithoutParametersSaved.id!!,
+            datasetList = mutableListOf(datasetSaved.id!!),
+            parametersValues = null)
+
+    val runnerWithoutParametersSaved =
+        runnerApiService.createRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, runnerWithoutParameters)
+
+    val runnerWithoutParametersSavedParameters = runnerWithoutParametersSaved.parametersValues
+    assertNotNull(runnerWithoutParametersSavedParameters)
+    assertEquals(mutableListOf(), runnerWithoutParametersSavedParameters)
+  }
+
+  @Test
+  fun `test inherited parameters values with null parameterValues on child runner`() {
+
+    val parentRunnerWithParameters =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "ParentRunnerWithParameters",
+            mutableListOf(datasetSaved.id!!),
+            parametersValues = mutableListOf(runTemplateParameterValue1))
+
+    val parentRunnerWithParametersSaved =
+        runnerApiService.createRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, parentRunnerWithParameters)
+
+    val runnerWithoutParameters =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            name = "RunnerWithoutParameters",
+            parentId = parentRunnerWithParametersSaved.id!!,
+            datasetList = mutableListOf(datasetSaved.id!!),
+            parametersValues = null)
+
+    val runnerWithoutParametersSaved =
+        runnerApiService.createRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, runnerWithoutParameters)
+
+    val runnerWithoutParametersSavedParameters = runnerWithoutParametersSaved.parametersValues
+    assertNotNull(runnerWithoutParametersSavedParameters)
+    assertEquals(1, runnerWithoutParametersSavedParameters.size)
+    assertEquals(mutableListOf(runTemplateParameterValue1), runnerWithoutParametersSavedParameters)
+  }
+
+  @Test
   fun `startRun send event and save lastRun info`() {
     val expectedRunId = "run-genid12345"
     every { eventPublisher.publishEvent(any<RunStart>()) } answers
@@ -798,7 +869,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
       role: String = ROLE_USER,
       runTemplateId: String = "runTemplateId",
       validationStatus: RunnerValidationStatus = RunnerValidationStatus.Draft,
-      parametersValues: MutableList<RunnerRunTemplateParameterValue> = mutableListOf()
+      parametersValues: MutableList<RunnerRunTemplateParameterValue>? = mutableListOf()
   ): Runner {
     return Runner(
         id = UUID.randomUUID().toString(),
