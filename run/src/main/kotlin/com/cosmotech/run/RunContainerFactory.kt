@@ -289,7 +289,7 @@ class RunContainerFactory(
   }
 
   private fun getRunTemplate(solution: Solution, runTemplateId: String): RunTemplate {
-    return solution.runTemplates?.find { runTemplate -> runTemplate.id == runTemplateId }
+    return solution.runTemplates.find { runTemplate -> runTemplate.id == runTemplateId }
         ?: throw IllegalStateException(
             "runTemplateId $runTemplateId not found in Solution ${solution.id}")
   }

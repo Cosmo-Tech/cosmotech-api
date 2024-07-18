@@ -355,7 +355,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info(
         "should add an Access Control and assert it is the one created in the linked datasets")
-    runnerSaved.datasetList!!.forEach {
+    runnerSaved.datasetList.forEach {
       assertDoesNotThrow {
         datasetApiService.getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
       }
@@ -373,7 +373,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info(
         "should update the Access Control and assert it has been updated in the linked datasets")
-    runnerSaved.datasetList!!.forEach {
+    runnerSaved.datasetList.forEach {
       assertEquals(
           ROLE_EDITOR,
           datasetApiService
@@ -382,7 +382,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     logger.info("should get the list of users and assert there are 2")
-    var userList =
+    val userList =
         runnerApiService.getRunnerSecurityUsers(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(3, userList.size)
@@ -398,7 +398,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info(
         "should remove the Access Control and assert it has been removed in the linked datasets")
-    runnerSaved.datasetList!!.forEach {
+    runnerSaved.datasetList.forEach {
       assertThrows<CsmResourceNotFoundException> {
         datasetApiService.getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
       }
@@ -470,7 +470,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun `test on runner delete keep datasets`() {
     runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
 
-    runnerSaved.datasetList!!.forEach { dataset ->
+    runnerSaved.datasetList.forEach { dataset ->
       assertDoesNotThrow { datasetApiService.findDatasetById(organizationSaved.id!!, dataset) }
     }
   }
@@ -563,7 +563,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
 
     datasetSaved =
-        datasetApiService.findDatasetById(organizationSaved.id!!, runnerSaved.datasetList!![0])
+        datasetApiService.findDatasetById(organizationSaved.id!!, runnerSaved.datasetList[0])
     runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
 
     assertDoesNotThrow {
@@ -585,7 +585,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
 
     datasetSaved =
-        datasetApiService.findDatasetById(organizationSaved.id!!, runnerSaved.datasetList!![0])
+        datasetApiService.findDatasetById(organizationSaved.id!!, runnerSaved.datasetList[0])
     runnerApiService.addRunnerAccessControl(
         organizationSaved.id!!,
         workspaceSaved.id!!,
