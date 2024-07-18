@@ -431,6 +431,40 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `test update solution with runTemplates null`() {
+
+    val baseSolution = makeSolution(organizationSaved.id!!, runTemplates = null)
+    val baseSolutionSaved = solutionApiService.createSolution(organizationSaved.id!!, baseSolution)
+
+    val assertThrows =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.updateSolutionRunTemplate(
+              organizationSaved.id!!,
+              baseSolutionSaved.id!!,
+              "WrongRunTemplateId",
+              RunTemplate(id = "FakeRunTemplateId"))
+        }
+    assertEquals("Run Template 'WrongRunTemplateId' *not* found", assertThrows.message)
+  }
+
+  @Test
+  fun `test update solution empty runTemplates with wrong runTemplateId`() {
+
+    val baseSolution = makeSolution(organizationSaved.id!!)
+    val baseSolutionSaved = solutionApiService.createSolution(organizationSaved.id!!, baseSolution)
+
+    val assertThrows =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.updateSolutionRunTemplate(
+              organizationSaved.id!!,
+              baseSolutionSaved.id!!,
+              "WrongRunTemplateId",
+              RunTemplate(id = "FakeRunTemplateId"))
+        }
+    assertEquals("Run Template 'WrongRunTemplateId' *not* found", assertThrows.message)
+  }
+
   fun makeOrganization(id: String = "organization_id"): Organization {
     return Organization(
         id = id,
@@ -447,6 +481,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
   fun makeSolution(
       organizationId: String = organizationSaved.id!!,
+      runTemplates: MutableList<RunTemplate>? = mutableListOf()
   ): Solution {
     return Solution(
         id = "solutionId",
@@ -454,6 +489,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         name = "My solution",
         organizationId = organizationId,
         ownerId = "ownerId",
+        runTemplates = runTemplates,
         security =
             SolutionSecurity(
                 default = ROLE_NONE,

@@ -293,7 +293,7 @@ class SolutionServiceImpl(
   ): List<RunTemplate> {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     val runTemplateToChange =
-        existingSolution.runTemplates?.first { it.id == runTemplateId }
+        existingSolution.runTemplates?.firstOrNull { it.id == runTemplateId }
             ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
 
     runTemplateToChange.compareToAndMutateIfNeeded(runTemplate).isNotEmpty()
