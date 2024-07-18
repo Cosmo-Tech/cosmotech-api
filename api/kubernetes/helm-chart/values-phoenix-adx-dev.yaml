@@ -1,0 +1,136 @@
+api:
+  multiTenant: false
+  servletContextPath: /cosmotech-api
+  version: v2-4
+  serviceMonitor:
+    enabled: true
+    namespace: cosmotech-monitoring
+argo:
+  imageCredentials:
+    password: 
+    registry: ${ACR_SERVER}
+    username: ${ACR_USERNAME}
+config:
+  api:
+    serviceMonitor:
+      enabled: true
+      namespace: ${MONITORING_NAMESPACE}
+  csm:
+    platform:
+      argo:
+        base-uri: http://${HOST_ARGO_WORKFLOWS_SERVER}.${NAMESPACE}.svc.cluster.local:2746
+        workflows:
+          namespace: ${NAMESPACE}
+          service-account-name: ${ARGO_SERVICE_ACCOUNT_NAME}
+      authorization:
+        allowed-tenants: ${AZURE_TENANT_ID}
+        allowedApiKeyConsumers:
+        - apiKey: ""
+          associatedRole: ""
+          name: ""
+          securedUris: []
+      azure:
+        appIdUri: ${AZURE_APPID_URI}
+        containerRegistries:
+          solutions: ${ACR_SERVER}
+        cosmos:
+          key: null
+          uri: null
+        credentials:
+          clientId: ${AZURE_CREDENTIALS_CLIENT_ID}
+          clientSecret: ${AZURE_CREDENTIALS_CLIENT_SECRET}
+          customer:
+            clientId: ${AZURE_CREDENTIALS_CUSTOMER_CLIENT_ID}
+            clientSecret: ${AZURE_CREDENTIALS_CUSTOMER_CLIENT_SECRET}
+            tenantId: ${AZURE_TENANT_ID}
+          tenantId: ${AZURE_TENANT_ID}
+        dataWarehouseCluster:
+          baseUri: ${ADX_BASE_URI}
+          options:
+            ingestionUri: ${ADX_INGEST_URI}
+        eventBus:
+          baseUri: ${EVENTBUS_BASEURI}
+        storage:
+          account-key: ${AZURE_STORAGE_ACCOUNT_KEY}
+          account-name: ${AZURE_STORAGE_ACCOUNT_NAME}
+      containerRegistry:
+        provider: azure
+        registryPassword: ${ACR_PASSWORD}
+        registryUrl: https://${ACR_SERVER}
+        registryUserName: ${ACR_USERNAME}
+      identityProvider:
+        authorizationUrl: https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/authorize
+        code: azure
+        containerScopes:
+          "[https://warp.api.cosmotech.com/phoenix-adx-dev/platform]": ${NAMESPACE} scope
+        defaultScopes:
+          "[https://warp.api.cosmotech.com/phoenix-adx-dev/.default]": ${NAMESPACE} scope
+        tokenUrl: https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/token
+      internalResultServices:
+        enabled: false
+        eventBus:
+          host: ${HOST_RDS}.${NAMESPACE}.svc.cluster.local
+          listener:
+            password: ${RDS_HUB_LISTENER}
+            username: cosmotech_api_listener
+          port: 5672
+          sender:
+            password: ${RDS_HUB_SENDER}
+            username: cosmotech_run_sender
+        storage:
+          admin:
+            password: ${RDS_STORAGE_ADMIN}
+            username: cosmotech_api_admin
+          host: ${HOST_RDS_POSTGRES}.${NAMESPACE}.svc.cluster.local
+          port: 5432
+          reader:
+            password: ${RDS_STORAGE_READER}
+            username: cosmotech_api_reader
+          writer:
+            password: ${RDS_STORAGE_WRITER}
+            username: cosmotech_api_writer
+      loki:
+        baseUrl: http://loki.${MONITORING_NAMESPACE}.svc.cluster.local:3100
+      namespace: ${NAMESPACE}
+      twincache:
+        host: ${HOST_REDIS}.${NAMESPACE}.svc.cluster.local
+        password: ${HOST_REDIS_PASSWORD}
+        port: 6379
+        username: default
+  logging:
+    level:
+      com.cosmotech: DEBUG
+      com.redis: WARN
+      org.springframework: WARN
+      web: WARN
+  server:
+    error:
+      include-stacktrace: always
+image:
+  repository: ghcr.io/cosmo-tech/cosmotech-api
+  tag: 2.4.13-test
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod-${NAMESPACE}
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.org/client-max-body-size: "0"
+  enabled: true
+  hosts:
+  - host: warp.api.cosmotech.com
+nodeSelector:
+  cosmotech.com/tier: services
+replicaCount: 1
+resources:
+  limits:
+    memory: 2048Mi
+  requests:
+    memory: 1024Mi
+tolerations:
+- effect: NoSchedule
+  key: vendor
+  operator: Equal
+  value: cosmotech

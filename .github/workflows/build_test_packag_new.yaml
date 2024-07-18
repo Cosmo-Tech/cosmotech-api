@@ -1,0 +1,305 @@
+name: Build, Test and Package 2024
+
+on:
+  push:
+    tags:
+      - '*-test'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.8
+          cache-disabled: true
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+      - name: Build with Gradle
+        run: |
+          ./gradlew build -x generateClients -x test -x integrationTest -x spotlessCheck -x openApiValidate -x detekt
+  test-unit:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - build
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Run unit tests
+        run: |
+          ./gradlew test -x spotlessCheck -x openApiValidate
+  connector-it:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - test-unit
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Run Connector integration tests
+        run: |
+          ./gradlew :cosmotech-connector-api:integrationTest -x spotlessCheck -x openApiValidate
+  dataset-it:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - test-unit
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Run RBAC Dataset integration tests
+        run: |
+          ./gradlew :cosmotech-dataset-api:integrationTest \
+            --tests "com.cosmotech.dataset.service.DatasetServiceRBACTest" \
+            -x spotlessCheck \
+            -x openApiValidate
+      - name: Run Dataset integration tests
+        run: |
+          ./gradlew :cosmotech-dataset-api:integrationTest \
+            --tests "com.cosmotech.dataset.service.DatasetServiceIntegrationTest" \
+            -x spotlessCheck \
+            -x openApiValidate
+  organization-it:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - test-unit
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Run Organization integration tests
+        run: |
+          ./gradlew :cosmotech-organization-api:integrationTest --tests "com.cosmotech.organization.service.OrganizationServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+      - name: Run RBAC Organization integration tests
+        run: |
+          ./gradlew :cosmotech-organization-api:integrationTest --tests "com.cosmotech.organization.service.OrganizationServiceRBACTest" -x spotlessCheck -x openApiValidate
+  solution-it:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - test-unit
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Run Solution integration tests
+        run: |
+          ./gradlew :cosmotech-solution-api:integrationTest --tests "com.cosmotech.solution.service.SolutionServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+      - name: Run RBAC Solution integration tests
+        run: |
+          ./gradlew :cosmotech-solution-api:integrationTest --tests "com.cosmotech.solution.service.SolutionServiceRBACTest" -x spotlessCheck -x openApiValidate
+  workspace-it:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - test-unit
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Run Workspace integration tests
+        run: |
+          ./gradlew :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.workspace.service.WorkspaceServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+      - name: Run RBAC Workspace integration tests
+        run: |
+          ./gradlew :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.workspace.service.WorkspaceServiceRBACTest" -x spotlessCheck -x openApiValidate
+  runner-it:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - test-unit
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Run Runner integration tests
+        run: |
+          ./gradlew :cosmotech-runner-api:integrationTest --tests "com.cosmotech.runner.service.RunnerServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+      - name: Run RBAC Runner integration tests
+        run: |
+          ./gradlew :cosmotech-runner-api:integrationTest --tests "com.cosmotech.runner.service.RunnerServiceRBACTest" -x spotlessCheck -x openApiValidate
+  run-it:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - test-unit
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Launch Run integration tests
+        run: |
+          ./gradlew :cosmotech-run-api:integrationTest -x spotlessCheck -x openApiValidate
+  homecontroller-it:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - test-unit
+    permissions: read-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+      - name: Run HomeController integration tests
+        run: |
+          ./gradlew :cosmotech-api:integrationTest -x spotlessCheck -x openApiValidate
+  scan-and-push-container:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs:
+      - test-unit
+      - connector-it
+      # - dataset-it
+      # - organization-it
+      # - solution-it
+      # - workspace-it
+      # - runner-it
+      # - run-it
+      - homecontroller-it
+    permissions:
+      packages: write
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch all tags since Gradle project version is built upon SCM
+          fetch-depth: 0
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Retrieve branch or tag name
+        id: refvar
+        run: echo "::set-output name=gitRefName::${GITHUB_REF#refs/*/}"
+
+      - name: Build local Container Image for scanning
+        run: |
+          ./gradlew :cosmotech-api:jibDockerBuild -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.20.0
+        env:
+          DOCKLE_HOST: "unix:///var/run/docker.sock"
+        with:
+          image-ref: com.cosmotech/cosmotech-api:${{ github.sha }}
+          format: 'sarif'
+          severity: 'CRITICAL,HIGH'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Archive container image scan report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-image-scan-report
+          path: 'trivy-results.sarif'
+          retention-days: 2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push API Container Image (sha) to GitHub Container Registry
+        run: |
+          docker image tag com.cosmotech/cosmotech-api:${{github.sha}} \
+            ghcr.io/cosmo-tech/cosmotech-api:${{github.sha}}
+          docker image push ghcr.io/cosmo-tech/cosmotech-api:${{github.sha}}
+      - name: Push API Container Image (tag) to GitHub Container Registry
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          docker image tag com.cosmotech/cosmotech-api:${{github.sha}} \
+            ghcr.io/cosmo-tech/cosmotech-api:${{ steps.refvar.outputs.gitRefName }}
+          docker image push ghcr.io/cosmo-tech/cosmotech-api:${{ steps.refvar.outputs.gitRefName }}
+      - name: Push API Container Image (latest) to GitHub Container Registry
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          docker image tag com.cosmotech/cosmotech-api:${{github.sha}} \
+            ghcr.io/cosmo-tech/cosmotech-api:latest
+          docker image push ghcr.io/cosmo-tech/cosmotech-api:latest
+  trigger-event-helm-charts:
+    runs-on: ubuntu-latest
+    needs:
+    - scan-and-push-container
+    steps:
+      - name: Fire event helm charts
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.HELM_GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/Cosmo-Tech/internal-helm-charts/dispatches \
+            -d '{
+              "event_type":"dispatch-event",
+              "client_payload": {
+                "gh_ref": "${{ github.ref }}",
+                "gh_sha": "${{ github.sha }}"
+              }
+            }'

@@ -70,6 +70,9 @@ spec:
               # The properties file for the 'helm' profile is mounted as a Volume in the Container,
               # using a configured Kubernetes Secret containing all the 'config.*' properties
               value: "helm"
+          envFrom:
+            - secretRef:
+                name: "{{ .Release.Namespace}}-platform-secrets"
           volumeMounts:
             - mountPath: /tmp
               name: tmp-dir
