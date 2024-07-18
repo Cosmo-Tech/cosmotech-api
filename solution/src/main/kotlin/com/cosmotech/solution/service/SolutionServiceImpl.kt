@@ -211,7 +211,7 @@ class SolutionServiceImpl(
             organizationId = organizationId,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             security = solutionSecurity,
-            runTemplates = solution.runTemplates ?: mutableListOf()))
+            runTemplates = solution.runTemplates))
   }
 
   override fun deleteSolution(organizationId: String, solutionId: String) {

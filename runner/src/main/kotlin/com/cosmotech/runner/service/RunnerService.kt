@@ -179,8 +179,8 @@ class RunnerService(
 
       // take newly added datasets and propagate existing ACL on it
       this.runner.datasetList
-          ?.filterNot { beforeMutateDatasetList?.contains(it) ?: false }
-          ?.forEach { newDatasetId ->
+          .filterNot { beforeMutateDatasetList.contains(it) }
+          .forEach { newDatasetId ->
             this.runner.security?.accessControlList?.forEach {
               this.propagateAccessControlToDataset(newDatasetId, it.id, it.role)
             }
@@ -339,7 +339,7 @@ class RunnerService(
     }
 
     private fun propagateAccessControlToDatasets(userId: String, role: String) {
-      this.runner.datasetList!!.forEach { datasetId ->
+      this.runner.datasetList.forEach { datasetId ->
         propagateAccessControlToDataset(datasetId, userId, role)
       }
     }
@@ -360,7 +360,7 @@ class RunnerService(
 
     private fun removeAccessControlToDatasets(userId: String) {
       val organizationId = this.runner.organizationId!!
-      this.runner.datasetList!!.forEach { datasetId ->
+      this.runner.datasetList.forEach { datasetId ->
         val datasetACL =
             datasetApiService.findDatasetById(organizationId, datasetId).getRbac().accessControlList
 

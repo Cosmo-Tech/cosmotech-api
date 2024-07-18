@@ -659,6 +659,7 @@ components:
         datasetList:
           type: array
           description: the list of Dataset Id associated to this Runner Run Template
+          default: []
           items:
             type: string
         runSizing:
@@ -680,9 +681,8 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
             - $ref: '#/components/schemas/RunnerSecurity'
-#      required:
-#        - name
-#        - runTemplateId
+      required:
+        - datasetList
     RunnerSecurity:
       type: object
       description: the Runner security information
