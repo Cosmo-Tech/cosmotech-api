@@ -242,7 +242,7 @@ class OrganizationServiceImpl(
     csmRbac.checkUserExists(
         organization.getRbac(),
         identityId,
-        "User '$identityId' not found in workspace $organizationId")
+        "User '$identityId' not found in organization $organizationId")
     val rbacSecurity =
         csmRbac.setUserRole(organization.getRbac(), identityId, organizationRole.role)
     organization.setRbac(rbacSecurity)
