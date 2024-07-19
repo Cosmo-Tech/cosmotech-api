@@ -16,99 +16,36 @@ on:
 
 jobs:
   validate_projects_openapis:
-    # The OpenAPI Generator Gradle Plugin exposes an 'openApiValidate' task,
-    # but at this time, it does not work with Gradle 7.0.
-    # See https://github.com/OpenAPITools/openapi-generator/issues/9328
-    # This job is a different approach for validation, using the Swagger Editor service,
-    # as suggested here : https://swagger.io/blog/api-design/validate-openapi-definitions-swagger-editor/
     runs-on: ubuntu-latest
-    name: OpenAPI Validator Service
-
-    services:
-      swagger-editor:
-        image: swaggerapi/swagger-editor:v3.16.5
-        ports:
-          - 80:8080
+    name: OpenAPI Validation
 
     strategy:
       fail-fast: false
       matrix:
         project:
-          - connector
-          - dataset
-          - organization
-          - solution
-          - workspace
-          - runner
-          - run
+          - api
+          - connector-api
+          - dataset-api
+          - organization-api
+          - solution-api
+          - workspace-api
+          - runner-api
+          - run-api
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate '${{ matrix.project }}' definition
-        uses: char0n/swagger-editor-validate@v1.3.2
-        with:
-          swagger-editor-url: http://localhost/
-          definition-file: ${{ matrix.project }}/src/main/openapi/${{ matrix.project }}.yaml
-
-  merge_openapi_specs:
-    runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # Fetch all tags since Gradle project version is built upon SCM
-          fetch-depth: 0
-
-      - name: Set up JDKIs anybody working on
-        uses: actions/setup-java@v3
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Merge OpenAPI definitions
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: false
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: mergeOpenApiFiles
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-      - name: Archive openapi.yaml
-        uses: actions/upload-artifact@v3
-        with:
-          name: openapi
-          path: openapi/openapi.yaml
-          retention-days: 3
+      - name: Validate '${{ matrix.project }}' definition
+        run: ./gradlew :cosmotech-${{ matrix.project }}:openApiValidate | tee validate.log
 
-  validate_merged_openapi:
-    # The OpenAPI Generator Gradle Plugin exposes an 'openApiValidate' task,
-    # but at this time, it does not work with Gradle 7.0.
-    # See https://github.com/OpenAPITools/openapi-generator/issues/9328
-    # This job is a different approach for validation, using the Swagger Editor service,
-    # as suggested here : https://swagger.io/blog/api-design/validate-openapi-definitions-swagger-editor/
-    runs-on: ubuntu-latest
-    needs: merge_openapi_specs
-
-    services:
-      swagger-editor:
-        image: swaggerapi/swagger-editor:v3.18.2
-        ports:
-          - 80:8080
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download openapi artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: openapi
-      - name: Validate merged OpenAPI definition
-        uses: char0n/swagger-editor-validate@v1.3.2
-        with:
-          swagger-editor-url: http://localhost/
-          definition-file: openapi.yaml
+      - name: Check issues and recommendations
+        run: grep -qvz "Spec has issues or recommendations" validate.log
