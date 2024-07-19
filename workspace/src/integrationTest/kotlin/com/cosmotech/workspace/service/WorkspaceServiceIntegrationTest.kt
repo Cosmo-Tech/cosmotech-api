@@ -10,7 +10,6 @@ import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
-import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -38,7 +37,6 @@ import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
@@ -56,7 +54,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.test.util.ReflectionTestUtils
 
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
@@ -69,8 +66,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
   private val logger = LoggerFactory.getLogger(WorkspaceServiceIntegrationTest::class.java)
-
-  @MockK private lateinit var secretManagerMock: SecretManager
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
@@ -99,8 +94,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 
-    ReflectionTestUtils.setField(workspaceApiService, "secretManager", secretManagerMock)
-
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
@@ -127,7 +120,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   fun `test CRUD operations on Workspace as User Admin`() {
 
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { secretManagerMock.deleteSecret(any(), any()) } returns Unit
 
     logger.info("should create a second new workspace")
     val workspace2 = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace 2")

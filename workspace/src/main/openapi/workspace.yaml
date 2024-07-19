@@ -698,48 +698,6 @@ paths:
                   - bob@mycompany.com
         "404":
           description: the Workspace or the User specified is unknown or you don't have access to them
-  /organizations/{organization_id}/workspaces/{workspace_id}/secret:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: createSecret
-      tags:
-        - workspace
-      summary: Create a secret for the Workspace
-      requestBody:
-        description: the definition of the secret
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkspaceSecret'
-            examples:
-              Workspace:
-                $ref: '#/components/examples/WorkspaceSecretExample'
-          application/yaml:
-            schema:
-              type: string
-              format: binary
-            examples:
-              Workspace:
-                $ref: '#/components/examples/WorkspaceSecretExample'
-      responses:
-        "201":
-          description: Request succeeded
-        "404":
-          description: the Workspace or the User specified is unknown or you don't have access to them
-
 
 components:
   securitySchemes:
@@ -814,7 +772,7 @@ components:
             This Namespace must also contain two Event Hubs named \'probesmeasures\' and \'scenariorun\'.
         dedicatedEventHubSasKeyName:
           type: string
-          description: the Dedicated Event Hub SAS key name, default to RootManageSharedAccessKey. Use the /secret endpoint to set the key value
+          description: the Dedicated Event Hub SAS key name, default to RootManageSharedAccessKey. Ask you DevOps Team to add the associated value to your Workspace Secret
         dedicatedEventHubAuthenticationStrategy:
           type: string
           description: the Event Hub authentication strategy, SHARED_ACCESS_POLICY or TENANT_CLIENT_CREDENTIALS. Default to the one defined for the tenant.
@@ -923,19 +881,6 @@ components:
           additionalProperties: true
       # required:
         # - solutionId
-    WorkspaceSecret:
-      type: object
-      description: the secret definition
-      properties:
-        name:
-          type: string
-          description: the secret name
-        value:
-          type: string
-          description: the secret value
-      required:
-        - name
-        - value
   examples:
     BreweryWorkspace:
       summary: Brewery Workspace
@@ -1153,9 +1098,4 @@ components:
         - fileName: myData.csv
         - fileName: myData2.csv
         - fileName: myData3.csv
-    WorkspaceSecretExample:
-      summary: simple secret
-      description: simple secret example
-      value:
-        name: foo
-        value: bar
+

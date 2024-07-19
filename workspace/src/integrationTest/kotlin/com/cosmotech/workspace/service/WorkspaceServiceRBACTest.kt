@@ -17,7 +17,6 @@ import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.ResourceScanner
-import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -33,12 +32,10 @@ import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceRole
-import com.cosmotech.workspace.domain.WorkspaceSecret
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
@@ -74,8 +71,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
-  private lateinit var blobPersistencePath: String
-  @MockK private lateinit var secretManagerMock: SecretManager
   @RelaxedMockK private lateinit var resource: Resource
 
   @RelaxedMockK private lateinit var resourceScanner: ResourceScanner
@@ -94,8 +89,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
     File(csmPlatformProperties.blobPersistence.path).deleteRecursively()
-
-    ReflectionTestUtils.setField(workspaceApiService, "secretManager", secretManagerMock)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
@@ -334,7 +327,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-              every { secretManagerMock.deleteSecret(any(), any()) } returns Unit
 
               if (shouldThrow) {
                 val exception =
@@ -380,7 +372,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-              every { secretManagerMock.deleteSecret(any(), any()) } returns Unit
 
               if (shouldThrow) {
                 val exception =
@@ -1746,104 +1737,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceSecurityUsers(
                       organizationSaved.id!!, workspaceSaved.id!!)
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test Organization RBAC createSecret`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Organization RBAC createSecret : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organizationSaved =
-                  organizationApiService.registerOrganization(
-                      makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
-              val solutionSaved =
-                  solutionApiService.createSolution(
-                      organizationSaved.id!!, makeSolution(organizationSaved.id!!))
-              val workspaceSaved =
-                  workspaceApiService.createWorkspace(
-                      organizationSaved.id!!,
-                      makeWorkspaceWithRole(
-                          organizationSaved.id!!,
-                          solutionSaved.id!!,
-                          id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-              every { secretManagerMock.createOrReplaceSecret(any(), any(), any()) } returns Unit
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.createSecret(
-                          organizationSaved.id!!,
-                          workspaceSaved.id!!,
-                          WorkspaceSecret("foo", "bar"))
-                    }
-                assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  workspaceApiService.createSecret(
-                      organizationSaved.id!!, workspaceSaved.id!!, WorkspaceSecret("foo", "bar"))
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test Workspace RBAC createSecret`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Workspace RBAC createSecret : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organizationSaved =
-                  organizationApiService.registerOrganization(
-                      makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
-              val solutionSaved =
-                  solutionApiService.createSolution(
-                      organizationSaved.id!!, makeSolution(organizationSaved.id!!))
-              val workspaceSaved =
-                  workspaceApiService.createWorkspace(
-                      organizationSaved.id!!,
-                      makeWorkspaceWithRole(
-                          organizationSaved.id!!,
-                          solutionSaved.id!!,
-                          id = TEST_USER_MAIL,
-                          role = role))
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-              every { secretManagerMock.createOrReplaceSecret(any(), any(), any()) } returns Unit
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.createSecret(
-                          organizationSaved.id!!,
-                          workspaceSaved.id!!,
-                          WorkspaceSecret("foo", "bar"))
-                    }
-                assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  workspaceApiService.createSecret(
-                      organizationSaved.id!!, workspaceSaved.id!!, WorkspaceSecret("foo", "bar"))
                 }
               }
             }

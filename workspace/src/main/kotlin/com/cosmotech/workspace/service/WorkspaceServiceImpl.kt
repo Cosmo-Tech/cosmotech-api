@@ -27,7 +27,6 @@ import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
-import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
@@ -41,12 +40,10 @@ import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRole
-import com.cosmotech.workspace.domain.WorkspaceSecret
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.repository.WorkspaceRepository
 import com.cosmotech.workspace.utils.getWorkspaceFilePath
 import com.cosmotech.workspace.utils.getWorkspaceFilesDir
-import com.cosmotech.workspace.utils.getWorkspaceSecretName
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -71,7 +68,6 @@ internal class WorkspaceServiceImpl(
     private val solutionService: SolutionApiService,
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
-    private val secretManager: SecretManager,
     private val workspaceRepository: WorkspaceRepository
 ) : CsmPhoenixService(), WorkspaceApiServiceInterface {
 
@@ -182,9 +178,6 @@ internal class WorkspaceServiceImpl(
 
     try {
       deleteAllFilesystemWorkspaceFiles(organizationId, workspace)
-      secretManager.deleteSecret(
-          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspaceId))
-
       workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
@@ -282,18 +275,6 @@ internal class WorkspaceServiceImpl(
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
 
     return getWorkspaceFiles(organizationId, workspaceId)
-  }
-
-  override fun createSecret(
-      organizationId: String,
-      workspaceId: String,
-      workspaceSecret: WorkspaceSecret
-  ) {
-    getVerifiedWorkspace(organizationId, workspaceId)
-    secretManager.createOrReplaceSecret(
-        csmPlatformProperties.namespace,
-        getWorkspaceSecretName(organizationId, workspaceId),
-        mapOf(workspaceSecret.name to workspaceSecret.value))
   }
 
   @EventListener(DeleteHistoricalDataOrganization::class)

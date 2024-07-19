@@ -70,7 +70,6 @@ Models/Workspace.md
 Models/WorkspaceAccessControl.md
 Models/WorkspaceFile.md
 Models/WorkspaceRole.md
-Models/WorkspaceSecret.md
 Models/WorkspaceSecurity.md
 Models/WorkspaceSolution.md
 Models/WorkspaceWebApp.md

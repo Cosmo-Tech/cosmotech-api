@@ -498,6 +498,8 @@ class RunServiceImpl(
             runner.organizationId!!, runner.workspaceId!!, runner.id!!, WORKFLOW_TYPE_RUN, runId)
     val runRequest =
         workflowService.launchRun(
+            runner.organizationId!!,
+            runner.workspaceId!!,
             startInfo.startContainers,
             startInfo.runTemplate.executionTimeout,
             startInfo.solution.alwaysPull ?: false)
@@ -590,7 +592,10 @@ class RunServiceImpl(
             containerEnvVars,
             WORKFLOW_TYPE_TWIN_GRAPH_IMPORT,
         )
-    twingraphImportEvent.response = workflowService.launchRun(simpleContainer, null).convertToMap()
+    twingraphImportEvent.response =
+        workflowService
+            .launchRun(twingraphImportEvent.organizationId, null, simpleContainer, null)
+            .convertToMap()
   }
 
   internal fun getEnvVarsForJobImportInfo(

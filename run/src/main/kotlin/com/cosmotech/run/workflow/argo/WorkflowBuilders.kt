@@ -8,6 +8,7 @@ import com.cosmotech.run.container.BASIC_SIZING
 import com.cosmotech.run.container.getLimitsMap
 import com.cosmotech.run.container.getRequestsMap
 import com.cosmotech.run.container.toContainerResourceSizing
+import com.cosmotech.run.domain.ContainerResourceSizing
 import com.cosmotech.run.domain.RunContainer
 import com.cosmotech.run.utils.getNodeLabelSize
 import com.cosmotech.run.workflow.RunStartContainers
@@ -19,12 +20,14 @@ import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Workflow
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowSpec
 import io.kubernetes.client.custom.Quantity
 import io.kubernetes.client.openapi.models.V1Container
+import io.kubernetes.client.openapi.models.V1EnvFromSource
 import io.kubernetes.client.openapi.models.V1EnvVar
 import io.kubernetes.client.openapi.models.V1LocalObjectReference
 import io.kubernetes.client.openapi.models.V1ObjectMeta
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
 import io.kubernetes.client.openapi.models.V1ResourceRequirements
+import io.kubernetes.client.openapi.models.V1SecretEnvSource
 import io.kubernetes.client.openapi.models.V1Toleration
 import io.kubernetes.client.openapi.models.V1VolumeMount
 import io.kubernetes.client.openapi.models.V1VolumeResourceRequirements
@@ -40,6 +43,8 @@ internal const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
 internal const val ALWAYS_PULL_POLICY = "Always"
 
 internal fun buildTemplate(
+    organizationId: String,
+    workspaceId: String?,
     runContainer: RunContainer,
     csmPlatformProperties: CsmPlatformProperties,
     alwaysPull: Boolean = false
@@ -67,18 +72,17 @@ internal fun buildTemplate(
 
   val imagePullPolicy =
       if (alwaysPull) ALWAYS_PULL_POLICY else csmPlatformProperties.argo.imagePullPolicy
-  runContainer.nodeLabel
+
   val container =
-      V1Container()
-          .image(runContainer.image)
-          .imagePullPolicy(imagePullPolicy)
-          .env(envVars)
-          .args(runContainer.runArgs)
-          .volumeMounts(volumeMounts)
-          .resources(
-              V1ResourceRequirements()
-                  .requests(sizingInfo.getRequestsMap())
-                  .limits(sizingInfo.getLimitsMap()))
+      buildContainer(
+          runContainer,
+          imagePullPolicy,
+          envVars,
+          volumeMounts,
+          sizingInfo,
+          organizationId,
+          workspaceId)
+
   if (runContainer.entrypoint != null) {
     container.command(listOf(runContainer.entrypoint))
   }
@@ -93,7 +97,42 @@ internal fun buildTemplate(
   return template
 }
 
+private fun buildContainer(
+    runContainer: RunContainer,
+    imagePullPolicy: String,
+    envVars: MutableList<V1EnvVar>?,
+    volumeMounts: List<V1VolumeMount>,
+    sizingInfo: ContainerResourceSizing,
+    organizationId: String,
+    workspaceId: String?
+): V1Container {
+
+  val container =
+      V1Container()
+          .image(runContainer.image)
+          .imagePullPolicy(imagePullPolicy)
+          .env(envVars)
+          .args(runContainer.runArgs)
+          .volumeMounts(volumeMounts)
+          .resources(
+              V1ResourceRequirements()
+                  .requests(sizingInfo.getRequestsMap())
+                  .limits(sizingInfo.getLimitsMap()))
+
+  if (workspaceId.isNullOrBlank()) return container
+
+  return container.envFrom(
+      mutableListOf(
+          V1EnvFromSource()
+              .secretRef(
+                  V1SecretEnvSource()
+                      .name("$organizationId-$workspaceId".lowercase())
+                      .optional(true))))
+}
+
 internal fun buildWorkflowSpec(
+    organizationId: String,
+    workspaceId: String?,
     csmPlatformProperties: CsmPlatformProperties,
     startContainers: RunStartContainers,
     executionTimeout: Int?,
@@ -102,7 +141,9 @@ internal fun buildWorkflowSpec(
   val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
   val templates =
       startContainers.containers
-          .map { container -> buildTemplate(container, csmPlatformProperties, alwaysPull) }
+          .map { container ->
+            buildTemplate(organizationId, workspaceId, container, csmPlatformProperties, alwaysPull)
+          }
           .toMutableList()
   val entrypointTemplate = buildEntrypointTemplate(startContainers)
   templates.add(entrypointTemplate)
@@ -127,6 +168,8 @@ internal fun buildWorkflowSpec(
 }
 
 internal fun buildWorkflow(
+    organizationId: String,
+    workspaceId: String?,
     csmPlatformProperties: CsmPlatformProperties,
     startContainers: RunStartContainers,
     executionTimeout: Int?,
@@ -138,7 +181,13 @@ internal fun buildWorkflow(
                 .generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME)
                 .labels(startContainers.labels))
         .spec(
-            buildWorkflowSpec(csmPlatformProperties, startContainers, executionTimeout, alwaysPull))
+            buildWorkflowSpec(
+                organizationId,
+                workspaceId,
+                csmPlatformProperties,
+                startContainers,
+                executionTimeout,
+                alwaysPull))
 
 private fun buildEntrypointTemplate(
     startContainers: RunStartContainers

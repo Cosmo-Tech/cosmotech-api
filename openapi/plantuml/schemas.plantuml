@@ -506,11 +506,6 @@ entity WorkspaceRole {
     * role: String
 }
 
-entity WorkspaceSecret {
-    * name: String
-    * value: String
-}
-
 entity WorkspaceSecurity {
     * default: String
     * accessControlList: List<WorkspaceAccessControl>

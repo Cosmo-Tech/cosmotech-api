@@ -145,6 +145,8 @@ internal class RunArgoWorkflowService(
   }
 
   override fun launchRun(
+      organizationId: String,
+      workspaceId: String?,
       runStartContainers: RunStartContainers,
       executionTimeout: Int?,
       alwaysPull: Boolean
@@ -153,7 +155,12 @@ internal class RunArgoWorkflowService(
         IoArgoprojWorkflowV1alpha1WorkflowCreateRequest()
             .workflow(
                 buildWorkflow(
-                    csmPlatformProperties, runStartContainers, executionTimeout, alwaysPull))
+                    organizationId,
+                    workspaceId,
+                    csmPlatformProperties,
+                    runStartContainers,
+                    executionTimeout,
+                    alwaysPull))
 
     logger.trace("Workflow: {}", body.workflow)
 

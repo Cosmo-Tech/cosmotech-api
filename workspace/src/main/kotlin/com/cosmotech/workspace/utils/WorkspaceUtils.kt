@@ -5,12 +5,6 @@ package com.cosmotech.workspace.utils
 import com.cosmotech.api.config.CsmPlatformProperties
 import java.nio.file.Path
 
-fun getWorkspaceSecretName(organizationId: String, workspaceId: String) =
-    getWorkspaceUniqueName(organizationId, workspaceId)
-
-fun getWorkspaceUniqueName(organizationId: String, workspaceKey: String) =
-    "$organizationId-$workspaceKey".lowercase()
-
 fun getWorkspaceFilesDir(
     csmPlatformProperties: CsmPlatformProperties,
     organizationId: String,
