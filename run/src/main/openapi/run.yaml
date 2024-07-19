@@ -1,16 +1,8 @@
 openapi: 3.0.3
 
 info:
-  title: Cosmo Tech Run Manager API
-  description: Cosmo Tech Run Manager API
-  version: 0.0.8-SNAPSHOT
-
-servers:
-  - url: 'https://api.azure.cosmo-platform.com'
-  - url: 'http://localhost:4010'
-
-security:
-  - oAuth2AuthCode: [ ]
+  title: ""
+  version: ""
 
 tags:
   - name: run

@@ -174,6 +174,7 @@ springdoc:
   # See https://springdoc.org/#properties
   api-docs:
     path: /openapi
+  packages-to-scan: [""] # Don't load OpenAPI specs from code annotations, we already load the merged file
   pre-loading-enabled: true
   remove-broken-reference-definitions: false
   show-actuator: false

@@ -1,6 +1,6 @@
 # RunnerApi
 
-All URIs are relative to *https://dev.api.cosmotech.com*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -42,7 +42,7 @@ Add a control access to the Runner
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -69,7 +69,7 @@ Create a new Runner
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -96,7 +96,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -123,7 +123,7 @@ Get the details of an runner
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -151,7 +151,7 @@ Get a control access for the Runner
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -179,7 +179,7 @@ Get the Runner permission by given role
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -206,7 +206,7 @@ Get the Runner security information
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -233,7 +233,7 @@ Get the Runner security users list
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -261,7 +261,7 @@ List all Runners
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -289,7 +289,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -317,7 +317,7 @@ Set the Runner default security
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -344,7 +344,7 @@ Start a run with runner parameters
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -371,7 +371,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -399,7 +399,7 @@ Update a runner
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -428,7 +428,7 @@ Update the specified access to User for a Runner
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 

@@ -24,8 +24,13 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // implementations/configurations in a 'buildSrc' included build.
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
+buildscript {
+  val openapiGeneratorVersion: String by extra { "7.3.0" }
+}
+
 plugins {
   val kotlinVersion = "1.9.23"
+  val openapiGeneratorVersion: String by rootProject.extra
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.15.5"
@@ -36,7 +41,7 @@ plugins {
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.5"
-  id("org.openapi.generator") version "7.3.0" apply false
+  id("org.openapi.generator") version openapiGeneratorVersion apply false
   id("com.google.cloud.tools.jib") version "3.4.0" apply false
 }
 
@@ -417,11 +422,32 @@ subprojects {
   if (openApiDefinitionFile.exists()) {
     logger.info("Found OpenAPI definition: $openApiDefinitionFile")
 
+    tasks.register("checkOpenapiGeneratorVersion") {
+      doFirst {
+        val openapiGeneratorVersion: String by rootProject.extra
+        val versionParts = openapiGeneratorVersion.split(".")
+        val currentVersion =
+            KotlinVersion(
+                versionParts.getOrNull(0)?.toIntOrNull() ?: 0,
+                versionParts.getOrNull(1)?.toIntOrNull() ?: 0,
+                versionParts.getOrNull(2)?.toIntOrNull() ?: 0)
+        if (currentVersion.isAtLeast(7, 8, 0)) {
+          error(
+              "It seems you are upgrading the OpenAPI generator," +
+                  " please check if you can take the opportunity of removing our current template patches" +
+                  " (files under folder '<src>/openapi/templates/') and remove this check." +
+                  " Upstream contribution (https://github.com/OpenAPITools/openapi-generator/pull/19202)" +
+                  " should be available in version 7.8.0+")
+        }
+      }
+    }
+
     tasks.withType<ValidateTask> {
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
     }
 
     tasks.withType<GenerateTask> {
+      dependsOn("checkOpenapiGeneratorVersion")
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
       outputDir.set(openApiServerSourcesGenerationDir)
       templateDir.set("${rootDir}/openapi/templates")
@@ -444,7 +470,7 @@ subprojects {
               "enumPropertyNaming" to "original",
               "exceptionHandler" to false,
               "serviceInterface" to true,
-              "swaggerAnnotations" to false,
+              "documentationProvider" to "none",
               "useSpringBoot3" to true,
               "useTags" to true,
               "beanQualifiers" to true,

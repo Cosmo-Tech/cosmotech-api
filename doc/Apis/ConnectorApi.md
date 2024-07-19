@@ -1,6 +1,6 @@
 # ConnectorApi
 
-All URIs are relative to *https://dev.api.cosmotech.com*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -29,7 +29,7 @@ List all Connectors
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -54,7 +54,7 @@ Get the details of a connector
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -79,7 +79,7 @@ Register a new connector
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -104,7 +104,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 

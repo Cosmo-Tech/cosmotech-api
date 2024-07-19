@@ -1,6 +1,6 @@
 # WorkspaceApi
 
-All URIs are relative to *https://dev.api.cosmotech.com*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -47,7 +47,7 @@ Add a control access to the Workspace
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -74,7 +74,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -100,7 +100,7 @@ Create a new workspace
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -126,7 +126,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -152,7 +152,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -179,7 +179,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -206,7 +206,7 @@ Download the Workspace File specified
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -232,7 +232,7 @@ List all Workspace files
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -259,7 +259,7 @@ List all Workspaces
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -285,7 +285,7 @@ Get the details of an workspace
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -312,7 +312,7 @@ Get a control access for the Workspace
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -339,7 +339,7 @@ Get the Workspace permission by given role
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -365,7 +365,7 @@ Get the Workspace security information
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -391,7 +391,7 @@ Get the Workspace security users list
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -418,7 +418,7 @@ Get the Workspace security users list
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -445,7 +445,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -472,7 +472,7 @@ Set the Workspace default security
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -499,7 +499,7 @@ Set the Workspace default security
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -526,7 +526,7 @@ Update a workspace
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -554,7 +554,7 @@ Update the specified access to User for a Workspace
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -583,7 +583,7 @@ Upload a file for the Workspace
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 

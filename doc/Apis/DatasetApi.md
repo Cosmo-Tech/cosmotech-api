@@ -1,6 +1,6 @@
 # DatasetApi
 
-All URIs are relative to *https://dev.api.cosmotech.com*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -57,7 +57,7 @@ Add a control access to the Dataset
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -84,7 +84,7 @@ Add Dataset Compatibility elements.
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -112,7 +112,7 @@ Copy a Dataset to another Dataset.
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -138,7 +138,7 @@ Create a new Dataset
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -167,7 +167,7 @@ Create a sub-dataset from the dataset in parameter
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -197,7 +197,7 @@ Create new entities in a graph instance
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -223,7 +223,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -253,7 +253,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -281,7 +281,7 @@ Download a graph as a zip file
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -308,7 +308,7 @@ List all Datasets
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -334,7 +334,7 @@ Get the details of a Dataset
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -361,7 +361,7 @@ Get a control access for the Dataset
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -387,7 +387,7 @@ Get the Dataset security information
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -413,7 +413,7 @@ Get the Dataset security users list
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -441,7 +441,7 @@ Get the dataset&#39;s refresh job status
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -471,7 +471,7 @@ Get entities in a graph instance
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -498,7 +498,7 @@ Get entities in a graph instance
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -511,7 +511,7 @@ Get entities in a graph instance
 
 Refresh data on dataset from dataset&#39;s source
 
-    Refresh dataset from parent source. At date, sources can be:      dataset (refresh from another dataset)      Azure Digital twin       Azure storage      Local File (import a new file)  During refresh, datas are overwritten 
+    Refresh dataset from parent source. At date, sources can be:      dataset (refresh from another dataset)      Azure Digital twin      Azure storage      Local File (import a new file)  During refresh, datas are overwritten 
 
 ### Parameters
 
@@ -526,7 +526,7 @@ Refresh data on dataset from dataset&#39;s source
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -552,7 +552,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -579,7 +579,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -607,7 +607,7 @@ Rollback the dataset after a failed refresh
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -635,7 +635,7 @@ Search Datasets by tags
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -662,7 +662,7 @@ Set the Dataset default security
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -691,7 +691,7 @@ Run a query on a graph instance and return the result as a zip file in async mod
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -721,7 +721,7 @@ Async batch update by loading a CSV file on a graph instance
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -750,7 +750,7 @@ Return the result of a query made on the graph instance as a json
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -777,7 +777,7 @@ Return the result of a query made on the graph instance as a json
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -804,7 +804,7 @@ Update a dataset
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -832,7 +832,7 @@ Update the specified access to User for a Dataset
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -862,7 +862,7 @@ Update entities in a graph instance
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -891,7 +891,7 @@ Upload data from zip file to dataset&#39;s twingraph
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 

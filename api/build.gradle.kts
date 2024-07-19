@@ -77,7 +77,6 @@ openApiMerger {
       title.set("Cosmo Tech Platform API")
       description.set("Cosmo Tech Platform API")
       version.set(project.version.toString())
-      //      termsOfService.set("http://openapimerger.com/terms-of-service")
       contact {
         name.set("Repository")
         email.set("platform@cosmotech.com")
@@ -86,20 +85,6 @@ openApiMerger {
       license {
         name.set("MIT License")
         url.set("https://github.com/Cosmo-Tech/cosmotech-api/blob/main/LICENSE")
-      }
-    }
-    servers {
-      register("development") {
-        url.set("https://dev.api.cosmotech.com")
-        description.set("Development")
-      }
-      register("staging") {
-        url.set("https://staging.api.cosmotech.com")
-        description.set("Staging")
-      }
-      register("production") {
-        url.set("https://api.cosmotech.com")
-        description.set("Production")
       }
     }
   }

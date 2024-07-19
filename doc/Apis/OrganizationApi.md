@@ -1,6 +1,6 @@
 # OrganizationApi
 
-All URIs are relative to *https://dev.api.cosmotech.com*
+All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -39,7 +39,7 @@ Add a control access to the Organization
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -65,7 +65,7 @@ List all Organizations
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -90,7 +90,7 @@ Get the details of an Organization
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -112,7 +112,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -138,7 +138,7 @@ Get a control access for the Organization
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -164,7 +164,7 @@ Get the Organization permissions by given role
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -189,7 +189,7 @@ Get the Organization security information
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -214,7 +214,7 @@ Get the Organization security users list
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -239,7 +239,7 @@ Register a new organization
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -265,7 +265,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -291,7 +291,7 @@ Set the Organization default security
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -316,7 +316,7 @@ null (empty response body)
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -342,7 +342,7 @@ Update an Organization
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 
@@ -369,7 +369,7 @@ Update the specified access to User for an Organization
 
 ### Authorization
 
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+No authorization required
 
 ### HTTP request headers
 

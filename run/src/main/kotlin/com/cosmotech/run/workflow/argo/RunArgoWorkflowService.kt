@@ -287,7 +287,7 @@ internal class RunArgoWorkflowService(
                     .map { RunLogsEntry(line = it) }
           }
     }
-    return RunLogs(runId = run.id, logs = containersLogs)
+    return RunLogs(runId = run.id!!, logs = containersLogs)
   }
 
   @Suppress("TooGenericExceptionCaught")
