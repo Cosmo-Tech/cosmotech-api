@@ -23,7 +23,10 @@ import org.junit.jupiter.api.Assertions.assertNull
 
 private const val DEFAULT_ENTRY_POINT = "entrypoint.py"
 private const val csmSimulationId = "simulationrunid"
+private const val ORGANIZATION_ID = "Organization_id"
+private const val WORKSPACE_ID = "Workspace_id"
 
+@Suppress("LargeClass")
 class WorkflowBuildersTests {
 
   private lateinit var csmPlatformProperties: CsmPlatformProperties
@@ -36,14 +39,14 @@ class WorkflowBuildersTests {
   @Test
   fun `Template not null`() {
     val src = getRunContainer()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     assertNotNull(template)
   }
 
   @Test
   fun `Template has image`() {
     val src = getRunContainer()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     assertEquals(src.image, template.container?.image)
   }
 
@@ -51,7 +54,7 @@ class WorkflowBuildersTests {
   fun `Template has image pull policy set to IfNotPresent`() {
     every { csmPlatformProperties.argo.imagePullPolicy } returns "IfNotPresent"
     val src = getRunContainer()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     assertNotNull(template.container)
     assertEquals("IfNotPresent", template.container!!.imagePullPolicy)
   }
@@ -60,7 +63,7 @@ class WorkflowBuildersTests {
   fun `Template has image pull policy set to Always`() {
     every { csmPlatformProperties.argo.imagePullPolicy } returns "Always"
     val src = getRunContainer()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     assertNotNull(template.container)
     assertEquals("Always", template.container!!.imagePullPolicy)
   }
@@ -68,7 +71,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Solution has alwaysPull set to true`() {
     val src = getRunContainer()
-    val template = buildTemplate(src, csmPlatformProperties, true)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties, true)
     assertNotNull(template.container)
     assertEquals("Always", template.container!!.imagePullPolicy)
   }
@@ -77,42 +80,42 @@ class WorkflowBuildersTests {
   fun `Template has name`() {
     val name = "template name"
     val src = getRunContainer(name)
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     assertEquals(name, template.name)
   }
 
   @Test
   fun `Template has args`() {
     val src = getRunContainerArgs()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     assertEquals(src.runArgs, template.container?.args)
   }
 
   @Test
   fun `Template has no args`() {
     val src = getRunContainer()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     assertEquals(src.runArgs, template.container?.args)
   }
 
   @Test
   fun `Template has simulator default entrypoint`() {
     val src = getRunContainerEntrypoint()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     assertEquals(listOf(DEFAULT_ENTRY_POINT), template.container?.command)
   }
 
   @Test
   fun `Template has simulator no entrypoint`() {
     val src = getRunContainer()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     assertNull(template.container?.command)
   }
 
   @Test
   fun `Template has default entrypoint if not defined`() {
     val src = getRunContainer()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     val expected: String? = null
     assertEquals(expected, template.container?.command)
   }
@@ -120,14 +123,14 @@ class WorkflowBuildersTests {
   @Test
   fun `Template has default env var`() {
     val src = getRunContainer()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     assertNull(template.container?.env)
   }
 
   @Test
   fun `Template has env var`() {
     val src = getRunContainerEnv()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     val expected =
         listOf(
             V1EnvVar().name("env1").value("envvar1"),
@@ -141,7 +144,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers not null`() {
     val sc = getStartContainersRun()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
     assertNotNull(workflowSpec)
   }
 
@@ -154,7 +158,8 @@ class WorkflowBuildersTests {
     every { csmPlatformProperties.argo } returns argo
 
     val sc = getStartContainersRun()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
     val expected = mapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
 
     assertEquals(expected, workflowSpec.nodeSelector)
@@ -169,7 +174,8 @@ class WorkflowBuildersTests {
     every { csmPlatformProperties.argo } returns argo
 
     val sc = getStartContainersRunDefaultPool()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
     val expected = mapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
 
     assertEquals(expected, workflowSpec.nodeSelector)
@@ -178,7 +184,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers no pool`() {
     val sc = getStartContainersRunNoPool()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
     val expected = mapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
 
     assertEquals(expected, workflowSpec.nodeSelector)
@@ -193,7 +200,8 @@ class WorkflowBuildersTests {
     every { csmPlatformProperties.argo } returns argo
 
     val sc = getStartContainersRun()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
 
     assertEquals("workflow", workflowSpec.serviceAccountName)
   }
@@ -201,7 +209,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers Run name`() {
     val sc = getStartContainersRun()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
 
     assertEquals("runcontainer", workflowSpec.templates?.getOrNull(0)?.name)
   }
@@ -209,7 +218,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers Entrypoint FetchDataset`() {
     val sc = getStartContainers()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
 
     assertEquals("entrypoint", workflowSpec.entrypoint)
   }
@@ -217,7 +227,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint template not null`() {
     val sc = getStartContainers()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -227,7 +238,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint dag not null`() {
     val sc = getStartContainers()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -238,7 +250,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint with dependencies dag valid`() {
     val sc = getStartContainersWithDependencies()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -283,7 +296,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint dag valid`() {
     val sc = getStartContainers()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -328,7 +342,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint dag dependencies valid`() {
     val sc = getStartContainers()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -353,7 +368,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers diamond`() {
     val sc = getStartContainersDiamond()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -380,14 +396,14 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow with StartContainers not null`() {
     val sc = getStartContainers()
-    val workflow = buildWorkflow(csmPlatformProperties, sc, null)
+    val workflow = buildWorkflow(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
     assertNotNull(workflow)
   }
 
   @Test
   fun `Create Workflow with StartContainers generate name default`() {
     val sc = getStartContainers()
-    val workflow = buildWorkflow(csmPlatformProperties, sc, null)
+    val workflow = buildWorkflow(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
     val expected = V1ObjectMeta().generateName("default-workflow-").labels(null)
     assertEquals(expected, workflow.metadata)
   }
@@ -395,7 +411,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow with StartContainers generate name Scenario`() {
     val sc = getStartContainersNamed()
-    val workflow = buildWorkflow(csmPlatformProperties, sc, null)
+    val workflow = buildWorkflow(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
     val expected = V1ObjectMeta().generateName("Scenario-1-").labels(null)
     assertEquals(expected, workflow.metadata)
   }
@@ -403,7 +419,8 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow spec with StartContainers volume claim default values`() {
     val sc = getStartContainersDiamond()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
     val dataDir =
         V1PersistentVolumeClaim()
             .metadata(V1ObjectMeta().name(VOLUME_CLAIM))
@@ -422,7 +439,8 @@ class WorkflowBuildersTests {
     every { csmPlatformProperties.argo.workflows.storageClass } returns "cosmotech-api-test-phoenix"
     every { csmPlatformProperties.argo.workflows.accessModes } returns listOf("ReadWriteMany")
     every { csmPlatformProperties.argo.workflows.requests } returns mapOf("storage" to "300Gi")
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflowSpec =
+        buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
     val dataDir =
         V1PersistentVolumeClaim()
             .metadata(V1ObjectMeta().name(VOLUME_CLAIM))
@@ -440,7 +458,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Template with StartContainers volume mount`() {
     val src = getRunContainer()
-    val template = buildTemplate(src, csmPlatformProperties)
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     val expected =
         listOf(
             V1VolumeMount()
@@ -457,7 +475,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow with metadata labels`() {
     val sc = getStartContainersWithLabels()
-    val workflow = buildWorkflowSpec(csmPlatformProperties, sc, null)
+    val workflow = buildWorkflowSpec(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
     val labeledTemplate =
         workflow.templates?.find { template -> template.name.equals("fetchdatasetcontainer-1") }
 
@@ -467,6 +485,25 @@ class WorkflowBuildersTests {
             "label2" to "valLabel2",
         )
     assertEquals(expected, labeledTemplate?.metadata?.labels)
+  }
+
+  @Test
+  fun `Build Template with expected secret attached to container`() {
+    val src = getRunContainer()
+    val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties, true)
+    assertNotNull(template.container)
+    val envFrom = template.container!!.envFrom
+    assertEquals(1, envFrom.size)
+    assertNotNull(envFrom[0].secretRef)
+    assertEquals("$ORGANIZATION_ID-$WORKSPACE_ID".lowercase(), envFrom[0].secretRef.name)
+  }
+
+  @Test
+  fun `Build Template without secret attached to container`() {
+    val src = getRunContainer()
+    val template = buildTemplate(ORGANIZATION_ID, null, src, csmPlatformProperties, true)
+    assertNotNull(template.container)
+    assertNull(template.container!!.envFrom)
   }
 
   private fun getRunContainer(name: String = "default"): RunContainer {

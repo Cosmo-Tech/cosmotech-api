@@ -160,7 +160,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
             "Runner",
             mutableListOf(datasetSaved.id!!))
 
-    every { workflowService.launchRun(any(), any()) } returns
+    every { workflowService.launchRun(any(), any(), any(), any()) } returns
         mockWorkflowRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
     every { datasetApiService.findDatasetById(any(), any()) } returns
         datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS }

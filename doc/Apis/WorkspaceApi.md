@@ -5,7 +5,6 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**addWorkspaceAccessControl**](WorkspaceApi.md#addWorkspaceAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | Add a control access to the Workspace |
-| [**createSecret**](WorkspaceApi.md#createSecret) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/secret | Create a secret for the Workspace |
 | [**createWorkspace**](WorkspaceApi.md#createWorkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace |
 | [**deleteAllWorkspaceFiles**](WorkspaceApi.md#deleteAllWorkspaceFiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files |
 | [**deleteWorkspace**](WorkspaceApi.md#deleteWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace |
@@ -53,33 +52,6 @@ No authorization required
 
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
-
-<a name="createSecret"></a>
-# **createSecret**
-> createSecret(organization\_id, workspace\_id, WorkspaceSecret)
-
-Create a secret for the Workspace
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **WorkspaceSecret** | [**WorkspaceSecret**](../Models/WorkspaceSecret.md)| the definition of the secret | |
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: application/json, application/yaml
-- **Accept**: Not defined
 
 <a name="createWorkspace"></a>
 # **createWorkspace**

@@ -19,7 +19,6 @@ import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.utils.ResourceScanner
-import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -78,7 +77,6 @@ class WorkspaceServiceImplTests {
 
   @MockK private lateinit var solutionService: SolutionApiServiceInterface
   @RelaxedMockK private lateinit var organizationService: OrganizationApiServiceInterface
-  @Suppress("unused") @MockK private lateinit var secretManager: SecretManager
 
   private lateinit var blobPersistencePath: String
 
@@ -395,7 +393,6 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete workspace: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
-              every { secretManager.deleteSecret(any(), any()) } returns Unit
               workspaceServiceImpl.deleteWorkspace(it.organization.id!!, it.workspace.id!!)
             }
           }
