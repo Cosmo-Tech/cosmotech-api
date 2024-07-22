@@ -101,7 +101,7 @@ jobs:
 
           EOF
 
-      - uses: Azure/login@v1
+      - uses: Azure/login@v2
         with:
           # Secret created with: az ad sp create-for-rbac -n "github-actions" --sdk-auth
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
