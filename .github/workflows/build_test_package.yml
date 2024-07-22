@@ -607,7 +607,7 @@ jobs:
       - name: Archive container image scan report
         if: ${{ always() }}
         continue-on-error: true
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: container-image-scan-report
           path: ${{ steps.scan.outputs.scan-report-path }}
