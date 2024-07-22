@@ -330,63 +330,6 @@ components:
           items:
             type: object
             additionalProperties: true
-    RunSearch:
-      type: object
-      description: the search options
-      properties:
-        solutionId:
-          type: string
-          description: the Solution Id to search
-        runTemplateId:
-          type: string
-          description: the Solution Analysis Id to search
-        workspaceId:
-          type: string
-          description: the Workspace Id to search
-        runnerId:
-          type: string
-          description: the Runner Id to search
-        state:
-          $ref: '#/components/schemas/RunSearchState'
-        workflowId:
-          type: string
-          description: the Cosmo Tech compute cluster Argo Workflow Id to search
-        workflowName:
-          type: string
-          description: the Cosmo Tech compute cluster Argo Workflow Name
-        ownerId:
-          type: string
-          description: the owner Id to search
-    RunSearchState:
-      type: string
-      description: the state to search
-      enum: [ "FetchingDatasets","FetchingScenarioParameters","ApplyingScenarioParameters","ValidatingScenarioData","SendingScenarioDataToDataWarehouse","PreRun","Running","PostRun","Success","Failed" ]
-    RunStartContainers:
-      type: object
-      description: the parameters to run directly containers
-      properties:
-        generateName:
-          type: string
-          description: the base name for workflow name generation
-        csmSimulationId:
-          type: string
-          description: Cosmo Tech Simulation Run Id
-        nodeLabel:
-          type: string
-          description: the node label request
-        labels:
-          type: object
-          description: the workflow labels
-          additionalProperties:
-            type: string
-        containers:
-          type: array
-          description: the containerslist
-          items:
-            $ref: '#/components/schemas/RunContainer'
-      required:
-        - csmSimulationId
-        - containers
     RunStatus:
       type: object
       description: a Run status

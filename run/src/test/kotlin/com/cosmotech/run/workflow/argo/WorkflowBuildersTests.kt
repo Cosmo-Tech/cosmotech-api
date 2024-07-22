@@ -4,7 +4,7 @@ package com.cosmotech.run.workflow.argo
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.run.domain.RunContainer
-import com.cosmotech.run.domain.RunStartContainers
+import com.cosmotech.run.workflow.RunStartContainers
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTask
 import io.kubernetes.client.custom.Quantity
 import io.kubernetes.client.openapi.models.V1EnvVar

@@ -1405,43 +1405,6 @@ components:
           description: the Solution maximum version compatibility (version included)
       required:
         - solutionKey
-    Validator:
-      type: object
-      description: a Validator to validate a Dataset
-      properties:
-        id:
-          type: string
-          readOnly: true
-          description: the Validator id
-        name:
-          type: string
-          description: the Validator name
-        description:
-          type: string
-          description: the Validator description
-        repository:
-          type: string
-          description: the registry repository containing the Validator image
-        version:
-          type: string
-          description: the Validator version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
-        ownerId:
-          type: string
-          readOnly: true
-          description: the User id which own this Validator
-        url:
-          type: string
-          description: an optional URL link to Validator page
-        tags:
-          type: array
-          description: the list of tags
-          items:
-            type: string
-      required:
-        - id
-        - name
-        - repository
-        - version
     DatasetCopyParameters:
       type: object
       description: the Dataset Copy Parameters

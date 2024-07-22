@@ -9,8 +9,8 @@ import com.cosmotech.run.container.getLimitsMap
 import com.cosmotech.run.container.getRequestsMap
 import com.cosmotech.run.container.toContainerResourceSizing
 import com.cosmotech.run.domain.RunContainer
-import com.cosmotech.run.domain.RunStartContainers
 import com.cosmotech.run.utils.getNodeLabelSize
+import com.cosmotech.run.workflow.RunStartContainers
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTask
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTemplate
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Metadata

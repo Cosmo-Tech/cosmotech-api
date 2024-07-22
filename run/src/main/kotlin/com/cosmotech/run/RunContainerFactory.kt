@@ -15,7 +15,7 @@ import com.cosmotech.run.container.StartInfo
 import com.cosmotech.run.container.toContainerResourceSizing
 import com.cosmotech.run.container.toSizing
 import com.cosmotech.run.domain.RunContainer
-import com.cosmotech.run.domain.RunStartContainers
+import com.cosmotech.run.workflow.RunStartContainers
 import com.cosmotech.runner.api.RunnerApiService
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.solution.api.SolutionApiService
@@ -149,7 +149,7 @@ class RunContainerFactory(
 
     val nodeLabel =
         if (template.computeSize == NODE_PARAM_NONE) {
-          null
+          NODE_LABEL_DEFAULT
         } else {
           (template.computeSize?.removeSuffix(NODE_LABEL_SUFFIX) ?: NODE_LABEL_DEFAULT)
         }
@@ -160,7 +160,7 @@ class RunContainerFactory(
 
     var defaultSizing = BASIC_SIZING
 
-    if (!nodeLabel.isNullOrBlank()) {
+    if (!nodeLabel.isBlank()) {
       defaultSizing = LABEL_SIZING[nodeLabel] ?: BASIC_SIZING
     }
 
@@ -202,14 +202,14 @@ class RunContainerFactory(
             dependencies = null,
             entrypoint = ENTRYPOINT_NAME,
             solutionContainer = true,
-            nodeLabel = nodeLabel ?: NODE_LABEL_DEFAULT,
+            nodeLabel = nodeLabel,
             runSizing = customSizing.toContainerResourceSizing()))
 
     val generateName = "${runId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
 
     return RunStartContainers(
         generateName = generateName,
-        nodeLabel = nodeLabel?.plus(NODE_LABEL_SUFFIX),
+        nodeLabel = nodeLabel.plus(NODE_LABEL_SUFFIX),
         containers = containers.toList(),
         csmSimulationId = csmSimulationId,
         labels =

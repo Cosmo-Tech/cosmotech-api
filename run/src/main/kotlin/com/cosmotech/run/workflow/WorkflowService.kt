@@ -3,10 +3,18 @@
 package com.cosmotech.run.workflow
 
 import com.cosmotech.run.domain.Run
+import com.cosmotech.run.domain.RunContainer
 import com.cosmotech.run.domain.RunLogs
-import com.cosmotech.run.domain.RunStartContainers
 import com.cosmotech.run.domain.RunStatus
 import org.springframework.boot.actuate.health.HealthIndicator
+
+data class RunStartContainers(
+    val generateName: String? = null,
+    val csmSimulationId: String,
+    val nodeLabel: String? = null,
+    val labels: Map<String, String>? = null,
+    val containers: List<RunContainer>
+)
 
 interface WorkflowService : HealthIndicator {
 

@@ -246,28 +246,6 @@ entity RunResourceRequested {
     memory: Long
 }
 
-entity RunSearch {
-    solutionId: String
-    runTemplateId: String
-    workspaceId: String
-    runnerId: String
-    state: RunSearchState
-    workflowId: String
-    workflowName: String
-    ownerId: String
-}
-
-entity RunSearchState {
-}
-
-entity RunStartContainers {
-    generateName: String
-    * csmSimulationId: String
-    nodeLabel: String
-    labels: Map
-    * containers: List<RunContainer>
-}
-
 entity RunState {
 }
 
@@ -407,27 +385,6 @@ entity RunnerAccessControl {
     * role: String
 }
 
-entity RunnerChangedParameterValue {
-    parameterId: String
-    varType: String
-    value: String
-    comparedValue: String
-}
-
-entity RunnerComparisonResult {
-    runnerId: String
-    comparedRunnerId: String
-    changedValues: List<RunnerChangedParameterValue>
-}
-
-entity RunnerDataDownloadInfo {
-    url: String
-}
-
-entity RunnerDataDownloadJob {
-    id: String
-}
-
 entity RunnerResourceSizing {
     * requests: ResourceSizeInfo
     * limits: ResourceSizeInfo
@@ -514,17 +471,6 @@ entity TwinGraphBatchResult {
 entity TwincacheStatusEnum {
 }
 
-entity Validator {
-    * id: String
-    * name: String
-    description: String
-    * repository: String
-    * version: String
-    ownerId: String
-    url: String
-    tags: List<String>
-}
-
 entity Workspace {
     id: String
     organizationId: String
@@ -588,7 +534,6 @@ RunTemplateResourceSizing -- ResourceSizeInfo : limits
 DatasetSecurity -- "0..*" DatasetAccessControl : accessControlList
 ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
-RunStartContainers -- "0..*" RunContainer : containers
 SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
 RunLogs -- "0..*" RunLogsEntry : logs
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
@@ -619,7 +564,6 @@ Run -- "0..*" RunContainer : containers
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 RunnerResourceSizing -- ResourceSizeInfo : requests
 RunnerResourceSizing -- ResourceSizeInfo : limits
-RunnerComparisonResult -- "0..*" RunnerChangedParameterValue : changedValues
 Workspace -- WorkspaceSolution : solution
 Workspace -- WorkspaceWebApp : webApp
 Workspace -- WorkspaceSecurity : security

@@ -41,9 +41,6 @@ Models/RunDataQuery.md
 Models/RunLogs.md
 Models/RunLogsEntry.md
 Models/RunResourceRequested.md
-Models/RunSearch.md
-Models/RunSearchState.md
-Models/RunStartContainers.md
 Models/RunState.md
 Models/RunStatus.md
 Models/RunStatusNode.md
@@ -56,10 +53,6 @@ Models/RunTemplateResourceSizing.md
 Models/RunTemplateStepSource.md
 Models/Runner.md
 Models/RunnerAccessControl.md
-Models/RunnerChangedParameterValue.md
-Models/RunnerComparisonResult.md
-Models/RunnerDataDownloadInfo.md
-Models/RunnerDataDownloadJob.md
 Models/RunnerResourceSizing.md
 Models/RunnerRole.md
 Models/RunnerRunTemplateParameterValue.md
@@ -73,7 +66,6 @@ Models/SourceInfo.md
 Models/SubDatasetGraphQuery.md
 Models/TwinGraphBatchResult.md
 Models/TwincacheStatusEnum.md
-Models/Validator.md
 Models/Workspace.md
 Models/WorkspaceAccessControl.md
 Models/WorkspaceFile.md

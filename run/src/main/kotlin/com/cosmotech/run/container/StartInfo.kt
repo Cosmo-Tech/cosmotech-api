@@ -4,7 +4,7 @@ package com.cosmotech.run.container
 
 import com.cosmotech.run.domain.ContainerResourceSizeInfo
 import com.cosmotech.run.domain.ContainerResourceSizing
-import com.cosmotech.run.domain.RunStartContainers
+import com.cosmotech.run.workflow.RunStartContainers
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerResourceSizing
 import com.cosmotech.solution.domain.RunTemplate
