@@ -28,25 +28,18 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Generate Markdown documentation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: false
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: openApiMarkdownGenerate
+        run: ./gradlew openApiMarkdownGenerate
 
       - name: Generate UML documentation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: false
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: openApiUmlGenerate
+        run: ./gradlew openApiUmlGenerate
 
       - name: Set Git identity
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}

@@ -43,15 +43,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Generate Client (${{ matrix.language }})
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: false
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: ${{ matrix.gradle_task }}
+        run: ./gradlew ${{ matrix.gradle_task }}
 
       - name: Set Git identity
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}

@@ -30,15 +30,14 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Build with Gradle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: |
+        run: >
+            ./gradlew
             build
             -x generateClients
             -x test
@@ -67,15 +66,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Run unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: test -x spotlessCheck -x openApiValidate
+        run: ./gradlew test -x spotlessCheck -x openApiValidate
 
   connector_it:
     runs-on: ubuntu-latest
@@ -97,15 +94,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Run Connector integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-connector-api:integrationTest -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-connector-api:integrationTest -x spotlessCheck -x openApiValidate
 
   dataset_it:
     runs-on: ubuntu-latest
@@ -127,25 +122,18 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Run RBAC Dataset integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-dataset-api:integrationTest --tests "com.cosmotech.dataset.service.DatasetServiceRBACTest" -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-dataset-api:integrationTest --tests "com.cosmotech.dataset.service.DatasetServiceRBACTest" -x spotlessCheck -x openApiValidate
 
       - name: Run Dataset integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-dataset-api:integrationTest --tests "com.cosmotech.dataset.service.DatasetServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-dataset-api:integrationTest --tests "com.cosmotech.dataset.service.DatasetServiceIntegrationTest" -x spotlessCheck -x openApiValidate
 
   organization_it:
     runs-on: ubuntu-latest
@@ -167,25 +155,18 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Run Organization integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-organization-api:integrationTest --tests "com.cosmotech.organization.service.OrganizationServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-organization-api:integrationTest --tests "com.cosmotech.organization.service.OrganizationServiceIntegrationTest" -x spotlessCheck -x openApiValidate
 
       - name: Run RBAC Organization integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-organization-api:integrationTest --tests "com.cosmotech.organization.service.OrganizationServiceRBACTest" -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-organization-api:integrationTest --tests "com.cosmotech.organization.service.OrganizationServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   solution_it:
     runs-on: ubuntu-latest
@@ -207,26 +188,19 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Run Solution integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-solution-api:integrationTest --tests "com.cosmotech.solution.service.SolutionServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-solution-api:integrationTest --tests "com.cosmotech.solution.service.SolutionServiceIntegrationTest" -x spotlessCheck -x openApiValidate
 
 
       - name: Run RBAC Solution integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-solution-api:integrationTest --tests "com.cosmotech.solution.service.SolutionServiceRBACTest" -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-solution-api:integrationTest --tests "com.cosmotech.solution.service.SolutionServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   workspace_it:
     runs-on: ubuntu-latest
@@ -248,26 +222,19 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Run Workspace integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.workspace.service.WorkspaceServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.workspace.service.WorkspaceServiceIntegrationTest" -x spotlessCheck -x openApiValidate
 
 
       - name: Run RBAC Workspace integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.workspace.service.WorkspaceServiceRBACTest" -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.workspace.service.WorkspaceServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   runner_it:
     runs-on: ubuntu-latest
@@ -289,25 +256,18 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Run Runner integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-runner-api:integrationTest --tests "com.cosmotech.runner.service.RunnerServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-runner-api:integrationTest --tests "com.cosmotech.runner.service.RunnerServiceIntegrationTest" -x spotlessCheck -x openApiValidate
 
       - name: Run RBAC Runner integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-runner-api:integrationTest --tests "com.cosmotech.runner.service.RunnerServiceRBACTest" -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-runner-api:integrationTest --tests "com.cosmotech.runner.service.RunnerServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   run_it:
     runs-on: ubuntu-latest
@@ -329,15 +289,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Launch Run integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-run-api:integrationTest -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-run-api:integrationTest -x spotlessCheck -x openApiValidate
 
   homecontroller_it:
     runs-on: ubuntu-latest
@@ -359,15 +317,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Run HomeController integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-api:integrationTest -x spotlessCheck -x openApiValidate
+        run: ./gradlew :cosmotech-api:integrationTest -x spotlessCheck -x openApiValidate
 
   test_helm:
     name: Test Helm Chart
@@ -549,15 +505,14 @@ jobs:
           chmod +x .github/scripts/*.sh
           chmod +x api/kubernetes/*.sh
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Build, package and push container image
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: |
+        run: >
+            ./gradlew
             :cosmotech-api:jib
             -Djib.to.image=localhost:5000/cosmotech-api:${{ env.IMAGE_TAG_FROM_REF_NAME }}
             -Djib.allowInsecureRegistries=true
@@ -615,15 +570,14 @@ jobs:
         id: refvar
         run: echo "::set-output name=gitRefName::${GITHUB_REF#refs/*/}"
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Build local Container Image for scanning
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v3
-        with:
-          cache-disabled: true
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: |
+        run: >
+            ./gradlew
             :cosmotech-api:jibDockerBuild
             -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
 
