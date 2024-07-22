@@ -599,7 +599,7 @@ jobs:
           input-file: ${{ steps.scan.outputs.scan-report-path }}
 
       - name: Upload SARIF reports to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: ${{ always() }}
         with:
           sarif_file: ${{ steps.scan-to-sarif.outputs.sarif-report-path }}
