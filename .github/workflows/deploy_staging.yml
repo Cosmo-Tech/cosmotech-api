@@ -106,7 +106,7 @@ jobs:
           # Secret created with: az ad sp create-for-rbac -n "github-actions" --sdk-auth
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
-      - uses: Azure/aks-set-context@v3.2
+      - uses: Azure/aks-set-context@v4
         with:
           cluster-name: ${{ secrets.STAGING_ENV_CLUSTER_NAME }}
           resource-group: ${{ secrets.STAGING_ENV_CLUSTER_RESOURCE_GROUP }}
