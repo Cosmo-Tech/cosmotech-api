@@ -30,10 +30,6 @@ management:
 
 csm:
   platform:
-    # Disable kubernetes access for outside a cluster or without a current context
-    # If enabled locally, one can override the kube context by passing '-PjvmArgs=-DuseKubernetesContext=my-context'
-    # to the bootRun gradle task
-    kubernetesAccessEnabled: false
     identityProvider:
       code: azure
       # Use to overwrite openAPI configuration
