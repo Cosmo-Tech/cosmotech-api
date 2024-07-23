@@ -34,7 +34,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -62,7 +62,7 @@ Get the details of a run
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -90,7 +90,7 @@ get the logs for the Run
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -118,7 +118,7 @@ get the status for the Run
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -147,7 +147,7 @@ get the list of Runs for the Runner
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -176,7 +176,7 @@ query the run data
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -205,7 +205,7 @@ Send data associated to a run
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 

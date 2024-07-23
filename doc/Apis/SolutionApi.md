@@ -46,7 +46,7 @@ Add Parameter Groups. Any item with the same ID will be overwritten
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -73,7 +73,7 @@ Add Parameters. Any item with the same ID will be overwritten
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -100,7 +100,7 @@ Add Run Templates. Any item with the same ID will be overwritten
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -127,7 +127,7 @@ Add a control access to the Solution
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -153,7 +153,7 @@ Register a new solution
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -179,7 +179,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -206,7 +206,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -233,7 +233,7 @@ List all Solutions
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -259,7 +259,7 @@ Get the details of a solution
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -286,7 +286,7 @@ Get a control access for the Solution
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -312,7 +312,7 @@ Get the Solution security information
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -338,7 +338,7 @@ Get the Solution security users list
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -364,7 +364,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -390,7 +390,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -416,7 +416,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -443,7 +443,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -470,7 +470,7 @@ Set the Solution default security
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -497,7 +497,7 @@ Update a solution
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -525,7 +525,7 @@ Update the specified access to User for a Solution
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -553,7 +553,7 @@ Update the specified Solution Run Template
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 

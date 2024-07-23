@@ -29,7 +29,7 @@ List all Connectors
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -54,7 +54,7 @@ Get the details of a connector
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -79,7 +79,7 @@ Register a new connector
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -104,7 +104,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 

@@ -4,6 +4,9 @@ info:
   title: ""
   version: ""
 
+security:
+  - oAuth2AuthCode: []
+
 tags:
 - name: organization
   description: Organization Management
@@ -423,10 +426,10 @@ components:
       type: oauth2
       description: OAuth2 authentication
       flows:
-        implicit:
-          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
-          scopes:
-            http://dev.api.cosmotech.com/platform: Platform scope
+        authorizationCode:
+          authorizationUrl: "https://example.com/authorize"
+          tokenUrl: "https://example.com/token"
+          scopes: {}
   schemas:
     Organization:
       type: object

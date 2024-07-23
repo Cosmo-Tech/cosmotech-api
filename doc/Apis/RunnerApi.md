@@ -42,7 +42,7 @@ Add a control access to the Runner
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -69,7 +69,7 @@ Create a new Runner
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -96,7 +96,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -123,7 +123,7 @@ Get the details of an runner
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -151,7 +151,7 @@ Get a control access for the Runner
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -179,7 +179,7 @@ Get the Runner permission by given role
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -206,7 +206,7 @@ Get the Runner security information
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -233,7 +233,7 @@ Get the Runner security users list
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -261,7 +261,7 @@ List all Runners
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -289,7 +289,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -317,7 +317,7 @@ Set the Runner default security
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -344,7 +344,7 @@ Start a run with runner parameters
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -371,7 +371,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -399,7 +399,7 @@ Update a runner
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 
@@ -428,7 +428,7 @@ Update the specified access to User for a Runner
 
 ### Authorization
 
-No authorization required
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
 
 ### HTTP request headers
 

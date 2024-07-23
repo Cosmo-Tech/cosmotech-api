@@ -202,8 +202,7 @@ All URIs are relative to *http://localhost*
 ### oAuth2AuthCode
 
 - **Type**: OAuth
-- **Flow**: implicit
-- **Authorization URL**: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
-- **Scopes**: 
-  - http://dev.api.cosmotech.com/platform: Platform scope
+- **Flow**: accessCode
+- **Authorization URL**: https://example.com/authorize
+- **Scopes**: N/A
 
