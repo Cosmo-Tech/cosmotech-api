@@ -31,7 +31,7 @@ jobs:
           ref: ${{ github.event.client_payload.gh_sha }}
 
       - name: Set up Helm
-        uses: azure/setup-helm@v3.5
+        uses: azure/setup-helm@v4
         with:
           version: v3.6.0
 
