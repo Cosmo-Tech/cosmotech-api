@@ -13,7 +13,6 @@ spring:
 
 csm:
   platform:
-    kubernetesAccessEnabled: false
     identityProvider:
       code: on_premise_one
       authorizationUrl: "http://fake_url:8080/authorize"
