@@ -40,7 +40,7 @@ plugins {
   id("org.owasp.dependencycheck") version "9.0.2"
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
-  id("io.gitlab.arturbosch.detekt") version "1.23.5"
+  id("io.gitlab.arturbosch.detekt") version "1.23.6"
   id("org.openapi.generator") version openapiGeneratorVersion apply false
   id("com.google.cloud.tools.jib") version "3.4.0" apply false
 }
@@ -72,7 +72,7 @@ val apiValidationVersion = "3.0.2"
 val kubernetesClientVersion = "21.0.0"
 
 // Checks
-val detektVersion = "1.23.5"
+val detektVersion = "1.23.6"
 
 // Tests
 val jUnitBomVersion = "5.10.0"
@@ -268,9 +268,6 @@ subprojects {
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
-    // Workaround until Detekt adds support for JVM Target 17
-    // See https://github.com/detekt/detekt/issues/4287
-    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesCoreVersion")
 
