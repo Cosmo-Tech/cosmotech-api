@@ -46,6 +46,10 @@ entity ContainerResourceSizing {
     * limits: ContainerResourceSizeInfo
 }
 
+entity CreatedRun {
+    * id: String
+}
+
 entity Dataset {
     id: String
     name: String

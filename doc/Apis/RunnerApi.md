@@ -326,7 +326,7 @@ Set the Runner default security
 
 <a name="startRun"></a>
 # **startRun**
-> String startRun(organization\_id, workspace\_id, runner\_id)
+> CreatedRun startRun(organization\_id, workspace\_id, runner\_id)
 
 Start a run with runner parameters
 
@@ -340,7 +340,7 @@ Start a run with runner parameters
 
 ### Return type
 
-**String**
+[**CreatedRun**](../Models/CreatedRun.md)
 
 ### Authorization
 
@@ -349,7 +349,7 @@ Start a run with runner parameters
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: text/plain
+- **Accept**: application/json
 
 <a name="stopRun"></a>
 # **stopRun**

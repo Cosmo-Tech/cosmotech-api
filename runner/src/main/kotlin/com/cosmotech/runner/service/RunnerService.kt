@@ -27,6 +27,7 @@ import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.runner.domain.CreatedRun
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
@@ -123,13 +124,13 @@ class RunnerService(
         .toList()
   }
 
-  fun startRunWith(runnerInstance: RunnerInstance): String {
+  fun startRunWith(runnerInstance: RunnerInstance): CreatedRun {
     val startEvent = RunStart(this, runnerInstance.getRunnerDataObjet())
     this.eventPublisher.publishEvent(startEvent)
     val runId = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
     runnerInstance.setLastRunId(runId)
     runnerRepository.save(runnerInstance.getRunnerDataObjet())
-    return runId
+    return CreatedRun(id = runId)
   }
 
   fun stopLastRunOf(runnerInstance: RunnerInstance) {

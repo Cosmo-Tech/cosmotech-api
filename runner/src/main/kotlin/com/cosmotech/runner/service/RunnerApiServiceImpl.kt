@@ -12,6 +12,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.runner.RunnerApiServiceInterface
+import com.cosmotech.runner.domain.CreatedRun
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerRole
@@ -85,7 +86,7 @@ internal class RunnerApiServiceImpl(
     return runnerService.listInstances(pageRequest)
   }
 
-  override fun startRun(organizationId: String, workspaceId: String, runnerId: String): String {
+  override fun startRun(organizationId: String, workspaceId: String, runnerId: String): CreatedRun {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
 
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_LAUNCH)

@@ -129,6 +129,7 @@ All URIs are relative to *http://localhost*
  - [ConnectorParameterGroup](./Models/ConnectorParameterGroup.md)
  - [ContainerResourceSizeInfo](./Models/ContainerResourceSizeInfo.md)
  - [ContainerResourceSizing](./Models/ContainerResourceSizing.md)
+ - [CreatedRun](./Models/CreatedRun.md)
  - [Dataset](./Models/Dataset.md)
  - [DatasetAccessControl](./Models/DatasetAccessControl.md)
  - [DatasetCompatibility](./Models/DatasetCompatibility.md)

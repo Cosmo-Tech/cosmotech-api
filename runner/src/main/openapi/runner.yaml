@@ -206,12 +206,11 @@ paths:
       summary: Start a run with runner parameters
       responses:
         "202":
-          description: the Run id started
+          description: the newly created Run info
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: r-p75189n1m43k
+                $ref: "#/components/schemas/CreatedRun"
         "404":
           description: the Runner specified is unknown or you don't have access to it
 
@@ -771,6 +770,15 @@ components:
         - Rejected
         - Unknown
         - Validated
+    CreatedRun:
+      type: object
+      description: Newle created Run info
+      properties:
+        id:
+          type: string
+          description: Run id
+      required:
+        - id
   examples:
     BreweryRunnerIn:
       summary: Brewery Runner input example
