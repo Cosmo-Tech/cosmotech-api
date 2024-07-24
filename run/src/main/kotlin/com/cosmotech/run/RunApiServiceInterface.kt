@@ -3,5 +3,8 @@
 package com.cosmotech.run
 
 import com.cosmotech.run.api.RunApiService
+import com.cosmotech.run.domain.Run
 
-interface RunApiServiceInterface : RunApiService
+interface RunApiServiceInterface : RunApiService {
+  fun listAllRuns(organizationId: String, workspaceId: String, runnerId: String): List<Run>
+}

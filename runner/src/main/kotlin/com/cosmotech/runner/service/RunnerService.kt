@@ -3,7 +3,7 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.events.AskRunStatusEvent
+import com.cosmotech.api.events.HasRunningRuns
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.RunStop
 import com.cosmotech.api.exceptions.CsmClientException
@@ -82,15 +82,13 @@ class RunnerService(
   fun deleteInstance(runnerInstance: RunnerInstance) {
     val runner = runnerInstance.runner
 
-    if (!runner.lastRunId.isNullOrBlank()) {
-      val askRunStatusEvent =
-          AskRunStatusEvent(
-              this, runner.organizationId!!, runner.workspaceId!!, runner.id!!, runner.lastRunId!!)
-      this.eventPublisher.publishEvent(askRunStatusEvent)
-
-      if (askRunStatusEvent.response == "Running")
-          throw CsmClientException(
-              "Can't delete a running runner : ${runnerInstance.getRunnerDataObjet().id}")
+    // Check there are no running runs
+    val hasRunningRuns =
+        HasRunningRuns(this, runner.organizationId!!, runner.workspaceId!!, runner.id!!)
+    this.eventPublisher.publishEvent(hasRunningRuns)
+    if (hasRunningRuns.response == true) {
+      throw CsmClientException(
+          "Can't delete runner ${runner.id!!}: at least one run is still running")
     }
 
     return runnerRepository.delete(runnerInstance.getRunnerDataObjet())
