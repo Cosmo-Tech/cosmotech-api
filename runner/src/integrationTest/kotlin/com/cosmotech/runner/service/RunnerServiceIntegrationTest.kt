@@ -593,7 +593,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     val runId =
         runnerApiService.startRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
-    assertEquals(expectedRunId, runId)
+    assertEquals("\"" + expectedRunId + "\"", runId)
 
     val lastRunId =
         runnerApiService
