@@ -6,6 +6,7 @@ import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.HasRunningRuns
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.RunStop
+import com.cosmotech.api.events.RunnerDeleted
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
@@ -91,6 +92,11 @@ class RunnerService(
       throw CsmClientException(
           "Can't delete runner ${runner.id!!}: at least one run is still running")
     }
+
+    // Notify the deletion
+    val runnerDeleted =
+        RunnerDeleted(this, runner.organizationId!!, runner.workspaceId!!, runner.id!!)
+    this.eventPublisher.publishEvent(runnerDeleted)
 
     return runnerRepository.delete(runnerInstance.getRunnerDataObjet())
   }

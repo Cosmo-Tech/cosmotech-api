@@ -5,6 +5,7 @@ package com.cosmotech.run.service
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.RunStop
+import com.cosmotech.api.events.RunnerDeleted
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -445,10 +446,14 @@ class RunServiceImpl(
   ) {
     val run = this.getRun(organizationId, workspaceId, runnerId, runId)
     run.hasPermission(PERMISSION_DELETE)
+    deleteRun(run)
+  }
+
+  private fun deleteRun(run: Run) {
     try {
 
       if (csmPlatformProperties.internalResultServices?.enabled == true)
-          adminRunStorageTemplate.dropDB(runId)
+          adminRunStorageTemplate.dropDB(run.id!!)
       runRepository.delete(run)
     } catch (exception: IllegalStateException) {
       logger.debug(
@@ -579,5 +584,11 @@ class RunServiceImpl(
     if (csmPlatformProperties.internalResultServices?.enabled != true) {
       throw NotImplementedException(notImplementedExceptionMessage)
     }
+  }
+
+  @EventListener(RunnerDeleted::class)
+  fun onRunnerDeleted(runnerDeleted: RunnerDeleted) {
+    listAllRuns(runnerDeleted.organizationId, runnerDeleted.workspaceId, runnerDeleted.runnerId)
+        .forEach { deleteRun(it) }
   }
 }
