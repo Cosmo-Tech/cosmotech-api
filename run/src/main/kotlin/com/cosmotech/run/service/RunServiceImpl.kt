@@ -44,6 +44,7 @@ import org.postgresql.util.PGobject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.stereotype.Service
@@ -138,6 +139,29 @@ class RunServiceImpl(
         .findByRunnerId(organizationId, workspaceId, runnerId, pageable)
         .toList()
         .map { it.withStateInformation().withoutSensitiveData() }
+  }
+
+  override fun listAllRuns(
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String
+  ): List<Run> {
+    // This call verify the user read authorization in the Runner
+    runnerApiService.getRunner(organizationId, workspaceId, runnerId)
+
+    val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
+    var pageRequest: Pageable = PageRequest.ofSize(defaultPageSize)
+
+    var runs = mutableListOf<Run>()
+
+    do {
+      val pagedRuns =
+          runRepository.findByRunnerId(organizationId, workspaceId, runnerId, pageRequest)
+      runs.addAll(pagedRuns.toList().map { it.withStateInformation().withoutSensitiveData() })
+      pageRequest = pagedRuns.nextPageable()
+    } while (pagedRuns.hasNext())
+
+    return runs
   }
 
   @Suppress("LongMethod", "ThrowsCount")

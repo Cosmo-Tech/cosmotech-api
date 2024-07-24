@@ -5,8 +5,8 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.events.AskRunStatusEvent
 import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.events.HasRunningRuns
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -476,9 +476,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     runnerApiService.updateRunner(
         organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerSaved)
 
-    every { eventPublisher.publishEvent(any<AskRunStatusEvent>()) } answers
+    every { eventPublisher.publishEvent(any<HasRunningRuns>()) } answers
         {
-          firstArg<AskRunStatusEvent>().response = "Running"
+          firstArg<HasRunningRuns>().response = true
         }
 
     val exception =
@@ -486,7 +486,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
           runnerApiService.deleteRunner(
               organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
         }
-    assertEquals("Can't delete a running runner : ${runnerSaved.id}", exception.message)
+    assertEquals(
+        "Can't delete runner ${runnerSaved.id}: at least one run is still running",
+        exception.message)
   }
 
   @Test
