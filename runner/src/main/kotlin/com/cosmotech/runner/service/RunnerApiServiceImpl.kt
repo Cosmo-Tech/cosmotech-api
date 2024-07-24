@@ -60,9 +60,9 @@ internal class RunnerApiServiceImpl(
 
   override fun deleteRunner(organizationId: String, workspaceId: String, runnerId: String) {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
-    val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_DELETE)
+    val runner = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_DELETE)
 
-    runnerService.deleteInstance(runnerInstance)
+    runnerService.deleteInstance(runner)
   }
 
   override fun listRunners(
