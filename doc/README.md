@@ -243,6 +243,8 @@ Class | Method | HTTP request | Description
  - [RunnerComparisonResult](./Models/RunnerComparisonResult.md)
  - [RunnerDataDownloadInfo](./Models/RunnerDataDownloadInfo.md)
  - [RunnerDataDownloadJob](./Models/RunnerDataDownloadJob.md)
+ - [RunnerJobState](./Models/RunnerJobState.md)
+ - [RunnerLastRun](./Models/RunnerLastRun.md)
  - [RunnerResourceSizing](./Models/RunnerResourceSizing.md)
  - [RunnerRole](./Models/RunnerRole.md)
  - [RunnerRunTemplateParameterValue](./Models/RunnerRunTemplateParameterValue.md)

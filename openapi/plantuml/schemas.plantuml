@@ -395,6 +395,7 @@ entity Runner {
     runTemplateId: String
     organizationId: String
     workspaceId: String
+    state: RunnerJobState
     creationDate: Long
     lastUpdate: Long
     ownerName: String
@@ -403,7 +404,9 @@ entity Runner {
     datasetList: List<String>
     runSizing: RunnerResourceSizing
     parametersValues: List<RunnerRunTemplateParameterValue>
-    lastRunId: String
+    lastRun: RunnerLastRun
+    parentLastRun: RunnerLastRun
+    rootLastRun: RunnerLastRun
     validationStatus: RunnerValidationStatus
     security: RunnerSecurity
 }
@@ -428,10 +431,21 @@ entity RunnerComparisonResult {
 
 entity RunnerDataDownloadInfo {
     url: String
+    state: RunnerJobState
 }
 
 entity RunnerDataDownloadJob {
     id: String
+}
+
+entity RunnerJobState {
+}
+
+entity RunnerLastRun {
+    runnerRunId: String
+    csmSimulationRun: String
+    workflowId: String
+    workflowName: String
 }
 
 entity RunnerResourceSizing {
@@ -864,6 +878,9 @@ ScenarioRunStatusNode -- ScenarioRunResourceRequested : resourcesDuration
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
+Runner -- RunnerLastRun : lastRun
+Runner -- RunnerLastRun : parentLastRun
+Runner -- RunnerLastRun : rootLastRun
 Runner -- RunnerValidationStatus : validationStatus
 Runner -- RunnerSecurity : security
 RunStatus -- "0..*" RunStatusNode : nodes

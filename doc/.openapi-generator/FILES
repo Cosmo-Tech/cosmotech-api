@@ -64,6 +64,8 @@ Models/RunnerChangedParameterValue.md
 Models/RunnerComparisonResult.md
 Models/RunnerDataDownloadInfo.md
 Models/RunnerDataDownloadJob.md
+Models/RunnerJobState.md
+Models/RunnerLastRun.md
 Models/RunnerResourceSizing.md
 Models/RunnerRole.md
 Models/RunnerRunTemplateParameterValue.md

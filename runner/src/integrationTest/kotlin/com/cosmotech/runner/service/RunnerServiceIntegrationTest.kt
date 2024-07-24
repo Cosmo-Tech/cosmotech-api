@@ -4,7 +4,6 @@ package com.cosmotech.runner.service
 
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.events.AskRunStatusEvent
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
@@ -34,6 +33,8 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
+import com.cosmotech.runner.domain.RunnerJobState
+import com.cosmotech.runner.domain.RunnerLastRun
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerValidationStatus
@@ -436,14 +437,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test deleting a running runner`() {
-    runnerSaved.lastRunId = "run-genid12345"
+    runnerSaved.state = RunnerJobState.Running
     runnerApiService.updateRunner(
         organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerSaved)
-
-    every { eventPublisher.publishEvent(any<AskRunStatusEvent>()) } answers
-        {
-          firstArg<AskRunStatusEvent>().response = "Running"
-        }
 
     val exception =
         assertThrows<Exception> {
@@ -586,21 +582,22 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `startRun send event and save lastRun info`() {
-    val expectedRunId = "run-genid12345"
+    val mockRunId = "run-genid12345"
+    val expectedRunInfo = RunnerLastRun(runnerRunId = mockRunId)
     every { eventPublisher.publishEvent(any<RunStart>()) } answers
         {
-          firstArg<RunStart>().response = expectedRunId
+          firstArg<RunStart>().response = mockRunId
         }
 
-    val runId =
+    val runInfo =
         runnerApiService.startRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
-    assertEquals(expectedRunId, runId)
+    assertEquals(expectedRunInfo, runInfo)
 
-    val lastRunId =
+    val lastRunInfo =
         runnerApiService
             .getRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
-            .lastRunId
-    assertEquals(expectedRunId, lastRunId)
+            .lastRun
+    assertEquals(expectedRunInfo, lastRunInfo)
   }
 
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
