@@ -32,6 +32,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Build with Gradle
         env:
@@ -68,6 +70,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Run unit tests
         env:
@@ -96,6 +100,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Run Connector integration tests
         env:
@@ -124,6 +130,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Run RBAC Dataset integration tests
         env:
@@ -157,6 +165,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Run Organization integration tests
         env:
@@ -190,6 +200,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Run Solution integration tests
         env:
@@ -224,6 +236,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Run Workspace integration tests
         env:
@@ -258,6 +272,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Run Runner integration tests
         env:
@@ -291,6 +307,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Launch Run integration tests
         env:
@@ -319,6 +337,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Run HomeController integration tests
         env:
@@ -507,6 +527,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Build, package and push container image
         env:
@@ -572,6 +594,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Build local Container Image for scanning
         env:
