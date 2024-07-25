@@ -3,6 +3,7 @@
 package com.cosmotech.run.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.events.RunDeleted
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
@@ -167,6 +168,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
 
     every { runnerApiService.getRunner(any(), any(), any()) } returns runnerSaved
+    every { eventPublisher.publishEvent(any<RunDeleted>()) } returns Unit
   }
 
   private fun mockConnector(name: String = "connector"): Connector {

@@ -3,6 +3,7 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.events.RunDeleted
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_LAUNCH
@@ -17,6 +18,7 @@ import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
+import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 
@@ -215,5 +217,18 @@ internal class RunnerApiServiceImpl(
     runnerService.saveInstance(runnerInstance)
 
     return runnerInstance.getRunnerDataObjet().security!!
+  }
+
+  @EventListener(RunDeleted::class)
+  fun onRunDeleted(runDeleted: RunDeleted) {
+    val runnerService =
+        getRunnerService()
+            .inOrganization(runDeleted.organizationId)
+            .inWorkspace(runDeleted.workspaceId)
+    val runnerInstance = runnerService.getInstance(runDeleted.runnerId)
+    if (runnerInstance.getRunnerDataObjet().lastRunId == runDeleted.runId) {
+      runnerInstance.getRunnerDataObjet().lastRunId = null
+    }
+    runnerService.saveInstance(runnerInstance)
   }
 }
