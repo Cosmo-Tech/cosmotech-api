@@ -3,6 +3,7 @@
 package com.cosmotech.run.service
 
 import com.cosmotech.api.CsmPhoenixService
+import com.cosmotech.api.events.RunDeleted
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.RunStop
 import com.cosmotech.api.events.RunnerDeleted
@@ -454,6 +455,11 @@ class RunServiceImpl(
 
       if (csmPlatformProperties.internalResultServices?.enabled == true)
           adminRunStorageTemplate.dropDB(run.id!!)
+
+      val runDeleted =
+          RunDeleted(this, run.organizationId!!, run.workspaceId!!, run.runnerId!!, run.id!!)
+      this.eventPublisher.publishEvent(runDeleted)
+
       runRepository.delete(run)
     } catch (exception: IllegalStateException) {
       logger.debug(
