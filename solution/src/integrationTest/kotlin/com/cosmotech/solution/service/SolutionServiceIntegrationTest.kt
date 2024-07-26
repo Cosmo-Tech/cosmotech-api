@@ -415,6 +415,60 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test update solution with runTemplates specified`() {
+
+    val baseSolutionRunTemplates =
+        mutableListOf(
+            RunTemplate(
+                id = "runtemplate1",
+                name = "rt_name1",
+                run = true,
+                parameterGroups = mutableListOf("p_1", "p_2")))
+
+    val modifiedSolutionRunTemplates =
+        mutableListOf(
+            RunTemplate(
+                id = "new_runtemplate1",
+                name = "new_rt_name1",
+                run = false,
+                parameterGroups = mutableListOf("new_p_1", "new_p_2")))
+
+    val baseSolution = makeSolution(organizationSaved.id!!, baseSolutionRunTemplates)
+    val baseSolutionSaved = solutionApiService.createSolution(organizationSaved.id!!, baseSolution)
+
+    val updateSolutionSaved =
+        solutionApiService.updateSolution(
+            organizationSaved.id!!,
+            baseSolutionSaved.id!!,
+            baseSolutionSaved.apply { runTemplates = modifiedSolutionRunTemplates })
+
+    assertEquals(baseSolutionRunTemplates, updateSolutionSaved.runTemplates)
+  }
+
+  @Test
+  fun `test update solution with empty runTemplates specified`() {
+
+    val baseSolutionRunTemplates =
+        mutableListOf(
+            RunTemplate(
+                id = "runtemplate1",
+                name = "rt_name1",
+                run = true,
+                parameterGroups = mutableListOf("p_1", "p_2")))
+
+    val baseSolution = makeSolution(organizationSaved.id!!, baseSolutionRunTemplates)
+    val baseSolutionSaved = solutionApiService.createSolution(organizationSaved.id!!, baseSolution)
+
+    val updateSolutionSaved =
+        solutionApiService.updateSolution(
+            organizationSaved.id!!,
+            baseSolutionSaved.id!!,
+            baseSolutionSaved.apply { runTemplates = mutableListOf() })
+
+    assertEquals(baseSolutionRunTemplates, updateSolutionSaved.runTemplates)
+  }
+
+  @Test
   fun `test get security endpoint`() {
     // should return the current security
     val solutionSecurity =
