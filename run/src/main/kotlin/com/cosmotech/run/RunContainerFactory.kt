@@ -4,6 +4,7 @@ package com.cosmotech.run
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.containerregistry.ContainerRegistryService
+import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.utils.sanitizeForKubernetes
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -101,12 +102,18 @@ class RunContainerFactory(
     val organization = organizationService.findOrganizationById(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     if (workspace.solution.solutionId == null)
-        throw IllegalStateException("You cannot start a workspace with no solutionId defined")
+        throw CsmClientException(
+            "Can't start a run using workspace ${workspace.id!!}: no solution defined")
     val solution =
         solutionService.findSolutionById(organizationId, workspace.solution.solutionId ?: "")
 
+    val solutionRepository =
+        solution.repository
+            ?: throw CsmClientException(
+                "Can't start a run using solution ${solution.id!!}: solution repository is not defined")
+
     if (csmPlatformProperties.containerRegistry.checkSolutionImage) {
-      containerRegistryService.checkSolutionImage(solution.repository!!, solution.version!!)
+      containerRegistryService.checkSolutionImage(solutionRepository, solution.version ?: "latest")
     }
 
     val runner = runnerApiService.getRunner(organizationId, workspaceId, runnerId)
@@ -169,9 +176,13 @@ class RunContainerFactory(
     val runTemplateId =
         runner.runTemplateId ?: throw IllegalStateException("Runner runTemplateId cannot be null")
 
+    val solutionRepository =
+        solution.repository
+            ?: throw CsmClientException(
+                "Can't start a run using solution ${solution.id!!}: solution repository is not defined")
     val imageName =
         getImageName(
-            csmPlatformProperties.containerRegistry.host, solution.repository, solution.version)
+            csmPlatformProperties.containerRegistry.host, solutionRepository, solution.version)
 
     val envVars =
         getCommonEnvVars(
@@ -313,11 +324,11 @@ class RunContainerFactory(
     return envVars.toMap()
   }
 
-  private fun getImageName(registry: String, repository: String?, version: String? = null): String {
-    val repoVersion =
-        repository.let { if (version == null) it else "$it:$version" }
-            ?: throw IllegalStateException("Solution repository is not defined")
-    return if (registry.isNotEmpty()) "$registry/$repoVersion" else repoVersion
+  private fun getImageName(registry: String, repository: String, version: String? = null): String {
+    var imageRef = if (registry.isNotEmpty()) "$registry/" else ""
+    imageRef += repository
+    version?.let { imageRef += ":$version" }
+    return imageRef
   }
 }
 
