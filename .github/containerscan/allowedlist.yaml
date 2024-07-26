@@ -1,9 +1,0 @@
-general:
-  vulnerabilities: []
-  bestPracticeViolations:
-    # CIS-DI-0006 : "not found HEALTHCHECK statement"
-    # HEALTHCHECK is not part of the OCI spec, but Docker-specific.
-    # And Jib has no intention to support it, unless the core OCI spec supports it.
-    # https://github.com/GoogleContainerTools/jib/issues/676#issuecomment-442533758
-    # Plus, Kubernetes makes use of its own Startup / Liveness / Readiness probes for health checks.
-    - CIS-DI-0006
