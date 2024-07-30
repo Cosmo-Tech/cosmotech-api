@@ -14,6 +14,8 @@ spring:
     redis:
       host: ${csm.platform.twincache.host}
       port: ${csm.platform.twincache.port}
+      ssl:
+        enabled: ${csm.platform.twincache.tls}
       password: ${csm.platform.twincache.password}
       username: ${csm.platform.twincache.username}
       timeout: 60000
@@ -75,6 +77,7 @@ csm:
     twincache:
       host: "localhost"
       port: "6379"
+      tls: false
       username: "default_user"
       password: "default_password"
       dataset:
