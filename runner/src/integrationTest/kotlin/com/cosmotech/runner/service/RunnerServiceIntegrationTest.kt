@@ -15,6 +15,8 @@ import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -144,7 +146,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)
@@ -173,7 +175,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id!!,
             workspaceSaved.id!!,
             solutionSaved.id!!,
-            "Runner",
+            "RunnerParent",
             mutableListOf(datasetSaved.id!!),
             parametersValues = mutableListOf(runTemplateParameterValue1))
 
@@ -200,10 +202,11 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test CRUD operations on Runner as Platform Admin`() {
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { getCurrentAccountIdentifier(any()) } returns "random_user_with_patform_admin_role"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
 
     logger.info("should create a second Runner")
-    val runner2 =
+    val runner3 =
         makeRunner(
             organizationSaved.id!!,
             workspaceSaved.id!!,
@@ -211,9 +214,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             "Runner2",
             mutableListOf(datasetSaved.id!!))
     val runnerSaved2 =
-        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner2)
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner3)
 
-    logger.info("should find all Runners and assert there are 2")
+    logger.info("should find all Runners and assert there are 3")
     var runnerList =
         runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertEquals(3, runnerList.size)
@@ -234,7 +237,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         runnerRetrieved.copy(name = "Runner Updated", creationDate = null, lastUpdate = null),
         runnerUpdated.copy(creationDate = null, lastUpdate = null))
 
-    logger.info("should delete the Runner and assert there is only one Runner left")
+    logger.info("should delete the Runner and assert there is only 2 Runner left")
     runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved2.id!!)
     val runnerListAfterDelete =
         runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
@@ -304,7 +307,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun `test RBAC RunnerSecurity as Platform Admin`() {
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
 
     logger.info("should test default security is set to ROLE_NONE")
     val runnerSecurity =
