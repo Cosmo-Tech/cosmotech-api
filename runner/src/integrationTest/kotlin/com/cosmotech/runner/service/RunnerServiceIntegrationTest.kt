@@ -221,22 +221,24 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun `test CRUD operations on Runner as Platform Admin`() {
     every { getCurrentAccountIdentifier(any()) } returns "random_user_with_patform_admin_role"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+    var initialRunnerList =
+        runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
 
-    logger.info("should create a second Runner")
-    val runner3 =
+    logger.info("should create a new Runner")
+    val newRunner =
         makeRunner(
             organizationSaved.id!!,
             workspaceSaved.id!!,
             solutionSaved.id!!,
-            "Runner2",
+            "NewRunner",
             mutableListOf(datasetSaved.id!!))
-    val runnerSaved2 =
-        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner3)
+    val newRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, newRunner)
 
-    logger.info("should find all Runners and assert there are 3")
+    logger.info("should find all Runners and assert there is one more")
     var runnerList =
         runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
-    assertEquals(3, runnerList.size)
+    assertEquals(initialRunnerList.size + 1, runnerList.size)
 
     logger.info("should find a Runner by Id and assert it is the one created")
     val runnerRetrieved =
@@ -254,11 +256,11 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         runnerRetrieved.copy(name = "Runner Updated", creationDate = null, lastUpdate = null),
         runnerUpdated.copy(creationDate = null, lastUpdate = null))
 
-    logger.info("should delete the Runner and assert there is only 2 Runner left")
-    runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved2.id!!)
+    logger.info("should delete the Runner and assert there is one less Runner left")
+    runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, newRunnerSaved.id!!)
     val runnerListAfterDelete =
         runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
-    assertEquals(2, runnerListAfterDelete.size)
+    assertEquals(runnerList.size - 1, runnerListAfterDelete.size)
 
     // We create more runner than there can be on one page of default size to assert
     // deleteAllRunners still works with high quantities of runners
