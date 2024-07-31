@@ -82,6 +82,9 @@ csm:
     twincache:
       host: "localhost"
       port: "6379"
+      tls:
+        enabled: false
+        bundle: ""
       username: "default"
       # Leave it as blank as there's no auth with test container
       password:
