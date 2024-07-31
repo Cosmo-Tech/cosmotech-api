@@ -104,7 +104,7 @@ api:
     enabled: true
     namespace: "cosmotech-monitoring"
     additionalLabels: {}
-  tls-truststore:
+  tlsTruststore:
     enabled: false
     secretName: ""
     fileName: ""
