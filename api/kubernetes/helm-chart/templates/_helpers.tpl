@@ -115,6 +115,14 @@ Location of the persistence data
 "/var/lib/cosmotech-api/data"
 {{- end }}
 
+{{- define "cosmotech-api.custom-rootca-path" -}}
+"/mnt/cosmotech/certificates/{{ .Values.api.tls-truststore.filename }}"
+{{- end }}
+
+{{- define "cosmotech-api.custom-rootca-bundle" -}}
+"custom-rootca"
+{{- end }}
+
 {{- define "cosmotech-api.baseConfig" -}}
 spring:
   application:
@@ -122,6 +130,23 @@ spring:
   output:
     ansi:
       enabled: never
+{{- if and .Values.api.tls-truststore.enabled (eq .Values.api.tls-truststore.type "pem") }}
+  ssl:
+    bundle:
+      pem:
+        {{ include "cosmotech-api.custom-rootca-bundle" . }}
+          truststore:
+            certificate: "{{ include "cosmotech-api.custom-rootca-path" . }}"
+{{- end }}
+{{- if and .Values.api.tls-truststore.enabled (eq .Values.api.tls-truststore.type "jks") }}
+  ssl:
+    bundle:
+      jks:
+        {{ include "cosmotech-api.custom-rootca-bundle" . }}
+          truststore:
+            location: "{{ include "cosmotech-api.custom-rootca-path" . }}"
+            password: "{{ .Values.api.tls-truststore.jksPassword }}"
+{{- end }}
 
 api:
   version: "{{ .Values.api.version }}"
