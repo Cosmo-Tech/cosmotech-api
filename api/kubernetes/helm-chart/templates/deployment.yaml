@@ -95,7 +95,7 @@ spec:
             {{end}}
             {{if .Values.api.tls-truststore.enabled }}
             - mountPath: {{ include "cosmotech-api.custom-rootca-path" . }}
-              subPath: {{ .Values.api.tls-truststore.filename }}
+              subPath: {{ .Values.api.tls-truststore.fileName }}
               name: custom-rootca
               readOnly: true
             {{end}}

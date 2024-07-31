@@ -116,7 +116,7 @@ Location of the persistence data
 {{- end }}
 
 {{- define "cosmotech-api.custom-rootca-path" -}}
-"/mnt/cosmotech/certificates/{{ .Values.api.tls-truststore.filename }}"
+"/mnt/cosmotech/certificates/{{ .Values.api.tls-truststore.fileName }}"
 {{- end }}
 
 {{- define "cosmotech-api.custom-rootca-bundle" -}}
@@ -187,4 +187,7 @@ csm:
       {{- end }}
     blobPersistence:
       path: {{ include "cosmotech-api.blobPersistencePath" . }}
+    twinCache:
+      tls:
+        bundle: {{ include "cosmotech-api.custom-rootca-bundle" . }}
 {{- end }}

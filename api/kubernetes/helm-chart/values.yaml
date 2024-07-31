@@ -107,7 +107,7 @@ api:
   tls-truststore:
     enabled: false
     secretName: ""
-    filename: ""
+    fileName: ""
     type: "pem"
     jksPassword: ""
 
@@ -170,6 +170,13 @@ argo:
 config:
   csm:
     platform:
+      twincache:
+        host: redis.host.changeme
+        password: changeme
+        port: 6379
+        username: default
+        tls:
+          enabled: false
       argo:
         base-uri: "http://argo-server:2746"
         workflows:

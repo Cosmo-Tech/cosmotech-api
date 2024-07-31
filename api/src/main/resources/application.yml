@@ -78,7 +78,9 @@ csm:
     twincache:
       host: "localhost"
       port: "6379"
-      tls: false
+      tls:
+        enabled: false
+        bundle: ""
       username: "default_user"
       password: "default_password"
       dataset:
