@@ -121,7 +121,8 @@ class RunnerService(
   }
 
   fun listInstances(pageRequest: PageRequest): List<Runner> {
-    val isPlatformAdmin = getCurrentAuthenticatedRoles(this.csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
+    val isPlatformAdmin =
+        getCurrentAuthenticatedRoles(this.csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
     return if (!this.csmPlatformProperties.rbac.enabled || isPlatformAdmin) {
       runnerRepository
           .findByWorkspaceId(organization!!.id!!, workspace!!.id!!, pageRequest)
