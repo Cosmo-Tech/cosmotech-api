@@ -1,4 +1,4 @@
-# cosmotech-api
+# cosmotech-api-chart
 
 ![Version: 4.0.3-onprem](https://img.shields.io/badge/Version-4.0.3--onprem-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.0.3-onprem](https://img.shields.io/badge/AppVersion-4.0.3--onprem-informational?style=flat-square)
 
