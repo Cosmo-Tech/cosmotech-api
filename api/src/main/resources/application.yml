@@ -16,7 +16,6 @@ spring:
       port: ${csm.platform.twincache.port}
       ssl:
         enabled: ${csm.platform.twincache.tls.enabled}
-        bundle: ${csm.platform.twincache.tls.bundle}
       password: ${csm.platform.twincache.password}
       username: ${csm.platform.twincache.username}
       timeout: 60000
