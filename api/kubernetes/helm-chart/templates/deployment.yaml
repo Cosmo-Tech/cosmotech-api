@@ -51,6 +51,12 @@ spec:
           persistentVolumeClaim:
             claimName: {{ include "cosmotech-api.fullname" . }}-blob-storage
         {{end}}
+        {{if .Values.api.tls-truststore.enabled }}
+        - name: custom-rootca
+          secret:
+            secretName: {{ .Values.api.tls-truststore.secretName }}
+            {{ end }}
+        {{end}}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -86,6 +92,12 @@ spec:
             - mountPath: {{ include "cosmotech-api.blobPersistencePath" . }}
               name: blob-storage
               readOnly: false
+            {{end}}
+            {{if .Values.api.tls-truststore.enabled }}
+            - mountPath: {{ include "cosmotech-api.custom-rootca-path" . }}
+              subPath: {{ .Values.api.tls-truststore.filename }}
+              name: custom-rootca
+              readOnly: true
             {{end}}
           ports:
             - name: http

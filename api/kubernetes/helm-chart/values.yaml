@@ -104,6 +104,12 @@ api:
     enabled: true
     namespace: "cosmotech-monitoring"
     additionalLabels: {}
+  tls-truststore:
+    enabled: false
+    secretName: ""
+    filename: ""
+    type: "pem"
+    jksPassword: ""
 
 ingress:
   enabled: false
