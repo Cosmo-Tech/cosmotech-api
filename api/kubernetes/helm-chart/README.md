@@ -1,4 +1,4 @@
-# cosmotech-api
+# cosmotech-api-chart
 
 ![Version: 0.0.1](https://img.shields.io/badge/Version-0.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.3](https://img.shields.io/badge/AppVersion-1.0.3-informational?style=flat-square)
 
@@ -20,6 +20,11 @@ Cosmo Tech Platform API
 | api.serviceMonitor.enabled | bool | `true` |  |
 | api.serviceMonitor.namespace | string | `"cosmotech-monitoring"` |  |
 | api.servletContextPath | string | `"/"` |  |
+| api.tlsTruststore.enabled | bool | `false` |  |
+| api.tlsTruststore.fileName | string | `""` |  |
+| api.tlsTruststore.jksPassword | string | `""` |  |
+| api.tlsTruststore.secretName | string | `""` |  |
+| api.tlsTruststore.type | string | `"pem"` |  |
 | api.version | string | `"latest"` |  |
 | argo.imageCredentials.password | string | `""` | password for registry to use for pulling the Workflow images. Useful if you are using a private registry |
 | argo.imageCredentials.registry | string | `""` | container registry to use for pulling the Workflow images. Useful if you are using a private registry |
@@ -44,6 +49,11 @@ Cosmo Tech Platform API
 | config.csm.platform.identityProvider.identity.tenantId | string | `"changeme"` |  |
 | config.csm.platform.identityProvider.serverBaseUrl | string | `"changeme"` |  |
 | config.csm.platform.identityProvider.tokenUrl | string | `"changeme"` |  |
+| config.csm.platform.twincache.host | string | `"redis.host.changeme"` |  |
+| config.csm.platform.twincache.password | string | `"changeme"` |  |
+| config.csm.platform.twincache.port | int | `6379` |  |
+| config.csm.platform.twincache.tls.enabled | bool | `false` |  |
+| config.csm.platform.twincache.username | string | `"default"` |  |
 | deploymentStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":"50%"},"type":"RollingUpdate"}` | Deployment strategy |
 | deploymentStrategy.rollingUpdate.maxSurge | int | `1` | maximum number of Pods that can be created over the desired number of Pods |
 | deploymentStrategy.rollingUpdate.maxUnavailable | string | `"50%"` | maximum number of Pods that can be unavailable during the update process |
