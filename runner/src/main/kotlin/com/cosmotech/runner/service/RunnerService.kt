@@ -18,8 +18,10 @@ import com.cosmotech.api.rbac.RolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
+import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.DatasetAccessControl
@@ -115,12 +117,19 @@ class RunnerService(
   }
 
   fun listInstances(pageRequest: PageRequest): List<Runner> {
-    val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
-
-    return runnerRepository
-        .findByWorkspaceIdAndSecurity(
-            organization!!.id!!, workspace!!.id!!, currentUser, pageRequest)
-        .toList()
+    val isPlatformAdmin =
+        getCurrentAuthenticatedRoles(this.csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
+    return if (!this.csmPlatformProperties.rbac.enabled || isPlatformAdmin) {
+      runnerRepository
+          .findByWorkspaceId(organization!!.id!!, workspace!!.id!!, pageRequest)
+          .toList()
+    } else {
+      val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+      runnerRepository
+          .findByWorkspaceIdAndSecurity(
+              organization!!.id!!, workspace!!.id!!, currentUser, pageRequest)
+          .toList()
+    }
   }
 
   fun startRunWith(runnerInstance: RunnerInstance): String {
