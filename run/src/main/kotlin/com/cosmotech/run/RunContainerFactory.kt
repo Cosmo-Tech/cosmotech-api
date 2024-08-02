@@ -44,6 +44,10 @@ private const val DATASET_PATH_VAR = "CSM_DATASET_ABSOLUTE_PATH"
 private const val DATASET_PATH = "/mnt/scenariorun-data"
 private const val PARAMETERS_PATH_VAR = "CSM_PARAMETERS_ABSOLUTE_PATH"
 private const val PARAMETERS_PATH = "/mnt/scenariorun-parameters"
+private const val OUTPUT_PATH_VAR = "CSM_OUTPUT_ABSOLUTE_PATH"
+private const val OUTPUT_PATH = "/pkg/share/Simulation/Output"
+private const val TEMP_PATH_VAR = "CSM_TEMP_ABSOLUTE_PATH"
+private const val TEMP_PATH = "/usr/tmp"
 private const val PARAMETERS_ORGANIZATION_VAR = "CSM_ORGANIZATION_ID"
 private const val PARAMETERS_WORKSPACE_VAR = "CSM_WORKSPACE_ID"
 private const val PARAMETERS_RUNNER_VAR = "CSM_RUNNER_ID"
@@ -365,6 +369,8 @@ internal fun getMinimalCommonEnvVars(
           API_BASE_SCOPE_VAR to containerScopes,
           DATASET_PATH_VAR to DATASET_PATH,
           PARAMETERS_PATH_VAR to PARAMETERS_PATH,
+          OUTPUT_PATH_VAR to OUTPUT_PATH,
+          TEMP_PATH_VAR to TEMP_PATH,
       )
   return (commonEnvVars + twinCacheEnvVars).toMutableMap()
 }

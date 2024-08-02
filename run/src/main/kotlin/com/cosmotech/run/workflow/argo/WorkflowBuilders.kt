@@ -37,8 +37,12 @@ private const val CSM_DEFAULT_WORKFLOW_NAME = "default-workflow-"
 internal const val VOLUME_CLAIM = "datadir"
 internal const val VOLUME_CLAIM_DATASETS_SUBPATH = "datasetsdir"
 internal const val VOLUME_CLAIM_PARAMETERS_SUBPATH = "parametersdir"
+internal const val VOLUME_CLAIM_OUTPUT_SUBPATH = "outputdir"
+internal const val VOLUME_CLAIM_TEMP_SUBPATH = "tempdir"
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
+private const val VOLUME_OUTPUT_PATH = "/pkg/share/Simulation/Output"
+private const val VOLUME_TEMP_PATH = "/usr/tmp"
 internal const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
 internal const val ALWAYS_PULL_POLICY = "Always"
 
@@ -66,7 +70,15 @@ internal fun buildTemplate(
           V1VolumeMount()
               .name(VOLUME_CLAIM)
               .mountPath(VOLUME_PARAMETERS_PATH)
-              .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH))
+              .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH),
+          V1VolumeMount()
+              .name(VOLUME_CLAIM)
+              .mountPath(VOLUME_OUTPUT_PATH)
+              .subPath(VOLUME_CLAIM_OUTPUT_SUBPATH),
+          V1VolumeMount()
+              .name(VOLUME_CLAIM)
+              .mountPath(VOLUME_TEMP_PATH)
+              .subPath(VOLUME_CLAIM_TEMP_SUBPATH))
 
   val sizingInfo = runContainer.runSizing ?: BASIC_SIZING.toContainerResourceSizing()
 
