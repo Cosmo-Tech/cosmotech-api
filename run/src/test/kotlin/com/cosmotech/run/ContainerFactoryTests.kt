@@ -178,6 +178,8 @@ class ContainerFactoryTests {
                 "CSM_API_URL" to csmPlatformProperties.api.baseUrl,
                 "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
                 "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "CSM_OUTPUT_ABSOLUTE_PATH" to "/pkg/share/Simulation/Output",
+                "CSM_TEMP_ABSOLUTE_PATH" to "/usr/tmp",
                 "TWIN_CACHE_HOST" to csmPlatformProperties.twincache.host,
                 "TWIN_CACHE_PORT" to csmPlatformProperties.twincache.port,
                 "TWIN_CACHE_PASSWORD" to csmPlatformProperties.twincache.password,
