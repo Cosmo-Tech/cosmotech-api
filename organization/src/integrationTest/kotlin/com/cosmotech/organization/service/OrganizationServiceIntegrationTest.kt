@@ -118,8 +118,10 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
     @Test
     fun `findAllOrganizations with correct values and RBAC for current user`() {
-
+      runAsDifferentOrganizationUser()
       val numberOfOrganizationCreated = createOrganizationsWithAllCombinationOfRole(TEST_USER_ID)
+
+      runAsOrganizationUser()
       // This number represents the amount of Organization that test.user can read regarding RBAC
       // This is typically all simple combinations except "securityRole to none"
       // We have 36 combinations per user in batchOrganizationCreationWithRBAC
@@ -129,9 +131,11 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
     @Test
     fun `findAllOrganizations with correct values and no RBAC for current user`() {
-
+      runAsDifferentOrganizationUser()
       val numberOfOrganizationCreated =
           createOrganizationsWithAllCombinationOfRole(OTHER_TEST_USER_ID)
+
+      runAsOrganizationUser()
       // This number represents the amount of Organization that test.user can read regarding RBAC
       // We have 36 combinations per user in batchOrganizationCreationWithRBAC
       // securityRole does not refer to test.user
@@ -222,7 +226,8 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             OrganizationSecurity(
                 default = ROLE_USER,
                 mutableListOf(
-                    OrganizationAccessControl(id = OTHER_TEST_USER_ID, role = ROLE_NONE))),
+                    OrganizationAccessControl(id = OTHER_TEST_USER_ID, role = ROLE_NONE),
+                    OrganizationAccessControl(id = TEST_USER_ID, role = ROLE_ADMIN))),
             organizationRegistered.security)
         assertEquals(name, organizationRegistered.name)
         assertTrue(organizationRegistered.id!!.startsWith("o-"))
@@ -252,7 +257,8 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       assertThrows<CsmAccessForbiddenException> {
         val name = "o-connector-test-1"
         val organizationToRegister =
-            createTestOrganizationWithSimpleSecurity(name, OTHER_TEST_USER_ID, ROLE_USER, ROLE_NONE)
+            createTestOrganizationWithSimpleSecurity(
+                name, OTHER_TEST_USER_ID, ROLE_USER, ROLE_ADMIN)
         val organizationRegistered =
             organizationApiService.registerOrganization(organizationToRegister)
         organizationApiService.unregisterOrganization(organizationRegistered.id!!)
@@ -1011,7 +1017,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       runAsOrganizationUser()
       val orgaUsers =
           organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
-      assertEquals(listOf(TEST_USER_ID), orgaUsers)
+      assertEquals(listOf(TEST_USER_ID, OTHER_TEST_USER_ID), orgaUsers)
     }
 
     @Test
@@ -1161,7 +1167,8 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             OrganizationSecurity(
                 default = ROLE_USER,
                 mutableListOf(
-                    OrganizationAccessControl(id = OTHER_TEST_USER_ID, role = ROLE_NONE))),
+                    OrganizationAccessControl(id = OTHER_TEST_USER_ID, role = ROLE_NONE),
+                    OrganizationAccessControl(id = TEST_ADMIN_USER_ID, role = ROLE_ADMIN))),
             organizationRegistered.security)
         assertEquals(name, organizationRegistered.name)
         assertTrue(organizationRegistered.id!!.startsWith("o-"))
@@ -2027,7 +2034,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       runAsPlatformAdmin()
       val orgaUsers =
           organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
-      assertEquals(listOf(TEST_USER_ID), orgaUsers)
+      assertEquals(listOf(TEST_USER_ID, OTHER_TEST_USER_ID), orgaUsers)
     }
 
     @Test
@@ -2040,7 +2047,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       runAsPlatformAdmin()
       val orgaUsers =
           organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
-      assertEquals(listOf(TEST_USER_ID), orgaUsers)
+      assertEquals(listOf(TEST_USER_ID, OTHER_TEST_USER_ID), orgaUsers)
     }
 
     @Test

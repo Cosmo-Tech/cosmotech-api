@@ -11,7 +11,6 @@ import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
-import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
@@ -192,21 +191,13 @@ class RunnerService(
           }
     }
 
-    fun setSecurityFrom(runner: Runner): RunnerInstance = apply {
-      val rbacSecurity = extractRbacSecurity(runner) ?: return@apply
-      this.setRbacSecurity(rbacSecurity)
-    }
-
     fun setLastRunId(runInfo: String) {
       this.runner.lastRunId = runInfo
     }
 
-    fun initSecurity(): RunnerInstance = apply {
-      val userId = getCurrentAccountIdentifier(csmPlatformProperties)
-      this.runner.security =
-          RunnerSecurity(
-              default = ROLE_NONE,
-              accessControlList = mutableListOf(RunnerAccessControl(userId, ROLE_ADMIN)))
+    fun initSecurity(runner: Runner): RunnerInstance = apply {
+      val rbacSecurity = csmRbac.initSecurity(extractRbacSecurity(runner))
+      setRbacSecurity(rbacSecurity)
     }
 
     fun initParameters(): RunnerInstance = apply {
@@ -270,7 +261,7 @@ class RunnerService(
     }
 
     private fun getRbacSecurity(): RbacSecurity {
-      return extractRbacSecurity(this.runner)!!
+      return extractRbacSecurity(this.runner)
     }
 
     private fun setRbacSecurity(rbacSecurity: RbacSecurity) {
@@ -283,10 +274,7 @@ class RunnerService(
                   .toMutableList())
     }
 
-    private fun extractRbacSecurity(runner: Runner): RbacSecurity? {
-      if (runner.security == null) {
-        return null
-      }
+    private fun extractRbacSecurity(runner: Runner): RbacSecurity {
       return RbacSecurity(
           runner.id,
           runner.security?.default ?: ROLE_NONE,
