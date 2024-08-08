@@ -15,7 +15,6 @@ import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
-import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
@@ -204,26 +203,15 @@ class SolutionServiceImpl(
 
   override fun createSolution(organizationId: String, solution: Solution): Solution {
     organizationApiService.getVerifiedOrganization(organizationId, PERMISSION_CREATE_CHILDREN)
-    var solutionSecurity = solution.security
-    if (solutionSecurity == null) {
-      solutionSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
-    } else {
-      val accessControls = mutableListOf<String>()
-      solutionSecurity.accessControlList.forEach {
-        if (!accessControls.contains(it.id)) {
-          accessControls.add(it.id)
-        } else {
-          throw IllegalArgumentException("User $it is referenced multiple times in the security")
-        }
-      }
-    }
 
-    return solutionRepository.save(
+    val createdSolution =
         solution.copy(
             id = idGenerator.generate("solution", prependPrefix = "sol-"),
             organizationId = organizationId,
-            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            security = solutionSecurity))
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
+    createdSolution.setRbac(csmRbac.initSecurity(solution.getRbac()))
+
+    return solutionRepository.save(createdSolution)
   }
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
@@ -518,12 +506,6 @@ fun Solution.getRbac(): RbacSecurity {
       this.security?.default ?: ROLE_NONE,
       this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
           ?: mutableListOf())
-}
-
-private fun initSecurity(userId: String): SolutionSecurity {
-  return SolutionSecurity(
-      default = ROLE_NONE,
-      accessControlList = mutableListOf(SolutionAccessControl(userId, ROLE_ADMIN)))
 }
 
 fun Solution.setRbac(rbacSecurity: RbacSecurity) {

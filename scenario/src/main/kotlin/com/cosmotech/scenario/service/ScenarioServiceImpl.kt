@@ -27,8 +27,6 @@ import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
@@ -170,20 +168,6 @@ internal class ScenarioServiceImpl(
           parentId, solution, runTemplate, parent, scenario, newParametersValuesList)
     }
 
-    var scenarioSecurity = scenario.security
-    if (scenarioSecurity == null) {
-      scenarioSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
-    } else {
-      val accessControls = mutableListOf<String>()
-      scenarioSecurity.accessControlList.forEach {
-        if (!accessControls.contains(it.id)) {
-          accessControls.add(it.id)
-        } else {
-          throw IllegalArgumentException("User $it is referenced multiple times in the security")
-        }
-      }
-    }
-
     if (workspace.datasetCopy == true) {
       datasetList =
           datasetList
@@ -221,8 +205,8 @@ internal class ScenarioServiceImpl(
             datasetList = datasetList,
             rootId = rootId,
             parametersValues = newParametersValuesList,
-            validationStatus = ScenarioValidationStatus.Draft,
-            security = scenarioSecurity)
+            validationStatus = ScenarioValidationStatus.Draft)
+    scenarioToSave.setRbac(csmRbac.initSecurity(scenario.getRbac()))
 
     scenarioRepository.save(scenarioToSave)
 
@@ -1135,12 +1119,6 @@ internal class ScenarioServiceImpl(
     csmRbac.verify(scenario.getRbac(), requiredPermission, scenarioPermissions)
 
     return scenario
-  }
-
-  private fun initSecurity(userId: String): ScenarioSecurity {
-    return ScenarioSecurity(
-        default = ROLE_NONE,
-        accessControlList = mutableListOf(ScenarioAccessControl(userId, ROLE_ADMIN)))
   }
 
   internal fun checkInternalResultDataServiceConfiguration() {

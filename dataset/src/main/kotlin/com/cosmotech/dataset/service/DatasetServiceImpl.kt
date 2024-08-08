@@ -24,7 +24,6 @@ import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
-import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
@@ -184,21 +183,7 @@ class DatasetServiceImpl(
     val existingConnector = connectorService.findConnectorById(dataset.connector!!.id!!)
     logger.debug("Found connector: {}", existingConnector)
 
-    var datasetSecurity = dataset.security
-    if (datasetSecurity == null) {
-      datasetSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
-    } else {
-      val accessControls = mutableListOf<String>()
-      datasetSecurity.accessControlList.forEach {
-        if (!accessControls.contains(it.id)) {
-          accessControls.add(it.id)
-        } else {
-          throw IllegalArgumentException("User $it is referenced multiple times in the security")
-        }
-      }
-    }
-
-    val datasetCopy =
+    val createdDataset =
         dataset.copy(
             id = idGenerator.generate("dataset"),
             twingraphId = twingraphId,
@@ -209,13 +194,14 @@ class DatasetServiceImpl(
             ingestionStatus = IngestionStatusEnum.NONE,
             twincacheStatus = TwincacheStatusEnum.EMPTY,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            organizationId = organizationId,
-            security = datasetSecurity)
-    datasetCopy.connector!!.apply {
+            organizationId = organizationId)
+    createdDataset.setRbac(csmRbac.initSecurity(dataset.getRbac()))
+    createdDataset.connector!!.apply {
       name = existingConnector.name
       version = existingConnector.version
     }
-    return datasetRepository.save(datasetCopy)
+
+    return datasetRepository.save(createdDataset)
   }
 
   override fun createSubDataset(
@@ -1239,12 +1225,6 @@ class DatasetServiceImpl(
     csmRbac.verify(dataset.getRbac(), requiredPermission)
     return dataset
   }
-}
-
-private fun initSecurity(userId: String): DatasetSecurity {
-  return DatasetSecurity(
-      default = ROLE_NONE,
-      accessControlList = mutableListOf(DatasetAccessControl(userId, ROLE_ADMIN)))
 }
 
 fun Dataset.getRbac(): RbacSecurity {
