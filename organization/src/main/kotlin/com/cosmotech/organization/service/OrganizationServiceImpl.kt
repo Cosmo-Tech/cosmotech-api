@@ -12,7 +12,6 @@ import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
-import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getAllRolesDefinition
 import com.cosmotech.api.rbac.getCommonRolesDefinition
@@ -77,33 +76,19 @@ class OrganizationServiceImpl(
   }
 
   override fun registerOrganization(organization: Organization): Organization {
-    logger.trace("Registering organization : {}", organization)
+    logger.trace("Registering organization: {}", organization)
 
     if (organization.name.isNullOrBlank()) {
       throw IllegalArgumentException("Organization name must not be null or blank")
     }
 
-    val newOrganizationId = idGenerator.generate("organization")
-    var organizationSecurity = organization.security
-    if (organizationSecurity == null) {
-      val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
-      organizationSecurity = initSecurity(currentUser)
-    } else {
-      val accessControls = mutableListOf<String>()
-      organizationSecurity.accessControlList.forEach {
-        if (!accessControls.contains(it.id)) {
-          accessControls.add(it.id)
-        } else {
-          throw IllegalArgumentException("User $it is referenced multiple times in the security")
-        }
-      }
-    }
-
-    return organizationRepository.save(
+    val createdOrganization =
         organization.copy(
-            id = newOrganizationId,
-            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            security = organizationSecurity))
+            id = idGenerator.generate("organization"),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
+    createdOrganization.setRbac(csmRbac.initSecurity(organization.getRbac()))
+
+    return organizationRepository.save(createdOrganization)
   }
 
   override fun unregisterOrganization(organizationId: String) {
@@ -241,12 +226,6 @@ class OrganizationServiceImpl(
     val organization = getVerifiedOrganization(organizationId)
     requiredPermissions.forEach { csmRbac.verify(organization.getRbac(), it) }
     return organization
-  }
-
-  private fun initSecurity(userId: String): OrganizationSecurity {
-    return OrganizationSecurity(
-        default = ROLE_NONE,
-        accessControlList = mutableListOf(OrganizationAccessControl(userId, ROLE_ADMIN)))
   }
 }
 
