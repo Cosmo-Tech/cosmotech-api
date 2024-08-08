@@ -62,7 +62,7 @@ paths:
       parameters:
         - name: page
           in: query
-          description: page number to query
+          description: page number to query (first page is at index 0)
           required: false
           schema:
             type: integer
@@ -100,7 +100,7 @@ paths:
       parameters:
         - name: page
           in: query
-          description: page number to query
+          description: page number to query (first page is at index 0)
           required: false
           schema:
             type: integer

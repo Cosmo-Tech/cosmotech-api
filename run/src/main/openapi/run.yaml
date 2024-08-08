@@ -277,20 +277,21 @@ paths:
         required: true
         schema:
           type: string
-      - name: page
-        in: query
-        description: page number to query
-        required: false
-        schema:
-          type: integer
-      - name: size
-        in: query
-        description: amount of result by page
-        required: false
-        schema:
-          type: integer
     get:
       operationId: listRuns
+      parameters:
+        - name: page
+          in: query
+          description: page number to query (first page is at index 0)
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: false
+          schema:
+            type: integer
       tags:
         - run
       summary: get the list of Runs for the Runner

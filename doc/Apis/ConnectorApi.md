@@ -20,7 +20,7 @@ List all Connectors
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **page** | **Integer**| page number to query | [optional] [default to null] |
+| **page** | **Integer**| page number to query (first page is at index 0) | [optional] [default to null] |
 | **size** | **Integer**| amount of result by page | [optional] [default to null] |
 
 ### Return type

@@ -138,7 +138,7 @@ get the list of Runs for the Runner
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **runner\_id** | **String**| the Runner identifier | [default to null] |
-| **page** | **Integer**| page number to query | [optional] [default to null] |
+| **page** | **Integer**| page number to query (first page is at index 0) | [optional] [default to null] |
 | **size** | **Integer**| amount of result by page | [optional] [default to null] |
 
 ### Return type
