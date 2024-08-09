@@ -36,6 +36,7 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.*
+import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.api.WorkspaceApiService
@@ -524,7 +525,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `access control list shouldn't contain more than one time each user on ACL addition`() {
+  fun `access control list can't add an existing user`() {
     organizationSaved =
         organizationApiService.registerOrganization(makeOrganization("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
@@ -538,11 +539,44 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(2, runnerSavedSecurityUsers.size)
 
-    runnerApiService.addRunnerAccessControl(
-        organizationSaved.id!!,
-        workspaceSaved.id!!,
-        runnerSaved.id!!,
-        RunnerAccessControl(defaultName, ROLE_EDITOR))
+    assertThrows<IllegalArgumentException> {
+      runnerApiService.addRunnerAccessControl(
+          organizationSaved.id!!,
+          workspaceSaved.id!!,
+          runnerSaved.id!!,
+          RunnerAccessControl(defaultName, ROLE_EDITOR))
+    }
+
+    val runnerSecurityUsers =
+        runnerApiService.getRunnerSecurityUsers(
+            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+    assertEquals(2, runnerSecurityUsers.size)
+    assert(runnerSavedSecurityUsers == runnerSecurityUsers)
+  }
+
+  @Test
+  fun `access control list can't update a non-existing user`() {
+    organizationSaved =
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
+    val workingRunner = makeRunner()
+    runnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, workingRunner)
+
+    val runnerSavedSecurityUsers =
+        runnerApiService.getRunnerSecurityUsers(
+            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+    assertEquals(2, runnerSavedSecurityUsers.size)
+
+    assertThrows<CsmResourceNotFoundException> {
+      runnerApiService.updateRunnerAccessControl(
+          organizationSaved.id!!,
+          workspaceSaved.id!!,
+          runnerSaved.id!!,
+          "invalid user",
+          RunnerRole(ROLE_VIEWER))
+    }
 
     val runnerSecurityUsers =
         runnerApiService.getRunnerSecurityUsers(

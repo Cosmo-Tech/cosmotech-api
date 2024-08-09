@@ -264,6 +264,11 @@ class RunnerService(
       this.removeAccessControlToDatasets(userId)
     }
 
+    fun checkUserExists(userId: String) {
+      csmRbac.checkUserExists(
+          runner.getRbac(), userId, "User '$userId' not found in runner ${runner.id}")
+    }
+
     private fun getRbacSecurity(): RbacSecurity {
       return extractRbacSecurity(this.runner)!!
     }
