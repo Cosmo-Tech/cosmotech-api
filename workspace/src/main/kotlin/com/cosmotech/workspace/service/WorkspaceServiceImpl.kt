@@ -24,7 +24,6 @@ import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
-import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getPermissions
@@ -120,26 +119,14 @@ internal class WorkspaceServiceImpl(
     // Validate Solution ID
     workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
 
-    var workspaceSecurity = workspace.security
-    if (workspaceSecurity == null) {
-      workspaceSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
-    } else {
-      val accessControls = mutableListOf<String>()
-      workspaceSecurity.accessControlList.forEach {
-        if (!accessControls.contains(it.id)) {
-          accessControls.add(it.id)
-        } else {
-          throw IllegalArgumentException("User $it is referenced multiple times in the security")
-        }
-      }
-    }
-
-    return workspaceRepository.save(
+    val createdWorkspace =
         workspace.copy(
             id = idGenerator.generate("workspace"),
             organizationId = organizationId,
-            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            security = workspaceSecurity))
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
+    createdWorkspace.setRbac(csmRbac.initSecurity(workspace.getRbac()))
+
+    return workspaceRepository.save(createdWorkspace)
   }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
@@ -540,12 +527,6 @@ internal class WorkspaceServiceImpl(
       workspace.linkedDatasetIdList = mutableListOf(datasetId)
     }
     return workspaceRepository.save(workspace)
-  }
-
-  private fun initSecurity(userId: String): WorkspaceSecurity {
-    return WorkspaceSecurity(
-        default = ROLE_NONE,
-        accessControlList = mutableListOf(WorkspaceAccessControl(userId, ROLE_ADMIN)))
   }
 
   private fun sendRemoveWorkspaceFromDatasetEvent(
