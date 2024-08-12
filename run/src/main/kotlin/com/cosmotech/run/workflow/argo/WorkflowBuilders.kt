@@ -148,7 +148,6 @@ internal fun buildWorkflowSpec(
     executionTimeout: Int?,
     alwaysPull: Boolean = false
 ): IoArgoprojWorkflowV1alpha1WorkflowSpec {
-  val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
   val templates =
       startContainers.containers
           .map { container ->
@@ -165,7 +164,6 @@ internal fun buildWorkflowSpec(
                   ?.filterNot(String::isBlank)
                   ?.map(V1LocalObjectReference()::name)
                   ?.ifEmpty { null })
-          .nodeSelector(nodeSelector)
           .tolerations(listOf(V1Toleration().key("vendor").value("cosmotech").effect("NoSchedule")))
           .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
           .entrypoint(CSM_DAG_ENTRYPOINT)
