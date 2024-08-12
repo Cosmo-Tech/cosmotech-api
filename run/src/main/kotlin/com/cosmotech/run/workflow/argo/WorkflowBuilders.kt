@@ -10,7 +10,6 @@ import com.cosmotech.run.container.getRequestsMap
 import com.cosmotech.run.container.toContainerResourceSizing
 import com.cosmotech.run.domain.ContainerResourceSizing
 import com.cosmotech.run.domain.RunContainer
-import com.cosmotech.run.utils.getNodeLabelSize
 import com.cosmotech.run.workflow.RunStartContainers
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTask
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTemplate
