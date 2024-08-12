@@ -99,12 +99,15 @@ internal fun buildTemplate(
     container.command(listOf(runContainer.entrypoint))
   }
 
-  val template =
+  var template =
       IoArgoprojWorkflowV1alpha1Template()
           .name(runContainer.name.lowercase())
           .metadata(IoArgoprojWorkflowV1alpha1Metadata().labels(runContainer.labels))
           .container(container)
-          .nodeSelector(runContainer.getNodeLabelSize())
+
+  if (csmPlatformProperties.argo.workflows.ignoreNodeSelector == false) {
+    template = template.nodeSelector(runContainer.getNodeLabelSize())
+  }
 
   return template
 }
@@ -150,7 +153,6 @@ internal fun buildWorkflowSpec(
     executionTimeout: Int?,
     alwaysPull: Boolean = false
 ): IoArgoprojWorkflowV1alpha1WorkflowSpec {
-  val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
   val templates =
       startContainers.containers
           .map { container ->
@@ -167,12 +169,17 @@ internal fun buildWorkflowSpec(
                   ?.filterNot(String::isBlank)
                   ?.map(V1LocalObjectReference()::name)
                   ?.ifEmpty { null })
-          .nodeSelector(nodeSelector)
           .tolerations(listOf(V1Toleration().key("vendor").value("cosmotech").effect("NoSchedule")))
           .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
           .entrypoint(CSM_DAG_ENTRYPOINT)
           .templates(templates)
           .volumeClaimTemplates(buildVolumeClaims(csmPlatformProperties))
+
+  if (csmPlatformProperties.argo.workflows.ignoreNodeSelector == false) {
+    workflowSpec =
+        workflowSpec.nodeSelector(
+            mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute"))
+  }
 
   workflowSpec.activeDeadlineSeconds = executionTimeout ?: CSM_ARGO_WORKFLOWS_TIMEOUT
 
