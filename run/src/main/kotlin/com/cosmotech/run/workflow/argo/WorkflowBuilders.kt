@@ -103,7 +103,7 @@ internal fun buildTemplate(
       IoArgoprojWorkflowV1alpha1Template()
           .name(runContainer.name.lowercase())
           .metadata(IoArgoprojWorkflowV1alpha1Metadata().labels(runContainer.labels))
-          .container(container))
+          .container(container)
 
   return template
 }
