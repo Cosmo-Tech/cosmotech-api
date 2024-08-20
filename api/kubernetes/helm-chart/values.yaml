@@ -170,13 +170,14 @@ argo:
 config:
   csm:
     platform:
+      tls:
+        enabled: false
+        bundle: ""
       twincache:
         host: redis.host.changeme
         password: changeme
         port: 6379
         username: default
-        tls:
-          enabled: false
       argo:
         base-uri: "http://argo-server:2746"
         workflows:
@@ -192,8 +193,6 @@ config:
       authorization:
         allowed-tenants: []
       identityProvider:
-        tls:
-          enabled: false
         code: keycloak
         authorizationUrl: "changeme"
         tokenUrl: "changeme"
