@@ -133,7 +133,10 @@ spring:
 {{/*
 ssl bundle must be set here because it is searched even if empty
 */}}
-{{- if and .Values.api.tlsTruststore.enabled }}
+{{- if .Values.api.tlsTruststore.enabled }}
+  rabbitmq:
+    ssl:
+      bundle: {{ include "cosmotech-api.custom-rootca-bundle" . }}
   data:
     redis:
       ssl:
@@ -196,8 +199,9 @@ csm:
       {{- end }}
     blobPersistence:
       path: {{ include "cosmotech-api.blobPersistencePath" . }}
-    {{- if and .Values.api.tlsTruststore.enabled .Values.config.csm.platform.twincache.tls.enabled }}
+    {{- if .Values.api.tlsTruststore.enabled }}
     tls:
+      enabled : {{ .Values.api.tlsTruststore.enabled }}
       bundle: {{ include "cosmotech-api.custom-rootca-bundle" . }}
     {{- end }}
 {{- end }}
