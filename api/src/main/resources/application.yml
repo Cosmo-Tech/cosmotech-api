@@ -10,12 +10,14 @@ spring:
     port: ${csm.platform.internalResultServices.eventBus.port}
     password: ${csm.platform.internalResultServices.eventBus.listener.password}
     username: ${csm.platform.internalResultServices.eventBus.listener.username}
+    ssl:
+      enabled: ${csm.platform.tls.enabled}
   data:
     redis:
       host: ${csm.platform.twincache.host}
       port: ${csm.platform.twincache.port}
       ssl:
-        enabled: ${csm.platform.twincache.tls.enabled}
+        enabled: ${csm.platform.tls.enabled}
       password: ${csm.platform.twincache.password}
       username: ${csm.platform.twincache.username}
       timeout: 60000
@@ -77,9 +79,6 @@ csm:
     twincache:
       host: "localhost"
       port: "6379"
-      tls:
-        enabled: false
-        bundle: ""
       username: "default_user"
       password: "default_password"
       dataset:
@@ -89,6 +88,9 @@ csm:
         maxResult: 200
       runner:
         maxResult: 200
+    tls:
+      enabled: false
+      bundle: ""
     internalResultServices:
       enabled: false
       storage:
