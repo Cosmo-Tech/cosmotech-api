@@ -197,8 +197,7 @@ csm:
     blobPersistence:
       path: {{ include "cosmotech-api.blobPersistencePath" . }}
     {{- if and .Values.api.tlsTruststore.enabled .Values.config.csm.platform.twincache.tls.enabled }}
-    twinCache:
-      tls:
-        bundle: {{ include "cosmotech-api.custom-rootca-bundle" . }}
+    tls:
+      bundle: {{ include "cosmotech-api.custom-rootca-bundle" . }}
     {{- end }}
 {{- end }}

@@ -192,6 +192,8 @@ config:
       authorization:
         allowed-tenants: []
       identityProvider:
+        tls:
+          enabled: false
         code: keycloak
         authorizationUrl: "changeme"
         tokenUrl: "changeme"
