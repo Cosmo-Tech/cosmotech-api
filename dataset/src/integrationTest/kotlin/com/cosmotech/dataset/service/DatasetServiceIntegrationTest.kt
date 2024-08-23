@@ -145,7 +145,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @BeforeEach
   fun beforeEach() {
-    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Connector::class.java)
@@ -156,11 +156,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     connectorSaved = connectorApiService.registerConnector(makeConnector())
 
-    organization = makeOrganizationWithRole("Organization")
+    organization = makeOrganizationWithRole()
     organizationSaved = organizationApiService.registerOrganization(organization)
     dataset = makeDatasetWithRole()
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-    dataset2 = makeDatasetWithRole()
+    dataset2 = makeDataset()
     solution = makeSolution()
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
     workspace = makeWorkspace()
@@ -335,6 +335,69 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetCompatibilityList =
         datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!).compatibility!!
     assertTrue { datasetCompatibilityList.isEmpty() }
+  }
+
+  @Test
+  fun `test find All Datasets as Platform Admin`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    val numberOfDatasets = 20
+    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    val expectedSize = 15
+    IntRange(1, numberOfDatasets).forEach {
+      datasetApiService.createDataset(
+          organizationSaved.id!!, makeDataset("d-dataset-$it", "dataset-$it"))
+    }
+    logger.info("Change current user...")
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+
+    logger.info("should find all datasets and assert there are $numberOfDatasets")
+    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    assertEquals(numberOfDatasets + 1, datasetList.size)
+
+    logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, null)
+    assertEquals(defaultPageSize, datasetList.size)
+
+    logger.info("should find all datasets and assert there are expected size: $expectedSize")
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, expectedSize)
+    assertEquals(expectedSize, datasetList.size)
+
+    logger.info("should find all solutions and assert it returns the second / last page")
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 1, expectedSize)
+    assertEquals(numberOfDatasets - expectedSize + 1, datasetList.size)
+  }
+
+  @Test
+  fun `test find All Datasets as Organization User`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    val numberOfDatasets = 20
+    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    val expectedSize = 15
+    IntRange(1, numberOfDatasets).forEach {
+      datasetApiService.createDataset(
+          organizationSaved.id!!,
+          makeDatasetWithRole(
+              organizationId = "d-dataset-$it",
+              parentId = "dataset-$it",
+              userName = "ANOTHER_USER"))
+    }
+    logger.info("should find all datasets and assert there are $numberOfDatasets")
+    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    assertEquals(0, datasetList.size)
+
+    logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, null)
+    assertEquals(0, datasetList.size)
+
+    logger.info("should find all datasets and assert there are expected size: $expectedSize")
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, expectedSize)
+    assertEquals(0, datasetList.size)
+
+    logger.info("should find all solutions and assert it returns the second / last page")
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 1, expectedSize)
+    assertEquals(0, datasetList.size)
   }
 
   @Test
@@ -729,8 +792,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganizationWithRole("organization"))
+    organizationSaved = organizationApiService.registerOrganization(makeOrganizationWithRole())
     val brokenDataset =
         Dataset(
             name = "dataset",
@@ -750,8 +812,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganizationWithRole("organization"))
+    organizationSaved = organizationApiService.registerOrganization(makeOrganizationWithRole())
     val workingDataset = makeDatasetWithRole("dataset", sourceType = DatasetSourceType.None)
     val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, workingDataset)
 
@@ -1010,7 +1071,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   fun makeOrganizationWithRole(
       userName: String = TEST_USER_MAIL,
-      role: String = ROLE_ADMIN
+      role: String = ROLE_EDITOR
   ): Organization {
     return Organization(
         id = UUID.randomUUID().toString(),
@@ -1023,6 +1084,23 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         OrganizationAccessControl(id = userName, role = role))))
+  }
+  fun makeDataset(
+      organizationId: String = organizationSaved.id!!,
+      parentId: String = "",
+      sourceType: DatasetSourceType = DatasetSourceType.File
+  ): Dataset {
+    return Dataset(
+        id = UUID.randomUUID().toString(),
+        name = "My datasetRbac",
+        organizationId = organizationId,
+        parentId = parentId,
+        ownerId = "ownerId",
+        connector = DatasetConnector(connectorSaved.id!!),
+        twingraphId = "graph",
+        source = SourceInfo("location", "name", "path"),
+        tags = mutableListOf("dataset"),
+        sourceType = sourceType)
   }
 
   fun makeDatasetWithRole(
@@ -1052,7 +1130,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                         DatasetAccessControl(id = userName, role = role))))
   }
 
-  fun makeSolution(organizationId: String = organizationSaved.id!!): Solution {
+  fun makeSolution(
+      organizationId: String = organizationSaved.id!!,
+      userName: String = TEST_USER_MAIL,
+      role: String = ROLE_EDITOR
+  ): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
@@ -1064,7 +1146,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                        SolutionAccessControl(id = userName, role = role))))
   }
 
   fun makeWorkspace(
