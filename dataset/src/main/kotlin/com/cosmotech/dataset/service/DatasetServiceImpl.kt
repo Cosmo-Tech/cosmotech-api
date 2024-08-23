@@ -18,6 +18,7 @@ import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -125,21 +126,40 @@ class DatasetServiceImpl(
     private val datasetRepository: DatasetRepository,
     private val unifiedJedis: UnifiedJedis,
     private val csmRbac: CsmRbac,
+    private val csmAdmin: CsmAdmin,
     private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   override fun findAllDatasets(organizationId: String, page: Int?, size: Int?): List<Dataset> {
     organizationService.getVerifiedOrganization(organizationId)
-
-    val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
-    if (pageable != null) {
-      return datasetRepository.findByOrganizationId(organizationId, currentUser, pageable).toList()
+    val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
+    val result: MutableList<Dataset>
+
+    val rbacEnabled = !isAdmin && this.csmPlatformProperties.rbac.enabled
+
+    if (pageable == null) {
+      result =
+          findAllPaginated(defaultPageSize) {
+            if (rbacEnabled) {
+              val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+              datasetRepository.findByOrganizationId(organizationId, currentUser, it).toList()
+            } else {
+              datasetRepository.findAll(it).toList()
+            }
+          }
+    } else {
+      result =
+          if (rbacEnabled) {
+            val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+            datasetRepository.findByOrganizationId(organizationId, currentUser, pageable).toList()
+          } else {
+            datasetRepository.findAll(pageable).toList()
+          }
     }
-    return findAllPaginated(defaultPageSize) {
-      datasetRepository.findByOrganizationId(organizationId, currentUser, it).toList()
-    }
+
+    return result
   }
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset {
