@@ -34,7 +34,9 @@ data class ProbeMessage(
 )
 
 @Service
-@ConditionalOnExpression("'\${csm.platform.internalResultServices.enabled}' == 'true'")
+@ConditionalOnExpression(
+    "'\${csm.platform.internalResultServices.enabled}' == 'true' " +
+        "and '\${csm.platform.internalResultServices.eventBus.enabled}' == 'true'")
 class AmqpClientServiceImpl(
     private val rabbitAdmin: RabbitAdmin,
     private val rabbitListenerEndpointRegistry: RabbitListenerEndpointRegistry,

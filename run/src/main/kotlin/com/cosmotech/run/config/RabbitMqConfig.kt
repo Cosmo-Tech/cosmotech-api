@@ -19,10 +19,12 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory
 
 @Configuration
-@ConditionalOnExpression("'\${csm.platform.internalResultServices.enabled}' == 'true'")
+@ConditionalOnExpression(
+    "'\${csm.platform.internalResultServices.enabled}' == 'true' " +
+        "and '\${csm.platform.internalResultServices.eventBus.enabled}' == 'true'")
 class RabbitMqConfig(
-    val connectionFactory: ConnectionFactory,
-    val rabbitMqConfigModel: RabbitMqConfigModel
+    val rabbitMqConfigModel: RabbitMqConfigModel,
+    val connectionFactory: ConnectionFactory
 ) : RabbitListenerConfigurer {
 
   @Bean
@@ -42,13 +44,13 @@ class RabbitMqConfig(
         .with(rabbitMqConfigModel.routingKey)
   }
 
-  @Bean fun rabbitTemplate() = RabbitTemplate(connectionFactory)
-
-  @Bean fun rabbitAdmin() = RabbitAdmin(connectionFactory)
-
   @Bean fun rabbitListenerEndpointRegistry() = RabbitListenerEndpointRegistry()
 
   @Bean fun messageHandlerMethodFactory() = DefaultMessageHandlerMethodFactory()
+
+  @Bean fun rabbitTemplate() = RabbitTemplate(connectionFactory)
+
+  @Bean fun rabbitAdmin() = RabbitAdmin(connectionFactory)
 
   override fun configureRabbitListeners(registrar: RabbitListenerEndpointRegistrar) {
     val factory = SimpleRabbitListenerContainerFactory()
