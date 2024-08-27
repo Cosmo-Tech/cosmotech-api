@@ -199,9 +199,4 @@ csm:
       {{- end }}
     blobPersistence:
       path: {{ include "cosmotech-api.blobPersistencePath" . }}
-    {{- if .Values.api.tlsTruststore.enabled }}
-    tls:
-      enabled : {{ .Values.api.tlsTruststore.enabled }}
-      bundle: {{ include "cosmotech-api.custom-rootca-bundle" . }}
-    {{- end }}
 {{- end }}

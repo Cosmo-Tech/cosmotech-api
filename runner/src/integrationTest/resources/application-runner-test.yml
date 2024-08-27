@@ -15,9 +15,6 @@ management:
 
 csm:
   platform:
-    tls:
-      enabled: false
-      bundle: ""
     identityProvider:
       code: on_premise_one
       authorizationUrl: "http://fake_url:8080/authorize"
@@ -29,6 +26,9 @@ csm:
         clientId: "my_client_id"
         clientSecret: "my_client_secret"
         tenantId: "my_tenant_id"
+      tls:
+        enabled: false
+        bundle: ""
     metrics:
       enabled: false
     api:
@@ -85,11 +85,11 @@ csm:
     twincache:
       host: "localhost"
       port: "6379"
+      username: "default"
+      password: "my-wonderful-password"
       tls:
         enabled: false
         bundle: ""
-      username: "default"
-      password: "my-wonderful-password"
       runner:
         default-page-size: 20
     rbac:

@@ -11,14 +11,13 @@ spring:
     password: ${csm.platform.internalResultServices.eventBus.listener.password}
     username: ${csm.platform.internalResultServices.eventBus.listener.username}
     ssl:
-      enabled: ${csm.platform.tls.enabled}
-      bundle: ${csm.platform.tls.bundle}
+      enabled: ${csm.platform.internalResultServices.eventBus.tls.enabled}
   data:
     redis:
       host: ${csm.platform.twincache.host}
       port: ${csm.platform.twincache.port}
       ssl:
-        enabled: ${csm.platform.tls.enabled}
+        enabled: ${csm.platform.twincache.tls.enabled}
       password: ${csm.platform.twincache.password}
       username: ${csm.platform.twincache.username}
       timeout: 60000
@@ -82,6 +81,9 @@ csm:
       port: "6379"
       username: "default_user"
       password: "default_password"
+      tls:
+        enabled: false
+        bundle: ""
       dataset:
         # TODO: Should be way less than a thousand. See open ticket
         maxResult: 1000
@@ -89,9 +91,6 @@ csm:
         maxResult: 200
       runner:
         maxResult: 200
-    tls:
-      enabled: false
-      bundle: ""
     internalResultServices:
       enabled: false
       storage:
@@ -108,6 +107,9 @@ csm:
           password: "storage_admin_password"
       eventBus:
         enabled: true
+        tls:
+          enabled: false
+          bundle: ""
         host: "localhost"
         port: 5672
         default-exchange: "csm-exchange"
