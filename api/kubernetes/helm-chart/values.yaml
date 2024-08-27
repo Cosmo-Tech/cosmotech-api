@@ -170,14 +170,14 @@ argo:
 config:
   csm:
     platform:
-      tls:
-        enabled: false
-        bundle: ""
       twincache:
         host: redis.host.changeme
         password: changeme
         port: 6379
         username: default
+        tls:
+          enabled: false
+          bundle: ""
       argo:
         base-uri: "http://argo-server:2746"
         workflows:
@@ -206,3 +206,33 @@ config:
           clientId: "changeme"
           clientSecret: "changeme"
           tenantId: "changeme"
+        tls:
+          enabled: false
+          bundle: "changeme"
+      internalResultServices:
+        enabled: false
+        storage:
+          host: "localhost"
+          port: 5432
+          reader:
+            username: "changeme"
+            password: "changeme"
+          writer:
+            username: "changeme"
+            password: "changeme"
+          admin:
+            username: "changeme"
+            password: "changeme"
+        eventBus:
+          enabled: true
+          tls:
+            enabled: false
+            bundle: ""
+          host: "localhost"
+          port: 5672
+          listener:
+            username: "changeme"
+            password: "changeme"
+          sender:
+            username: "changeme"
+            password: "changeme"
