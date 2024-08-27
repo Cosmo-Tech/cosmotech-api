@@ -116,7 +116,7 @@ Location of the persistence data
 {{- end }}
 
 {{- define "cosmotech-api.custom-rootca-path" -}}
-"/mnt/cosmotech/certificates/{{ .Values.api.tlsTruststore.fileName }}"
+/mnt/cosmotech/certificates
 {{- end }}
 
 {{- define "cosmotech-api.custom-rootca-bundle" -}}
@@ -148,7 +148,7 @@ ssl bundle must be set here because it is searched even if empty
       pem:
         {{ include "cosmotech-api.custom-rootca-bundle" . }}:
           truststore:
-            certificate: {{ include "cosmotech-api.custom-rootca-path" . }}
+            certificate: {{ printf "%s/%s" (include "cosmotech-api.custom-rootca-path" .) .Values.api.tlsTruststore.fileName }}
 {{- end }}
 {{- if and .Values.api.tlsTruststore.enabled (eq .Values.api.tlsTruststore.type "jks") }}
   ssl:
@@ -156,7 +156,7 @@ ssl bundle must be set here because it is searched even if empty
       jks:
         {{ include "cosmotech-api.custom-rootca-bundle" . }}:
           truststore:
-            location: {{ include "cosmotech-api.custom-rootca-path" . }}
+            location: {{ printf "%s/%s" (include "cosmotech-api.custom-rootca-path" .) .Values.api.tlsTruststore.fileName }}
             password: {{ .Values.api.tlsTruststore.jksPassword }}
 {{- end }}
 
