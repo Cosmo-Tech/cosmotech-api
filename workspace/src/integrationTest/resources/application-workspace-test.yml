@@ -15,6 +15,9 @@ spring:
 
 csm:
   platform:
+    tls:
+      enabled: false
+      bundle: ""
     identityProvider:
       code: on_premise_one
       authorizationUrl: "http://fake_url:8080/authorize"

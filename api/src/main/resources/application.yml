@@ -107,6 +107,7 @@ csm:
           username: "storage_admin_username"
           password: "storage_admin_password"
       eventBus:
+        enabled: true
         host: "localhost"
         port: 5672
         default-exchange: "csm-exchange"
