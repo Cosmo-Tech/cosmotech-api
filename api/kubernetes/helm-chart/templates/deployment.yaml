@@ -55,6 +55,9 @@ spec:
         - name: custom-rootca
           secret:
             secretName: {{ .Values.api.tlsTruststore.secretName }}
+            items:
+            - key: ca.crt
+              path: {{  .Values.api.tlsTruststore.fileName  }}
         {{end}}
       containers:
         - name: {{ .Chart.Name }}
@@ -93,8 +96,7 @@ spec:
               readOnly: false
             {{end}}
             {{if .Values.api.tlsTruststore.enabled }}
-            - mountPath: {{ include "cosmotech-api.custom-rootca-path" . }}
-              subPath: {{ .Values.api.tlsTruststore.fileName }}
+            - mountPath: {{ include "cosmotech-api.custom-rootca-path" . | quote }}
               name: custom-rootca
               readOnly: true
             {{end}}
