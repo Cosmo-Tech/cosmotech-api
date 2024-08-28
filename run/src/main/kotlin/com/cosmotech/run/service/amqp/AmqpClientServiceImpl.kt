@@ -2,11 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.service.amqp
 
-import com.cosmotech.api.events.RunStart
-import com.cosmotech.api.events.WorkspaceDeleted
-import com.cosmotech.run.config.RabbitMqConfigModel
 import com.cosmotech.run.service.RunServiceImpl
-import com.cosmotech.runner.domain.Runner
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
@@ -22,7 +18,6 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin
 import org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
-import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 
 @Suppress("ConstructorParameterNaming")
@@ -40,23 +35,10 @@ data class ProbeMessage(
 class AmqpClientServiceImpl(
     private val rabbitAdmin: RabbitAdmin,
     private val rabbitListenerEndpointRegistry: RabbitListenerEndpointRegistry,
-    private val rabbitMqConfigModel: RabbitMqConfigModel,
     private val runServiceImpl: RunServiceImpl
 ) : AmqpClientServiceInterface {
 
   private val logger = LoggerFactory.getLogger(AmqpClientServiceImpl::class.java)
-
-  @EventListener(RunStart::class)
-  fun awakeListener(event: RunStart) {
-    val exchange = rabbitMqConfigModel.exchange
-    this.addNewQueue(exchange, (event.runnerData as Runner).workspaceId!!)
-  }
-
-  @EventListener(WorkspaceDeleted::class)
-  fun removeQueueFromDeletedWorkspace(event: WorkspaceDeleted) {
-    val exchange = rabbitMqConfigModel.exchange
-    this.removeQueue(exchange, event.workspaceId)
-  }
 
   @RabbitListener(
       id = "\${csm.platform.internalResultServices.eventBus.default-exchange}",
