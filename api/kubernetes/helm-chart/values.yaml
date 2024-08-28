@@ -107,6 +107,7 @@ api:
   tlsTruststore:
     enabled: false
     secretName: ""
+    secretKey: ""
     fileName: ""
     type: "pem"
     jksPassword: ""
