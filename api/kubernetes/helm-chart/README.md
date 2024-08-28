@@ -1,6 +1,6 @@
 # cosmotech-api
 
-![Version: 4.0.3-onprem](https://img.shields.io/badge/Version-4.0.3--onprem-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.0.3-onprem](https://img.shields.io/badge/AppVersion-4.0.3--onprem-informational?style=flat-square)
+![Version: 4.0.0-onprem.6](https://img.shields.io/badge/Version-4.0.0--onprem.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 4.0.0-onprem.6](https://img.shields.io/badge/AppVersion-4.0.0--onprem.6-informational?style=flat-square)
 
 Cosmo Tech Platform API
 
@@ -48,10 +48,31 @@ Cosmo Tech Platform API
 | config.csm.platform.identityProvider.identity.clientSecret | string | `"changeme"` |  |
 | config.csm.platform.identityProvider.identity.tenantId | string | `"changeme"` |  |
 | config.csm.platform.identityProvider.serverBaseUrl | string | `"changeme"` |  |
+| config.csm.platform.identityProvider.tls.bundle | string | `"changeme"` |  |
+| config.csm.platform.identityProvider.tls.enabled | bool | `false` |  |
 | config.csm.platform.identityProvider.tokenUrl | string | `"changeme"` |  |
+| config.csm.platform.internalResultServices.enabled | bool | `false` |  |
+| config.csm.platform.internalResultServices.eventBus.enabled | bool | `true` |  |
+| config.csm.platform.internalResultServices.eventBus.host | string | `"localhost"` |  |
+| config.csm.platform.internalResultServices.eventBus.listener.password | string | `"changeme"` |  |
+| config.csm.platform.internalResultServices.eventBus.listener.username | string | `"changeme"` |  |
+| config.csm.platform.internalResultServices.eventBus.port | int | `5672` |  |
+| config.csm.platform.internalResultServices.eventBus.sender.password | string | `"changeme"` |  |
+| config.csm.platform.internalResultServices.eventBus.sender.username | string | `"changeme"` |  |
+| config.csm.platform.internalResultServices.eventBus.tls.bundle | string | `""` |  |
+| config.csm.platform.internalResultServices.eventBus.tls.enabled | bool | `false` |  |
+| config.csm.platform.internalResultServices.storage.admin.password | string | `"changeme"` |  |
+| config.csm.platform.internalResultServices.storage.admin.username | string | `"changeme"` |  |
+| config.csm.platform.internalResultServices.storage.host | string | `"localhost"` |  |
+| config.csm.platform.internalResultServices.storage.port | int | `5432` |  |
+| config.csm.platform.internalResultServices.storage.reader.password | string | `"changeme"` |  |
+| config.csm.platform.internalResultServices.storage.reader.username | string | `"changeme"` |  |
+| config.csm.platform.internalResultServices.storage.writer.password | string | `"changeme"` |  |
+| config.csm.platform.internalResultServices.storage.writer.username | string | `"changeme"` |  |
 | config.csm.platform.twincache.host | string | `"redis.host.changeme"` |  |
 | config.csm.platform.twincache.password | string | `"changeme"` |  |
 | config.csm.platform.twincache.port | int | `6379` |  |
+| config.csm.platform.twincache.tls.bundle | string | `""` |  |
 | config.csm.platform.twincache.tls.enabled | bool | `false` |  |
 | config.csm.platform.twincache.username | string | `"default"` |  |
 | deploymentStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":"50%"},"type":"RollingUpdate"}` | Deployment strategy |
