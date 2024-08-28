@@ -23,6 +23,7 @@ Cosmo Tech Platform API
 | api.tlsTruststore.enabled | bool | `false` |  |
 | api.tlsTruststore.fileName | string | `""` |  |
 | api.tlsTruststore.jksPassword | string | `""` |  |
+| api.tlsTruststore.secretKey | string | `""` |  |
 | api.tlsTruststore.secretName | string | `""` |  |
 | api.tlsTruststore.type | string | `"pem"` |  |
 | api.version | string | `"latest"` |  |
