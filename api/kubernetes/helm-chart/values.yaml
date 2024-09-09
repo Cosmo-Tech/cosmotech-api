@@ -178,7 +178,7 @@ config:
         username: default
         tls:
           enabled: false
-          bundle: ""
+          bundle: "changeme"
       argo:
         base-uri: "http://argo-server:2746"
         workflows:
@@ -228,7 +228,7 @@ config:
           enabled: true
           tls:
             enabled: false
-            bundle: ""
+            bundle: "changeme"
           host: "localhost"
           port: 5672
           listener:

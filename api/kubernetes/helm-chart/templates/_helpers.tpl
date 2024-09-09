@@ -201,15 +201,12 @@ csm:
       path: {{ include "cosmotech-api.blobPersistencePath" . }}
     identityProvider:
       tls:
-        enabled: {{ .Values.api.tlsTruststore.enabled }}
         bundle: {{ include "cosmotech-api.custom-rootca-bundle" . }}
     twincache:
       tls:
-        enabled: {{ .Values.api.tlsTruststore.enabled }}
         bundle: {{ include "cosmotech-api.custom-rootca-bundle" . }}
     internalResultServices:
       eventBus:
         tls:
-          enabled: {{ .Values.api.tlsTruststore.enabled }}
           bundle: {{ include "cosmotech-api.custom-rootca-bundle" . }}
 {{- end }}
