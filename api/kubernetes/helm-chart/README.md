@@ -60,7 +60,7 @@ Cosmo Tech Platform API
 | config.csm.platform.internalResultServices.eventBus.port | int | `5672` |  |
 | config.csm.platform.internalResultServices.eventBus.sender.password | string | `"changeme"` |  |
 | config.csm.platform.internalResultServices.eventBus.sender.username | string | `"changeme"` |  |
-| config.csm.platform.internalResultServices.eventBus.tls.bundle | string | `""` |  |
+| config.csm.platform.internalResultServices.eventBus.tls.bundle | string | `"changeme"` |  |
 | config.csm.platform.internalResultServices.eventBus.tls.enabled | bool | `false` |  |
 | config.csm.platform.internalResultServices.storage.admin.password | string | `"changeme"` |  |
 | config.csm.platform.internalResultServices.storage.admin.username | string | `"changeme"` |  |
@@ -73,7 +73,7 @@ Cosmo Tech Platform API
 | config.csm.platform.twincache.host | string | `"redis.host.changeme"` |  |
 | config.csm.platform.twincache.password | string | `"changeme"` |  |
 | config.csm.platform.twincache.port | int | `6379` |  |
-| config.csm.platform.twincache.tls.bundle | string | `""` |  |
+| config.csm.platform.twincache.tls.bundle | string | `"changeme"` |  |
 | config.csm.platform.twincache.tls.enabled | bool | `false` |  |
 | config.csm.platform.twincache.username | string | `"default"` |  |
 | deploymentStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":"50%"},"type":"RollingUpdate"}` | Deployment strategy |
