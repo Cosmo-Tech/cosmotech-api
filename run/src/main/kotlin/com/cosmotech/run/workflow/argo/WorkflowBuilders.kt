@@ -46,6 +46,7 @@ internal const val VOLUME_CLAIM_TEMP_SUBPATH = "tempdir"
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 private const val VOLUME_OUTPUT_PATH = "/pkg/share/Simulation/Output"
+private const val VOLUME_SECRETS_PATH = "/mnt/cosmotech/secrets"
 private const val VOLUME_TEMP_PATH = "/usr/tmp"
 internal const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
 internal const val ALWAYS_PULL_POLICY = "Always"
@@ -68,7 +69,7 @@ internal fun buildTemplate(
 
   val secretVolumeMount =
       csmPlatformProperties.argo.workflows.secrets.map { secret ->
-        V1VolumeMount().name(secret.name).mountPath("/mnt/cosmotech/secrets/" + secret.name)
+        V1VolumeMount().name(secret.name).mountPath(VOLUME_SECRETS_PATH + "/" + secret.name)
       }
   val normalVolumeMount =
       listOf(
