@@ -22,18 +22,22 @@ import io.kubernetes.client.custom.Quantity
 import io.kubernetes.client.openapi.models.V1Container
 import io.kubernetes.client.openapi.models.V1EnvFromSource
 import io.kubernetes.client.openapi.models.V1EnvVar
+import io.kubernetes.client.openapi.models.V1KeyToPath
 import io.kubernetes.client.openapi.models.V1LocalObjectReference
 import io.kubernetes.client.openapi.models.V1ObjectMeta
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
 import io.kubernetes.client.openapi.models.V1ResourceRequirements
 import io.kubernetes.client.openapi.models.V1SecretEnvSource
+import io.kubernetes.client.openapi.models.V1SecretVolumeSource
 import io.kubernetes.client.openapi.models.V1Toleration
+import io.kubernetes.client.openapi.models.V1Volume
 import io.kubernetes.client.openapi.models.V1VolumeMount
 import io.kubernetes.client.openapi.models.V1VolumeResourceRequirements
 
 private const val CSM_DAG_ENTRYPOINT = "entrypoint"
 private const val CSM_DEFAULT_WORKFLOW_NAME = "default-workflow-"
+internal const val VOLUME_SECRET_NAME = "secrets"
 internal const val VOLUME_CLAIM = "datadir"
 internal const val VOLUME_CLAIM_DATASETS_SUBPATH = "datasetsdir"
 internal const val VOLUME_CLAIM_PARAMETERS_SUBPATH = "parametersdir"
@@ -42,6 +46,7 @@ internal const val VOLUME_CLAIM_TEMP_SUBPATH = "tempdir"
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 private const val VOLUME_OUTPUT_PATH = "/pkg/share/Simulation/Output"
+private const val VOLUME_SECRETS_PATH = "/mnt/cosmotech/secrets"
 private const val VOLUME_TEMP_PATH = "/usr/tmp"
 internal const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
 internal const val ALWAYS_PULL_POLICY = "Always"
@@ -61,7 +66,12 @@ internal fun buildTemplate(
       envVars.add(envVar)
     }
   }
-  val volumeMounts =
+
+  val secretVolumeMount =
+      csmPlatformProperties.argo.workflows.secrets.map { secret ->
+        V1VolumeMount().name(secret.name).mountPath(VOLUME_SECRETS_PATH + "/" + secret.name)
+      }
+  val normalVolumeMount =
       listOf(
           V1VolumeMount()
               .name(VOLUME_CLAIM)
@@ -79,6 +89,8 @@ internal fun buildTemplate(
               .name(VOLUME_CLAIM)
               .mountPath(VOLUME_TEMP_PATH)
               .subPath(VOLUME_CLAIM_TEMP_SUBPATH))
+
+  val volumeMounts = normalVolumeMount + secretVolumeMount
 
   val sizingInfo = runContainer.runSizing ?: BASIC_SIZING.toContainerResourceSizing()
 
@@ -174,6 +186,23 @@ internal fun buildWorkflowSpec(
           .entrypoint(CSM_DAG_ENTRYPOINT)
           .templates(templates)
           .volumeClaimTemplates(buildVolumeClaims(csmPlatformProperties))
+
+  if (csmPlatformProperties.argo.workflows.secrets.isNotEmpty()) {
+    val argoSecrets = csmPlatformProperties.argo.workflows.secrets
+    workflowSpec =
+        workflowSpec.volumes(
+            argoSecrets.map { secret ->
+              V1Volume()
+                  .name(secret.name)
+                  .secret(
+                      V1SecretVolumeSource()
+                          .secretName(secret.name)
+                          .items(
+                              secret.keyPath.map { secretKeyPath ->
+                                V1KeyToPath().key(secretKeyPath.key).path(secretKeyPath.path)
+                              }))
+            })
+  }
 
   if (csmPlatformProperties.argo.workflows.ignoreNodeSelector == false) {
     workflowSpec =
