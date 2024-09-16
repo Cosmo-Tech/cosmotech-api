@@ -68,9 +68,7 @@ internal fun buildTemplate(
 
   val secretVolumeMount =
       csmPlatformProperties.argo.workflows.secrets.map { secret ->
-        V1VolumeMount()
-            .name(secret.name)
-            .mountPath("/mnt/cosmotech/secrets/" + secret.name)
+        V1VolumeMount().name(secret.name).mountPath("/mnt/cosmotech/secrets/" + secret.name)
       }
   val normalVolumeMount =
       listOf(
