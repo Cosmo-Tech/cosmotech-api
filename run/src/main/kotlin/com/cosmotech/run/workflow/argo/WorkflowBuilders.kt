@@ -188,7 +188,7 @@ internal fun buildWorkflowSpec(
           .templates(templates)
           .volumeClaimTemplates(buildVolumeClaims(csmPlatformProperties))
 
-  if (csmPlatformProperties.argo.workflows.mountSecret) {
+  if (csmPlatformProperties.argo.workflows.secrets.isNotEmpty()) {
     val argoSecrets = csmPlatformProperties.argo.workflows.secrets
     workflowSpec =
         workflowSpec.volumes(
