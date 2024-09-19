@@ -693,6 +693,40 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test empty inherited parameters values`() {
+    val parentRunnerWithEmptyParams = makeRunner(name = "parent")
+    val parentRunnerSaved =
+        runnerApiService.createRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, parentRunnerWithEmptyParams)
+
+    val parentRunnerUpdated =
+        runnerApiService.updateRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            parentRunnerSaved.id!!,
+            parentRunnerSaved.apply {
+              parametersValues =
+                  mutableListOf(
+                      RunnerRunTemplateParameterValue(
+                          parameterId = "param1",
+                          value = "param1value",
+                          isInherited = false,
+                          varType = "String"))
+            })
+
+    val childRunnerWithEmptyParams = makeRunner(name = "child", parentId = parentRunnerUpdated.id!!)
+
+    val childRunnerWithEmptyParamsSaved =
+        runnerApiService.createRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, childRunnerWithEmptyParams)
+
+    assertNotNull(childRunnerWithEmptyParamsSaved.parametersValues)
+    assertEquals(1, childRunnerWithEmptyParamsSaved.parametersValues!!.size)
+    assertEquals(
+        mutableListOf(runTemplateParameterValue1), childRunnerWithEmptyParamsSaved.parametersValues)
+  }
+
+  @Test
   fun `startRun send event and save lastRun info`() {
     val expectedRunId = "run-genid12345"
     every { eventPublisher.publishEvent(any<RunStart>()) } answers
@@ -821,7 +855,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
       role: String = ROLE_USER,
       runTemplateId: String = "runTemplateId",
       validationStatus: RunnerValidationStatus = RunnerValidationStatus.Draft,
-      parametersValues: MutableList<RunnerRunTemplateParameterValue> = mutableListOf()
+      parametersValues: MutableList<RunnerRunTemplateParameterValue>? = null
   ): Runner {
     return Runner(
         id = UUID.randomUUID().toString(),

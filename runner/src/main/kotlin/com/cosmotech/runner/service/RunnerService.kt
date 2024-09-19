@@ -233,7 +233,9 @@ class RunnerService(
         val inheritedParameterValues =
             constructParametersValuesFromParent(
                 parentId, solution, runTemplate, parentRunner, this.runner)
-        this.runner.parametersValues?.addAll(inheritedParameterValues)
+        val parameterValueList = this.runner.parametersValues ?: mutableListOf()
+        parameterValueList.addAll(inheritedParameterValues)
+        this.runner.parametersValues = parameterValueList
       }
     }
 
