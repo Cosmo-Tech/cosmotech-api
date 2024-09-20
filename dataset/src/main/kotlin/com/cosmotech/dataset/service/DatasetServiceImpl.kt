@@ -75,7 +75,7 @@ import com.cosmotech.dataset.utils.isReadOnlyQuery
 import com.cosmotech.dataset.utils.toCsmGraphEntity
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.OrganizationApiServiceInterface
-import com.cosmotech.organization.service.getRbac
+import com.cosmotech.organization.service.toGenericSecurity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.InputStream
@@ -1043,7 +1043,7 @@ class DatasetServiceImpl(
 
     val rbacSecurity =
         csmRbac.addUserRole(
-            organization.getRbac(),
+            organization.security.toGenericSecurity(organization.id),
             dataset.getRbac(),
             datasetAccessControl.id,
             datasetAccessControl.role)

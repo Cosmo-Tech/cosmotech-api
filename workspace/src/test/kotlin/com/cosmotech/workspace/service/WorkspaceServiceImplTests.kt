@@ -27,7 +27,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.repository.OrganizationRepository
-import com.cosmotech.organization.service.getRbac
+import com.cosmotech.organization.service.toGenericSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
@@ -266,7 +266,7 @@ class WorkspaceServiceImplTests {
 
     val organization = mockOrganization(ORGANIZATION_ID)
     organization.security = OrganizationSecurity(ROLE_ADMIN, mutableListOf())
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
+    every { organizationService.getOrganization(ORGANIZATION_ID) } returns organization
     val workspace =
         Workspace(
             key = "my-workspace-key",
@@ -338,7 +338,8 @@ class WorkspaceServiceImplTests {
             rbacTest("Test RBAC create workspace: $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it.organization
               listOf(PERMISSION_READ, PERMISSION_CREATE_CHILDREN).forEach { permission ->
-                csmRbac.verify(it.organization.getRbac(), permission)
+                csmRbac.verify(
+                    it.organization.security.toGenericSecurity(it.organization.id), permission)
               }
               every { workspaceRepository.save(any()) } returns it.workspace
               every { solutionService.findSolutionById(any(), any()) } returns it.solution

@@ -103,7 +103,7 @@ class RunContainerFactory(
       workflowType: String,
       runId: String
   ): StartInfo {
-    val organization = organizationService.findOrganizationById(organizationId)
+    val organization = organizationService.getOrganization(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     if (workspace.solution.solutionId == null)
         throw CsmClientException(
@@ -192,7 +192,7 @@ class RunContainerFactory(
         getCommonEnvVars(
             csmPlatformProperties,
             csmSimulationId,
-            organization.id!!,
+            organization.id,
             workspace.id!!,
             runner.id!!,
             runId)
@@ -231,7 +231,7 @@ class RunContainerFactory(
             mapOf(
                 CSM_JOB_ID_LABEL_KEY to runId,
                 WORKFLOW_TYPE_LABEL to workflowType,
-                ORGANIZATION_ID_LABEL to organization.id!!,
+                ORGANIZATION_ID_LABEL to organization.id,
                 WORKSPACE_ID_LABEL to workspace.id!!,
                 RUNNER_ID_LABEL to runner.id!!,
             ))

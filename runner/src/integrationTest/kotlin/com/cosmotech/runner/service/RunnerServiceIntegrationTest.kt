@@ -35,6 +35,7 @@ import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.*
@@ -105,7 +106,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var connector: Connector
   lateinit var dataset: Dataset
   lateinit var solution: Solution
-  lateinit var organization: Organization
   lateinit var workspace: Workspace
   lateinit var runner: Runner
   lateinit var parentRunner: Runner
@@ -157,22 +157,21 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     connector = makeConnector("Connector")
     connectorSaved = connectorApiService.registerConnector(connector)
 
-    organization = makeOrganization("Organization")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(makeOrganization())
 
-    dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    dataset = makeDataset(organizationSaved.id, "Dataset", connectorSaved)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     materializeTwingraph()
 
-    solution = makeSolution(organizationSaved.id!!)
-    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    solution = makeSolution(organizationSaved.id)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-    workspace = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace")
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    workspace = makeWorkspace(organizationSaved.id, solutionSaved.id!!, "Workspace")
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     parentRunner =
         makeRunner(
-            organizationSaved.id!!,
+            organizationSaved.id,
             workspaceSaved.id!!,
             solutionSaved.id!!,
             "RunnerParent",
@@ -180,11 +179,11 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             parametersValues = mutableListOf(runTemplateParameterValue1))
 
     parentRunnerSaved =
-        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, parentRunner)
+        runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, parentRunner)
 
     runner =
         makeRunner(
-            organizationSaved.id!!,
+            organizationSaved.id,
             workspaceSaved.id!!,
             solutionSaved.id!!,
             name = "Runner",
@@ -192,7 +191,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             datasetList = mutableListOf(datasetSaved.id!!),
             parametersValues = mutableListOf(runTemplateParameterValue2))
 
-    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
   }
 
   @Test
@@ -205,33 +204,33 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns "random_user_with_patform_admin_role"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
     var initialRunnerList =
-        runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+        runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id!!, null, null)
 
     logger.info("should create a new Runner")
     val newRunner =
         makeRunner(
-            organizationSaved.id!!,
+            organizationSaved.id,
             workspaceSaved.id!!,
             solutionSaved.id!!,
             "NewRunner",
             mutableListOf(datasetSaved.id!!))
     val newRunnerSaved =
-        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, newRunner)
+        runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, newRunner)
 
     logger.info("should find all Runners and assert there is one more")
     var runnerList =
-        runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+        runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id!!, null, null)
     assertEquals(initialRunnerList.size + 1, runnerList.size)
 
     logger.info("should find a Runner by Id and assert it is the one created")
     val runnerRetrieved =
-        runnerApiService.getRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(runnerSaved, runnerRetrieved)
 
     logger.info("should update the Runner and assert the name has been updated")
     val runnerUpdated =
         runnerApiService.updateRunner(
-            organizationSaved.id!!,
+            organizationSaved.id,
             workspaceSaved.id!!,
             runnerRetrieved.id!!,
             runnerRetrieved.copy(name = "Runner Updated"))
@@ -240,15 +239,15 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         runnerUpdated.copy(creationDate = null, lastUpdate = null))
 
     logger.info("should delete the Runner and assert there is one less Runner left")
-    runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, newRunnerSaved.id!!)
+    runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id!!, newRunnerSaved.id!!)
     val runnerListAfterDelete =
-        runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+        runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id!!, null, null)
     assertEquals(runnerList.size - 1, runnerListAfterDelete.size)
 
     // We create more runner than there can be on one page of default size to assert
     // deleteAllRunners still works with high quantities of runners
     repeat(csmPlatformProperties.twincache.runner.defaultPageSize + 1) {
-      runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, makeRunner())
+      runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, makeRunner())
     }
   }
 
@@ -261,32 +260,31 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     IntRange(1, numberOfRunners - 1).forEach {
       val runner =
           makeRunner(
-              organizationSaved.id!!,
+              organizationSaved.id,
               workspaceSaved.id!!,
               solutionSaved.id!!,
               "Runner$it",
               mutableListOf(datasetSaved.id!!))
-      runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+      runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
     }
 
     logger.info("should find all Runners and assert there are $numberOfRunners")
     var runnerList =
-        runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+        runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id!!, null, null)
     assertEquals(defaultPageSize, runnerList.size)
 
     logger.info("should find all Runners and assert it equals defaultPageSize: $defaultPageSize")
-    runnerList = runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, 0, null)
+    runnerList = runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id!!, 0, null)
     assertEquals(defaultPageSize, runnerList.size)
 
     logger.info("should find all Runners and assert there are expected size: $expectedSize")
     runnerList =
-        runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, 0, expectedSize)
+        runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id!!, 0, expectedSize)
     assertEquals(expectedSize, runnerList.size)
 
     logger.info("should find all Runners and assert it returns the second / last page")
     runnerList =
-        runnerApiService.listRunners(
-            organizationSaved.id!!, workspaceSaved.id!!, 1, defaultPageSize)
+        runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id!!, 1, defaultPageSize)
     assertEquals(1, runnerList.size)
   }
 
@@ -294,17 +292,17 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun `test find All Runners with wrong pagination params`() {
     logger.info("Should throw IllegalArgumentException when page and size are zeros")
     assertThrows<IllegalArgumentException> {
-      runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, 0, 0)
+      runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id!!, 0, 0)
     }
 
     logger.info("Should throw IllegalArgumentException when page is negative")
     assertThrows<IllegalArgumentException> {
-      runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, -1, 10)
+      runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id!!, -1, 10)
     }
 
     logger.info("Should throw IllegalArgumentException when size is negative")
     assertThrows<IllegalArgumentException> {
-      runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, 0, -1)
+      runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id!!, 0, -1)
     }
   }
 
@@ -314,14 +312,14 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should test default security is set to ROLE_NONE")
     val runnerSecurity =
         runnerApiService.getRunnerSecurity(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(ROLE_NONE, runnerSecurity.default)
 
     logger.info("should set default security to ROLE_VIEWER and assert it has been set")
     val runnerRole = RunnerRole(ROLE_VIEWER)
     val runnerSecurityRegistered =
         runnerApiService.setRunnerDefaultSecurity(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerRole)
+            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runnerRole)
     assertEquals(runnerRole.role, runnerSecurityRegistered.default)
   }
 
@@ -333,14 +331,14 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     // Test default security
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.getRunnerSecurity(
-          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
     }
 
     logger.info("should throw CsmAccessForbiddenException when trying to set default security")
     val runnerRole = RunnerRole(ROLE_VIEWER)
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.setRunnerDefaultSecurity(
-          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerRole)
+          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runnerRole)
     }
   }
 
@@ -350,27 +348,27 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val runnerAccessControl = RunnerAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     var runnerAccessControlRegistered =
         runnerApiService.addRunnerAccessControl(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerAccessControl)
+            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runnerAccessControl)
     assertEquals(runnerAccessControl, runnerAccessControlRegistered)
 
     logger.info("should get the Access Control and assert it is the one created")
     runnerAccessControlRegistered =
         runnerApiService.getRunnerAccessControl(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
     assertEquals(runnerAccessControl, runnerAccessControlRegistered)
 
     logger.info(
         "should add an Access Control and assert it is the one created in the linked datasets")
     runnerSaved.datasetList.forEach {
       assertDoesNotThrow {
-        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
+        datasetApiService.getDatasetAccessControl(organizationSaved.id, it, TEST_USER_MAIL)
       }
     }
 
     logger.info("should update the Access Control and assert it has been updated")
     runnerAccessControlRegistered =
         runnerApiService.updateRunnerAccessControl(
-            organizationSaved.id!!,
+            organizationSaved.id,
             workspaceSaved.id!!,
             runnerSaved.id!!,
             TEST_USER_MAIL,
@@ -382,31 +380,29 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     runnerSaved.datasetList.forEach {
       assertEquals(
           ROLE_EDITOR,
-          datasetApiService
-              .getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
-              .role)
+          datasetApiService.getDatasetAccessControl(organizationSaved.id, it, TEST_USER_MAIL).role)
     }
 
     logger.info("should get the list of users and assert there are 2")
     val userList =
         runnerApiService.getRunnerSecurityUsers(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(3, userList.size)
 
     logger.info("should remove the Access Control and assert it has been removed")
     runnerApiService.removeRunnerAccessControl(
-        organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+        organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
     assertThrows<CsmResourceNotFoundException> {
       runnerAccessControlRegistered =
           runnerApiService.getRunnerAccessControl(
-              organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+              organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
     }
 
     logger.info(
         "should remove the Access Control and assert it has been removed in the linked datasets")
     runnerSaved.datasetList.forEach {
       assertThrows<CsmResourceNotFoundException> {
-        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
+        datasetApiService.getDatasetAccessControl(organizationSaved.id, it, TEST_USER_MAIL)
       }
     }
   }
@@ -419,20 +415,20 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val runnerAccessControl = RunnerAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.addRunnerAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerAccessControl)
+          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runnerAccessControl)
     }
 
     logger.info("should throw CsmAccessForbiddenException when trying to get RunnerAccessControl")
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.getRunnerAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
     }
 
     logger.info(
         "should throw CsmAccessForbiddenException when trying to update RunnerAccessControl")
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.updateRunnerAccessControl(
-          organizationSaved.id!!,
+          organizationSaved.id,
           workspaceSaved.id!!,
           runnerSaved.id!!,
           TEST_USER_MAIL,
@@ -442,14 +438,14 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should throw CsmAccessForbiddenException when getting the list of users")
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.getRunnerSecurityUsers(
-          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
     }
 
     logger.info(
         "should throw CsmAccessForbiddenException when trying to remove RunnerAccessControl")
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.removeRunnerAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
     }
   }
 
@@ -457,7 +453,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun `test deleting a running runner`() {
     runnerSaved.lastRunId = "run-genid12345"
     runnerApiService.updateRunner(
-        organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerSaved)
+        organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runnerSaved)
 
     every { eventPublisher.publishEvent(any<HasRunningRuns>()) } answers
         {
@@ -466,8 +462,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     val exception =
         assertThrows<Exception> {
-          runnerApiService.deleteRunner(
-              organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+          runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
         }
     assertEquals(
         "Can't delete runner ${runnerSaved.id}: at least one run is still running",
@@ -476,19 +471,19 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test on runner delete keep datasets`() {
-    runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+    runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
 
     runnerSaved.datasetList.forEach { dataset ->
-      assertDoesNotThrow { datasetApiService.findDatasetById(organizationSaved.id!!, dataset) }
+      assertDoesNotThrow { datasetApiService.findDatasetById(organizationSaved.id, dataset) }
     }
   }
 
   @Test
   fun `test updating (adding) runner's datasetList add runner users to new dataset`() {
-    val newDataset = datasetApiService.createDataset(organizationSaved.id!!, makeDataset())
+    val newDataset = datasetApiService.createDataset(organizationSaved.id, makeDataset())
     runnerSaved =
         runnerApiService.updateRunner(
-            organizationSaved.id!!,
+            organizationSaved.id,
             workspaceSaved.id!!,
             runnerSaved.id!!,
             runner.copy(
@@ -501,19 +496,18 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     val runnerUserList =
         runnerApiService.getRunnerSecurityUsers(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
 
     val datasetUserList =
-        datasetApiService.getDatasetSecurityUsers(organizationSaved.id!!, newDataset.id!!)
+        datasetApiService.getDatasetSecurityUsers(organizationSaved.id, newDataset.id!!)
     datasetUserList.containsAll(runnerUserList)
   }
 
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
-    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
+    organizationSaved = organizationApiService.createOrganization(makeOrganization())
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspace())
     val brokenRunner =
         Runner(
             name = "runner",
@@ -525,28 +519,27 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                             RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                             RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
     assertThrows<IllegalArgumentException> {
-      runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, brokenRunner)
+      runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, brokenRunner)
     }
   }
 
   @Test
   fun `access control list can't add an existing user`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
-    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
+    organizationSaved = organizationApiService.createOrganization(makeOrganization())
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspace())
     val workingRunner = makeRunner()
     runnerSaved =
-        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, workingRunner)
+        runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, workingRunner)
 
     val runnerSavedSecurityUsers =
         runnerApiService.getRunnerSecurityUsers(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(2, runnerSavedSecurityUsers.size)
 
     assertThrows<IllegalArgumentException> {
       runnerApiService.addRunnerAccessControl(
-          organizationSaved.id!!,
+          organizationSaved.id,
           workspaceSaved.id!!,
           runnerSaved.id!!,
           RunnerAccessControl(defaultName, ROLE_EDITOR))
@@ -554,29 +547,28 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     val runnerSecurityUsers =
         runnerApiService.getRunnerSecurityUsers(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(2, runnerSecurityUsers.size)
     assert(runnerSavedSecurityUsers == runnerSecurityUsers)
   }
 
   @Test
   fun `access control list can't update a non-existing user`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
-    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
+    organizationSaved = organizationApiService.createOrganization(makeOrganization())
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspace())
     val workingRunner = makeRunner()
     runnerSaved =
-        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, workingRunner)
+        runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, workingRunner)
 
     val runnerSavedSecurityUsers =
         runnerApiService.getRunnerSecurityUsers(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(2, runnerSavedSecurityUsers.size)
 
     assertThrows<CsmResourceNotFoundException> {
       runnerApiService.updateRunnerAccessControl(
-          organizationSaved.id!!,
+          organizationSaved.id,
           workspaceSaved.id!!,
           runnerSaved.id!!,
           "invalid user",
@@ -585,7 +577,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     val runnerSecurityUsers =
         runnerApiService.getRunnerSecurityUsers(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(2, runnerSecurityUsers.size)
     assert(runnerSavedSecurityUsers == runnerSecurityUsers)
   }
@@ -599,16 +591,16 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             solution = WorkspaceSolution(solutionSaved.id!!),
             id = "id",
             datasetCopy = false)
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     runner = makeRunner(datasetList = mutableListOf(datasetSaved.id!!))
-    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
 
     datasetSaved =
-        datasetApiService.findDatasetById(organizationSaved.id!!, runnerSaved.datasetList[0])
-    runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+        datasetApiService.findDatasetById(organizationSaved.id, runnerSaved.datasetList[0])
+    runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
 
     assertDoesNotThrow {
-      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+      datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
     }
   }
 
@@ -621,20 +613,20 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             solution = WorkspaceSolution(solutionSaved.id!!),
             id = "id",
             datasetCopy = true)
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     runner = makeRunner(datasetList = mutableListOf(datasetSaved.id!!))
-    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
 
     datasetSaved =
-        datasetApiService.findDatasetById(organizationSaved.id!!, runnerSaved.datasetList[0])
+        datasetApiService.findDatasetById(organizationSaved.id, runnerSaved.datasetList[0])
     runnerApiService.addRunnerAccessControl(
-        organizationSaved.id!!,
+        organizationSaved.id,
         workspaceSaved.id!!,
         runnerSaved.id!!,
         RunnerAccessControl(id = "id", role = ROLE_EDITOR))
 
     val datasetAC =
-        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, datasetSaved.id!!, "id")
+        datasetApiService.getDatasetAccessControl(organizationSaved.id, datasetSaved.id!!, "id")
     assertEquals(ROLE_EDITOR, datasetAC.role)
   }
 
@@ -642,7 +634,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun `test runner creation with unknown runtemplateId`() {
     val runnerWithWrongRunTemplateId =
         makeRunner(
-            organizationSaved.id!!,
+            organizationSaved.id,
             workspaceSaved.id!!,
             solutionSaved.id!!,
             name = "Runner_With_unknown_runtemplate_id",
@@ -654,7 +646,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val assertThrows =
         assertThrows<IllegalArgumentException> {
           runnerApiService.createRunner(
-              organizationSaved.id!!, workspaceSaved.id!!, runnerWithWrongRunTemplateId)
+              organizationSaved.id, workspaceSaved.id!!, runnerWithWrongRunTemplateId)
         }
     assertEquals(
         "Run Template not found: ${runnerWithWrongRunTemplateId.runTemplateId}",
@@ -666,7 +658,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val parentId = "unknown_parent_id"
     val runnerWithWrongParentId =
         makeRunner(
-            organizationSaved.id!!,
+            organizationSaved.id,
             workspaceSaved.id!!,
             solutionSaved.id!!,
             name = "Runner_With_unknown_parent",
@@ -677,7 +669,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val assertThrows =
         assertThrows<IllegalArgumentException> {
           runnerApiService.createRunner(
-              organizationSaved.id!!, workspaceSaved.id!!, runnerWithWrongParentId)
+              organizationSaved.id, workspaceSaved.id!!, runnerWithWrongParentId)
         }
     assertTrue(assertThrows.message!!.startsWith("Parent Id $parentId define on"))
   }
@@ -700,13 +692,12 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
           firstArg<RunStart>().response = expectedRunId
         }
 
-    val run =
-        runnerApiService.startRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+    val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(expectedRunId, run.id)
 
     val lastRunId =
         runnerApiService
-            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+            .getRunner(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
             .lastRunId
     assertEquals(expectedRunId, lastRunId)
   }
@@ -721,7 +712,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun makeDataset(
-      organizationId: String = organizationSaved.id!!,
+      organizationId: String = organizationSaved.id,
       name: String = "name",
       connector: Connector = connectorSaved
   ): Dataset {
@@ -744,7 +735,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                         DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
-  fun makeSolution(organizationId: String = organizationSaved.id!!): Solution {
+  fun makeSolution(organizationId: String = organizationSaved.id): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
@@ -768,14 +759,11 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun makeOrganization(
-      id: String = "id",
       userName: String = defaultName,
       role: String = ROLE_ADMIN
-  ): Organization {
-    return Organization(
-        id = id,
+  ): OrganizationRequest {
+    return OrganizationRequest(
         name = "Organization Name",
-        ownerId = "my.account-tester@cosmotech.com",
         security =
             OrganizationSecurity(
                 default = ROLE_NONE,
@@ -787,7 +775,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun makeWorkspace(
-      organizationId: String = organizationSaved.id!!,
+      organizationId: String = organizationSaved.id,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
       userName: String = defaultName,
@@ -811,7 +799,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun makeRunner(
-      organizationId: String = organizationSaved.id!!,
+      organizationId: String = organizationSaved.id,
       workspaceId: String = workspaceSaved.id!!,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",

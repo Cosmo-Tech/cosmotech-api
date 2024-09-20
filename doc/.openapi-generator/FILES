@@ -31,8 +31,10 @@ Models/GraphProperties.md
 Models/IngestionStatusEnum.md
 Models/Organization.md
 Models/OrganizationAccessControl.md
+Models/OrganizationRequest.md
 Models/OrganizationRole.md
 Models/OrganizationSecurity.md
+Models/OrganizationUpdate.md
 Models/QueryResult.md
 Models/ResourceSizeInfo.md
 Models/Run.md

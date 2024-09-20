@@ -32,7 +32,7 @@ import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
-import com.cosmotech.organization.service.getRbac
+import com.cosmotech.organization.service.toGenericSecurity
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
@@ -72,7 +72,9 @@ internal class WorkspaceServiceImpl(
 
   override fun findAllWorkspaces(organizationId: String, page: Int?, size: Int?): List<Workspace> {
     val organization = organizationService.getVerifiedOrganization(organizationId)
-    val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
+    val isAdmin =
+        csmRbac.isAdmin(
+            organization.security.toGenericSecurity(organization.id), getCommonRolesDefinition())
     val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
     var result: List<Workspace>
     var pageable = constructPageRequest(page, size, defaultPageSize)
@@ -454,7 +456,7 @@ internal class WorkspaceServiceImpl(
 
     val rbacSecurity =
         csmRbac.addUserRole(
-            organization.getRbac(),
+            organization.security.toGenericSecurity(organization.id),
             workspace.getRbac(),
             workspaceAccessControl.id,
             workspaceAccessControl.role)

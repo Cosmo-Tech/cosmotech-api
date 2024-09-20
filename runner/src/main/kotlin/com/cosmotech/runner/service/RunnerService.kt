@@ -60,7 +60,7 @@ class RunnerService(
 ) : CsmPhoenixService() {
 
   fun inOrganization(organizationId: String): RunnerService = apply {
-    this.organization = organizationApiService.findOrganizationById(organizationId)
+    this.organization = organizationApiService.getOrganization(organizationId)
   }
 
   fun inWorkspace(workspaceId: String): RunnerService = apply {
@@ -69,7 +69,7 @@ class RunnerService(
           "RunnerService's organization needs to be set. use inOrganization to do so.")
     }
 
-    this.workspace = workspaceApiService.findWorkspaceById(this.organization!!.id!!, workspaceId)
+    this.workspace = workspaceApiService.findWorkspaceById(this.organization!!.id, workspaceId)
   }
 
   fun userHasPermissionOnWorkspace(permission: String): RunnerService = apply {
@@ -112,7 +112,7 @@ class RunnerService(
 
   fun getInstance(runnerId: String): RunnerInstance {
     val runner =
-        runnerRepository.findBy(organization!!.id!!, workspace!!.id!!, runnerId).orElseThrow {
+        runnerRepository.findBy(organization!!.id, workspace!!.id!!, runnerId).orElseThrow {
           CsmResourceNotFoundException(
               "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
         }
@@ -124,14 +124,12 @@ class RunnerService(
     val isPlatformAdmin =
         getCurrentAuthenticatedRoles(this.csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
     return if (!this.csmPlatformProperties.rbac.enabled || isPlatformAdmin) {
-      runnerRepository
-          .findByWorkspaceId(organization!!.id!!, workspace!!.id!!, pageRequest)
-          .toList()
+      runnerRepository.findByWorkspaceId(organization!!.id, workspace!!.id!!, pageRequest).toList()
     } else {
       val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
       runnerRepository
           .findByWorkspaceIdAndSecurity(
-              organization!!.id!!, workspace!!.id!!, currentUser, pageRequest)
+              organization!!.id, workspace!!.id!!, currentUser, pageRequest)
           .toList()
     }
   }
@@ -178,7 +176,7 @@ class RunnerService(
       if (runner.runTemplateId.isNullOrEmpty())
           throw IllegalArgumentException("runner does not have a runTemplateId define")
       if (!solutionApiService.isRunTemplateExist(
-          organization!!.id!!,
+          organization!!.id,
           workspace!!.id!!,
           workspace!!.solution.solutionId!!,
           runner.runTemplateId!!))

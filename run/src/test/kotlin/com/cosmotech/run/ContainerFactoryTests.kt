@@ -6,6 +6,7 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.run.domain.ContainerResourceSizeInfo
 import com.cosmotech.run.domain.ContainerResourceSizing
 import com.cosmotech.run.domain.RunContainer
@@ -189,7 +190,7 @@ class ContainerFactoryTests {
                 "IDP_BASE_URL" to csmPlatformProperties.identityProvider.serverBaseUrl,
                 "IDP_TENANT_ID" to csmPlatformProperties.identityProvider.identity.tenantId,
                 "CSM_SIMULATION_ID" to CSM_SIMULATION_ID,
-                "CSM_ORGANIZATION_ID" to organization.id!!,
+                "CSM_ORGANIZATION_ID" to organization.id,
                 "CSM_WORKSPACE_ID" to workspace.id!!,
                 "CSM_RUNNER_ID" to runner.id!!,
                 "CSM_RUN_ID" to runId,
@@ -270,6 +271,7 @@ class ContainerFactoryTests {
     return Organization(
         id = "Organizationid",
         name = "Organization Test",
-    )
+        ownerId = "Owner",
+        security = OrganizationSecurity(default = "", accessControlList = mutableListOf()))
   }
 }

@@ -22,8 +22,10 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationRequest
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.organization.domain.OrganizationUpdate
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -74,7 +76,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
   }
 
   @TestFactory
-  fun `test RBAC findAllOrganizations`() =
+  fun `test RBAC listOrganizations`() =
       mapOf(
               ROLE_VIEWER to 1,
               ROLE_EDITOR to 2,
@@ -83,18 +85,18 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_NONE to 4,
               ROLE_ADMIN to 5,
           )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC findAllOrganizations : $role") {
-              organizationApiService.registerOrganization(
-                  mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
+          .map { (role, organizationCount) ->
+            DynamicTest.dynamicTest("Test RBAC listOrganizations: $role") {
+              organizationApiService.createOrganization(
+                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role))
 
-              val organizations = organizationApiService.findAllOrganizations(null, null)
-              assertEquals(shouldThrow, organizations.size)
+              val organizations = organizationApiService.listOrganizations(null, null)
+              assertEquals(organizationCount, organizations.size)
             }
           }
 
   @TestFactory
-  fun `test RBAC findOrganizationById`() =
+  fun `test RBAC getOrganization`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -104,30 +106,28 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC findOrganizationById : $role") {
+            DynamicTest.dynamicTest("Test RBAC getOrganization: $role") {
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(TEST_USER_MAIL, role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.findOrganizationById(organization.id!!)
+                      organizationApiService.getOrganization(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
-                assertDoesNotThrow {
-                  organizationApiService.findOrganizationById(organization.id!!)
-                }
+                assertDoesNotThrow { organizationApiService.getOrganization(organization.id) }
               }
             }
           }
 
   @TestFactory
-  fun `test RBAC unregisterOrganization`() =
+  fun `test RBAC deleteOrganization`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -137,23 +137,21 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC unregisterOrganization : $role") {
+            DynamicTest.dynamicTest("Test RBAC deleteOrganization: $role") {
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(TEST_USER_MAIL, role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.unregisterOrganization(organization.id!!)
+                      organizationApiService.deleteOrganization(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_DELETE",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_DELETE",
                     exception.message)
               } else {
-                assertDoesNotThrow {
-                  organizationApiService.unregisterOrganization(organization.id!!)
-                }
+                assertDoesNotThrow { organizationApiService.deleteOrganization(organization.id) }
               }
             }
           }
@@ -169,25 +167,24 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC updateOrganization : $role") {
+            DynamicTest.dynamicTest("Test RBAC updateOrganization: $role") {
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganization(
-                          organization.id!!,
-                          mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
+                          organization.id, OrganizationUpdate(name = organization.name))
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganization(
-                      organization.id!!, mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
+                      organization.id, OrganizationUpdate(name = organization.name))
                 }
               }
             }
@@ -204,22 +201,22 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC getOrganizationPermissions : $role") {
+            DynamicTest.dynamicTest("Test RBAC getOrganizationPermissions: $role") {
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(TEST_USER_MAIL, role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.getOrganizationPermissions(organization.id!!, role)
+                      organizationApiService.getOrganizationPermissions(organization.id, role)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else
                   assertDoesNotThrow {
-                    organizationApiService.getOrganizationPermissions(organization.id!!, role)
+                    organizationApiService.getOrganizationPermissions(organization.id, role)
                   }
             }
           }
@@ -235,22 +232,22 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC getOrganizationSecurity : $role") {
+            DynamicTest.dynamicTest("Test RBAC getOrganizationSecurity: $role") {
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(TEST_USER_MAIL, role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.getOrganizationSecurity(organization.id!!)
+                      organizationApiService.getOrganizationSecurity(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  organizationApiService.getOrganizationSecurity(organization.id!!)
+                  organizationApiService.getOrganizationSecurity(organization.id)
                 }
               }
             }
@@ -267,24 +264,24 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC setOrganizationDefaultSecurity : $role") {
+            DynamicTest.dynamicTest("Test RBAC setOrganizationDefaultSecurity: $role") {
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(TEST_USER_MAIL, role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.setOrganizationDefaultSecurity(
-                          organization.id!!, OrganizationRole(role))
+                          organization.id, OrganizationRole(role))
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.setOrganizationDefaultSecurity(
-                      organization.id!!, OrganizationRole(role))
+                      organization.id, OrganizationRole(role))
                 }
               }
             }
@@ -301,24 +298,24 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC addOrganizationAccessControl : $role") {
+            DynamicTest.dynamicTest("Test RBAC addOrganizationAccessControl: $role") {
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(TEST_USER_MAIL, role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.addOrganizationAccessControl(
-                          organization.id!!, OrganizationAccessControl("id", role))
+                          organization.id, OrganizationAccessControl("id", role))
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.addOrganizationAccessControl(
-                      organization.id!!, OrganizationAccessControl("id", role))
+                      organization.id, OrganizationAccessControl("id", role))
                 }
               }
             }
@@ -335,24 +332,24 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC getOrganizationAccessControl : $role") {
+            DynamicTest.dynamicTest("Test RBAC getOrganizationAccessControl: $role") {
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(TEST_USER_MAIL, role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.getOrganizationAccessControl(
-                          organization.id!!, TEST_USER_MAIL)
+                          organization.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.getOrganizationAccessControl(
-                      organization.id!!, TEST_USER_MAIL)
+                      organization.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -369,24 +366,24 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC removeOrganizationAccessControl : $role") {
+            DynamicTest.dynamicTest("Test RBAC removeOrganizationAccessControl: $role") {
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(TEST_USER_MAIL, role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.removeOrganizationAccessControl(
-                          organization.id!!, TEST_USER_MAIL)
+                          organization.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.removeOrganizationAccessControl(
-                      organization.id!!, TEST_USER_MAIL)
+                      organization.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -403,24 +400,24 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC updateOrganizationAccessControl : $role") {
+            DynamicTest.dynamicTest("Test RBAC updateOrganizationAccessControl: $role") {
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(TEST_USER_MAIL, role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganizationAccessControl(
-                          organization.id!!, TEST_USER_MAIL, OrganizationRole(role))
+                          organization.id, TEST_USER_MAIL, OrganizationRole(role))
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganizationAccessControl(
-                      organization.id!!, TEST_USER_MAIL, OrganizationRole(role))
+                      organization.id, TEST_USER_MAIL, OrganizationRole(role))
                 }
               }
             }
@@ -437,32 +434,30 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC getOrganizationSecurityUsers : $role") {
+            DynamicTest.dynamicTest("Test RBAC getOrganizationSecurityUsers: $role") {
               val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
+                  organizationApiService.createOrganization(
+                      makeOrganizationRequestWithRole(TEST_USER_MAIL, role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.getOrganizationSecurityUsers(organization.id!!)
+                      organizationApiService.getOrganizationSecurityUsers(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  organizationApiService.getOrganizationSecurityUsers(organization.id!!)
+                  organizationApiService.getOrganizationSecurityUsers(organization.id)
                 }
               }
             }
           }
 
-  fun mockOrganizationWithRole(id: String, role: String): Organization {
-    return Organization(
-        id = UUID.randomUUID().toString(),
+  fun makeOrganizationRequestWithRole(id: String, role: String): OrganizationRequest {
+    return OrganizationRequest(
         name = "Organization Name",
-        ownerId = "my.account-tester@cosmotech.com",
         security =
             OrganizationSecurity(
                 default = ROLE_NONE,

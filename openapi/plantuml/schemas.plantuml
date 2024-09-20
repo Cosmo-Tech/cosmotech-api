@@ -161,15 +161,14 @@ entity IoTypesEnum {
 }
 
 entity Organization {
-    id: String
-    name: String
-    ownerId: String
-    security: OrganizationSecurity
 }
 
 entity OrganizationAccessControl {
     * id: String
     * role: String
+}
+
+entity OrganizationRequest {
 }
 
 entity OrganizationRole {
@@ -179,6 +178,10 @@ entity OrganizationRole {
 entity OrganizationSecurity {
     * default: String
     * accessControlList: List<OrganizationAccessControl>
+}
+
+entity OrganizationUpdate {
+    name: String
 }
 
 entity QueryResult {
@@ -527,6 +530,8 @@ entity WorkspaceWebApp {
     options: Map
 }
 
+OrganizationRequest <|--- Organization
+OrganizationUpdate <|--- OrganizationRequest
 
 RunTemplateResourceSizing -- ResourceSizeInfo : requests
 RunTemplateResourceSizing -- ResourceSizeInfo : limits
@@ -542,7 +547,6 @@ Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
 Runner -- RunnerSecurity : security
-Organization -- OrganizationSecurity : security
 RunStatus -- "0..*" RunStatusNode : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : edges

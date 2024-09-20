@@ -25,7 +25,7 @@ import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
-import com.cosmotech.organization.service.getRbac
+import com.cosmotech.organization.service.toGenericSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
@@ -323,7 +323,7 @@ class SolutionServiceImpl(
 
     val rbacSecurity =
         csmRbac.addUserRole(
-            organization.getRbac(),
+            organization.security.toGenericSecurity(organization.id),
             solution.getRbac(),
             solutionAccessControl.id,
             solutionAccessControl.role)

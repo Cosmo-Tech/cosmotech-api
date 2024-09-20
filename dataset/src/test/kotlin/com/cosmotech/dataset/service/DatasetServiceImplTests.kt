@@ -12,7 +12,6 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -27,6 +26,7 @@ import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.organization.domain.OrganizationSecurity
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -95,12 +95,18 @@ class DatasetServiceImplTests {
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
+    every { organizationService.getVerifiedOrganization(any(), any<String>()) } returns
+        Organization(
+            id = "",
+            name = "",
+            ownerId = "",
+            security = OrganizationSecurity(default = "", accessControlList = mutableListOf()))
+
     every { csmPlatformProperties.twincache.dataset.defaultPageSize } returns 10
   }
 
   @Test
   fun `findAllDatasets should return empty list when no dataset exists`() {
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findAll(any<Pageable>()) } returns Page.empty()
 
     val result = datasetService.findAllDatasets(ORGANIZATION_ID, null, null)
@@ -110,7 +116,6 @@ class DatasetServiceImplTests {
   @Test
   fun `findDatasetById should return the dataset when it exists`() {
     val dataset = baseDataset()
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     val result = datasetService.findDatasetById(ORGANIZATION_ID, DATASET_ID)
     assertEquals(dataset, result)
@@ -123,9 +128,6 @@ class DatasetServiceImplTests {
             .copy(
                 connector = DatasetConnector(id = "connectorId", name = "connectorName"),
             )
-    every {
-      organizationService.getVerifiedOrganization(ORGANIZATION_ID, PERMISSION_CREATE_CHILDREN)
-    } returns Organization()
     every { connectorService.findConnectorById(any()) } returns
         Connector(
             key = "key",
@@ -146,9 +148,6 @@ class DatasetServiceImplTests {
   @Test
   fun `createDataset should throw IllegalArgumentException when the name is empty`() {
     val dataset = baseDataset().copy(name = "")
-    every {
-      organizationService.getVerifiedOrganization(ORGANIZATION_ID, PERMISSION_CREATE_CHILDREN)
-    } returns Organization()
     every { datasetRepository.save(any()) } returnsArgument 0
     assertThrows<IllegalArgumentException> {
       datasetService.createDataset(ORGANIZATION_ID, dataset)
@@ -158,9 +157,6 @@ class DatasetServiceImplTests {
   @Test
   fun `createDataset should throw IllegalArgumentException when source is empty for ADT or Storage type`() {
     val typeList = listOf(DatasetSourceType.ADT, DatasetSourceType.AzureStorage)
-    every {
-      organizationService.getVerifiedOrganization(ORGANIZATION_ID, PERMISSION_CREATE_CHILDREN)
-    } returns Organization()
     typeList.forEach { type ->
       val dataset = baseDataset().copy(sourceType = type, source = null)
       every { datasetRepository.save(any()) } returnsArgument 0
@@ -172,9 +168,6 @@ class DatasetServiceImplTests {
   @Test
   fun `createDataset should throw IllegalArgumentException when connector is empty`() {
     val dataset = baseDataset()
-    every {
-      organizationService.getVerifiedOrganization(ORGANIZATION_ID, PERMISSION_CREATE_CHILDREN)
-    } returns Organization()
     every { datasetRepository.save(any()) } returnsArgument 0
     assertThrows<IllegalArgumentException> {
       datasetService.createDataset(ORGANIZATION_ID, dataset)
@@ -197,7 +190,6 @@ class DatasetServiceImplTests {
               name = "My Sub Dataset",
               description = "My Sub Dataset description",
           )
-      every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
       every { idGenerator.generate("twingraph") } returns SUB_TWINGRAPH_ID
       every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
       every { unifiedJedis.eval(any(), any(), dataset.twingraphId, SUB_TWINGRAPH_ID) } returns Unit
@@ -227,7 +219,6 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset().copy(twingraphId = "", ingestionStatus = IngestionStatusEnum.SUCCESS)
     val subDatasetGraphQuery = SubDatasetGraphQuery()
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
       datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
@@ -242,7 +233,6 @@ class DatasetServiceImplTests {
                 twingraphId = "twingraphId",
                 sourceType = DatasetSourceType.File,
                 ingestionStatus = IngestionStatusEnum.SUCCESS)
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
 
     val fileName = this::class.java.getResource("/Users.csv")?.file
@@ -261,7 +251,6 @@ class DatasetServiceImplTests {
                 twingraphId = "twingraphId",
                 sourceType = DatasetSourceType.File,
                 ingestionStatus = IngestionStatusEnum.SUCCESS)
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
 
     val fileName = this::class.java.getResource("/Users.7z")?.file
@@ -282,7 +271,6 @@ class DatasetServiceImplTests {
     val fileName = this::class.java.getResource("/Graph.zip")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
       datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
@@ -298,7 +286,6 @@ class DatasetServiceImplTests {
     val fileName = this::class.java.getResource("/Graph.zip")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
       datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
@@ -316,7 +303,6 @@ class DatasetServiceImplTests {
     val fileName = this::class.java.getResource("/Graph.zip")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { unifiedJedis.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
@@ -338,7 +324,6 @@ class DatasetServiceImplTests {
                 ingestionStatus = IngestionStatusEnum.NONE,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { unifiedJedis.exists(any<String>()) } returns false
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
@@ -353,7 +338,6 @@ class DatasetServiceImplTests {
                 ingestionStatus = IngestionStatusEnum.SUCCESS,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { unifiedJedis.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returns mockk()
@@ -371,7 +355,6 @@ class DatasetServiceImplTests {
                 source = SourceInfo(location = "test", jobId = "0"),
                 twingraphId = "twingraphId")
     mockkConstructor(TwingraphImportJobInfoRequest::class)
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { anyConstructed<TwingraphImportJobInfoRequest>().response } returns "Succeeded"
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { unifiedJedis.exists(any<String>()) } returns true
@@ -388,7 +371,6 @@ class DatasetServiceImplTests {
         baseDataset()
             .copy(
                 sourceType = DatasetSourceType.File, source = SourceInfo("http://storage.location"))
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
       datasetService.refreshDataset(ORGANIZATION_ID, DATASET_ID)
@@ -404,7 +386,6 @@ class DatasetServiceImplTests {
                 sourceType = DatasetSourceType.ADT,
                 source = SourceInfo("http://storage.location", jobId = "0"),
                 twingraphId = "twingraphId")
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { unifiedJedis.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
@@ -416,7 +397,6 @@ class DatasetServiceImplTests {
 
   @Test
   fun `deleteDataset should throw CsmResourceNotFoundException when Dataset is not found`() {
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.empty()
     assertThrows<CsmResourceNotFoundException> {
       datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
@@ -426,7 +406,6 @@ class DatasetServiceImplTests {
   @Test
   fun `deleteDataset should throw CsmAccessForbiddenException`() {
     val dataset = baseDataset()
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     assertThrows<CsmAccessForbiddenException> {
@@ -441,7 +420,6 @@ class DatasetServiceImplTests {
             .copy(
                 twingraphId = "twingraphId",
             )
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { getCurrentAuthenticatedRoles(csmPlatformProperties) } returns
         listOf(ROLE_PLATFORM_ADMIN)
@@ -460,7 +438,6 @@ class DatasetServiceImplTests {
     val graphQuery = "MATCH(n) RETURN n"
     val twinGraphQuery = DatasetTwinGraphQuery(graphQuery)
 
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.save(any()) } returnsArgument 0
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
@@ -495,7 +472,6 @@ class DatasetServiceImplTests {
   @Test
   fun `test bulkQueryGraphs as Admin - should call query and set data to Redis`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     val dataset =
         baseDataset().copy(twingraphId = "graphId", ingestionStatus = IngestionStatusEnum.SUCCESS)
     val graphQuery = "MATCH(n) RETURN n"
@@ -523,7 +499,6 @@ class DatasetServiceImplTests {
   @Test
   fun `test bulkQueryGraphs as Admin - should return existing Hash when data found`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     val dataset =
         baseDataset().copy(twingraphId = "graphId", ingestionStatus = IngestionStatusEnum.SUCCESS)
     every { datasetRepository.save(any()) } returnsArgument 0
@@ -539,7 +514,6 @@ class DatasetServiceImplTests {
   @Test
   fun `test downloadGraph as Admin - should get graph data`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
 
     mockkStatic("org.springframework.web.context.request.RequestContextHolder")
     every {
@@ -560,9 +534,8 @@ class DatasetServiceImplTests {
 
   @Test
   fun `test downloadGraph as Admin - should throw exception if data not found`() {
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk()
+    every { organizationService.getOrganization(any()) } returns mockk()
     every { unifiedJedis.exists(any<ByteArray>()) } returns false
 
     assertThrows<CsmResourceNotFoundException> {
@@ -573,7 +546,6 @@ class DatasetServiceImplTests {
   @Test
   fun `test downloadGraph as Admin - should throw exception if data expired`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
 
     every { unifiedJedis.exists(any<ByteArray>()) } returns true
     every { unifiedJedis.ttl(any<ByteArray>()) } returns -1L
