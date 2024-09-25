@@ -376,7 +376,7 @@ entity Runner {
     ownerName: String
     solutionName: String
     runTemplateName: String
-    * datasetList: List<String>
+    datasetList: List<String>
     runSizing: RunnerResourceSizing
     parametersValues: List<RunnerRunTemplateParameterValue>
     lastRunId: String

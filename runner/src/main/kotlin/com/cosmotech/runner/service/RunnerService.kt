@@ -42,6 +42,7 @@ import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.getRbac
 import java.time.Instant
+import kotlin.collections.mutableListOf
 import org.springframework.context.annotation.Scope
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -179,6 +180,7 @@ class RunnerService(
               ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
               organizationId = organization!!.id,
               workspaceId = workspace!!.id,
+              datasetList = mutableListOf(),
               creationDate = now,
               lastUpdate = now)
     }
@@ -207,8 +209,8 @@ class RunnerService(
 
       // take newly added datasets and propagate existing ACL on it
       this.runner.datasetList
-          .filterNot { beforeMutateDatasetList.contains(it) }
-          .forEach { newDatasetId ->
+          ?.filterNot { beforeMutateDatasetList?.contains(it) ?: false }
+          ?.forEach { newDatasetId ->
             this.runner.security?.accessControlList?.forEach {
               this.propagateAccessControlToDataset(newDatasetId, it.id, it.role)
             }
@@ -363,7 +365,7 @@ class RunnerService(
     }
 
     private fun propagateAccessControlToDatasets(userId: String, role: String) {
-      this.runner.datasetList.forEach { datasetId ->
+      this.runner.datasetList?.forEach { datasetId ->
         propagateAccessControlToDataset(datasetId, userId, role)
       }
     }
@@ -384,7 +386,7 @@ class RunnerService(
 
     private fun removeAccessControlToDatasets(userId: String) {
       val organizationId = this.runner.organizationId!!
-      this.runner.datasetList.forEach { datasetId ->
+      this.runner.datasetList?.forEach { datasetId ->
         val datasetACL =
             datasetApiService.findDatasetById(organizationId, datasetId).getRbac().accessControlList
 
