@@ -87,6 +87,8 @@ import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
+import org.apache.commons.lang3.NotImplementedException
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
@@ -127,8 +129,14 @@ class DatasetServiceImpl(
     private val unifiedJedis: UnifiedJedis,
     private val csmRbac: CsmRbac,
     private val csmAdmin: CsmAdmin,
-    private val resourceScanner: ResourceScanner
+    private val resourceScanner: ResourceScanner,
+    @Value("\${csm.platform.twincache.useGraphModule}") private val useGraphModule: Boolean
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
+
+  private val notImplementedExceptionMessage =
+      "The API is not configured to use Graph functionnalities. " +
+          "This endpoint is deactivated so. " +
+          "To change that, set the API configuration entry 'csm.platform.twincache.useGraphModule' to true"
 
   override fun findAllDatasets(organizationId: String, page: Int?, size: Int?): List<Dataset> {
     organizationService.getVerifiedOrganization(organizationId)
@@ -188,8 +196,10 @@ class DatasetServiceImpl(
         ?: throw IllegalArgumentException(
             "Source cannot be null for source type 'ADT' or 'Storage'")
 
-    val twingraphId = idGenerator.generate("twingraph")
-    if (dataset.sourceType != null) {
+    var twingraphId: String? = null
+
+    if (dataset.sourceType != null && useGraphModule) {
+      twingraphId = idGenerator.generate("twingraph")
       val twincacheConnector = getCreateTwincacheConnector()
       dataset.connector =
           DatasetConnector(
@@ -229,6 +239,9 @@ class DatasetServiceImpl(
       datasetId: String,
       subDatasetGraphQuery: SubDatasetGraphQuery
   ): Dataset {
+
+    checkIfGraphFunctionalityIsAvailable()
+
     val dataset =
         getDatasetWithStatus(organizationId, datasetId, status = IngestionStatusEnum.SUCCESS)
     csmRbac.verify(dataset.getRbac(), PERMISSION_CREATE_CHILDREN)
@@ -284,6 +297,12 @@ class DatasetServiceImpl(
     return datasetSaved
   }
 
+  private fun checkIfGraphFunctionalityIsAvailable() {
+    if (!useGraphModule) {
+      throw NotImplementedException(notImplementedExceptionMessage)
+    }
+  }
+
   fun bulkQueryResult(queryBuffer: QueryBuffer, resultSet: ResultSet) {
 
     resultSet.forEach { record: Record? ->
@@ -312,6 +331,8 @@ class DatasetServiceImpl(
       datasetId: String,
       body: Resource
   ): FileUploadValidation {
+
+    checkIfGraphFunctionalityIsAvailable()
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
 
@@ -400,7 +421,7 @@ class DatasetServiceImpl(
       null -> IngestionStatusEnum.NONE.value
       DatasetSourceType.None -> {
         var twincacheStatus = TwincacheStatusEnum.EMPTY
-        if (unifiedJedis.exists(dataset.twingraphId!!)) {
+        if (useGraphModule && unifiedJedis.exists(dataset.twingraphId!!)) {
           twincacheStatus = TwincacheStatusEnum.FULL
         }
         datasetRepository.apply { dataset.twincacheStatus = twincacheStatus }
@@ -413,7 +434,7 @@ class DatasetServiceImpl(
         }
         if (dataset.ingestionStatus == IngestionStatusEnum.ERROR) {
           return IngestionStatusEnum.ERROR.value
-        } else if (!unifiedJedis.exists(dataset.twingraphId!!)) {
+        } else if (useGraphModule && !unifiedJedis.exists(dataset.twingraphId!!)) {
           IngestionStatusEnum.PENDING.value
         } else {
           dataset
@@ -483,6 +504,7 @@ class DatasetServiceImpl(
   }
 
   override fun refreshDataset(organizationId: String, datasetId: String): DatasetTwinGraphInfo {
+    checkIfGraphFunctionalityIsAvailable()
     val dataset = getVerifiedDataset(organizationId, datasetId, PERMISSION_WRITE)
 
     dataset.takeUnless { it.sourceType == DatasetSourceType.File }
@@ -527,6 +549,7 @@ class DatasetServiceImpl(
   }
 
   override fun rollbackRefresh(organizationId: String, datasetId: String): String {
+    checkIfGraphFunctionalityIsAvailable()
     var dataset = getVerifiedDataset(organizationId, datasetId, PERMISSION_WRITE)
 
     val status = getDatasetTwingraphStatus(organizationId, datasetId)
@@ -548,7 +571,7 @@ class DatasetServiceImpl(
   override fun deleteDataset(organizationId: String, datasetId: String) {
     val dataset = getVerifiedDataset(organizationId, datasetId, PERMISSION_DELETE)
 
-    if (unifiedJedis.exists(dataset.twingraphId!!)) {
+    if (useGraphModule && unifiedJedis.exists(dataset.twingraphId!!)) {
       unifiedJedis.del(dataset.twingraphId!!)
     }
 
@@ -618,6 +641,7 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): List<Any> {
+    checkIfGraphFunctionalityIsAvailable()
     val dataset =
         getDatasetWithStatus(organizationId, datasetId, status = IngestionStatusEnum.SUCCESS)
 
@@ -679,6 +703,7 @@ class DatasetServiceImpl(
       twinGraphQuery: DatasetTwinGraphQuery,
       body: Resource
   ): TwinGraphBatchResult {
+    checkIfGraphFunctionalityIsAvailable()
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     resourceScanner.scanMimeTypes(body, listOf("text/csv", "text/plain"))
@@ -702,6 +727,7 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): DatasetTwinGraphHash {
+    checkIfGraphFunctionalityIsAvailable()
     val dataset =
         getDatasetWithStatus(organizationId, datasetId, status = IngestionStatusEnum.SUCCESS)
     val bulkQueryKey = bulkQueryKey(dataset.twingraphId!!, datasetTwinGraphQuery.query, null)
@@ -724,6 +750,7 @@ class DatasetServiceImpl(
   }
 
   override fun downloadTwingraph(organizationId: String, hash: String): Resource {
+    checkIfGraphFunctionalityIsAvailable()
     organizationService.getVerifiedOrganization(organizationId)
 
     val bulkQueryId = bulkQueryKey(hash)
@@ -774,6 +801,7 @@ class DatasetServiceImpl(
       type: String,
       graphProperties: List<GraphProperties>
   ): String {
+    checkIfGraphFunctionalityIsAvailable()
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     var result = ""
@@ -808,6 +836,7 @@ class DatasetServiceImpl(
       type: String,
       ids: List<String>
   ): String {
+    checkIfGraphFunctionalityIsAvailable()
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     var result = ""
     when (type) {
@@ -903,6 +932,7 @@ class DatasetServiceImpl(
       type: String,
       graphProperties: List<GraphProperties>
   ): String {
+    checkIfGraphFunctionalityIsAvailable()
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     var result = ""
@@ -937,6 +967,7 @@ class DatasetServiceImpl(
       type: String,
       ids: List<String>
   ) {
+    checkIfGraphFunctionalityIsAvailable()
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     return trx(dataset) { localDataset ->
