@@ -81,6 +81,7 @@ csm:
       port: "6379"
       username: "default_user"
       password: "default_password"
+      useGraphModule: true
       tls:
         enabled: false
         bundle: ""
