@@ -642,7 +642,7 @@ class DatasetServiceImpl(
   ): String {
     val dataset =
         getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
-    return query(dataset, datasetTwinGraphQuery.query).toJsonString()
+    return query(dataset, datasetTwinGraphQuery.query, isReadOnly = true).toJsonString()
   }
 
   override fun query(dataset: Dataset, query: String, isReadOnly: Boolean): ResultSet {
