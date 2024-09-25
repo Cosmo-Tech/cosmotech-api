@@ -44,6 +44,7 @@ import com.cosmotech.workspace.service.getRbac
 import java.time.Instant
 import org.springframework.context.annotation.Scope
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
 @Component
@@ -92,6 +93,20 @@ class RunnerService(
       throw CsmClientException(
           "Can't delete runner ${runner.id!!}: at least one run is still running")
     }
+
+    // Update parent references to delete runner to point to grand-parent
+    var pageRequest: Pageable =
+        PageRequest.ofSize(csmPlatformProperties.twincache.runner.defaultPageSize)
+    do {
+      val pagedRunners =
+          runnerRepository.findByParentId(
+              runner.organizationId!!, runner.workspaceId!!, runner.id!!, pageRequest)
+      pagedRunners.stream().forEach {
+        it.parentId = runner.parentId
+        runnerRepository.save(it)
+      }
+      pageRequest = pagedRunners.nextPageable()
+    } while (pagedRunners.hasNext())
 
     // Notify the deletion
     val runnerDeleted =
