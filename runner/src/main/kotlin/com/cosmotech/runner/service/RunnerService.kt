@@ -95,19 +95,20 @@ class RunnerService(
           "Can't delete runner ${runner.id!!}: at least one run is still running")
     }
 
-    // Update parent references to delete runner to point to grand-parent
-    var pageRequest: Pageable =
-        PageRequest.ofSize(csmPlatformProperties.twincache.runner.defaultPageSize)
-    do {
-      val pagedRunners =
-          runnerRepository.findByParentId(
-              runner.organizationId!!, runner.workspaceId!!, runner.id!!, pageRequest)
-      pagedRunners.stream().forEach {
-        it.parentId = runner.parentId
-        runnerRepository.save(it)
+    // Update parent and root references to deleted runner
+    var newRoots = mutableListOf<Runner>()
+    listAllRunnerByParentId(runner.organizationId!!, runner.workspaceId!!, runner.id!!).forEach {
+      it.parentId = runner.parentId
+      // Runner was root, child is now root
+      if (runner.rootId == null) {
+        it.rootId = null
+        newRoots.add(it)
       }
-      pageRequest = pagedRunners.nextPageable()
-    } while (pagedRunners.hasNext())
+      runnerRepository.save(it)
+    }
+
+    // Update new root ids
+    newRoots.forEach { updateChildrenRootId(parent = it, newRootId = it.id!!) }
 
     // Notify the deletion
     val runnerDeleted =
@@ -115,6 +116,34 @@ class RunnerService(
     this.eventPublisher.publishEvent(runnerDeleted)
 
     return runnerRepository.delete(runnerInstance.getRunnerDataObjet())
+  }
+
+  private fun listAllRunnerByParentId(
+      organizationId: String,
+      workspaceId: String,
+      parentId: String
+  ): List<Runner> {
+    val defaultPageSize = csmPlatformProperties.twincache.runner.defaultPageSize
+    var pageRequest: Pageable = PageRequest.ofSize(defaultPageSize)
+
+    var runners = mutableListOf<Runner>()
+
+    do {
+      val pagedRunners =
+          runnerRepository.findByParentId(organizationId, workspaceId, parentId, pageRequest)
+      runners.addAll(pagedRunners.toList())
+      pageRequest = pagedRunners.nextPageable()
+    } while (pagedRunners.hasNext())
+
+    return runners
+  }
+
+  private fun updateChildrenRootId(parent: Runner, newRootId: String) {
+    listAllRunnerByParentId(parent.organizationId!!, parent.workspaceId!!, parent.id!!).forEach {
+      it.rootId = newRootId
+      runnerRepository.save(it)
+      updateChildrenRootId(it, newRootId)
+    }
   }
 
   fun saveInstance(runnerInstance: RunnerInstance): Runner {
@@ -204,7 +233,14 @@ class RunnerService(
       val beforeMutateDatasetList = this.runner.datasetList
 
       val excludeFields =
-          arrayOf("id", "ownerId", "organizationId", "workspaceId", "creationDate", "security")
+          arrayOf(
+              "id",
+              "ownerId",
+              "rootId",
+              "organizationId",
+              "workspaceId",
+              "creationDate",
+              "security")
       this.runner.compareToAndMutateIfNeeded(runner, excludedFields = excludeFields)
 
       // take newly added datasets and propagate existing ACL on it
@@ -253,6 +289,16 @@ class RunnerService(
         val parameterValueList = this.runner.parametersValues ?: mutableListOf()
         parameterValueList.addAll(inheritedParameterValues)
         this.runner.parametersValues = parameterValueList
+
+        // Compute rootId
+        this.runner.parentId?.let {
+          this.runner.rootId =
+              runnerRepository
+                  .findBy(organization!!.id!!, workspace!!.id!!, it)
+                  .orElseThrow { IllegalArgumentException("Parent runner not found: ${it}") }
+                  .rootId
+                  ?: this.runner.parentId
+        }
       }
     }
 

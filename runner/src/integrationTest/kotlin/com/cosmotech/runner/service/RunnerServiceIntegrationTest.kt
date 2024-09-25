@@ -361,6 +361,75 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `update rootId on root Runner delete`() {
+    // Create a 3 level hierarchy: grandParent <- parent1 <- child1
+    //                                         <- parent2 <- child2
+    val grandParentCreation =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+        )
+    val grandParentRunner =
+        runnerApiService.createRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, grandParentCreation)
+    val parentCreation =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            parentId = grandParentRunner.id)
+    val parentRunner1 =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, parentCreation)
+    val parentRunner2 =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, parentCreation)
+    var childCreation =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            parentId = parentRunner1.id)
+    val childRunner1 =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, childCreation)
+    childCreation.parentId = parentRunner2.id
+    val childRunner2 =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, childCreation)
+
+    // Initial parents check
+    assertEquals(grandParentRunner.id, parentRunner1.parentId)
+    assertEquals(grandParentRunner.id, parentRunner2.parentId)
+    assertEquals(parentRunner1.id, childRunner1.parentId)
+    assertEquals(parentRunner2.id, childRunner2.parentId)
+    // Initial root check
+    assertEquals(grandParentRunner.id, parentRunner1.rootId)
+    assertEquals(grandParentRunner.id, parentRunner2.rootId)
+    assertEquals(grandParentRunner.id, childRunner1.rootId)
+    assertEquals(grandParentRunner.id, childRunner2.rootId)
+
+    // Delete grand parent
+    runnerApiService.deleteRunner(
+        organizationSaved.id!!, workspaceSaved.id!!, grandParentRunner.id!!)
+    assertNull(
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, parentRunner1.id!!)
+            .rootId)
+    assertNull(
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, parentRunner2.id!!)
+            .rootId)
+    assertEquals(
+        parentRunner1.id,
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, childRunner1.id!!)
+            .rootId)
+    assertEquals(
+        parentRunner2.id,
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, childRunner2.id!!)
+            .rootId)
+  }
+
+  @Test
   fun `test RBAC RunnerSecurity as Platform Admin`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
 
