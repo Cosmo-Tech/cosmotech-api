@@ -293,6 +293,7 @@ paths:
         * The id of the edge
 
         All following columns content are up to you.
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       requestBody:
         required: true
         content:
@@ -336,7 +337,9 @@ paths:
       tags:
         - dataset
       summary: Create a sub-dataset from the dataset in parameter
-      description: Create a copy of the dataset using the results of the list of queries given in parameter.
+      description: |
+        Create a copy of the dataset using the results of the list of queries given in parameter.
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       requestBody:
         description: the Cypher query to filter
         required: true
@@ -388,6 +391,7 @@ paths:
             Local File (import a new file)
 
         During refresh, datas are overwritten
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       responses:
         '200':
           description: Successful response
@@ -414,7 +418,9 @@ paths:
       tags:
         - dataset
       summary: Rollback the dataset after a failed refresh
-      description: Rollback the twingraph on a dataset after a failed refresh
+      description: |
+        Rollback the twingraph on a dataset after a failed refresh
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       responses:
         '200':
           description: Successful response
@@ -445,7 +451,9 @@ paths:
       tags:
         - dataset
       summary: Return the result of a query made on the graph instance as a json
-      description: Run a query on a graph instance and return the result as a json
+      description: |
+        Run a query on a graph instance and return the result as a json
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       requestBody:
         description: the query to run
         required: true
@@ -494,7 +502,9 @@ paths:
       tags:
         - dataset
       summary: Create new entities in a graph instance
-      description: create new entities in a graph instance
+      description: | 
+        Create new entities in a graph instance
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       requestBody:
         description: the entities to create
         required: true
@@ -519,7 +529,9 @@ paths:
       tags:
         - dataset
       summary: Get entities in a graph instance
-      description: get entities in a graph instance
+      description: |
+        Get entities in a graph instance
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       parameters:
         - name: ids
           in: query
@@ -543,7 +555,9 @@ paths:
       summary: Update entities in a graph instance
       description: update entities in a graph instance
       requestBody:
-        description: the entities to update
+        description: | 
+          The entities to update
+          Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
         required: true
         content:
           application/json:
@@ -566,7 +580,9 @@ paths:
       tags:
         - dataset
       summary: Delete entities in a graph instance
-      description: delete entities in a graph instance
+      description: | 
+        Delete entities in a graph instance
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       parameters:
         - name: ids
           in: query
@@ -632,7 +648,9 @@ paths:
       tags:
         - dataset
       summary: "Async batch update by loading a CSV file on a graph instance "
-      description: "Async batch update by loading a CSV file on a graph instance "
+      description: |
+        Async batch update by loading a CSV file on a graph instance 
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       requestBody:
         required: true
         content:
@@ -684,7 +702,9 @@ paths:
       tags:
         - dataset
       summary: Run a query on a graph instance and return the result as a zip file in async mode
-      description: Run a query on a graph instance and return the result as a zip file in async mode
+      description: |
+        Run a query on a graph instance and return the result as a zip file in async mode
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       requestBody:
         description: the query to run
         required: true
@@ -721,7 +741,9 @@ paths:
       tags:
         - dataset
       summary: Download a graph as a zip file
-      description: Download the compressed graph reference by the hash in a zip file
+      description: |
+        Download the compressed graph reference by the hash in a zip file
+        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       responses:
         '200':
           description: Successful response
