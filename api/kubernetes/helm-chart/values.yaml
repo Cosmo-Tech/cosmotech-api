@@ -176,6 +176,7 @@ config:
         password: changeme
         port: 6379
         username: default
+        useGraphModule: true
         tls:
           enabled: false
           bundle: "changeme"

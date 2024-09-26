@@ -129,13 +129,14 @@ class DatasetServiceImpl(
     private val unifiedJedis: UnifiedJedis,
     private val csmRbac: CsmRbac,
     private val csmAdmin: CsmAdmin,
-    private val resourceScanner: ResourceScanner,
-    @Value("\${csm.platform.twincache.useGraphModule}") private val useGraphModule: Boolean
+    private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
+
+  @Value("\${csm.platform.twincache.useGraphModule}") private var useGraphModule: Boolean = true
 
   private val notImplementedExceptionMessage =
       "The API is not configured to use Graph functionnalities. " +
-          "This endpoint is deactivated so. " +
+          "This endpoint is deactivated. " +
           "To change that, set the API configuration entry 'csm.platform.twincache.useGraphModule' to true"
 
   override fun findAllDatasets(organizationId: String, page: Int?, size: Int?): List<Dataset> {
