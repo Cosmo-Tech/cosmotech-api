@@ -151,7 +151,7 @@ Create a new Dataset
 
 Create a sub-dataset from the dataset in parameter
 
-    Create a copy of the dataset using the results of the list of queries given in parameter.
+    Create a copy of the dataset using the results of the list of queries given in parameter. Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -180,7 +180,7 @@ Create a sub-dataset from the dataset in parameter
 
 Create new entities in a graph instance
 
-    create new entities in a graph instance
+    Create new entities in a graph instance Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -236,7 +236,7 @@ null (empty response body)
 
 Delete entities in a graph instance
 
-    delete entities in a graph instance
+    Delete entities in a graph instance Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -266,7 +266,7 @@ null (empty response body)
 
 Download a graph as a zip file
 
-    Download the compressed graph reference by the hash in a zip file
+    Download the compressed graph reference by the hash in a zip file Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -454,7 +454,7 @@ Get the dataset&#39;s refresh job status
 
 Get entities in a graph instance
 
-    get entities in a graph instance
+    Get entities in a graph instance Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -511,7 +511,7 @@ Get entities in a graph instance
 
 Refresh data on dataset from dataset&#39;s source
 
-    Refresh dataset from parent source. At date, sources can be:      dataset (refresh from another dataset)      Azure Digital twin      Azure storage      Local File (import a new file)  During refresh, datas are overwritten 
+    Refresh dataset from parent source. At date, sources can be:      dataset (refresh from another dataset)      Azure Digital twin      Azure storage      Local File (import a new file)  During refresh, datas are overwritten Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -592,7 +592,7 @@ null (empty response body)
 
 Rollback the dataset after a failed refresh
 
-    Rollback the twingraph on a dataset after a failed refresh
+    Rollback the twingraph on a dataset after a failed refresh Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -675,7 +675,7 @@ Set the Dataset default security
 
 Run a query on a graph instance and return the result as a zip file in async mode
 
-    Run a query on a graph instance and return the result as a zip file in async mode
+    Run a query on a graph instance and return the result as a zip file in async mode Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -704,7 +704,7 @@ Run a query on a graph instance and return the result as a zip file in async mod
 
 Async batch update by loading a CSV file on a graph instance 
 
-    Async batch update by loading a CSV file on a graph instance 
+    Async batch update by loading a CSV file on a graph instance  Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -734,7 +734,7 @@ Async batch update by loading a CSV file on a graph instance
 
 Return the result of a query made on the graph instance as a json
 
-    Run a query on a graph instance and return the result as a json
+    Run a query on a graph instance and return the result as a json Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -854,7 +854,7 @@ Update entities in a graph instance
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **dataset\_id** | **String**| the Dataset Identifier | [default to null] |
 | **type** | **String**| the entity model type | [default to null] [enum: node, relationship] |
-| **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to update | |
+| **GraphProperties** | [**List**](../Models/GraphProperties.md)| The entities to update Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true  | |
 
 ### Return type
 
@@ -875,7 +875,7 @@ Update entities in a graph instance
 
 Upload data from zip file to dataset&#39;s twingraph
 
-    To create a new graph from flat files,  you need to create a Zip file. This Zip file must countain two folders named Edges and Nodes.  .zip hierarchy: *main_folder/Nodes *main_folder/Edges  In each folder you can place one or multiple csv files containing your Nodes or Edges data.  Your csv files must follow the following header (column name) requirements:  The Nodes CSVs requires at least one column (the 1st).Column name &#x3D; &#39;id&#39;. It will represent the nodes ID Ids must be populated with string  The Edges CSVs require three columns named, in order, * source * target * id  those colomns represent * The source of the edge * The target of the edge * The id of the edge  All following columns content are up to you. 
+    To create a new graph from flat files,  you need to create a Zip file. This Zip file must countain two folders named Edges and Nodes.  .zip hierarchy: *main_folder/Nodes *main_folder/Edges  In each folder you can place one or multiple csv files containing your Nodes or Edges data.  Your csv files must follow the following header (column name) requirements:  The Nodes CSVs requires at least one column (the 1st).Column name &#x3D; &#39;id&#39;. It will represent the nodes ID Ids must be populated with string  The Edges CSVs require three columns named, in order, * source * target * id  those colomns represent * The source of the edge * The target of the edge * The id of the edge  All following columns content are up to you. Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
