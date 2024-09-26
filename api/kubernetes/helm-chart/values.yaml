@@ -172,6 +172,12 @@ argo:
 config:
   csm:
     platform:
+      twincache:
+        host: redis.host.changeme
+        password: changeme
+        port: 6379
+        username: default
+        useGraphModule: true
       vendor: azure
       argo:
         base-uri: "http://argo-server:2746"
