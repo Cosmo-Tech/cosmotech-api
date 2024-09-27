@@ -4529,7 +4529,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
 
   private fun materializeTwingraph(dataset: Dataset, createTwingraph: Boolean = true): Dataset {
     dataset.apply {
-      if (createTwingraph) {
+      if (createTwingraph && !this.twingraphId.isNullOrBlank()) {
         jedis.graphQuery(this.twingraphId, "CREATE (n:labelrouge)")
       }
       this.ingestionStatus = IngestionStatusEnum.SUCCESS

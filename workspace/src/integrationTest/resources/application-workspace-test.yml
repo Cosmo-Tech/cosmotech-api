@@ -145,6 +145,7 @@ csm:
       username: "default"
       # Leave it as blank as there's no auth with test container
       password:
+      useGraphModule: true
       workspace:
         default-page-size: 5
     rbac:
