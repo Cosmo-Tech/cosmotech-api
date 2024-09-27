@@ -115,6 +115,9 @@ csm:
       port: "6379"
       username: "default"
       password: "my-wonderful-password"
+      useGraphModule: true
+      runner:
+        default-page-size: 20
       scenario:
         default-page-size: 20
     rbac:

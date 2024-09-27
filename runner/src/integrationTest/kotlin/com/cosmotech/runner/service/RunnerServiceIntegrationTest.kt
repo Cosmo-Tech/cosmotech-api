@@ -1012,7 +1012,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
       createTwingraph: Boolean = true
   ): Dataset {
     dataset.apply {
-      if (createTwingraph) {
+      if (createTwingraph && !this.twingraphId.isNullOrBlank()) {
         jedis.graphQuery(this.twingraphId, "MATCH (n:labelrouge) return 1")
       }
       this.ingestionStatus = IngestionStatusEnum.SUCCESS

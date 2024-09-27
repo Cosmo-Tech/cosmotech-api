@@ -127,6 +127,9 @@ csm:
       port: "6379"
       username: "default"
       password: "my-wonderful-password"
+      useGraphModule: true
+      run:
+        default-page-size: 5
       scenariorun:
         default-page-size: 5
     internalResultServices:
