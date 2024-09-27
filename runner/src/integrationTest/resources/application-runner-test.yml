@@ -87,6 +87,7 @@ csm:
       port: "6379"
       username: "default"
       password: "my-wonderful-password"
+      useGraphModule: true
       tls:
         enabled: false
         bundle: ""

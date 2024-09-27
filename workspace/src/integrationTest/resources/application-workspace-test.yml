@@ -92,6 +92,7 @@ csm:
       username: "default"
       # Leave it as blank as there's no auth with test container
       password:
+      useGraphModule: true
       tls:
         enabled: false
         bundle: ""
