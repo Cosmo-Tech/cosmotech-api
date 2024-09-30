@@ -75,6 +75,7 @@ Cosmo Tech Platform API
 | config.csm.platform.twincache.port | int | `6379` |  |
 | config.csm.platform.twincache.tls.bundle | string | `"changeme"` |  |
 | config.csm.platform.twincache.tls.enabled | bool | `false` |  |
+| config.csm.platform.twincache.useGraphModule | bool | `true` |  |
 | config.csm.platform.twincache.username | string | `"default"` |  |
 | deploymentStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":"50%"},"type":"RollingUpdate"}` | Deployment strategy |
 | deploymentStrategy.rollingUpdate.maxSurge | int | `1` | maximum number of Pods that can be created over the desired number of Pods |
