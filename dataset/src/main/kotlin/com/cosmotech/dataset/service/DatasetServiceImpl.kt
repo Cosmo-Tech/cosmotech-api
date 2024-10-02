@@ -190,8 +190,9 @@ class DatasetServiceImpl(
     dataset.takeUnless { it.name.isNullOrBlank() }
         ?: throw IllegalArgumentException("Name cannot be null or blank")
 
+    val datasetSourceType = dataset.sourceType
     dataset.takeUnless {
-      dataset.sourceType in listOf(DatasetSourceType.ADT, DatasetSourceType.AzureStorage) &&
+      datasetSourceType in listOf(DatasetSourceType.ADT, DatasetSourceType.AzureStorage) &&
           dataset.source == null
     }
         ?: throw IllegalArgumentException(
@@ -199,7 +200,8 @@ class DatasetServiceImpl(
 
     var twingraphId: String? = null
 
-    if (dataset.sourceType != null && useGraphModule) {
+    if (datasetSourceType == DatasetSourceType.Twincache && useGraphModule) {
+
       twingraphId = idGenerator.generate("twingraph")
       val twincacheConnector = getCreateTwincacheConnector()
       dataset.connector =
@@ -208,17 +210,11 @@ class DatasetServiceImpl(
               parametersValues = mutableMapOf(TWINCACHE_NAME to twingraphId))
     }
 
-    dataset.takeUnless { it.connector == null || dataset.connector!!.id.isNullOrBlank() }
-        ?: throw IllegalArgumentException("Connector or its ID cannot be null or blank")
-
-    val existingConnector = connectorService.findConnectorById(dataset.connector!!.id!!)
-    logger.debug("Found connector: {}", existingConnector)
-
     val createdDataset =
         dataset.copy(
             id = idGenerator.generate("dataset"),
             twingraphId = twingraphId,
-            sourceType = dataset.sourceType ?: DatasetSourceType.None,
+            sourceType = datasetSourceType ?: DatasetSourceType.None,
             source = dataset.source ?: SourceInfo("none"),
             main = dataset.main ?: true,
             creationDate = Instant.now().toEpochMilli(),
@@ -227,9 +223,15 @@ class DatasetServiceImpl(
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId)
     createdDataset.setRbac(csmRbac.initSecurity(dataset.getRbac()))
-    createdDataset.connector!!.apply {
-      name = existingConnector.name
-      version = existingConnector.version
+
+    if (dataset.connector != null && !dataset.connector!!.id.isNullOrBlank()) {
+      val existingConnector = connectorService.findConnectorById(dataset.connector!!.id!!)
+      logger.debug("Found connector: {}", existingConnector)
+
+      createdDataset.connector!!.apply {
+        name = existingConnector.name
+        version = existingConnector.version
+      }
     }
 
     return datasetRepository.save(createdDataset)
