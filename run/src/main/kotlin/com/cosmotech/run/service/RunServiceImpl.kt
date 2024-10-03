@@ -234,14 +234,6 @@ class RunServiceImpl(
             .executeUpdate()
 
         logger.debug("Creating new table $dataTableName for run $runId")
-
-        // Grant select rights to the reader account
-        connection
-            .prepareStatement("GRANT SELECT ON TABLE $dataTableName TO $readerStorageUsername ")
-            .executeUpdate()
-
-        logger.debug(
-            "Granted SELECT to user $readerStorageUsername on table $dataTableName for run $runId")
       } else {
         // The table exist already
 
@@ -518,6 +510,16 @@ class RunServiceImpl(
 
         connection
             .prepareStatement("GRANT CREATE ON SCHEMA public to $writerStorageUsername")
+            .executeUpdate()
+
+        connection
+            .prepareStatement("GRANT USAGE ON SCHEMA public to $writerStorageUsername")
+            .executeUpdate()
+
+        connection
+            .prepareStatement(
+                "ALTER DEFAULT PRIVILEGES FOR USER  $writerStorageUsername IN SCHEMA public " +
+                    "GRANT SELECT ON TABLES TO $readerStorageUsername;")
             .executeUpdate()
         connection.commit()
       } catch (e: SQLException) {
