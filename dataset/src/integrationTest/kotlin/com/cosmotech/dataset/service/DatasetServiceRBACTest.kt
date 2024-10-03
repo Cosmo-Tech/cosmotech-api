@@ -1660,7 +1660,8 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
 
               val organization = makeOrganizationWithRole(role = role)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
+              val dataset =
+                  makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.File)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               val fileName = this::class.java.getResource("/integrationTest.zip")?.file
               val file = File(fileName!!)
@@ -1701,7 +1702,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
 
               val organization = makeOrganizationWithRole()
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDatasetWithRole(role = role)
+              val dataset = makeDatasetWithRole(role = role, sourceType = DatasetSourceType.File)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               val fileName = this::class.java.getResource("/integrationTest.zip")?.file
               val file = File(fileName!!)
@@ -1830,9 +1831,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
 
               val organization = makeOrganizationWithRole(role = role)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
+              val dataset =
+                  makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.None)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -2294,7 +2295,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
       createTwingraph: Boolean = true
   ): Dataset {
     dataset.apply {
-      if (createTwingraph) {
+      if (createTwingraph && !this.twingraphId.isNullOrBlank()) {
         jedis.graphQuery(this.twingraphId, "CREATE (n:labelrouge)")
       }
       this.ingestionStatus = IngestionStatusEnum.SUCCESS
@@ -2314,7 +2315,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   fun makeDataset(
       id: String,
       name: String,
-      sourceType: DatasetSourceType = DatasetSourceType.File
+      sourceType: DatasetSourceType = DatasetSourceType.Twincache
   ): Dataset {
     return Dataset(
         id = id,
@@ -2365,16 +2366,17 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
       parentId: String = "",
       id: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN,
-      sourceType: DatasetSourceType = DatasetSourceType.File
+      sourceType: DatasetSourceType = DatasetSourceType.Twincache
   ): Dataset {
+    val random = UUID.randomUUID().toString()
     return Dataset(
-        id = UUID.randomUUID().toString(),
+        id = random,
         name = "My datasetRbac",
         organizationId = organizationId,
         parentId = parentId,
         ownerId = "ownerId",
         connector = DatasetConnector(connectorSaved.id!!),
-        twingraphId = "graph",
+        twingraphId = "graph-${random}",
         source = SourceInfo("location", "name", "path"),
         tags = mutableListOf("dataset"),
         sourceType = sourceType,

@@ -213,7 +213,6 @@ class DatasetServiceImpl(
     val createdDataset =
         dataset.copy(
             id = idGenerator.generate("dataset"),
-            twingraphId = twingraphId,
             sourceType = datasetSourceType ?: DatasetSourceType.None,
             source = dataset.source ?: SourceInfo("none"),
             main = dataset.main ?: true,
@@ -222,6 +221,11 @@ class DatasetServiceImpl(
             twincacheStatus = TwincacheStatusEnum.EMPTY,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId)
+    createdDataset.apply {
+      if (!twingraphId.isNullOrBlank()) {
+        this.twingraphId = twingraphId
+      }
+    }
     createdDataset.setRbac(csmRbac.initSecurity(dataset.getRbac()))
 
     if (dataset.connector != null && !dataset.connector!!.id.isNullOrBlank()) {
