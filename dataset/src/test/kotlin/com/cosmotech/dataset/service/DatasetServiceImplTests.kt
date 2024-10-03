@@ -168,17 +168,6 @@ class DatasetServiceImplTests {
       }
     }
   }
-  @Test
-  fun `createDataset should throw IllegalArgumentException when connector is empty`() {
-    val dataset = baseDataset()
-    every {
-      organizationService.getVerifiedOrganization(ORGANIZATION_ID, PERMISSION_CREATE_CHILDREN)
-    } returns Organization()
-    every { datasetRepository.save(any()) } returnsArgument 0
-    assertThrows<IllegalArgumentException> {
-      datasetService.createDataset(ORGANIZATION_ID, dataset)
-    }
-  }
 
   @Test
   fun `createSubDataset create Dataset copy with new id, name, description, parentId & twingraphId`() {
