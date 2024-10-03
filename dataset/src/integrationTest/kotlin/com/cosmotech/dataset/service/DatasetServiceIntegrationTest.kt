@@ -707,6 +707,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test uploadTwingraph status`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
+    dataset.apply { sourceType = DatasetSourceType.File }
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     val file = this::class.java.getResource("/integrationTest.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
@@ -731,6 +732,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test uploadTwingraph fail set dataset status to error`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
+    dataset.apply { sourceType = DatasetSourceType.File }
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     val file = this::class.java.getResource("/brokenGraph.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
@@ -790,6 +792,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `reupload a twingraph in dataset with source type File`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
+    dataset.apply { sourceType = DatasetSourceType.File }
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     val fileName = this::class.java.getResource("/integrationTest.zip")?.file
@@ -858,7 +861,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     organization = makeOrganizationWithRole("organization")
     organizationSaved = organizationApiService.registerOrganization(organization)
-    makeDatasetWithRole(sourceType = DatasetSourceType.File)
+    dataset = makeDatasetWithRole(sourceType = DatasetSourceType.File)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.ERROR })
@@ -1045,7 +1048,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun makeDataset(
       organizationId: String = organizationSaved.id!!,
       parentId: String = "",
-      sourceType: DatasetSourceType = DatasetSourceType.File
+      sourceType: DatasetSourceType = DatasetSourceType.Twincache
   ): Dataset {
     return Dataset(
         id = UUID.randomUUID().toString(),
@@ -1065,7 +1068,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       parentId: String = "",
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN,
-      sourceType: DatasetSourceType = DatasetSourceType.File
+      sourceType: DatasetSourceType = DatasetSourceType.Twincache
   ): Dataset {
     return Dataset(
         id = UUID.randomUUID().toString(),
