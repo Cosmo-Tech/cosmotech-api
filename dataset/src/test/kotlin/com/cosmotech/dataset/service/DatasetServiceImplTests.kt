@@ -464,6 +464,7 @@ class DatasetServiceImplTests {
     every { datasetRepository.save(any()) } returnsArgument 0
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
+    every { csmPlatformProperties.twincache.queryTimeout } returns 0L
 
     every { unifiedJedis.graphQuery("graphId", graphQuery, 0) } returns mockEmptyResultSet()
     every { unifiedJedis.exists(any<String>()) } returns true
@@ -475,7 +476,8 @@ class DatasetServiceImplTests {
 
     datasetService.twingraphQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
 
-    verify { unifiedJedis.graphQuery("graphId", graphQuery, 0) }
+    verify(exactly = 1) { unifiedJedis.graphReadonlyQuery("graphId", graphQuery, 0) }
+    verify(exactly = 0) { unifiedJedis.graphQuery("graphId", graphQuery, 0) }
   }
 
   @Test

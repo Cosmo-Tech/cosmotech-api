@@ -631,7 +631,8 @@ class DatasetServiceImpl(
 
     val gson = Gson()
     val mapAdapter = gson.getAdapter(object : TypeToken<List<Any>>() {})
-    return mapAdapter.fromJson(query(dataset, datasetTwinGraphQuery.query, isReadOnly = true).toJsonString())
+    return mapAdapter.fromJson(
+        query(dataset, datasetTwinGraphQuery.query, isReadOnly = true).toJsonString())
   }
 
   override fun query(dataset: Dataset, query: String, isReadOnly: Boolean): ResultSet {
