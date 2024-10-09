@@ -22,6 +22,8 @@ All URIs are relative to *http://localhost*
 *DatasetApi* | [**downloadTwingraph**](Apis/DatasetApi.md#downloadtwingraph) | **GET** /organizations/{organization_id}/datasets/twingraph/download/{hash} | Download a graph as a zip file |
 *DatasetApi* | [**findAllDatasets**](Apis/DatasetApi.md#findalldatasets) | **GET** /organizations/{organization_id}/datasets | List all Datasets |
 *DatasetApi* | [**findDatasetById**](Apis/DatasetApi.md#finddatasetbyid) | **GET** /organizations/{organization_id}/datasets/{dataset_id} | Get the details of a Dataset |
+*DatasetApi* | [**getAllData**](Apis/DatasetApi.md#getalldata) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/data | Get the data of a Dataset |
+*DatasetApi* | [**getDataInfo**](Apis/DatasetApi.md#getdatainfo) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/info | Get the data information of a Dataset |
 *DatasetApi* | [**getDatasetAccessControl**](Apis/DatasetApi.md#getdatasetaccesscontrol) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Get a control access for the Dataset |
 *DatasetApi* | [**getDatasetSecurity**](Apis/DatasetApi.md#getdatasetsecurity) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security | Get the Dataset security information |
 *DatasetApi* | [**getDatasetSecurityUsers**](Apis/DatasetApi.md#getdatasetsecurityusers) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/users | Get the Dataset security users list |

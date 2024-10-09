@@ -320,6 +320,7 @@ subprojects {
     integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
+    implementation("org.springframework.boot:spring-boot-starter-data-neo4j:3.3.4")
   }
 
   tasks.withType<KotlinCompile> {

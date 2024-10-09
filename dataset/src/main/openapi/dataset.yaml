@@ -313,6 +313,70 @@ paths:
           description: Request successful
         "404":
           description: the Dataset specified is unknown or you don't have access to it
+  /organizations/{organization_id}/datasets/{dataset_id}/data:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: name
+        schema:
+          type: string
+        description: name of a dedicated entity
+    get:
+      operationId: getAllData
+      tags:
+        - dataset
+      summary: Get the data of a Dataset
+      responses:
+        "200":
+          description: the Dataset details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
+  /organizations/{organization_id}/datasets/{dataset_id}/info:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getDataInfo
+      tags:
+        - dataset
+      summary: Get the data information of a Dataset
+      responses:
+        "200":
+          description: the Dataset information
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
   /organizations/{organization_id}/datasets/{dataset_id}/subdataset:
     parameters:
       - name: organization_id
