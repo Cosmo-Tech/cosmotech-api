@@ -88,11 +88,14 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
 import org.apache.commons.lang3.NotImplementedException
+import org.neo4j.driver.internal.InternalNode
+import org.neo4j.driver.internal.InternalRelationship
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.neo4j.core.Neo4jClient
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.scheduling.annotation.Async
@@ -129,7 +132,8 @@ class DatasetServiceImpl(
     private val unifiedJedis: UnifiedJedis,
     private val csmRbac: CsmRbac,
     private val csmAdmin: CsmAdmin,
-    private val resourceScanner: ResourceScanner
+    private val resourceScanner: ResourceScanner,
+    private val neo4jClient: Neo4jClient
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   @Value("\${csm.platform.twincache.useGraphModule}") private var useGraphModule: Boolean = true
@@ -761,6 +765,110 @@ class DatasetServiceImpl(
     }
 
     return twinGraphHash
+  }
+
+  override fun getAllData(organizationId: String, datasetId: String, name: String?): List<Any> {
+    if (name.isNullOrBlank()) {
+      return neo4jClient
+          .query(
+              "MATCH (n)-[r]->(m) " +
+                  "WHERE n.dataset= \"$datasetId\" AND " +
+                  "r.dataset= \"$datasetId\" AND " +
+                  "m.dataset= \"$datasetId\" " +
+                  "return n,r,m")
+          .fetch()
+          .all()
+          .map { it.values.toList() }
+          .filter { it.isNotEmpty() }
+          .map {
+            listOf(
+                (it[0] as InternalNode).toMap(),
+                (it[1] as InternalRelationship).toMap(),
+                (it[2] as InternalNode).toMap())
+          }
+    }
+    val nodeResult =
+        neo4jClient
+            .query("MATCH (n:$name) WHERE n.dataset= \"$datasetId\"return n")
+            .fetch()
+            .all()
+            .map { it.values.toList() }
+            .filter { it.isNotEmpty() }
+            .map { listOf((it[0] as InternalNode).toMap()) }
+    if (nodeResult.isNotEmpty()) {
+      return nodeResult
+    }
+
+    val edgeResult =
+        neo4jClient
+            .query(
+                "MATCH (n)-[r:$name]->(m) " +
+                    "WHERE n.dataset= \"$datasetId\" AND " +
+                    "r.dataset= \"$datasetId\" AND " +
+                    "m.dataset= \"$datasetId\" " +
+                    "return n,r,m")
+            .fetch()
+            .all()
+            .map { it.values.toList() }
+            .filter { it.isNotEmpty() }
+            .map {
+              listOf(
+                  (it[0] as InternalNode).toMap(),
+                  (it[1] as InternalRelationship).toMap(),
+                  (it[2] as InternalNode).toMap())
+            }
+    if (edgeResult.isNotEmpty()) {
+      return edgeResult
+    }
+
+    return emptyList()
+  }
+
+  override fun getDataInfo(organizationId: String, datasetId: String): Map<String, Any> {
+    val result = mutableMapOf<String, Any>()
+    val nodeInfo = mutableMapOf<String, Any>()
+    val relInfo = mutableMapOf<String, Any>()
+    neo4jClient
+        .query(
+            "MATCH (n) " +
+                "WHERE n.dataset= \"$datasetId\"" +
+                "RETURN distinct labels(n), count(*)")
+        .fetch()
+        .all()
+        .map { it.values.toList() }
+        .filter { it.isNotEmpty() }
+        .forEach { nodeInfo[(it[0] as List<*>).first().toString()] = it[1] }
+    result["nodeLabels"] = nodeInfo
+
+    neo4jClient
+        .query(
+            "MATCH ()-[r]-() " +
+                "WHERE r.dataset= \"$datasetId\"" +
+                "RETURN distinct type(r), count(*)")
+        .fetch()
+        .all()
+        .map { it.values.toList() }
+        .filter { it.isNotEmpty() }
+        .forEach { relInfo[it[0].toString()] = it[1] }
+    result["relTypes"] = relInfo
+
+    return result
+  }
+
+  fun InternalNode.toMap(): MutableMap<String, Any> {
+    val properties = this.asValue().asMap().toMutableMap()
+    properties["id"] = this.elementId()
+    properties["labels"] = this.labels()
+    return properties
+  }
+
+  fun InternalRelationship.toMap(): MutableMap<String, Any> {
+    val properties = this.asValue().asMap().toMutableMap()
+    properties["type"] = this.type()
+    properties["id"] = this.elementId()
+    properties["start_id"] = this.startNodeElementId()
+    properties["end_id"] = this.endNodeElementId()
+    return properties
   }
 
   override fun downloadTwingraph(organizationId: String, hash: String): Resource {
