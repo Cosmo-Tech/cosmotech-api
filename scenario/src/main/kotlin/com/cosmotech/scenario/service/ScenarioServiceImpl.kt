@@ -547,6 +547,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
+    checkInternalResultDataServiceConfiguration()
     return findScenarioById(organizationId, workspaceId, scenarioId, withState = true)
   }
 
