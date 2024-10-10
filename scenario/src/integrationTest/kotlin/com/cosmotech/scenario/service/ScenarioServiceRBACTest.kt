@@ -396,6 +396,83 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
+  // parent scenario RBAC should not have influence SDCOSMO-1729
+  @TestFactory
+  fun `test parent scenario RBAC findAllScenarios`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_VALIDATOR to false,
+              ROLE_NONE to false,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            dynamicTest("Test Workspace RBAC findAllScenarios : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved =
+                  datasetRepository.save(
+                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
+              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      id = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
+                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!),
+                      id = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val scenarioParent =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!),
+                      id = TEST_USER_MAIL,
+                      role = role)
+              val scenarioParentSaved =
+                  scenarioApiService.createScenario(
+                      organizationSaved.id!!, workspaceSaved.id!!, scenarioParent)
+              scenario.parentId = scenarioParentSaved.id
+              val scenarioSaved =
+                  scenarioApiService.createScenario(
+                      organizationSaved.id!!, workspaceSaved.id!!, scenario)
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      scenarioApiService.findAllScenarios(
+                          organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                    }
+                assertEquals(
+                    "RBAC ${scenarioParentSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  scenarioApiService.findAllScenarios(
+                      organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                }
+              }
+            }
+          }
   @TestFactory
   fun `test Organization RBAC createScenario`() =
       mapOf(

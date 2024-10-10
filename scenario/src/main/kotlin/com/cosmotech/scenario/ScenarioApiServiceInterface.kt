@@ -18,7 +18,6 @@ interface ScenarioApiServiceInterface : ScenarioApiService {
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
-      withLastRun: Boolean = false,
       withState: Boolean = false
   ): Scenario
 
