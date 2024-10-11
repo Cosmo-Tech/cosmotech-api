@@ -606,6 +606,100 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test on runner creation with null datasetList when parent has empty datasetList`() {
+    val parentRunnerWithEmptyDatasetList = makeRunner()
+    assertNotNull(parentRunnerWithEmptyDatasetList.datasetList)
+    assertTrue { parentRunnerWithEmptyDatasetList.datasetList!!.isEmpty() }
+
+    val parentId =
+        runnerApiService
+            .createRunner(
+                organizationSaved.id!!, workspaceSaved.id!!, parentRunnerWithEmptyDatasetList)
+            .id
+    val childRunnerWithNullDatasetList = makeRunner(parentId = parentId, datasetList = null)
+    val childRunnerDatasetList =
+        runnerApiService
+            .createRunner(
+                organizationSaved.id!!, workspaceSaved.id!!, childRunnerWithNullDatasetList)
+            .datasetList
+
+    assertNotNull(childRunnerDatasetList)
+    assertTrue { childRunnerDatasetList.isEmpty() }
+  }
+
+  @Test
+  fun `test on runner creation with null datasetList when parent has non-empty datasetList`() {
+    val parentDatasetList = mutableListOf("fakeId")
+    val parentRunnerWithNonEmptyDatasetList = makeRunner(datasetList = parentDatasetList)
+    assertNotNull(parentRunnerWithNonEmptyDatasetList.datasetList)
+    assertTrue { parentRunnerWithNonEmptyDatasetList.datasetList!!.isNotEmpty() }
+
+    val parentId =
+        runnerApiService
+            .createRunner(
+                organizationSaved.id!!, workspaceSaved.id!!, parentRunnerWithNonEmptyDatasetList)
+            .id
+    val childRunnerWithNullDatasetList = makeRunner(parentId = parentId, datasetList = null)
+    val childRunnerDatasetList =
+        runnerApiService
+            .createRunner(
+                organizationSaved.id!!, workspaceSaved.id!!, childRunnerWithNullDatasetList)
+            .datasetList
+
+    assertNotNull(childRunnerDatasetList)
+    assertEquals(parentDatasetList, childRunnerDatasetList)
+  }
+
+  @Test
+  fun `test on runner creation with empty datasetList when parent has non-empty datasetList`() {
+    val parentDatasetList = mutableListOf("fakeId")
+    val parentRunnerWithNonEmptyDatasetList = makeRunner(datasetList = parentDatasetList)
+    assertNotNull(parentRunnerWithNonEmptyDatasetList.datasetList)
+    assertTrue { parentRunnerWithNonEmptyDatasetList.datasetList!!.isNotEmpty() }
+
+    val parentId =
+        runnerApiService
+            .createRunner(
+                organizationSaved.id!!, workspaceSaved.id!!, parentRunnerWithNonEmptyDatasetList)
+            .id
+    val childRunnerWithEmptyDatasetList =
+        makeRunner(parentId = parentId, datasetList = mutableListOf())
+    val childRunnerDatasetList =
+        runnerApiService
+            .createRunner(
+                organizationSaved.id!!, workspaceSaved.id!!, childRunnerWithEmptyDatasetList)
+            .datasetList
+
+    assertNotNull(childRunnerDatasetList)
+    assertTrue(childRunnerDatasetList.isEmpty())
+  }
+
+  @Test
+  fun `test on runner creation with non-empty datasetList when parent has non-empty datasetList`() {
+    val parentDatasetList = mutableListOf("fakeDatasetIdParentRunner")
+    val parentRunnerWithNonEmptyDatasetList = makeRunner(datasetList = parentDatasetList)
+    assertNotNull(parentRunnerWithNonEmptyDatasetList.datasetList)
+    assertTrue { parentRunnerWithNonEmptyDatasetList.datasetList!!.isNotEmpty() }
+
+    val parentId =
+        runnerApiService
+            .createRunner(
+                organizationSaved.id!!, workspaceSaved.id!!, parentRunnerWithNonEmptyDatasetList)
+            .id
+    val childDatasetList = mutableListOf("fakeDatasetIdChildRunner")
+    val childRunnerWithNonEmptyDatasetList =
+        makeRunner(parentId = parentId, datasetList = childDatasetList)
+    val childRunnerDatasetList =
+        runnerApiService
+            .createRunner(
+                organizationSaved.id!!, workspaceSaved.id!!, childRunnerWithNonEmptyDatasetList)
+            .datasetList
+
+    assertNotNull(childRunnerDatasetList)
+    assertEquals(childDatasetList, childRunnerDatasetList)
+  }
+
+  @Test
   fun `test updating (adding) runner's datasetList add runner users to new dataset`() {
     val newDataset = datasetApiService.createDataset(organizationSaved.id!!, makeDataset())
     runnerSaved =
@@ -971,7 +1065,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
       workspaceId: String = workspaceSaved.id!!,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
-      datasetList: MutableList<String> = mutableListOf(),
+      datasetList: MutableList<String>? = mutableListOf(),
       parentId: String? = null,
       userName: String = defaultName,
       role: String = ROLE_USER,

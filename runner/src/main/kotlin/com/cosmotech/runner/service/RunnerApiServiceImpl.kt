@@ -37,7 +37,12 @@ internal class RunnerApiServiceImpl(
             .inWorkspace(workspaceId)
             .userHasPermissionOnWorkspace(PERMISSION_CREATE_CHILDREN)
     val runnerInstance =
-        runnerService.getNewInstance().setValueFrom(runner).initSecurity(runner).initParameters()
+        runnerService
+            .getNewInstance()
+            .setValueFrom(runner)
+            .initSecurity(runner)
+            .initParameters()
+            .initDatasetList()
 
     return runnerService.saveInstance(runnerInstance)
   }

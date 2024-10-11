@@ -209,7 +209,6 @@ class RunnerService(
               ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
               organizationId = organization!!.id,
               workspaceId = workspace!!.id,
-              datasetList = mutableListOf(),
               creationDate = now,
               lastUpdate = now)
     }
@@ -299,6 +298,32 @@ class RunnerService(
                   .rootId
                   ?: this.runner.parentId
         }
+      }
+    }
+
+    fun initDatasetList(): RunnerInstance = apply {
+      val parentId = this.runner.parentId
+      val runnerId = this.runner.id
+      if (parentId != null) {
+        val parentRunner =
+            runnerRepository
+                .findBy(this.runner.organizationId!!, this.runner.workspaceId!!, parentId)
+                .orElseThrow {
+                  IllegalArgumentException(
+                      "Parent Id $parentId define on $runnerId does not exists")
+                }
+        val parentDatasetList = parentRunner.datasetList ?: mutableListOf()
+        val runnerDatasetList = this.runner.datasetList
+
+        if (parentDatasetList.isNotEmpty()) {
+          if (runnerDatasetList == null) {
+            this.runner.datasetList = parentDatasetList
+          }
+        }
+      }
+
+      if (this.runner.datasetList == null) {
+        this.runner.datasetList = mutableListOf()
       }
     }
 
