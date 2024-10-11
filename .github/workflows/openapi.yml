@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Validate '${{ matrix.project }}' definition
-        uses: char0n/swagger-editor-validate@v1.3.2
+        uses: swaggerexpert/swagger-editor-validate@v1.4.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: ${{ matrix.project }}/src/main/openapi/${{ matrix.project }}.yaml
@@ -108,7 +108,7 @@ jobs:
         with:
           name: openapi
       - name: Validate merged OpenAPI definition
-        uses: char0n/swagger-editor-validate@v1.3.2
+        uses: swaggerexpert/swagger-editor-validate@v1.4.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: openapi.yaml
