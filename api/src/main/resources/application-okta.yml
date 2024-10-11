@@ -12,10 +12,10 @@ spring:
     oauth2:
       resource-server:
         jwt:
-          issuer-uri: "https://myOktaDomain/oauth2/default"
-          jwk-set-uri: "https://myOktaDomain/oauth2/default/v1/keys"
+          issuer-uri: "${csm.platform.identityProvider.serverBaseUrl}/oauth2/default"
+          jwk-set-uri: "${csm.platform.identityProvider.serverBaseUrl}/oauth2/default/v1/keys"
           audiences:
-            - "api://default"
+            - ${csm.platform.identityProvider.audience}
 
 csm:
   platform:
