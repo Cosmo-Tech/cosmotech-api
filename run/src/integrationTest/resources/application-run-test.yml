@@ -110,14 +110,14 @@ csm:
         host: "localhost"
         port: "5432"
         reader:
-          username: "user1"
-          password: "pwd1"
+          username: "readusertest"
+          password: "readusertest"
         writer:
-          username: "user2"
-          password: "pwd2"
+          username: "writeusertest"
+          password: "writeusertest"
         admin:
-          username: "user3"
-          password: "pwd3"
+          username: "adminusertest"
+          password: "adminusertest"
       eventBus:
         host: "localhost"
         default-exchange: "csm-exchange"
