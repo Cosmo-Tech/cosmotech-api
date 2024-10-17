@@ -160,7 +160,7 @@ class RunServiceImpl(
     val defaultPageSize = csmPlatformProperties.twincache.run.defaultPageSize
     var pageRequest: Pageable = PageRequest.ofSize(defaultPageSize)
 
-    var runs = mutableListOf<Run>()
+    val runs = mutableListOf<Run>()
 
     do {
       val pagedRuns =
@@ -450,6 +450,8 @@ class RunServiceImpl(
 
   private fun deleteRun(run: Run) {
     try {
+
+      workflowService.stopWorkflow(run)
 
       if (csmPlatformProperties.internalResultServices?.enabled == true)
           adminRunStorageTemplate.dropDB(run.id!!)
