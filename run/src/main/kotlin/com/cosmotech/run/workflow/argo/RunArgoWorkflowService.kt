@@ -50,17 +50,6 @@ internal class RunArgoWorkflowService(
     private val lokiService: LokiService,
 ) : WorkflowService {
 
-  /*
-   Since Argo Workflows 3.5, listing workflows will also list archived ones.
-   See https://argo-workflows.readthedocs.io/en/latest/upgrading/#upgrading-to-v35
-   and https://github.com/argoproj/argo-workflows/issues/10781
-   and https://github.com/argoproj/argo-workflows/blob/release-3.5/ui/src/models/workflows.ts#L542-L560
-   The only way I found to filter archived ones from this list is to filter by following label
-   If this label is in the workflow's labels => the workflow is archived
-   If not, the workflow is not archived
-  */
-  private val argoWorkflowArchivedLabel = "workflows.argoproj.io/workflow-archiving-status"
-
   private val logger = LoggerFactory.getLogger(RunArgoWorkflowService::class.java)
 
   private val unsafeOkHttpClient: OkHttpClient by lazy {
@@ -190,9 +179,8 @@ internal class RunArgoWorkflowService(
 
   override fun findWorkflowStatusByLabel(
       labelSelector: String,
-      skipArchive: Boolean,
   ): List<WorkflowStatus> {
-    val workflowList = findWorkflowListByLabel(labelSelector, skipArchive)
+    val workflowList = findWorkflowListByLabel(labelSelector)
 
     return workflowList.map { workflow ->
       val workflowId = workflow.metadata.uid!!
@@ -209,34 +197,22 @@ internal class RunArgoWorkflowService(
 
   internal fun findWorkflowListByLabel(
       labelSelector: String,
-      skipArchive: Boolean = false,
   ): List<IoArgoprojWorkflowV1alpha1Workflow> {
 
-    val workflows =
-        newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
-            .workflowServiceListWorkflows(
-                csmPlatformProperties.argo.workflows.namespace,
-                labelSelector,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null)
-            .items
-
-    if (!skipArchive) {
-      val archivedWorkflows =
-          workflows.filter { it.metadata.labels.containsKey(argoWorkflowArchivedLabel) }
-      if (archivedWorkflows.isNotEmpty()) {
-        return archivedWorkflows
-      }
-    }
-
-    return workflows.filter { !it.metadata.labels.containsKey(argoWorkflowArchivedLabel) }
+    return newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
+        .workflowServiceListWorkflows(
+            csmPlatformProperties.argo.workflows.namespace,
+            labelSelector,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null)
+        .items
   }
 
   override fun getRunStatus(run: Run): RunStatus {

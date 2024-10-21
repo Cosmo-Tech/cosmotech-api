@@ -92,10 +92,7 @@ internal class RunMetrics(
 
   private fun getRunningWorkflowsCount(): Map<WorkflowContextData?, Int> {
     val runWorkflows =
-        this.workflowService.findWorkflowStatusByLabel(
-            "$WORKFLOW_TYPE_LABEL=$WORKFLOW_TYPE_RUN",
-            true,
-        )
+        this.workflowService.findWorkflowStatusByLabel("$WORKFLOW_TYPE_LABEL=$WORKFLOW_TYPE_RUN")
     return runWorkflows
         .filter { it.status == RUNNING_STATUS }
         .groupingBy { it.contextData }
