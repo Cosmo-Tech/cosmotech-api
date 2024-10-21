@@ -23,7 +23,6 @@ import com.cosmotech.run.workflow.WorkflowStatus
 import io.argoproj.workflow.ApiClient
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
-import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
 import io.argoproj.workflow.apis.InfoServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Workflow
@@ -212,57 +211,32 @@ internal class RunArgoWorkflowService(
       labelSelector: String,
       skipArchive: Boolean = false,
   ): List<IoArgoprojWorkflowV1alpha1Workflow> {
-    var workflowList: List<IoArgoprojWorkflowV1alpha1Workflow> = emptyList()
+
+    val workflows =
+        newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
+            .workflowServiceListWorkflows(
+                csmPlatformProperties.argo.workflows.namespace,
+                labelSelector,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null)
+            .items
 
     if (!skipArchive) {
-      try {
-        // Workflows are auto-archived and auto-deleted more frequently
-        // (as soon as they succeed or after a TTL).
-        // Therefore, it is more likely to have more archived workflows.
-        // So we are calling the ArchivedWorkflow API first, to reduce the number of round trips to
-        // Argo
-        workflowList =
-            newServiceApiInstance<ArchivedWorkflowServiceApi>(this.apiClient)
-                .archivedWorkflowServiceListArchivedWorkflows(
-                    labelSelector,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    csmPlatformProperties.argo.workflows.namespace)
-                .items
-        logger.debug("workflowList: {}", workflowList)
-      } catch (e: ApiException) {
-        val logMessage =
-            "No archived workflow found for label selector $labelSelector - trying to find in the active ones"
-        logger.debug(logMessage, e)
+      val archivedWorkflows =
+          workflows.filter { it.metadata.labels.containsKey(argoWorkflowArchivedLabel) }
+      if (archivedWorkflows.isNotEmpty()) {
+        return archivedWorkflows
       }
     }
 
-    if (workflowList.isEmpty()) {
-      workflowList =
-          newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
-              .workflowServiceListWorkflows(
-                  csmPlatformProperties.argo.workflows.namespace,
-                  labelSelector,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null,
-                  null)
-              .items
-              .filter { !it.metadata.labels.containsKey(argoWorkflowArchivedLabel) }
-    }
-    return workflowList
+    return workflows.filter { !it.metadata.labels.containsKey(argoWorkflowArchivedLabel) }
   }
 
   override fun getRunStatus(run: Run): RunStatus {
@@ -271,8 +245,7 @@ internal class RunArgoWorkflowService(
     val workflowName =
         run.workflowName
             ?: throw IllegalStateException(
-                "Run $runId for Organization $organizationId contains a null " +
-                    "workflowId or workflowName")
+                "Run $runId for Organization $organizationId contains a null workflowName")
     val workflowStatus = getWorkflowStatus(workflowName)
     return buildRunStatusFromWorkflowStatus(run, workflowStatus)
   }
