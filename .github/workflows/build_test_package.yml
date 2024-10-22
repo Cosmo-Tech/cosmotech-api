@@ -604,7 +604,7 @@ jobs:
             -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.28.0
         id: scan
         env:
           DOCKLE_HOST: "unix:///var/run/docker.sock"
