@@ -585,8 +585,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: "temurin"
+          java-version: "21"
 
       - name: Retrieve branch or tag name
         id: refvar
@@ -598,43 +598,37 @@ jobs:
           cache-disabled: true
 
       - name: Build local Container Image for scanning
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
             ./gradlew
             :cosmotech-api:jibDockerBuild
             -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
 
-      - name: Scan Container Image
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.20.0
         id: scan
-        # TODO For now, do not block if the container scan action returns issues
-        continue-on-error: true
-        uses: Azure/container-scan@v0.1
-        with:
-          image-name: com.cosmotech/cosmotech-api:${{ github.sha }}
         env:
           DOCKLE_HOST: "unix:///var/run/docker.sock"
 
-      - name: Convert Container Scan Report to SARIF
-        id: scan-to-sarif
-        uses: rm3l/container-scan-to-sarif-action@v1.7.1
-        if: ${{ always() }}
-        with:
-          input-file: ${{ steps.scan.outputs.scan-report-path }}
+        # TODO For now, do not block if the container scan action returns issues
+        continue-on-error: true
 
-      - name: Upload SARIF reports to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: ${{ always() }}
         with:
-          sarif_file: ${{ steps.scan-to-sarif.outputs.sarif-report-path }}
+          image-ref: com.cosmotech/cosmotech-api:${{ github.sha }}
+          format: "sarif"
+          severity: "CRITICAL,HIGH"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "trivy-results.sarif"
 
       - name: Archive container image scan report
         if: ${{ always() }}
-        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: container-image-scan-report
-          path: ${{ steps.scan.outputs.scan-report-path }}
+          path: "trivy-results.sarif"
           retention-days: 3
 
       - name: Login to GitHub Container Registry
@@ -648,21 +642,21 @@ jobs:
       - name: Push API Container Image (sha) to GitHub Container Registry
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
         run: |
-          docker image tag com.cosmotech/cosmotech-api:${GITHUB_SHA} \
-            ghcr.io/cosmo-tech/cosmotech-api:${GITHUB_SHA}
-          docker image push ghcr.io/cosmo-tech/cosmotech-api:${GITHUB_SHA}
+          docker image tag com.cosmotech/cosmotech-api:${{github.sha}} \
+            ghcr.io/cosmo-tech/cosmotech-api:${{github.sha}}
+          docker image push ghcr.io/cosmo-tech/cosmotech-api:${{github.sha}}
 
       - name: Push API Container Image (tag) to GitHub Container Registry
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          docker image tag com.cosmotech/cosmotech-api:${GITHUB_SHA} \
+          docker image tag com.cosmotech/cosmotech-api:${{github.sha}} \
             ghcr.io/cosmo-tech/cosmotech-api:${{ steps.refvar.outputs.gitRefName }}
           docker image push ghcr.io/cosmo-tech/cosmotech-api:${{ steps.refvar.outputs.gitRefName }}
 
       - name: Push API Container Image (latest) to GitHub Container Registry
         if: github.ref == 'refs/heads/main'
         run: |
-          docker image tag com.cosmotech/cosmotech-api:${GITHUB_SHA} \
+          docker image tag com.cosmotech/cosmotech-api:${{github.sha}} \
             ghcr.io/cosmo-tech/cosmotech-api:latest
           docker image push ghcr.io/cosmo-tech/cosmotech-api:latest
 
