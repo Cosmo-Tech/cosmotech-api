@@ -334,6 +334,7 @@ subprojects {
     implementation("com.azure.spring:spring-cloud-azure-starter-actuator:5.7.0")
     // https://mvnrepository.com/artifact/com.azure/azure-storage-blob-batch
     implementation("com.azure:azure-storage-blob-batch:12.20.1")
+    implementation("org.springframework.boot:spring-boot-starter-data-neo4j:3.2.5")
   }
 
   tasks.withType<KotlinCompile> {

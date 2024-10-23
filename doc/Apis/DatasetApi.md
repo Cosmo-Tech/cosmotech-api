@@ -15,6 +15,8 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 | [**downloadTwingraph**](DatasetApi.md#downloadTwingraph) | **GET** /organizations/{organization_id}/datasets/twingraph/download/{hash} | Download a graph as a zip file |
 | [**findAllDatasets**](DatasetApi.md#findAllDatasets) | **GET** /organizations/{organization_id}/datasets | List all Datasets |
 | [**findDatasetById**](DatasetApi.md#findDatasetById) | **GET** /organizations/{organization_id}/datasets/{dataset_id} | Get the details of a Dataset |
+| [**getAllData**](DatasetApi.md#getAllData) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/data | Get the data of a Dataset |
+| [**getDataInfo**](DatasetApi.md#getDataInfo) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/info | Get the data information of a Dataset |
 | [**getDatasetAccessControl**](DatasetApi.md#getDatasetAccessControl) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Get a control access for the Dataset |
 | [**getDatasetSecurity**](DatasetApi.md#getDatasetSecurity) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security | Get the Dataset security information |
 | [**getDatasetSecurityUsers**](DatasetApi.md#getDatasetSecurityUsers) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/users | Get the Dataset security users list |
@@ -331,6 +333,59 @@ Get the details of a Dataset
 ### Return type
 
 [**Dataset**](../Models/Dataset.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="getAllData"></a>
+# **getAllData**
+> List getAllData(organization\_id, dataset\_id, name)
+
+Get the data of a Dataset
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **name** | **String**| name of a dedicated entity | [optional] [default to null] |
+
+### Return type
+
+**List**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="getDataInfo"></a>
+# **getDataInfo**
+> Map getDataInfo(organization\_id, dataset\_id)
+
+Get the data information of a Dataset
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+
+### Return type
+
+[**Map**](../Models/AnyType.md)
 
 ### Authorization
 

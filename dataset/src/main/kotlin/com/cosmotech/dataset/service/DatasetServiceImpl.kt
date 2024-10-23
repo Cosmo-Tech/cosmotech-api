@@ -4,7 +4,13 @@
 
 package com.cosmotech.dataset.service
 
+import com.azure.storage.blob.BlobServiceClient
+import com.azure.storage.common.sas.AccountSasPermission
+import com.azure.storage.common.sas.AccountSasResourceType
+import com.azure.storage.common.sas.AccountSasService
+import com.azure.storage.common.sas.AccountSasSignatureValues
 import com.cosmotech.api.CsmPhoenixService
+import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.AddDatasetToWorkspace
 import com.cosmotech.api.events.AddWorkspaceToDataset
 import com.cosmotech.api.events.AskRunStatusEvent
@@ -81,6 +87,7 @@ import com.google.gson.reflect.TypeToken
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.time.Instant
+import java.time.OffsetDateTime
 import kotlin.jvm.optionals.getOrNull
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -89,10 +96,13 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
 import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Value
+import org.neo4j.driver.internal.InternalNode
+import org.neo4j.driver.internal.InternalRelationship
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.neo4j.core.Neo4jClient
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpHeaders
 import org.springframework.scheduling.annotation.Async
@@ -112,6 +122,7 @@ const val NODES_ZIP_FOLDER = "nodes"
 const val EDGES_ZIP_FOLDER = "edges"
 const val TWINCACHE_CONNECTOR = "TwincacheConnector"
 const val TWINCACHE_NAME = "TWIN_CACHE_NAME"
+const val SAS_TOKEN_EXPIRATION_TIME_IN_MINUTES = 5L
 
 @Service
 @Suppress(
@@ -127,9 +138,11 @@ class DatasetServiceImpl(
     private val organizationService: OrganizationApiServiceInterface,
     private val datasetRepository: DatasetRepository,
     private val unifiedJedis: UnifiedJedis,
+    private val azureStorageBlobServiceClient: BlobServiceClient,
     private val csmRbac: CsmRbac,
     private val csmAdmin: CsmAdmin,
-    private val resourceScanner: ResourceScanner
+    private val resourceScanner: ResourceScanner,
+    private val neo4jClient: Neo4jClient,
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   @Value("\${csm.platform.twincache.useGraphModule}") private var useGraphModule: Boolean = true
@@ -333,6 +346,7 @@ class DatasetServiceImpl(
     }
   }
 
+  @Suppress("MagicNumber")
   override fun uploadTwingraph(
       organizationId: String,
       datasetId: String,
@@ -372,51 +386,116 @@ class DatasetServiceImpl(
     }
 
     GlobalScope.launch(SecurityCoroutineContext()) {
-      var safeReplace = false
-      if (unifiedJedis.exists(dataset.twingraphId!!)) {
-        unifiedJedis.eval(
-            "redis.call('RENAME', KEYS[1], KEYS[2]);",
-            2,
-            dataset.twingraphId,
-            "backupGraph-$datasetId")
-        safeReplace = true
-      }
       try {
         trx(dataset) {
-          val queryBuffer = QueryBuffer(unifiedJedis, dataset.twingraphId!!)
-          nodes.forEach { file ->
-            readCSV(file.content.inputStream()) {
-              queryBuffer.addNode(file.filename, it.values.first(), it)
-            }
+          val sasToken = buildSasToken()
+          val csvFormat = CSVFormat.DEFAULT.builder().setHeader().setTrim(true).build()
+
+          nodes.forEach {
+            val blobName =
+                "graph/datasets/${datasetId.sanitizeForAzureStorage()}" +
+                    "/${NODES_ZIP_FOLDER}/${it.filename}.csv"
+
+            azureStorageBlobServiceClient
+                .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
+                .getBlobClient(blobName)
+                .upload(it.content.inputStream(), it.content.size.toLong(), true)
+
+            val headers = csvFormat.parse(it.content.inputStream().reader()).headerNames
+
+            val properties =
+                headers
+                    .mapIndexed { index, header -> "$header:row[$index]" }
+                    .joinToString(
+                        separator = " , ", prefix = "{", postfix = ", datasetId: \"$datasetId\"}")
+
+            val blobUrl =
+                "${azureStorageBlobServiceClient.accountUrl}/${organizationId.sanitizeForAzureStorage()}" +
+                    "/$blobName?$sasToken"
+
+            val nodeName = blobName.substringAfterLast("/").substringBeforeLast(".")
+            val query =
+                "LOAD CSV FROM \"$blobUrl\" AS row " +
+                    "WITH row SKIP 1 " +
+                    "CALL(row) { " +
+                    "MERGE (d:$nodeName $properties) " +
+                    "} IN TRANSACTIONS"
+            logger.debug(query)
+            neo4jClient.query(query).run()
+            val queryIndex =
+                "CREATE TEXT INDEX ${nodeName}_datasetId_index " +
+                    "IF NOT EXISTS FOR (n:$nodeName) ON (n.datasetId)"
+            logger.debug(queryIndex)
+            neo4jClient.query(queryIndex).run()
           }
-          edges.forEach { file ->
-            readCSV(file.content.inputStream()) {
-              val sourceKey = it.keys.elementAt(0)
-              val targetKey = it.keys.elementAt(1)
-              val source = it[sourceKey].toString().trim()
-              val target = it[targetKey].toString().trim()
-              val properties = it.minus(sourceKey).minus(targetKey)
-              queryBuffer.addEdge(file.filename, source, target, properties)
+
+          edges.forEach {
+            val blobName =
+                "graph/datasets/${datasetId.sanitizeForAzureStorage()}" +
+                    "/${EDGES_ZIP_FOLDER}/${it.filename}.csv"
+
+            azureStorageBlobServiceClient
+                .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
+                .getBlobClient(blobName)
+                .upload(it.content.inputStream(), it.content.size.toLong(), true)
+
+            val csvParser = csvFormat.parse(it.content.inputStream().reader())
+            val headers = csvParser.headerNames
+            val firstDataLine = csvParser.elementAtOrNull(1)?.toList()
+            if (firstDataLine != null) {
+
+              val properties =
+                  headers
+                      .mapIndexed { index, header -> "$header:row[$index]" }
+                      .joinToString(
+                          separator = " , ", prefix = "{", postfix = ", datasetId: \"$datasetId\"}")
+
+              val blobUrl =
+                  "${azureStorageBlobServiceClient.accountUrl}/${organizationId.sanitizeForAzureStorage()}" +
+                      "/$blobName?$sasToken"
+
+              val relationName = blobName.substringAfterLast("/").substringBeforeLast(".")
+              val query =
+                  "LOAD CSV FROM \"$blobUrl\" AS row " +
+                      "WITH row SKIP 1 " +
+                      "CALL(row) { " +
+                      "MATCH (a:${firstDataLine[1]} {id: row[0], datasetId: \"$datasetId\"}) " +
+                      "MATCH (b:${firstDataLine[3]} {id: row[2], datasetId: \"$datasetId\"}) " +
+                      "MERGE(a)-[:$relationName $properties]->(b)" +
+                      "} IN TRANSACTIONS"
+              logger.debug(query)
+              neo4jClient.query(query).run()
+
+              val queryIndex =
+                  "CREATE TEXT INDEX ${relationName}_datasetId_index " +
+                      "IF NOT EXISTS FOR ()-[r:$relationName]-() ON (r.datasetId)"
+              logger.debug(queryIndex)
+              neo4jClient.query(queryIndex).run()
             }
-          }
-          queryBuffer.send()
-          if (safeReplace) {
-            unifiedJedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
           }
         }
         datasetRepository.save(dataset.apply { twincacheStatus = TwincacheStatusEnum.FULL })
       } catch (e: Exception) {
-        if (safeReplace) {
-          unifiedJedis.eval(
-              "redis.call('RENAME', KEYS[2], KEYS[1]);",
-              2,
-              dataset.twingraphId,
-              "backupGraph-$datasetId")
-        }
         throw CsmClientException(e.message ?: "Twingraph upload error", e)
       }
     }
     return fileUpload
+  }
+
+  private fun buildSasToken(): String {
+    val expiryTime = OffsetDateTime.now().plusMinutes(SAS_TOKEN_EXPIRATION_TIME_IN_MINUTES)
+    val accountSasPermission =
+        AccountSasPermission().setListPermission(true).setReadPermission(true)
+    val services = AccountSasService().setBlobAccess(true)
+    val resourceTypes = AccountSasResourceType().setObject(true)
+
+    // Generate the account SAS
+    val accountSasValues =
+        AccountSasSignatureValues(expiryTime, accountSasPermission, services, resourceTypes)
+    val sasToken = azureStorageBlobServiceClient.generateAccountSas(accountSasValues)
+
+    logger.debug("SAS Token {}", sasToken)
+    return sasToken
   }
 
   override fun getDatasetTwingraphStatus(
@@ -756,6 +835,110 @@ class DatasetServiceImpl(
     return twinGraphHash
   }
 
+  override fun getAllData(organizationId: String, datasetId: String, name: String?): List<Any> {
+    if (name.isNullOrBlank()) {
+      return neo4jClient
+          .query(
+              "MATCH (n)-[r]->(m) " +
+                  "WHERE n.dataset= \"$datasetId\" AND " +
+                  "r.dataset= \"$datasetId\" AND " +
+                  "m.dataset= \"$datasetId\" " +
+                  "return n,r,m")
+          .fetch()
+          .all()
+          .map { it.values.toList() }
+          .filter { it.isNotEmpty() }
+          .map {
+            listOf(
+                (it[0] as InternalNode).toMap(),
+                (it[1] as InternalRelationship).toMap(),
+                (it[2] as InternalNode).toMap())
+          }
+    }
+    val nodeResult =
+        neo4jClient
+            .query("MATCH (n:$name) WHERE n.dataset= \"$datasetId\"return n")
+            .fetch()
+            .all()
+            .map { it.values.toList() }
+            .filter { it.isNotEmpty() }
+            .map { listOf((it[0] as InternalNode).toMap()) }
+    if (nodeResult.isNotEmpty()) {
+      return nodeResult
+    }
+
+    val edgeResult =
+        neo4jClient
+            .query(
+                "MATCH (n)-[r:$name]->(m) " +
+                    "WHERE n.dataset= \"$datasetId\" AND " +
+                    "r.dataset= \"$datasetId\" AND " +
+                    "m.dataset= \"$datasetId\" " +
+                    "return n,r,m")
+            .fetch()
+            .all()
+            .map { it.values.toList() }
+            .filter { it.isNotEmpty() }
+            .map {
+              listOf(
+                  (it[0] as InternalNode).toMap(),
+                  (it[1] as InternalRelationship).toMap(),
+                  (it[2] as InternalNode).toMap())
+            }
+    if (edgeResult.isNotEmpty()) {
+      return edgeResult
+    }
+
+    return emptyList()
+  }
+
+  override fun getDataInfo(organizationId: String, datasetId: String): Map<String, Any> {
+    val result = mutableMapOf<String, Any>()
+    val nodeInfo = mutableMapOf<String, Any>()
+    val relInfo = mutableMapOf<String, Any>()
+    neo4jClient
+        .query(
+            "MATCH (n) " +
+                "WHERE n.dataset= \"$datasetId\"" +
+                "RETURN distinct labels(n), count(*)")
+        .fetch()
+        .all()
+        .map { it.values.toList() }
+        .filter { it.isNotEmpty() }
+        .forEach { nodeInfo[(it[0] as List<*>).first().toString()] = it[1] }
+    result["nodeLabels"] = nodeInfo
+
+    neo4jClient
+        .query(
+            "MATCH ()-[r]-() " +
+                "WHERE r.dataset= \"$datasetId\"" +
+                "RETURN distinct type(r), count(*)")
+        .fetch()
+        .all()
+        .map { it.values.toList() }
+        .filter { it.isNotEmpty() }
+        .forEach { relInfo[it[0].toString()] = it[1] }
+    result["relTypes"] = relInfo
+
+    return result
+  }
+
+  fun InternalNode.toMap(): MutableMap<String, Any> {
+    val properties = this.asValue().asMap().toMutableMap()
+    properties["id"] = this.elementId()
+    properties["labels"] = this.labels()
+    return properties
+  }
+
+  fun InternalRelationship.toMap(): MutableMap<String, Any> {
+    val properties = this.asValue().asMap().toMutableMap()
+    properties["type"] = this.type()
+    properties["id"] = this.elementId()
+    properties["start_id"] = this.startNodeElementId()
+    properties["end_id"] = this.endNodeElementId()
+    return properties
+  }
+
   override fun downloadTwingraph(organizationId: String, hash: String): Resource {
     checkIfGraphFunctionalityIsAvailable()
     organizationService.getVerifiedOrganization(organizationId)
@@ -785,8 +968,6 @@ class DatasetServiceImpl(
       status: IngestionStatusEnum? = null
   ): Dataset {
     val dataset = getVerifiedDataset(organizationId, datasetId)
-    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
-        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
     status?.let {
       dataset.ingestionStatus?.takeIf { it == status }
           ?: throw CsmClientException(

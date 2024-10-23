@@ -5,6 +5,11 @@ logging:
       OkHttpClient: WARN
 
 spring:
+  neo4j:
+    uri: bolt://localhost:7687
+    authentication:
+      username: neo4j
+      password: neo4jneo4j
   rabbitmq:
     host: ${csm.platform.internalResultServices.eventBus.host}
     port: ${csm.platform.internalResultServices.eventBus.port}
