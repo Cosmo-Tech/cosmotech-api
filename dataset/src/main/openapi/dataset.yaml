@@ -270,8 +270,8 @@ paths:
         file must countain two folders named Edges and Nodes.
 
         .zip hierarchy:
-        *main_folder/Nodes
-        *main_folder/Edges
+        *main_folder/nodes
+        *main_folder/edges
 
         In each folder you can place one or multiple csv files containing your Nodes or
         Edges data.
