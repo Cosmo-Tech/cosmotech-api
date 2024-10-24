@@ -282,14 +282,18 @@ paths:
         will represent the nodes ID
         Ids must be populated with string
 
-        The Edges CSVs require three columns named, in order,
+        The Edges CSVs require five columns named, in order,
         * source
+        * sourceType
         * target
+        * targetType
         * id
 
         those colomns represent
         * The source of the edge
+        * The source's type of the edge
         * The target of the edge
+        * The target's type of the edge
         * The id of the edge
 
         All following columns content are up to you.
