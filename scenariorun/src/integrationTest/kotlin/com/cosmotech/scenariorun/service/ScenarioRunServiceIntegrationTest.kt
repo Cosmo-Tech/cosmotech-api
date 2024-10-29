@@ -48,7 +48,6 @@ import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
@@ -161,7 +160,9 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
             mutableListOf(datasetSaved.id!!))
     every { datasetApiService.findDatasetById(any(), any()) } returns
         datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS }
-    every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
+    // TODO replace by copy or remove
+    // every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed =
+    // true)
     scenarioSaved =
         scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
 

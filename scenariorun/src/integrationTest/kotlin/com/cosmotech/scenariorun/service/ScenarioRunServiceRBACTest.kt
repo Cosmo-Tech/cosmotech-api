@@ -63,7 +63,6 @@ import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
@@ -158,7 +157,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -241,8 +243,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                       datasetApiService.createDataset(organizationSaved.id!!, dataset)
                   every { datasetApiService.findDatasetById(any(), any()) } returns
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS }
-                  every { datasetApiService.createSubDataset(any(), any(), any()) } returns
-                      mockk(relaxed = true)
+                  // TODO replace by copy or remove
+                  // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                  // mockk(relaxed = true)
                   val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
                   val solutionSaved =
                       solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -317,7 +320,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -392,7 +398,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -467,7 +476,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -545,7 +557,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -620,7 +635,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -695,7 +713,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -770,7 +791,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -842,7 +866,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -923,7 +950,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1000,7 +1030,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1084,7 +1117,10 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              //// TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1160,7 +1196,8 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+
+              // TODO replace by copy or remove
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1236,7 +1273,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1312,7 +1351,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1385,7 +1426,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1461,7 +1504,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1537,7 +1582,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1613,7 +1660,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1689,7 +1738,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1762,7 +1813,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1844,7 +1897,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1920,7 +1975,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1996,7 +2053,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2072,7 +2131,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2145,7 +2206,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2221,7 +2284,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2297,7 +2362,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2373,7 +2440,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2449,7 +2518,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2522,7 +2593,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2598,7 +2671,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2674,7 +2749,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2750,7 +2827,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2826,7 +2905,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2899,7 +2980,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2975,7 +3058,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3050,7 +3135,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3125,7 +3212,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3200,7 +3289,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3272,7 +3363,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3351,7 +3444,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3430,7 +3525,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3509,7 +3606,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3585,7 +3684,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3664,7 +3765,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3739,7 +3842,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3814,7 +3919,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3889,7 +3996,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -3961,7 +4070,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -4042,7 +4153,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -4118,7 +4231,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -4194,7 +4309,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -4270,7 +4387,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -4343,7 +4462,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              // TODO replace by copy or remove
+              // every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+              // datasetSaved
               val solution = makeSolution(organizationSaved.id!!, role = ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)

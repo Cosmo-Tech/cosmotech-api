@@ -27,7 +27,6 @@ import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.IngestionStatusEnum
-import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwincacheStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.service.getRbac
@@ -903,12 +902,13 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test updating datasetList and assert the accessControlList has the correct users`() {
-    val newDataset =
-        datasetApiService.createSubDataset(
-            organizationSaved.id!!,
-            datasetSaved.id!!,
-            SubDatasetGraphQuery(
-                name = "Copy of datasetSaved", queries = mutableListOf("FAKE Query"), main = false))
+    val newDataset = makeDataset()
+    // TODO replace by copy
+    /*        datasetApiService.createSubDataset(
+    organizationSaved.id!!,
+    datasetSaved.id!!,
+    SubDatasetGraphQuery(
+        name = "Copy of datasetSaved", queries = mutableListOf("FAKE Query"), main = false))*/
     scenarioSaved =
         scenarioApiService.updateScenario(
             organizationSaved.id!!,
