@@ -7,6 +7,7 @@ package com.cosmotech.dataset.service
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmAdmin
@@ -17,13 +18,11 @@ import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.shaHash
 import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.domain.*
 import com.cosmotech.dataset.repository.DatasetRepository
-import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import io.mockk.*
@@ -34,9 +33,6 @@ import java.io.File
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import org.apache.commons.compress.archivers.ArchiveException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
@@ -47,7 +43,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.UnifiedJedis
-import redis.clients.jedis.graph.ResultSet
 
 const val USER_ID = "bob@mycompany.com"
 const val ORGANIZATION_ID = "O-OrganizationId"
@@ -166,59 +161,6 @@ class DatasetServiceImplTests {
       assertThrows<IllegalArgumentException> {
         datasetService.createDataset(ORGANIZATION_ID, dataset)
       }
-    }
-  }
-
-  @Test
-  fun `createSubDataset create Dataset copy with new id, name, description, parentId & twingraphId`() {
-    val SUB_TWINGRAPH_ID = "Sub-twingraph-id"
-    runTest {
-      val dataset =
-          baseDataset()
-              .copy(
-                  ingestionStatus = IngestionStatusEnum.SUCCESS,
-                  sourceType = DatasetSourceType.Twincache,
-                  source = SourceInfo("http://storage.location"),
-                  twingraphId = "twingraphId")
-      val subDatasetGraphQuery =
-          SubDatasetGraphQuery(
-              name = "My Sub Dataset",
-              description = "My Sub Dataset description",
-          )
-      every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
-      every { idGenerator.generate("twingraph") } returns SUB_TWINGRAPH_ID
-      every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
-      every { unifiedJedis.eval(any(), any(), dataset.twingraphId, SUB_TWINGRAPH_ID) } returns Unit
-      every { unifiedJedis.hgetAll(any<String>()) } returns
-          mapOf("lastVersion" to "lastVersion", "graphRotation" to "2")
-      every { unifiedJedis.graphReadonlyQuery(any(), any(), any<Long>()) } returns
-          mockEmptyResultSet()
-      every { unifiedJedis.dump(any<String>()) } returns ByteArray(0)
-      every { datasetRepository.save(any()) } returnsArgument 0
-      val result =
-          datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
-
-      advanceUntilIdle()
-      assertEquals(dataset.organizationId, result.organizationId)
-      assertEquals(dataset.sourceType, result.sourceType)
-      assertEquals(dataset.source, result.source)
-      assertEquals(subDatasetGraphQuery.name, result.name)
-      assertEquals(subDatasetGraphQuery.description, result.description)
-      assertNotEquals(dataset.id, result.id)
-      assertNotEquals(dataset.twingraphId, result.twingraphId)
-      assertEquals(dataset.id, result.parentId)
-    }
-  }
-
-  @Test
-  fun `createSubDataset should throw IllegalArgumentException when twingraphId is empty`() {
-    val dataset =
-        baseDataset().copy(twingraphId = "", ingestionStatus = IngestionStatusEnum.SUCCESS)
-    val subDatasetGraphQuery = SubDatasetGraphQuery()
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
-    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
-    assertThrows<CsmResourceNotFoundException> {
-      datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
     }
   }
 
@@ -412,17 +354,14 @@ class DatasetServiceImplTests {
   }
 
   @Test
-  fun `deleteDataset do not throw error - rbac is disabled`() {
-    val twingraphIdValue = "mytwingraphId"
-    val dataset = baseDataset().apply { twingraphId = twingraphIdValue }
+  fun `deleteDataset should throw CsmAccessForbiddenException`() {
+    val dataset = baseDataset()
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
-    every { datasetRepository.delete(dataset) } returns Unit
-    every { unifiedJedis.exists(twingraphIdValue) } returns true
-    every { unifiedJedis.del(twingraphIdValue) } returns 1L
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
-    datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
-    verify(exactly = 1) { datasetRepository.delete(dataset) }
+    assertThrows<CsmAccessForbiddenException> {
+      datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
+    }
   }
 
   @Test
@@ -444,75 +383,7 @@ class DatasetServiceImplTests {
     verify(exactly = 1) { unifiedJedis.del(any<String>()) }
   }
 
-  @Test
-  fun `twingraphQuery should call query and set data to Redis`() {
-    val dataset =
-        baseDataset().copy(twingraphId = "graphId", ingestionStatus = IngestionStatusEnum.SUCCESS)
-    val graphQuery = "MATCH(n) RETURN n"
-    val twinGraphQuery = DatasetTwinGraphQuery(graphQuery)
 
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
-    every { datasetRepository.save(any()) } returnsArgument 0
-    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
-    every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
-    every { csmPlatformProperties.twincache.queryTimeout } returns 0L
-
-    every { unifiedJedis.graphQuery("graphId", graphQuery, 0) } returns mockEmptyResultSet()
-    every { unifiedJedis.exists(any<String>()) } returns true
-    every { unifiedJedis.hgetAll(any<String>()) } returns
-        mapOf("graphName" to "graphName", "graphRotation" to "2")
-
-    every { unifiedJedis.graphReadonlyQuery(any(), any(), any<Long>()) } returns
-        mockEmptyResultSet()
-
-    datasetService.twingraphQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
-
-    verify(exactly = 1) { unifiedJedis.graphQuery("graphId", graphQuery, 0) }
-  }
-
-  @Test
-  fun `test bulkQueryGraphs as Admin - should call query and set data to Redis`() {
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
-    val dataset =
-        baseDataset().copy(twingraphId = "graphId", ingestionStatus = IngestionStatusEnum.SUCCESS)
-    val graphQuery = "MATCH(n) RETURN n"
-    every { datasetRepository.save(any()) } returnsArgument 0
-    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
-    every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
-
-    every { unifiedJedis.keys(any<String>()) } returns setOf("graphId")
-    every { unifiedJedis.exists(any<ByteArray>()) } returns false
-    every { unifiedJedis.graphQuery("graphId", graphQuery, 0) } returns mockEmptyResultSet()
-    every { unifiedJedis.graphQuery(any(), any()) } returns mockEmptyResultSet()
-    every { unifiedJedis.setex(any<ByteArray>(), any<Long>(), any<ByteArray>()) } returns "OK"
-
-    val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
-    val jsonHash = datasetService.twingraphBatchQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
-
-    assertEquals(jsonHash.hash, "graphId:MATCH(n) RETURN n".shaHash())
-    verifyAll {
-      unifiedJedis.exists(any<ByteArray>())
-      unifiedJedis.graphQuery("graphId", graphQuery, 0)
-      unifiedJedis.setex(any<ByteArray>(), any<Long>(), any<ByteArray>())
-    }
-  }
-
-  @Test
-  fun `test bulkQueryGraphs as Admin - should return existing Hash when data found`() {
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
-    val dataset =
-        baseDataset().copy(twingraphId = "graphId", ingestionStatus = IngestionStatusEnum.SUCCESS)
-    every { datasetRepository.save(any()) } returnsArgument 0
-    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
-    every { unifiedJedis.keys(any<String>()) } returns setOf("graphId")
-    every { unifiedJedis.exists(any<ByteArray>()) } returns true
-
-    val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
-    val jsonHash = datasetService.twingraphBatchQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
-    assertEquals(jsonHash.hash, "graphId:MATCH(n) RETURN n".shaHash())
-  }
 
   @Test
   fun `test downloadGraph as Admin - should get graph data`() {
@@ -559,15 +430,5 @@ class DatasetServiceImplTests {
     assertThrows<CsmResourceNotFoundException> {
       datasetService.downloadTwingraph(ORGANIZATION_ID, "hash")
     }
-  }
-
-  private fun mockEmptyResultSet(): ResultSet {
-    val resultSet = mockk<ResultSet>()
-    every { resultSet.toJsonString() } returns "[]"
-    every { resultSet.iterator() } returns
-        mockk<MutableIterator<redis.clients.jedis.graph.Record>> {
-          every { hasNext() } returns false
-        }
-    return resultSet
   }
 }

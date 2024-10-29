@@ -49,7 +49,6 @@ import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.math.BigDecimal
 import java.sql.SQLException
@@ -165,7 +164,9 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
         mockWorkflowRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
     every { datasetApiService.findDatasetById(any(), any()) } returns
         datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS }
-    every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
+    // TODO replace by copy or remove
+    // every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed =
+    // true)
 
     every { runnerApiService.getRunner(any(), any(), any()) } returns runnerSaved
     every { eventPublisher.publishEvent(any<RunDeleted>()) } returns Unit

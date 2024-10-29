@@ -41,7 +41,6 @@ import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.IngestionStatusEnum
-import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenario.domain.Scenario
@@ -182,14 +181,15 @@ internal class ScenarioServiceImpl(
                 val dataset = datasetService.findDatasetById(organizationId, it)
                 when {
                   dataset.twingraphId == null -> it
-                  dataset.ingestionStatus == IngestionStatusEnum.SUCCESS ->
-                      datasetService
-                          .createSubDataset(
-                              organizationId,
-                              it,
-                              SubDatasetGraphQuery(
-                                  name = "Scenario - ${scenario.name}", main = false))
-                          .id!!
+                  dataset.ingestionStatus == IngestionStatusEnum.SUCCESS -> ""
+                  // TODO Create a graph copied from "it" and return the new datasetId
+                  /*                      datasetService
+                  .createSubDataset(
+                      organizationId,
+                      it,
+                      SubDatasetGraphQuery(
+                          name = "Scenario - ${scenario.name}", main = false))
+                  .id!!*/
                   else -> throw CsmClientException("Dataset ${dataset.id} is not ready")
                 }
               }

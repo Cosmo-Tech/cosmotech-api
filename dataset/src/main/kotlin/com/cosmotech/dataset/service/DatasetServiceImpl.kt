@@ -36,7 +36,6 @@ import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
-import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.bulkQueryKey
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
@@ -47,14 +46,12 @@ import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.unzip
-import com.cosmotech.api.utils.zipBytesWithFileNames
 import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.ConnectorParameter
 import com.cosmotech.connector.domain.ConnectorParameterGroup
 import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.DatasetApiServiceInterface
-import com.cosmotech.dataset.bulk.QueryBuffer
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCompatibility
@@ -64,7 +61,6 @@ import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetSourceType
-import com.cosmotech.dataset.domain.DatasetTwinGraphHash
 import com.cosmotech.dataset.domain.DatasetTwinGraphInfo
 import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
 import com.cosmotech.dataset.domain.FileUploadMetadata
@@ -72,20 +68,13 @@ import com.cosmotech.dataset.domain.FileUploadValidation
 import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SourceInfo
-import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.domain.TwincacheStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
-import com.cosmotech.dataset.utils.CsmGraphEntityType
-import com.cosmotech.dataset.utils.isReadOnlyQuery
-import com.cosmotech.dataset.utils.toCsmGraphEntity
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.getRbac
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import java.io.InputStream
-import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.OffsetDateTime
 import kotlin.jvm.optionals.getOrNull
@@ -110,11 +99,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.UnifiedJedis
-import redis.clients.jedis.exceptions.JedisDataException
-import redis.clients.jedis.graph.Record
 import redis.clients.jedis.graph.ResultSet
-import redis.clients.jedis.graph.entities.Edge
-import redis.clients.jedis.graph.entities.Node
 
 const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
@@ -141,7 +126,6 @@ class DatasetServiceImpl(
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val csmRbac: CsmRbac,
     private val csmAdmin: CsmAdmin,
-    private val resourceScanner: ResourceScanner,
     private val neo4jClient: Neo4jClient,
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
@@ -252,98 +236,6 @@ class DatasetServiceImpl(
     }
 
     return datasetRepository.save(createdDataset)
-  }
-
-  override fun createSubDataset(
-      organizationId: String,
-      datasetId: String,
-      subDatasetGraphQuery: SubDatasetGraphQuery
-  ): Dataset {
-
-    checkIfGraphFunctionalityIsAvailable()
-
-    val dataset =
-        getDatasetWithStatus(organizationId, datasetId, status = IngestionStatusEnum.SUCCESS)
-    csmRbac.verify(dataset.getRbac(), PERMISSION_CREATE_CHILDREN)
-    val subTwingraphId = idGenerator.generate("twingraph")
-    val subDatasetId = idGenerator.generate("dataset")
-    val subDataset =
-        dataset.copy(
-            id = subDatasetId,
-            name = subDatasetGraphQuery.name ?: ("Subdataset " + dataset.name),
-            description = subDatasetGraphQuery.description ?: dataset.description,
-            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            organizationId = organizationId,
-            twingraphId = subTwingraphId,
-            queries = subDatasetGraphQuery.queries,
-            main = subDatasetGraphQuery.main ?: dataset.main,
-            creationDate = Instant.now().toEpochMilli(),
-            parentId = dataset.id,
-            ingestionStatus = IngestionStatusEnum.PENDING,
-            twincacheStatus = TwincacheStatusEnum.EMPTY,
-            connector =
-                dataset.connector?.apply { parametersValues?.set(TWINCACHE_NAME, subTwingraphId) },
-            sourceType = DatasetSourceType.Twincache,
-            tags = dataset.tags)
-
-    val datasetSaved = datasetRepository.save(subDataset)
-
-    GlobalScope.launch(SecurityCoroutineContext()) {
-      trx(dataset) {
-        if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
-
-          unifiedJedis.eval(
-              "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
-                  "redis.call('RESTORE', KEYS[1], 0, o)",
-              2,
-              dataset.twingraphId,
-              subTwingraphId)
-        } else {
-          val queryBuffer = QueryBuffer(unifiedJedis, subTwingraphId)
-          subDatasetGraphQuery.queries?.forEach { query ->
-            val resultSet = query(dataset, query)
-            query.takeIf { it.isReadOnlyQuery() }?.apply { bulkQueryResult(queryBuffer, resultSet) }
-          }
-          queryBuffer.send()
-        }
-
-        datasetRepository.save(
-            datasetSaved.apply {
-              ingestionStatus = IngestionStatusEnum.SUCCESS
-              twincacheStatus = TwincacheStatusEnum.FULL
-            })
-      }
-    }
-    return datasetSaved
-  }
-
-  private fun checkIfGraphFunctionalityIsAvailable() {
-    if (!useGraphModule) {
-      throw NotImplementedException(notImplementedExceptionMessage)
-    }
-  }
-
-  fun bulkQueryResult(queryBuffer: QueryBuffer, resultSet: ResultSet) {
-
-    resultSet.forEach { record: Record? ->
-      record?.values()?.forEach { element ->
-        when (element) {
-          is Node -> {
-            val csmGraphEntity = element.toCsmGraphEntity(CsmGraphEntityType.NODE)
-            queryBuffer.addNode(csmGraphEntity.label, csmGraphEntity.id, csmGraphEntity.properties)
-          }
-          is Edge -> {
-            val csmGraphEntity = element.toCsmGraphEntity(CsmGraphEntityType.RELATION)
-            queryBuffer.addEdge(
-                csmGraphEntity.label,
-                element.source,
-                element.destination,
-                csmGraphEntity.properties)
-          }
-          else -> throw CsmClientException("Query doesn't match Node, either Edge")
-        }
-      }
-    }
   }
 
   @Suppress("MagicNumber")
@@ -722,21 +614,6 @@ class DatasetServiceImpl(
     }
   }
 
-  override fun twingraphQuery(
-      organizationId: String,
-      datasetId: String,
-      datasetTwinGraphQuery: DatasetTwinGraphQuery
-  ): List<Any> {
-    checkIfGraphFunctionalityIsAvailable()
-    val dataset =
-        getDatasetWithStatus(organizationId, datasetId, status = IngestionStatusEnum.SUCCESS)
-
-    val gson = Gson()
-    val mapAdapter = gson.getAdapter(object : TypeToken<List<Any>>() {})
-    return mapAdapter.fromJson(
-        query(dataset, datasetTwinGraphQuery.query, isReadOnly = false).toJsonString())
-  }
-
   override fun query(dataset: Dataset, query: String, isReadOnly: Boolean): ResultSet {
     return if (isReadOnly) {
       unifiedJedis.graphReadonlyQuery(
@@ -781,58 +658,6 @@ class DatasetServiceImpl(
       datasetRepository.save(dataset.apply { ingestionStatus = IngestionStatusEnum.ERROR })
       throw e
     }
-  }
-
-  override fun twingraphBatchUpdate(
-      organizationId: String,
-      datasetId: String,
-      twinGraphQuery: DatasetTwinGraphQuery,
-      body: Resource
-  ): TwinGraphBatchResult {
-    checkIfGraphFunctionalityIsAvailable()
-    val dataset = getDatasetWithStatus(organizationId, datasetId)
-    csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
-    resourceScanner.scanMimeTypes(body, listOf("text/csv", "text/plain"))
-
-    val result = TwinGraphBatchResult(0, 0, mutableListOf())
-    trx(dataset) { localDataset ->
-      processCSVBatch(body.inputStream, twinGraphQuery, result) {
-        try {
-          result.processedLines++
-          query(localDataset, it)
-        } catch (e: JedisDataException) {
-          result.errors.add("#${result.totalLines}: ${e.message}")
-        }
-      }
-    }
-    return result
-  }
-
-  override fun twingraphBatchQuery(
-      organizationId: String,
-      datasetId: String,
-      datasetTwinGraphQuery: DatasetTwinGraphQuery
-  ): DatasetTwinGraphHash {
-    checkIfGraphFunctionalityIsAvailable()
-    val dataset =
-        getDatasetWithStatus(organizationId, datasetId, status = IngestionStatusEnum.SUCCESS)
-    val bulkQueryKey = bulkQueryKey(dataset.twingraphId!!, datasetTwinGraphQuery.query, null)
-    val twinGraphHash = DatasetTwinGraphHash(bulkQueryKey.second)
-    val keyExists = unifiedJedis.exists(bulkQueryKey.first)
-    if (keyExists) {
-      return twinGraphHash
-    }
-    val resultSet = query(dataset, datasetTwinGraphQuery.query)
-
-    GlobalScope.launch(SecurityCoroutineContext()) {
-      val zip =
-          zipBytesWithFileNames(
-              mapOf(
-                  "bulkQuery.json" to resultSet.toJsonString().toByteArray(StandardCharsets.UTF_8)))
-      unifiedJedis.setex(bulkQueryKey.first, csmPlatformProperties.twincache.queryBulkTTL, zip)
-    }
-
-    return twinGraphHash
   }
 
   override fun getAllData(organizationId: String, datasetId: String, name: String?): List<Any> {
@@ -899,7 +724,7 @@ class DatasetServiceImpl(
     neo4jClient
         .query(
             "MATCH (n) " +
-                "WHERE n.dataset= \"$datasetId\"" +
+                "WHERE n.datasetId= \"$datasetId\"" +
                 "RETURN distinct labels(n), count(*)")
         .fetch()
         .all()
@@ -911,7 +736,7 @@ class DatasetServiceImpl(
     neo4jClient
         .query(
             "MATCH ()-[r]-() " +
-                "WHERE r.dataset= \"$datasetId\"" +
+                "WHERE r.datasetId= \"$datasetId\"" +
                 "RETURN distinct type(r), count(*)")
         .fetch()
         .all()
