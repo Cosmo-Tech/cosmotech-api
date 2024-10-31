@@ -611,6 +611,7 @@ jobs:
         env:
           DOCKLE_HOST: "unix:///var/run/docker.sock"
           TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1
 
         # TODO For now, do not block if the container scan action returns issues
         continue-on-error: true
