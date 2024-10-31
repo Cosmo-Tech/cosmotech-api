@@ -738,36 +738,36 @@ jobs:
             :cosmotech-api:jibDockerBuild
             -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
 
-      - name: Scan Container Image
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
         id: scan
-        # TODO For now, do not block if the container scan action returns issues
-        continue-on-error: true
-        uses: Azure/container-scan@v0.1
-        with:
-          image-name: com.cosmotech/cosmotech-api:${{ github.sha }}
+        # Add TRIVY_DB_REPOSITORY due to ratelimit issue
+        # https://github.com/aquasecurity/trivy-action/issues/389
         env:
           DOCKLE_HOST: "unix:///var/run/docker.sock"
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-java-db:1
 
-      - name: Convert Container Scan Report to SARIF
-        id: scan-to-sarif
-        uses: rm3l/container-scan-to-sarif-action@v1.7.1
-        if: ${{ always() }}
-        with:
-          input-file: ${{ steps.scan.outputs.scan-report-path }}
+        # TODO For now, do not block if the container scan action returns issues
+        continue-on-error: true
 
-      - name: Upload SARIF reports to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        if: ${{ always() }}
         with:
-          sarif_file: ${{ steps.scan-to-sarif.outputs.sarif-report-path }}
+          image-ref: com.cosmotech/cosmotech-api:${{ github.sha }}
+          format: "sarif"
+          severity: "CRITICAL,HIGH"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "trivy-results.sarif"
 
       - name: Archive container image scan report
         if: ${{ always() }}
-        continue-on-error: true
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: container-image-scan-report
-          path: ${{ steps.scan.outputs.scan-report-path }}
+          path: "trivy-results.sarif"
           retention-days: 3
 
       - name: Login to GitHub Container Registry
