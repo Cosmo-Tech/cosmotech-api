@@ -541,7 +541,7 @@ class ScenarioRunServiceImpl(
                 scenarioRun.workflowId!!, scenarioRun.workflowName!!)))
 
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.csmSimulationRun)
+    sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.id)
 
     val purgeHistoricalDataConfiguration =
         startInfo.runTemplate.deleteHistoricalData ?: DeleteHistoricalData()
