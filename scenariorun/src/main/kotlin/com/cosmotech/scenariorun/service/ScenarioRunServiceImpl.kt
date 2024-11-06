@@ -840,8 +840,7 @@ class ScenarioRunServiceImpl(
       "Running" -> ScenarioRunState.Running
       "Succeeded" -> {
         logger.trace(
-            "checkDataIngestionState=$checkDataIngestionState," +
-                "csmSimulationRun=$csmSimulationRun")
+            "checkDataIngestionState=$checkDataIngestionState," + "scenarioRunId=$scenarioRunId")
         if (checkDataIngestionState == true && csmSimulationRun != null) {
           logger.debug(
               "ScenarioRun $scenarioRunId (csmSimulationRun=$csmSimulationRun) reported as " +
@@ -851,7 +850,7 @@ class ScenarioRunServiceImpl(
                   organizationId = organizationId,
                   workspaceKey = workspaceKey,
                   scenarioRunId = scenarioRunId!!,
-                  csmSimulationRun = csmSimulationRun,
+                  csmSimulationRun = scenarioRunId,
               )
           logger.debug(
               "Data Ingestion status for ScenarioRun $scenarioRunId " +
