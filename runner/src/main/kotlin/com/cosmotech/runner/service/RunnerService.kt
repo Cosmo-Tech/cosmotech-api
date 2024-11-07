@@ -189,6 +189,7 @@ class RunnerService(
       val excludeFields =
           arrayOf("id", "ownerId", "organizationId", "workspaceId", "creationDate", "security")
       this.runner.compareToAndMutateIfNeeded(runner, excludedFields = excludeFields)
+      consolidateParametersVarType()
 
       // take newly added datasets and propagate existing ACL on it
       this.runner.datasetList
@@ -236,8 +237,25 @@ class RunnerService(
         val parameterValueList = this.runner.parametersValues ?: mutableListOf()
         parameterValueList.addAll(inheritedParameterValues)
         this.runner.parametersValues = parameterValueList
+        consolidateParametersVarType()
       }
     }
+
+      fun consolidateParametersVarType() {
+          val solutionParameters =
+              workspace
+                  ?.solution
+                  ?.solutionId
+                  ?.let { solutionApiService.findSolutionById(organization?.id!!, it) }
+                  ?.parameters
+
+          this.runner.parametersValues?.forEach { runnerParam ->
+              solutionParameters
+                  ?.find { it.id == runnerParam.parameterId }
+                  ?.varType
+                  ?.let { runnerParam.varType = it }
+          }
+      }
 
     fun setAccessControl(runnerAccessControl: RunnerAccessControl) {
       // create a rbacSecurity object from runner Rbac by adding user with id and role in
