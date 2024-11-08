@@ -202,6 +202,72 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test createRunner and check parameterValues data`() {
+
+    logger.info(
+        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared")
+    val newRunner =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "NewRunner",
+            mutableListOf(datasetSaved.id!!),
+            parametersValues =
+                mutableListOf(
+                    RunnerRunTemplateParameterValue(
+                        parameterId = "param1", value = "7", varType = "ignored_var_type")))
+    val newRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, newRunner)
+
+    assertNotNull(newRunnerSaved.parametersValues)
+    assertTrue(newRunnerSaved.parametersValues!!.size == 1)
+    assertEquals("param1", newRunnerSaved.parametersValues!![0].parameterId)
+    assertEquals("7", newRunnerSaved.parametersValues!![0].value)
+    assertEquals("integer", newRunnerSaved.parametersValues!![0].varType)
+  }
+
+  @Test
+  fun `test updateRunner and check parameterValues data`() {
+
+    logger.info(
+        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared")
+    val creationParameterValue =
+        RunnerRunTemplateParameterValue(
+            parameterId = "param1", value = "7", varType = "ignored_var_type")
+    val newRunner =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "NewRunner",
+            mutableListOf(datasetSaved.id!!),
+            parametersValues = mutableListOf(creationParameterValue))
+    val newRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, newRunner)
+
+    assertNotNull(newRunnerSaved.parametersValues)
+    assertTrue(newRunnerSaved.parametersValues!!.size == 1)
+    assertEquals(creationParameterValue, newRunnerSaved.parametersValues!![0])
+
+    val newParameterValue =
+        RunnerRunTemplateParameterValue(
+            parameterId = "param1", value = "10", varType = "still_ignored_var_type")
+    val updateRunnerSaved =
+        runnerApiService.updateRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            newRunnerSaved.id!!,
+            newRunnerSaved.apply { parametersValues = mutableListOf(newParameterValue) })
+
+    assertNotNull(updateRunnerSaved.parametersValues)
+    assertTrue(updateRunnerSaved.parametersValues!!.size == 1)
+    assertEquals("param1", updateRunnerSaved.parametersValues!![0].parameterId)
+    assertEquals("10", updateRunnerSaved.parametersValues!![0].value)
+    assertEquals("integer", updateRunnerSaved.parametersValues!![0].varType)
+  }
+
+  @Test
   fun `test CRUD operations on Runner as Platform Admin`() {
     every { getCurrentAccountIdentifier(any()) } returns "random_user_with_patform_admin_role"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
@@ -1005,6 +1071,16 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             mutableListOf(
                 RunTemplateParameterGroup(
                     id = "testParameterGroups", parameters = mutableListOf("param1", "param2"))),
+        parameters =
+            mutableListOf(
+                RunTemplateParameter(
+                    id = "param1",
+                    maxValue = "10",
+                    minValue = "0",
+                    defaultValue = "5",
+                    varType = "integer"),
+                RunTemplateParameter(id = "param2", varType = "%DATASET%"),
+            ),
         runTemplates =
             mutableListOf(
                 RunTemplate(
