@@ -44,9 +44,7 @@ import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.domain.ScenarioValidationStatus
 import com.cosmotech.solution.SolutionApiServiceInterface
-import com.cosmotech.solution.domain.Solution
-import com.cosmotech.solution.domain.SolutionAccessControl
-import com.cosmotech.solution.domain.SolutionSecurity
+import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
@@ -264,6 +262,164 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test createScenario without parameters`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+
+    val scenarioWithoutParameters =
+        makeScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "ScenarioWithoutParameters",
+            mutableListOf(datasetSaved.id!!))
+
+    val scenarioWithoutParametersSaved =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioWithoutParameters)
+
+    assertNotNull(scenarioWithoutParametersSaved.parametersValues)
+    assertTrue(scenarioWithoutParametersSaved.parametersValues!!.size == 2)
+    assertEquals("param1", scenarioWithoutParametersSaved.parametersValues!![0].parameterId)
+    assertEquals("param1VarType", scenarioWithoutParametersSaved.parametersValues!![0].varType)
+    assertEquals("110", scenarioWithoutParametersSaved.parametersValues!![0].value)
+    assertEquals("param2", scenarioWithoutParametersSaved.parametersValues!![1].parameterId)
+    assertEquals("param2VarType", scenarioWithoutParametersSaved.parametersValues!![1].varType)
+    assertEquals("", scenarioWithoutParametersSaved.parametersValues!![1].value)
+  }
+
+  @Test
+  fun `test createScenario with parameters`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+
+    val scenarioWithParameters =
+        makeScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "ScenarioWithParameters",
+            mutableListOf(datasetSaved.id!!),
+            parametersValues =
+                mutableListOf(
+                    ScenarioRunTemplateParameterValue(
+                        parameterId = "param1", value = "105", varType = "exclude_read_only_value"),
+                    ScenarioRunTemplateParameterValue(
+                        parameterId = "not_defined_parameter",
+                        value = "105",
+                        varType = "exclude_read_only_value")))
+
+    val scenarioWithParametersSaved =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioWithParameters)
+
+    assertNotNull(scenarioWithParametersSaved.parametersValues)
+    assertTrue(scenarioWithParametersSaved.parametersValues!!.size == 2)
+    assertEquals("param1", scenarioWithParametersSaved.parametersValues!![0].parameterId)
+    assertEquals("param1VarType", scenarioWithParametersSaved.parametersValues!![0].varType)
+    assertEquals("105", scenarioWithParametersSaved.parametersValues!![0].value)
+    assertEquals("param2", scenarioWithParametersSaved.parametersValues!![1].parameterId)
+    assertEquals("param2VarType", scenarioWithParametersSaved.parametersValues!![1].varType)
+    assertEquals("", scenarioWithParametersSaved.parametersValues!![1].value)
+  }
+
+  @Test
+  fun `test updateScenario with empty parameters`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+
+    val scenarioWithoutParameters =
+        makeScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "ScenarioWithoutParameters",
+            mutableListOf(datasetSaved.id!!))
+
+    val scenarioWithoutParametersSaved =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioWithoutParameters)
+
+    val updatedScenarioWithoutParametersSaved =
+        scenarioApiService.updateScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            scenarioWithoutParametersSaved.id!!,
+            scenarioWithoutParametersSaved.apply {
+              parametersValues =
+                  mutableListOf(
+                      ScenarioRunTemplateParameterValue(
+                          parameterId = "param1",
+                          value = "107",
+                          varType = "exclude_read_only_value"),
+                      ScenarioRunTemplateParameterValue(
+                          parameterId = "not_defined_parameter",
+                          value = "105",
+                          varType = "exclude_read_only_value"))
+            })
+
+    assertNotNull(updatedScenarioWithoutParametersSaved.parametersValues)
+    assertTrue(updatedScenarioWithoutParametersSaved.parametersValues!!.size == 2)
+    assertEquals("param1", updatedScenarioWithoutParametersSaved.parametersValues!![0].parameterId)
+    assertEquals(
+        "param1VarType", updatedScenarioWithoutParametersSaved.parametersValues!![0].varType)
+    assertEquals("107", updatedScenarioWithoutParametersSaved.parametersValues!![0].value)
+    assertEquals("param2", updatedScenarioWithoutParametersSaved.parametersValues!![1].parameterId)
+    assertEquals(
+        "param2VarType", updatedScenarioWithoutParametersSaved.parametersValues!![1].varType)
+    assertEquals("", updatedScenarioWithoutParametersSaved.parametersValues!![1].value)
+  }
+
+  @Test
+  fun `test updateScenario with non-empty parameters`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+
+    val scenarioWithParameters =
+        makeScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "ScenarioWithParameters",
+            mutableListOf(datasetSaved.id!!),
+            parametersValues =
+                mutableListOf(
+                    ScenarioRunTemplateParameterValue(
+                        parameterId = "param1", value = "100", varType = "exclude_read_only_value"),
+                    ScenarioRunTemplateParameterValue(
+                        parameterId = "param2",
+                        value = "this_is_a_value",
+                        varType = "exclude_read_only_value")))
+
+    val scenarioWithParametersSaved =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioWithParameters)
+
+    val updatedScenarioWithParametersSaved =
+        scenarioApiService.updateScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            scenarioWithParametersSaved.id!!,
+            scenarioWithParametersSaved.apply {
+              parametersValues =
+                  mutableListOf(
+                      ScenarioRunTemplateParameterValue(
+                          parameterId = "param1",
+                          value = "107",
+                          varType = "exclude_read_only_value"),
+                      ScenarioRunTemplateParameterValue(
+                          parameterId = "not_defined_parameter",
+                          value = "105",
+                          varType = "exclude_read_only_value"))
+            })
+
+    assertNotNull(updatedScenarioWithParametersSaved.parametersValues)
+    assertTrue(updatedScenarioWithParametersSaved.parametersValues!!.size == 2)
+    assertEquals("param1", updatedScenarioWithParametersSaved.parametersValues!![0].parameterId)
+    assertEquals("param1VarType", updatedScenarioWithParametersSaved.parametersValues!![0].varType)
+    assertEquals("107", updatedScenarioWithParametersSaved.parametersValues!![0].value)
+    assertEquals("param2", updatedScenarioWithParametersSaved.parametersValues!![1].parameterId)
+    assertEquals("param2VarType", updatedScenarioWithParametersSaved.parametersValues!![1].varType)
+    assertEquals("", updatedScenarioWithParametersSaved.parametersValues!![1].value)
+  }
+
+  @Test
   fun `test find All Scenarios with different pagination params`() {
     val numberOfScenarios = 20
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
@@ -390,9 +546,6 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test Scenario Parameter Values as User Admin`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-
-    logger.info("should assert that the Scenario has no Parameter Values")
-    assertTrue(scenarioSaved.parametersValues!!.isEmpty())
 
     logger.info("should add a Parameter Value and assert it has been added")
     val params =
@@ -988,6 +1141,31 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         name = "My solution",
         organizationId = organizationId,
         ownerId = "ownerId",
+        runTemplates =
+            mutableListOf(
+                RunTemplate(
+                    id = "runtemplateTest",
+                    name = "runtemplateTest",
+                    parameterGroups = mutableListOf("RTparametersGroup1"),
+                )),
+        parameterGroups =
+            mutableListOf(
+                RunTemplateParameterGroup(
+                    id = "RTparametersGroup1", parameters = mutableListOf("param1", "param2"))),
+        parameters =
+            mutableListOf(
+                RunTemplateParameter(
+                    id = "param1",
+                    varType = "param1VarType",
+                    defaultValue = "110",
+                    maxValue = "120",
+                    minValue = "100",
+                ),
+                RunTemplateParameter(
+                    id = "param2",
+                    varType = "param2VarType",
+                ),
+            ),
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
@@ -1048,7 +1226,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       parentId: String? = null,
       userName: String = "roleName",
       role: String = ROLE_USER,
-      validationStatus: ScenarioValidationStatus = ScenarioValidationStatus.Draft
+      validationStatus: ScenarioValidationStatus = ScenarioValidationStatus.Draft,
+      parametersValues: MutableList<ScenarioRunTemplateParameterValue>? = null
   ): Scenario {
     return Scenario(
         id = UUID.randomUUID().toString(),
@@ -1056,10 +1235,12 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         organizationId = organizationId,
         workspaceId = workspaceId,
         solutionId = solutionId,
+        runTemplateId = "runtemplateTest",
         ownerId = "ownerId",
         datasetList = datasetList,
         parentId = parentId,
         validationStatus = validationStatus,
+        parametersValues = parametersValues,
         security =
             ScenarioSecurity(
                 ROLE_NONE,

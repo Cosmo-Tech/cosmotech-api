@@ -57,7 +57,6 @@ import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.domain.ScenarioValidationStatus
 import com.cosmotech.scenario.repository.ScenarioRepository
 import com.cosmotech.solution.SolutionApiServiceInterface
-import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.EventHubRole
@@ -155,6 +154,14 @@ internal class ScenarioServiceImpl(
     var rootId: String? = null
     val newParametersValuesList = scenario.parametersValues?.toMutableList() ?: mutableListOf()
 
+    val runTemplateParametersIds =
+        solution
+            ?.parameterGroups
+            ?.filter { parameterGroup ->
+              runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
+            }
+            ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
+
     if (parentId != null) {
       logger.debug("Applying / Overwriting Dataset list from parent $parentId")
       val parent = getVerifiedScenario(organizationId, workspaceId, parentId)
@@ -165,7 +172,7 @@ internal class ScenarioServiceImpl(
       }
 
       handleScenarioRunTemplateParametersValues(
-          parentId, solution, runTemplate, parent, scenario, newParametersValuesList)
+          parentId, runTemplateParametersIds, parent, scenario, newParametersValuesList)
     }
 
     if (workspace.datasetCopy == true) {
@@ -189,6 +196,11 @@ internal class ScenarioServiceImpl(
               .toMutableList()
     }
 
+    val newParametersValues =
+        runTemplateParametersIds?.let {
+          consolidateParameters(solution, it, newParametersValuesList)
+        }
+
     val now = Instant.now().toEpochMilli()
     val scenarioToSave =
         scenario.copy(
@@ -204,7 +216,7 @@ internal class ScenarioServiceImpl(
             state = ScenarioJobState.Created,
             datasetList = datasetList,
             rootId = rootId,
-            parametersValues = newParametersValuesList,
+            parametersValues = newParametersValues,
             validationStatus = ScenarioValidationStatus.Draft)
     scenarioToSave.setRbac(csmRbac.initSecurity(scenario.getRbac()))
 
@@ -214,11 +226,49 @@ internal class ScenarioServiceImpl(
     return scenarioToSave
   }
 
+  private fun consolidateParameters(
+      solution: Solution,
+      runTemplateParametersIds: List<String>,
+      newParametersValuesList: MutableList<ScenarioRunTemplateParameterValue>
+  ): MutableList<ScenarioRunTemplateParameterValue> {
+    val result = mutableListOf<ScenarioRunTemplateParameterValue>()
+
+    runTemplateParametersIds.forEach { parameterId ->
+      val solutionParameter =
+          solution.parameters?.firstOrNull { runTemplateParameter ->
+            runTemplateParameter.id == parameterId
+          }
+
+      if (solutionParameter == null) {
+        logger.debug(
+            "Skipping parameter $parameterId, " +
+                "defined neither in the parent nor in this Scenario nor in the Solution")
+      } else {
+
+        val currentParameterDefinition =
+            newParametersValuesList.firstOrNull { newScenarioParameter ->
+              newScenarioParameter.parameterId == parameterId
+            }
+
+        if (currentParameterDefinition == null) {
+          result.add(
+              ScenarioRunTemplateParameterValue(
+                  parameterId = parameterId,
+                  value = solutionParameter.defaultValue ?: "",
+                  varType = solutionParameter.varType,
+              ))
+        } else {
+          result.add(currentParameterDefinition.apply { varType = solutionParameter.varType })
+        }
+      }
+    }
+    return result
+  }
+
   @Suppress("NestedBlockDepth")
   private fun handleScenarioRunTemplateParametersValues(
       parentId: String?,
-      solution: Solution?,
-      runTemplate: RunTemplate?,
+      runTemplateParametersIds: List<String>?,
       parent: Scenario,
       scenario: Scenario,
       newParametersValuesList: MutableList<ScenarioRunTemplateParameterValue>
@@ -226,17 +276,9 @@ internal class ScenarioServiceImpl(
     logger.debug("Copying parameters values from parent $parentId")
 
     logger.debug("Getting runTemplate parameters ids")
-    val runTemplateParametersIds =
-        solution
-            ?.parameterGroups
-            ?.filter { parameterGroup ->
-              runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
-            }
-            ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
     if (!runTemplateParametersIds.isNullOrEmpty()) {
       val parentParameters = parent.parametersValues?.associate { it.parameterId to it }
       val scenarioParameters = scenario.parametersValues?.associate { it.parameterId to it }
-      // TODO Handle default value
       runTemplateParametersIds.forEach { parameterId ->
         if (scenarioParameters?.contains(parameterId) != true) {
           logger.debug(
@@ -710,7 +752,27 @@ internal class ScenarioServiceImpl(
 
     if (scenario.parametersValues != null &&
         scenario.parametersValues?.toSet() != existingScenario.parametersValues?.toSet()) {
-      updateScenarioParametersValues(existingScenario, scenario)
+
+      val solution =
+          workspace.solution.solutionId?.let {
+            solutionService.getVerifiedSolution(organizationId, it)
+          }
+      val runTemplate =
+          solution?.runTemplates?.find { runTemplate -> runTemplate.id == scenario.runTemplateId }
+      val runTemplateParametersIds =
+          solution
+              ?.parameterGroups
+              ?.filter { parameterGroup ->
+                runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
+              }
+              ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
+
+      val updatedParameters =
+          consolidateParameters(solution!!, runTemplateParametersIds!!, scenario.parametersValues!!)
+
+      existingScenario.parametersValues = updatedParameters
+      existingScenario.parametersValues?.forEach { it.isInherited = false }
+
       hasChanged = true
     }
 
@@ -757,11 +819,6 @@ internal class ScenarioServiceImpl(
     this.eventPublisher.publishEvent(
         ScenarioDatasetListChanged(
             this, organizationId, workspaceId, scenarioId, scenario.datasetList))
-  }
-
-  private fun updateScenarioParametersValues(existingScenario: Scenario, scenario: Scenario) {
-    existingScenario.parametersValues = scenario.parametersValues
-    existingScenario.parametersValues?.forEach { it.isInherited = false }
   }
 
   private fun updateScenarioRunTemplate(

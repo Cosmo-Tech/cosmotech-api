@@ -241,21 +241,21 @@ class RunnerService(
       }
     }
 
-      fun consolidateParametersVarType() {
-          val solutionParameters =
-              workspace
-                  ?.solution
-                  ?.solutionId
-                  ?.let { solutionApiService.findSolutionById(organization?.id!!, it) }
-                  ?.parameters
+    fun consolidateParametersVarType() {
+      val solutionParameters =
+          workspace
+              ?.solution
+              ?.solutionId
+              ?.let { solutionApiService.findSolutionById(organization?.id!!, it) }
+              ?.parameters
 
-          this.runner.parametersValues?.forEach { runnerParam ->
-              solutionParameters
-                  ?.find { it.id == runnerParam.parameterId }
-                  ?.varType
-                  ?.let { runnerParam.varType = it }
-          }
+      this.runner.parametersValues?.forEach { runnerParam ->
+        solutionParameters
+            ?.find { it.id == runnerParam.parameterId }
+            ?.varType
+            ?.let { runnerParam.varType = it }
       }
+    }
 
     fun setAccessControl(runnerAccessControl: RunnerAccessControl) {
       // create a rbacSecurity object from runner Rbac by adding user with id and role in
