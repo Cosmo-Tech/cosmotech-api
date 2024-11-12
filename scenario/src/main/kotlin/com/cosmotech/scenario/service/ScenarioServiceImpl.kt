@@ -57,7 +57,6 @@ import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.domain.ScenarioValidationStatus
 import com.cosmotech.scenario.repository.ScenarioRepository
 import com.cosmotech.solution.SolutionApiServiceInterface
-import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.EventHubRole
@@ -155,6 +154,14 @@ internal class ScenarioServiceImpl(
     var rootId: String? = null
     val newParametersValuesList = scenario.parametersValues?.toMutableList() ?: mutableListOf()
 
+    val runTemplateParametersIds =
+        solution
+            ?.parameterGroups
+            ?.filter { parameterGroup ->
+              runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
+            }
+            ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
+
     if (parentId != null) {
       logger.debug("Applying / Overwriting Dataset list from parent $parentId")
       val parent = getVerifiedScenario(organizationId, workspaceId, parentId)
@@ -165,7 +172,7 @@ internal class ScenarioServiceImpl(
       }
 
       handleScenarioRunTemplateParametersValues(
-          parentId, solution, runTemplate, parent, scenario, newParametersValuesList)
+          parentId, runTemplateParametersIds, parent, scenario, newParametersValuesList)
     }
 
     if (workspace.datasetCopy == true) {
@@ -188,6 +195,8 @@ internal class ScenarioServiceImpl(
               }
               .toMutableList()
     }
+
+    runTemplateParametersIds?.let { consolidateParameters(solution, it, newParametersValuesList) }
 
     val now = Instant.now().toEpochMilli()
     val scenarioToSave =
@@ -214,11 +223,47 @@ internal class ScenarioServiceImpl(
     return scenarioToSave
   }
 
+  private fun consolidateParameters(
+      solution: Solution,
+      runTemplateParametersIds: List<String>,
+      newParametersValuesList: MutableList<ScenarioRunTemplateParameterValue>
+  ) {
+
+    runTemplateParametersIds.forEach { parameterId ->
+      val solutionParameter =
+          solution.parameters?.firstOrNull { runTemplateParameter ->
+            runTemplateParameter.id == parameterId
+          }
+
+      if (solutionParameter == null) {
+        logger.debug(
+            "Skipping parameter $parameterId, " +
+                "defined neither in the parent nor in this Scenario nor in the Solution")
+      } else {
+
+        val currentParameterDefinition =
+            newParametersValuesList.firstOrNull { newScenarioParameter ->
+              newScenarioParameter.parameterId == parameterId
+            }
+
+        if (currentParameterDefinition == null) {
+          newParametersValuesList.add(
+              ScenarioRunTemplateParameterValue(
+                  parameterId = parameterId,
+                  value = solutionParameter.defaultValue ?: "",
+                  varType = solutionParameter.varType,
+              ))
+        } else {
+          currentParameterDefinition.varType = solutionParameter.varType
+        }
+      }
+    }
+  }
+
   @Suppress("NestedBlockDepth")
   private fun handleScenarioRunTemplateParametersValues(
       parentId: String?,
-      solution: Solution?,
-      runTemplate: RunTemplate?,
+      runTemplateParametersIds: List<String>?,
       parent: Scenario,
       scenario: Scenario,
       newParametersValuesList: MutableList<ScenarioRunTemplateParameterValue>
@@ -226,17 +271,9 @@ internal class ScenarioServiceImpl(
     logger.debug("Copying parameters values from parent $parentId")
 
     logger.debug("Getting runTemplate parameters ids")
-    val runTemplateParametersIds =
-        solution
-            ?.parameterGroups
-            ?.filter { parameterGroup ->
-              runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
-            }
-            ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
     if (!runTemplateParametersIds.isNullOrEmpty()) {
       val parentParameters = parent.parametersValues?.associate { it.parameterId to it }
       val scenarioParameters = scenario.parametersValues?.associate { it.parameterId to it }
-      // TODO Handle default value
       runTemplateParametersIds.forEach { parameterId ->
         if (scenarioParameters?.contains(parameterId) != true) {
           logger.debug(
