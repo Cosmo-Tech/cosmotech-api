@@ -551,7 +551,7 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC get workspace security`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
@@ -585,7 +585,7 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC get workspace access control`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
@@ -660,7 +660,7 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC get workspace security users`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
