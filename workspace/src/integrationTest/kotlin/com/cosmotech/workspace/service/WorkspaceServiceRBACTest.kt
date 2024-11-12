@@ -1035,7 +1035,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Workspace RBAC getWorkspacePermissions`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_USER to false,
               ROLE_NONE to true,
@@ -1127,7 +1127,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Workspace RBAC getWorkspaceSecurity`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_USER to false,
               ROLE_NONE to true,
@@ -1411,7 +1411,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Workspace RBAC getWorkspaceAccessControl`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_USER to false,
               ROLE_NONE to true,
@@ -1699,7 +1699,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Workspace RBAC getWorkspaceSecurityUsers`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_USER to false,
               ROLE_NONE to true,
