@@ -13,6 +13,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
 import com.cosmotech.run.config.createDB
@@ -544,7 +545,7 @@ class RunServiceImpl(
     val run =
         runRequest.copy(
             id = runId,
-            ownerId = runner.ownerId,
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = runner.organizationId,
             workspaceId = runner.workspaceId,
             runnerId = runner.id,
