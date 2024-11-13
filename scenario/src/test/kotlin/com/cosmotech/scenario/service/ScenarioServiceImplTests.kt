@@ -32,6 +32,7 @@ import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.repository.ScenarioRepository
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
@@ -331,6 +332,22 @@ class ScenarioServiceImplTests {
     val newScenario = mockScenario()
     every { scenarioRepository.save(any()) } returns newScenario
 
+    every { solution.parameters } returns
+        mutableListOf(
+            RunTemplateParameter(
+                id = "parameter_group_11_parameter1",
+                defaultValue = "parameter1_group_11_value",
+            ),
+            RunTemplateParameter(
+                id = "parameter_group_11_parameter2",
+                defaultValue = "parameter2_group_11_value",
+            ),
+            RunTemplateParameter(
+                id = "parameter_group_12_parameter1",
+                defaultValue = "parameter1_group_12_value",
+            ),
+        )
+
     val scenarioCreated =
         scenarioServiceImpl.createScenario(
             ORGANIZATION_ID,
@@ -351,7 +368,7 @@ class ScenarioServiceImplTests {
     val parametersValues = scenarioCreated.parametersValues
     assertNotNull(parametersValues)
     assertEquals(
-        2, parametersValues.size, "Child Scenario parameters values is not of the right size")
+        3, parametersValues.size, "Child Scenario parameters values is not of the right size")
     val paramGrp21 = parametersValues.filter { it.parameterId == "parameter_group_12_parameter1" }
     assertEquals(1, paramGrp21.size)
     assertEquals("parameter_group_12_parameter1_value", paramGrp21[0].value)
@@ -429,7 +446,21 @@ class ScenarioServiceImplTests {
     every { workspace.sendScenarioMetadataToEventHub } returns false
     val newScenario = mockScenario()
     every { scenarioRepository.save(any()) } returns newScenario
-
+    every { solution.parameters } returns
+        mutableListOf(
+            RunTemplateParameter(
+                id = "parameter_group_11_parameter1",
+                defaultValue = "parameter1_group_11_value",
+            ),
+            RunTemplateParameter(
+                id = "parameter_group_11_parameter2",
+                defaultValue = "parameter2_group_11_value",
+            ),
+            RunTemplateParameter(
+                id = "parameter_group_12_parameter1",
+                defaultValue = "parameter1_group_12_value",
+            ),
+        )
     val scenarioCreated =
         scenarioServiceImpl.createScenario(
             ORGANIZATION_ID,
@@ -449,9 +480,9 @@ class ScenarioServiceImplTests {
     val parametersValues = scenarioCreated.parametersValues
     assertNotNull(parametersValues)
     assertEquals(
-        1, parametersValues.size, "Child Scenario parameters values is not of the right size")
-    assertEquals("parameter_group_12_parameter1", parametersValues[0].parameterId)
-    assertEquals("parameter_group_12_parameter1_value", parametersValues[0].value)
+        3, parametersValues.size, "Child Scenario parameters values is not of the right size")
+    assertEquals("parameter_group_12_parameter1", parametersValues[2].parameterId)
+    assertEquals("parameter_group_12_parameter1_value", parametersValues[2].value)
     assertNull(parametersValues[0].isInherited)
   }
 
@@ -514,6 +545,21 @@ class ScenarioServiceImplTests {
             ScenarioRunTemplateParameterValue(
                 parameterId = "parameter_group_11_parameter1",
                 value = "parameter_group_11_parameter1_value_from_parent"))
+    every { solution.parameters } returns
+        mutableListOf(
+            RunTemplateParameter(
+                id = "parameter_group_11_parameter1",
+                defaultValue = "parameter1_group_11_value",
+            ),
+            RunTemplateParameter(
+                id = "parameter_group_11_parameter2",
+                defaultValue = "parameter2_group_11_value",
+            ),
+            RunTemplateParameter(
+                id = "parameter_group_12_parameter1",
+                defaultValue = "parameter1_group_12_value",
+            ),
+        )
 
     every {
       scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
@@ -556,7 +602,7 @@ class ScenarioServiceImplTests {
     val parametersValues = scenarioCreated.parametersValues
     assertNotNull(parametersValues)
     assertEquals(
-        1, parametersValues.size, "Child Scenario parameters values is not of the right size")
+        3, parametersValues.size, "Child Scenario parameters values is not of the right size")
     assertEquals("parameter_group_11_parameter1", parametersValues[0].parameterId)
     assertEquals("parameter_group_11_parameter1_value_from_child", parametersValues[0].value)
     assertNull(parametersValues[0].isInherited)
