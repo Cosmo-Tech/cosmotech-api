@@ -576,6 +576,12 @@ class RunServiceImpl(
             nodeLabel = startInfo.startContainers.nodeLabel,
             containers = startInfo.startContainers.containers,
         )
+    logger.info(
+        "[organizationId=${run.organizationId}]" +
+            "[workspaceId=${run.workspaceId}]" +
+            "[runnerId=${run.runnerId}]" +
+            "[runId=${run.id}] has been launched by " +
+            "[ownerId=${run.ownerId}]")
     return runRepository.save(run)
   }
 
