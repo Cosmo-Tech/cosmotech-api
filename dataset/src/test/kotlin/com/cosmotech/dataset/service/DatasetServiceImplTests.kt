@@ -435,7 +435,7 @@ class DatasetServiceImplTests {
     val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
     datasetService.twingraphQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
 
-    verify { csmRedisGraph.query(any(), any(), any<Long>()) }
+    verify { csmRedisGraph.readOnlyQuery(any(), any(), any<Long>()) }
   }
 
   @Test

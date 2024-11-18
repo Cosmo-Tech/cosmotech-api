@@ -21,8 +21,6 @@ import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
-import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
@@ -178,9 +176,16 @@ class RunnerService(
       // take newly added datasets and propagate existing ACL on it
       this.runner.datasetList
           ?.filterNot { beforeMutateDatasetList?.contains(it) ?: false }
-          ?.forEach { newDatasetId ->
-            this.runner.security?.accessControlList?.forEach {
-              this.propagateAccessControlToDataset(newDatasetId, it.id, it.role)
+          ?.mapNotNull {
+            datasetApiService.findByOrganizationIdAndDatasetId(organization!!.id!!, it)
+          }
+          ?.forEach { newDataset ->
+            this.runner.security?.accessControlList?.forEach { roleDefinition ->
+              val newDatasetAcl = newDataset.getRbac().accessControlList
+              if (newDatasetAcl.none { it.id == roleDefinition.id }) {
+                datasetApiService.addOrUpdateAccessControl(
+                    organization!!.id!!, newDataset, roleDefinition.id, roleDefinition.role)
+              }
             }
           }
     }
@@ -213,7 +218,20 @@ class RunnerService(
               this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
 
-      this.propagateAccessControlToDatasets(runnerAccessControl.id, runnerAccessControl.role)
+      val userId = runnerAccessControl.id
+      val datasetRole = runnerAccessControl.role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER
+      val organizationId = this.runner.organizationId!!
+
+      // Assign roles on linked datasets if not already present on dataset resource
+      this.runner.datasetList!!
+          .mapNotNull { datasetApiService.findByOrganizationIdAndDatasetId(organizationId, it) }
+          .forEach { dataset ->
+            val datasetAcl = dataset.getRbac().accessControlList
+            if (datasetAcl.none { it.id == userId }) {
+              datasetApiService.addOrUpdateAccessControl(
+                  organizationId, dataset, userId, datasetRole)
+            }
+          }
     }
 
     fun getAccessControlFor(userId: String): RunnerAccessControl {
@@ -255,26 +273,6 @@ class RunnerService(
               ?.map { RbacAccessControl(it.id, it.role) }
               ?.toMutableList()
               ?: mutableListOf())
-    }
-
-    private fun propagateAccessControlToDatasets(userId: String, role: String) {
-      this.runner.datasetList!!.forEach { datasetId ->
-        propagateAccessControlToDataset(datasetId, userId, role)
-      }
-    }
-
-    private fun propagateAccessControlToDataset(datasetId: String, userId: String, role: String) {
-      val datasetRole = role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER
-      val organizationId = this.runner.organizationId!!
-
-      val datasetUsers = datasetApiService.getDatasetSecurityUsers(organizationId, datasetId)
-      if (datasetUsers.contains(userId)) {
-        datasetApiService.updateDatasetAccessControl(
-            organizationId, datasetId, userId, DatasetRole(datasetRole))
-      } else {
-        datasetApiService.addDatasetAccessControl(
-            organizationId, datasetId, DatasetAccessControl(userId, datasetRole))
-      }
     }
 
     private fun removeAccessControlToDatasets(userId: String) {

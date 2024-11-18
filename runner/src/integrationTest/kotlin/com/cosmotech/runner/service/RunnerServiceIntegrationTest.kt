@@ -360,17 +360,17 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(ROLE_EDITOR, runnerAccessControlRegistered.role)
 
     logger.info(
-        "should update the Access Control and assert it has been updated in the linked datasets")
+        "should let the Access Control as-is cause dataset ACL already contains info for this user")
     runnerSaved.datasetList!!.forEach {
       assertEquals(
-          ROLE_EDITOR,
+          ROLE_VIEWER,
           datasetApiService
               .getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
               .role)
     }
 
     logger.info("should get the list of users and assert there are 2")
-    var userList =
+    val userList =
         runnerApiService.getRunnerSecurityUsers(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(3, userList.size)
