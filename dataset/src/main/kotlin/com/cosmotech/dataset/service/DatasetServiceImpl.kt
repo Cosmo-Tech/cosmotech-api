@@ -81,7 +81,6 @@ import com.google.gson.reflect.TypeToken
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.time.Instant
-import kotlin.jvm.optionals.getOrNull
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -167,7 +166,7 @@ class DatasetServiceImpl(
             datasetRepository.findAll(pageable).toList()
           }
     }
-
+    result.forEach { checkReadSecurity(it) }
     return result
   }
 
@@ -237,8 +236,7 @@ class DatasetServiceImpl(
         version = existingConnector.version
       }
     }
-
-    return datasetRepository.save(createdDataset)
+    return checkReadSecurity(datasetRepository.save(createdDataset))
   }
 
   override fun createSubDataset(
@@ -301,7 +299,7 @@ class DatasetServiceImpl(
             })
       }
     }
-    return datasetSaved
+    return checkReadSecurity(datasetSaved)
   }
 
   private fun checkIfGraphFunctionalityIsAvailable() {
@@ -673,7 +671,7 @@ class DatasetServiceImpl(
       datasetId: String
   ): Dataset? {
     organizationService.getVerifiedOrganization(organizationId)
-    return datasetRepository.findBy(organizationId, datasetId).getOrNull()
+    return findBy(organizationId, datasetId)
   }
 
   override fun addOrUpdateAccessControl(
@@ -1029,16 +1027,22 @@ class DatasetServiceImpl(
 
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
+    var datasetList = listOf<Dataset>()
     if (pageable != null) {
-      return datasetRepository
-          .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), pageable)
-          .toList()
+      datasetList =
+          datasetRepository
+              .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), pageable)
+              .toList()
     }
-    return findAllPaginated(defaultPageSize) {
-      datasetRepository
-          .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
-          .toList()
-    }
+    datasetList =
+        findAllPaginated(defaultPageSize) {
+          datasetRepository
+              .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
+              .toList()
+        }
+    val currentUser = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    datasetList.forEach { checkReadSecurity(it) }
+    return datasetList
   }
 
   override fun getDatasetSecurity(organizationId: String, datasetId: String): DatasetSecurity {
@@ -1268,13 +1272,33 @@ class DatasetServiceImpl(
       requiredPermission: String
   ): Dataset {
     organizationService.getVerifiedOrganization(organizationId)
-    val dataset =
+    val dataset = findBy(organizationId, datasetId)
+    csmRbac.verify(dataset.getRbac(), requiredPermission)
+    return dataset
+  }
+
+  fun findBy(organizationId: String, datasetId: String): Dataset {
+    var dataset =
         datasetRepository.findBy(organizationId, datasetId).orElseThrow {
           CsmResourceNotFoundException(
               "Dataset $datasetId not found in organization $organizationId")
         }
-    csmRbac.verify(dataset.getRbac(), requiredPermission)
+    dataset = checkReadSecurity(dataset)
     return dataset
+  }
+
+  fun checkReadSecurity(dataset: Dataset): Dataset {
+    val username = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    var userAC = DatasetAccessControl("", "")
+    val retrievedAC = dataset.security!!.accessControlList.filter { it.id == username }
+    if (retrievedAC.isNotEmpty()) userAC = retrievedAC[0]
+    val safeDataset =
+        dataset.copy(
+            security =
+                DatasetSecurity(
+                    default = dataset.security!!.default,
+                    accessControlList = mutableListOf(userAC)))
+    return safeDataset
   }
 }
 

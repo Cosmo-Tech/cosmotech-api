@@ -126,7 +126,7 @@ internal class WorkspaceServiceImpl(
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
     createdWorkspace.setRbac(csmRbac.initSecurity(workspace.getRbac()))
 
-    return workspaceRepository.save(createdWorkspace)
+    return checkReadSecurity(workspaceRepository.save(createdWorkspace))
   }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
@@ -181,9 +181,9 @@ internal class WorkspaceServiceImpl(
               " please refer to the appropriate security endpoints to perform this maneuver")
     }
     return if (hasChanged) {
-      workspaceRepository.save(existingWorkspace)
+      checkReadSecurity(workspaceRepository.save(existingWorkspace))
     } else {
-      existingWorkspace
+      checkReadSecurity(existingWorkspace)
     }
   }
 
@@ -345,7 +345,8 @@ internal class WorkspaceServiceImpl(
   ): Workspace {
     organizationService.getVerifiedOrganization(organizationId)
     sendAddWorkspaceToDatasetEvent(organizationId, datasetId, workspaceId)
-    return addDatasetToLinkedDatasetIdList(organizationId, workspaceId, datasetId)
+    return checkReadSecurity(
+        addDatasetToLinkedDatasetIdList(organizationId, workspaceId, datasetId))
   }
 
   @EventListener(AddDatasetToWorkspace::class)
@@ -362,7 +363,8 @@ internal class WorkspaceServiceImpl(
       datasetId: String
   ): Workspace {
     sendRemoveWorkspaceFromDatasetEvent(organizationId, datasetId, workspaceId)
-    return removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId)
+    return checkReadSecurity(
+        removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId))
   }
 
   @EventListener(RemoveDatasetFromWorkspace::class)
@@ -452,7 +454,7 @@ internal class WorkspaceServiceImpl(
         workspaceRepository.findByIdOrNull(workspaceId)
             ?: throw CsmResourceNotFoundException("Workspace $workspaceId does not exist!")
     csmRbac.verify(workspace.getRbac(), requiredPermission)
-    return workspace
+    return checkReadSecurity(workspace)
   }
 
   override fun addWorkspaceAccessControl(
@@ -557,6 +559,20 @@ internal class WorkspaceServiceImpl(
   ) {
     this.eventPublisher.publishEvent(
         DeleteHistoricalDataWorkspace(this, organizationId, it.id!!, data.deleteUnknown))
+  }
+
+  fun checkReadSecurity(workspace: Workspace): Workspace {
+    val username = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    var userAC = WorkspaceAccessControl("", "")
+    val retrievedAC = workspace.security!!.accessControlList.filter { it.id == username }
+    if (retrievedAC.isNotEmpty()) userAC = retrievedAC[0]
+    val safeWorkspace =
+        workspace.copy(
+            security =
+                WorkspaceSecurity(
+                    default = workspace.security!!.default,
+                    accessControlList = mutableListOf(userAC)))
+    return safeWorkspace
   }
 }
 

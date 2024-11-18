@@ -12,6 +12,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
@@ -38,14 +39,14 @@ internal class RunnerApiServiceImpl(
     val runnerInstance =
         runnerService.getNewInstance().setValueFrom(runner).initSecurity(runner).initParameters()
 
-    return runnerService.saveInstance(runnerInstance)
+    return checkReadSecurity(runnerService.saveInstance(runnerInstance))
   }
 
   override fun getRunner(organizationId: String, workspaceId: String, runnerId: String): Runner {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId)
 
-    return runnerInstance.getRunnerDataObjet()
+    return checkReadSecurity(runnerInstance.getRunnerDataObjet())
   }
 
   override fun updateRunner(
@@ -57,7 +58,7 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
 
-    return runnerService.saveInstance(runnerInstance.setValueFrom(runner))
+    return checkReadSecurity(runnerService.saveInstance(runnerInstance.setValueFrom(runner)))
   }
 
   override fun deleteRunner(organizationId: String, workspaceId: String, runnerId: String) {
@@ -78,8 +79,9 @@ internal class RunnerApiServiceImpl(
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
     val pageRequest =
         constructPageRequest(page, size, defaultPageSize) ?: PageRequest.of(0, defaultPageSize)
-
-    return runnerService.listInstances(pageRequest)
+    var runners = runnerService.listInstances(pageRequest)
+    runners.forEach { checkReadSecurity(it) }
+    return runners
   }
 
   override fun startRun(organizationId: String, workspaceId: String, runnerId: String): String {
@@ -230,5 +232,18 @@ internal class RunnerApiServiceImpl(
       runnerInstance.getRunnerDataObjet().lastRunId = null
     }
     runnerService.saveInstance(runnerInstance)
+  }
+
+  fun checkReadSecurity(runner: Runner): Runner {
+    val username = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    var userAC = RunnerAccessControl("", "")
+    val retrievedAC = runner.security!!.accessControlList.filter { it.id == username }
+    if (retrievedAC.isNotEmpty()) userAC = retrievedAC[0]
+    val safeRunner =
+        runner.copy(
+            security =
+                RunnerSecurity(
+                    default = runner.security!!.default, accessControlList = mutableListOf(userAC)))
+    return safeRunner
   }
 }

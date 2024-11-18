@@ -70,7 +70,7 @@ class OrganizationServiceImpl(
             organizationRepository.findAll(pageable).toList()
           }
     }
-
+    result.forEach { checkReadSecurity(it) }
     return result
   }
 
@@ -91,7 +91,7 @@ class OrganizationServiceImpl(
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
     createdOrganization.setRbac(csmRbac.initSecurity(organization.getRbac()))
 
-    return organizationRepository.save(createdOrganization)
+    return checkReadSecurity(organizationRepository.save(createdOrganization))
   }
 
   override fun unregisterOrganization(organizationId: String) {
@@ -123,9 +123,9 @@ class OrganizationServiceImpl(
     }
 
     return if (hasChanged) {
-      organizationRepository.save(existingOrganization)
+      checkReadSecurity(organizationRepository.save(existingOrganization))
     } else {
-      existingOrganization
+      checkReadSecurity(existingOrganization)
     }
   }
 
@@ -256,7 +256,7 @@ class OrganizationServiceImpl(
         organizationRepository.findByIdOrNull(organizationId)
             ?: throw CsmResourceNotFoundException("Organization $organizationId does not exist!")
     csmRbac.verify(organization.getRbac(), requiredPermission)
-    return organization
+    return checkReadSecurity(organization)
   }
 
   override fun getVerifiedOrganization(
@@ -266,6 +266,20 @@ class OrganizationServiceImpl(
     val organization = getVerifiedOrganization(organizationId)
     requiredPermissions.forEach { csmRbac.verify(organization.getRbac(), it) }
     return organization
+  }
+
+  fun checkReadSecurity(organization: Organization): Organization {
+    val username = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    var userAC = OrganizationAccessControl("", "")
+    val retrievedAC = organization.security!!.accessControlList.filter { it.id == username }
+    if (retrievedAC.isNotEmpty()) userAC = retrievedAC[0]
+    val safeOrganization =
+        organization.copy(
+            security =
+                OrganizationSecurity(
+                    default = organization.security!!.default,
+                    accessControlList = mutableListOf(userAC)))
+    return safeOrganization
   }
 
   private fun updateOrganizationServiceByOrganizationId(
