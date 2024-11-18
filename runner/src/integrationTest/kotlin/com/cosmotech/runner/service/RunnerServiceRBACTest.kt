@@ -60,6 +60,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.util.*
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest.dynamicTest
@@ -2770,15 +2771,15 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
 
   @TestFactory
   fun `test Dataset RBAC addRunnerAccessControl`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
+      listOf(
+              ROLE_VIEWER,
+              ROLE_EDITOR,
+              ROLE_VALIDATOR,
+              ROLE_USER,
+              ROLE_NONE,
+              ROLE_ADMIN,
           )
-          .map { (role, shouldThrow) ->
+          .map { role ->
             dynamicTest("Test Dataset RBAC addRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
@@ -2813,31 +2814,89 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.addRunnerAccessControl(
-                          organizationSaved.id!!,
-                          workspaceSaved.id!!,
-                          runnerSaved.id!!,
-                          RunnerAccessControl("id", ROLE_ADMIN))
-                    }
+              assertDoesNotThrow {
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  runnerApiService.addRunnerAccessControl(
-                      organizationSaved.id!!,
-                      workspaceSaved.id!!,
-                      runnerSaved.id!!,
-                      RunnerAccessControl("id", ROLE_ADMIN))
-                }
+                    true,
+                    datasetSaved.security
+                        ?.accessControlList
+                        ?.filter { datasetAccessControl ->
+                          datasetAccessControl.id == TEST_USER_MAIL
+                        }
+                        ?.any { datasetAccessControl -> datasetAccessControl.role == role })
+
+                runnerApiService.addRunnerAccessControl(
+                    organizationSaved.id!!,
+                    workspaceSaved.id!!,
+                    runnerSaved.id!!,
+                    RunnerAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
+
+                val datasetWithUpgradedACL =
+                    datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+                assertEquals(
+                    true,
+                    datasetWithUpgradedACL.security
+                        ?.accessControlList
+                        ?.filter { datasetAccessControl ->
+                          datasetAccessControl.id == TEST_USER_MAIL
+                        }
+                        ?.any { datasetAccessControl -> datasetAccessControl.role == role })
               }
             }
           }
+
+  @Test
+  fun `test Dataset RBAC addRunnerAccessControl with new ACL entry`() {
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    val connector = makeConnector()
+    val connectorSaved = connectorApiService.registerConnector(connector)
+    val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+    val organizationSaved = organizationApiService.registerOrganization(organization)
+    val dataset =
+        makeDataset(
+            organizationSaved.id!!, connectorSaved, id = "unknown_user@test.com", role = ROLE_NONE)
+    var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved =
+        datasetRepository.save(
+            datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
+    every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+
+    assertEquals(
+        false,
+        datasetSaved.security?.accessControlList?.any { datasetAccessControl ->
+          datasetAccessControl.id == TEST_USER_MAIL
+        })
+
+    val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
+    val solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    val workspace =
+        makeWorkspaceWithRole(
+            organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = ROLE_ADMIN)
+    val workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    val runner =
+        makeRunnerWithRole(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            mutableListOf(datasetSaved.id!!),
+            id = "unknown_user@test.com",
+            role = ROLE_ADMIN)
+    val runnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+
+    runnerApiService.addRunnerAccessControl(
+        organizationSaved.id!!,
+        workspaceSaved.id!!,
+        runnerSaved.id!!,
+        RunnerAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
+    val datasetWithUpgradedACL =
+        datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    assertEquals(
+        true,
+        datasetWithUpgradedACL.security?.accessControlList?.any { datasetAccessControl ->
+          datasetAccessControl.id == TEST_USER_MAIL
+        })
+  }
 
   @TestFactory
   fun `test Solution RBAC addRunnerAccessControl`() =

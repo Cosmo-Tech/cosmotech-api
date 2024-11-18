@@ -566,10 +566,10 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(ROLE_EDITOR, runnerAccessControlRegistered.role)
 
     logger.info(
-        "should update the Access Control and assert it has been updated in the linked datasets")
+        "should let the Access Control as-is cause dataset ACL already contains info for this user")
     runnerSaved.datasetList!!.forEach {
       assertEquals(
-          ROLE_EDITOR,
+          ROLE_VIEWER,
           datasetApiService
               .getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
               .role)

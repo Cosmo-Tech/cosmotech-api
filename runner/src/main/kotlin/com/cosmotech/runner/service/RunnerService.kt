@@ -245,10 +245,17 @@ class RunnerService(
 
       // take newly added datasets and propagate existing ACL on it
       this.runner.datasetList
-          ?.filterNot { beforeMutateDatasetList?.contains(it) ?: false }
-          ?.forEach { newDatasetId ->
-            this.runner.security?.accessControlList?.forEach {
-              this.propagateAccessControlToDataset(newDatasetId, it.id, it.role)
+          ?.filterNot { beforeMutateDatasetList.contains(it) }
+          ?.mapNotNull {
+            datasetApiService.findByOrganizationIdAndDatasetId(organization!!.id!!, it)
+          }
+          ?.forEach { newDataset ->
+            this.runner.security?.accessControlList?.forEach { roleDefinition ->
+              val newDatasetAcl = newDataset.getRbac().accessControlList
+              if (newDatasetAcl.none { it.id == roleDefinition.id }) {
+                datasetApiService.addOrUpdateAccessControl(
+                    organization!!.id!!, newDataset, roleDefinition.id, roleDefinition.role)
+              }
             }
           }
     }
@@ -356,7 +363,20 @@ class RunnerService(
               this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
 
-      this.propagateAccessControlToDatasets(runnerAccessControl.id, runnerAccessControl.role)
+      val userId = runnerAccessControl.id
+      val datasetRole = runnerAccessControl.role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER
+      val organizationId = this.runner.organizationId!!
+
+      // Assign roles on linked datasets if not already present on dataset resource
+      this.runner.datasetList!!
+          .mapNotNull { datasetApiService.findByOrganizationIdAndDatasetId(organizationId, it) }
+          .forEach { dataset ->
+            val datasetAcl = dataset.getRbac().accessControlList
+            if (datasetAcl.none { it.id == userId }) {
+              datasetApiService.addOrUpdateAccessControl(
+                  organizationId, dataset, userId, datasetRole)
+            }
+          }
     }
 
     fun getAccessControlFor(userId: String): RunnerAccessControl {
