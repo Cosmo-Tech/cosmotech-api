@@ -54,7 +54,7 @@ val springWebVersion = "6.1.4"
 
 // Implementation
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "1.0.6"
+val cosmotechApiCommonVersion = "1.0.7-SNAPSHOT"
 val cosmotechApiAzureVersion = "1.0.1"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.2.2"
@@ -132,6 +132,7 @@ allprojects {
   configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.1") } } }
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")

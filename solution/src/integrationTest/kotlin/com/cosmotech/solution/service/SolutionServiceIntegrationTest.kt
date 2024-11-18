@@ -126,8 +126,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             runTemplates =
                 mutableListOf(RunTemplate(id = "one", name = "name_one"), RunTemplate(id = "two")))
     // Assert that no runTemplate were deleted
-    assertEquals(expectedSolution.runTemplates.size, endTemplates.size)
-    assertEquals(expectedSolution.runTemplates, endTemplates)
+    assertEquals(expectedSolution.runTemplates!!.size, endTemplates.size)
+    assertEquals(expectedSolution.runTemplates!!, endTemplates)
   }
 
   @Test
@@ -389,7 +389,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNotNull(solutionWithNullRunTemplatesSaved)
     assertNotNull(solutionWithNullRunTemplatesSaved.runTemplates)
-    assertEquals(0, solutionWithNullRunTemplatesSaved.runTemplates.size)
+    assertEquals(0, solutionWithNullRunTemplatesSaved.runTemplates!!.size)
   }
 
   @Test
@@ -402,7 +402,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNotNull(solutionWithNullRunTemplatesSaved)
     assertNotNull(solutionWithNullRunTemplatesSaved.runTemplates)
-    assertEquals(0, solutionWithNullRunTemplatesSaved.runTemplates.size)
+    assertEquals(0, solutionWithNullRunTemplatesSaved.runTemplates!!.size)
   }
 
   @Test
@@ -531,7 +531,10 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test update solution with runTemplates null`() {
 
-    val baseSolution = makeSolution(organizationSaved.id!!, runTemplates = null)
+    val baseSolution =
+        makeSolution(
+            organizationSaved.id!!,
+        )
     val baseSolutionSaved = solutionApiService.createSolution(organizationSaved.id!!, baseSolution)
 
     val assertThrows =

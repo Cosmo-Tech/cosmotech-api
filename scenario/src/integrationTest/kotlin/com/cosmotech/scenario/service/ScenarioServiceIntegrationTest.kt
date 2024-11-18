@@ -445,7 +445,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     scenarioList =
         scenarioApiService.findAllScenarios(
             organizationSaved.id!!, workspaceSaved.id!!, 0, expectedSize)
-    assertEquals(scenarioList.size, expectedSize)
+    assertEquals(expectedSize, scenarioList.size)
 
     logger.info("should find all Scenarios and assert it returns the second / last page")
     scenarioList =
@@ -1081,6 +1081,64 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     val datasetAC =
         datasetApiService.getDatasetAccessControl(organizationSaved.id!!, datasetSaved.id!!, "id")
     assertEquals(ROLE_VIEWER, datasetAC.role)
+  }
+
+  @Test
+  fun `As a viewer, I can only see my information in security property for findScenarioById`() {
+    organization = makeOrganization(userName = TEST_USER_MAIL)
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    solution = makeSolution(organizationId = organizationSaved.id!!)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    workspace = makeWorkspace(organizationId = organizationSaved.id!!, userName = TEST_USER_MAIL)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    dataset = makeDataset(organizationId = organizationSaved.id!!)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    scenario
+    scenario =
+        makeScenario(
+            organizationId = organizationSaved.id!!, userName = TEST_USER_MAIL, role = ROLE_VIEWER)
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+    every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+    scenarioSaved =
+        scenarioApiService.findScenarioById(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+    assertEquals(
+        ScenarioSecurity(
+            default = ROLE_NONE, mutableListOf(ScenarioAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
+        scenarioSaved.security)
+    assertEquals(1, scenarioSaved.security!!.accessControlList.size)
+  }
+
+  @Test
+  fun `As a viewer, I can only see my information in security property for findAllScenarios`() {
+    organization = makeOrganization(userName = TEST_USER_MAIL)
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    solution = makeSolution(organizationId = organizationSaved.id!!)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    workspace = makeWorkspace(organizationId = organizationSaved.id!!, userName = TEST_USER_MAIL)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    dataset = makeDataset(organizationId = organizationSaved.id!!)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    scenario
+    scenario =
+        makeScenario(
+            organizationId = organizationSaved.id!!, userName = TEST_USER_MAIL, role = ROLE_VIEWER)
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+    every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+    val scenarios =
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+    scenarios.forEach {
+      assertEquals(
+          ScenarioSecurity(
+              default = ROLE_NONE,
+              mutableListOf(ScenarioAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
+          it.security)
+      assertEquals(1, it.security!!.accessControlList.size)
+    }
   }
 
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {

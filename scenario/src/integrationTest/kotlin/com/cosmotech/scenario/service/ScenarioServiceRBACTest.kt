@@ -4480,7 +4480,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Scenario RBAC getScenarioPermissions`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
               ROLE_NONE to true,
@@ -4802,7 +4802,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Scenario RBAC getScenarioSecurity`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
               ROLE_NONE to true,
@@ -5902,7 +5902,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Scenario RBAC getScenarioAccessControl`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
               ROLE_NONE to true,
@@ -6986,7 +6986,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Scenario RBAC getScenarioSecurityUsers`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
               ROLE_NONE to true,

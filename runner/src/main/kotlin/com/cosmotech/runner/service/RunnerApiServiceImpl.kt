@@ -12,9 +12,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
-import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.runner.RunnerApiServiceInterface
-import com.cosmotech.runner.domain.CreatedRun
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerRole
@@ -38,12 +36,7 @@ internal class RunnerApiServiceImpl(
             .inWorkspace(workspaceId)
             .userHasPermissionOnWorkspace(PERMISSION_CREATE_CHILDREN)
     val runnerInstance =
-        runnerService
-            .getNewInstance()
-            .setValueFrom(runner)
-            .initSecurity(runner)
-            .initParameters()
-            .initDatasetList()
+        runnerService.getNewInstance().setValueFrom(runner).initSecurity(runner).initParameters()
 
     return runnerService.saveInstance(runnerInstance)
   }
