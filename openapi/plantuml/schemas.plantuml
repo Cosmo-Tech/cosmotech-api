@@ -172,6 +172,11 @@ entity OrganizationAccessControl {
     * role: String
 }
 
+entity OrganizationCreationRequest {
+    * name: String
+    security: OrganizationSecurity
+}
+
 entity OrganizationRole {
     * role: String
 }
@@ -475,6 +480,10 @@ entity TwinGraphBatchResult {
 entity TwincacheStatusEnum {
 }
 
+entity UpdateOrganizationRequest {
+    name: String
+}
+
 entity Workspace {
     id: String
     organizationId: String
@@ -537,6 +546,7 @@ SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
 RunLogs -- "0..*" RunLogsEntry : logs
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
+OrganizationCreationRequest -- OrganizationSecurity : security
 RunContainer -- ContainerResourceSizing : runSizing
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing

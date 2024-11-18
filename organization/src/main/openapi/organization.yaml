@@ -24,7 +24,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationCreationRequest'
             examples:
               NewOrganizationIn:
                 $ref: '#/components/examples/NewOrganizationIn'
@@ -114,7 +114,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/UpdateOrganizationRequest'
             examples:
               ChangeName:
                 summary: Change Name of Organization
@@ -174,7 +174,6 @@ paths:
               examples:
                 permissions:
                   $ref: '#/components/examples/Permissions'
-
 
   /organizations/{organization_id}/permissions/{role}:
     parameters:
@@ -431,6 +430,7 @@ components:
           tokenUrl: "https://example.com/token"
           scopes: {}
   schemas:
+    # Base Organization object that includes all information
     Organization:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
@@ -454,10 +454,37 @@ components:
           allOf:
             - $ref: '#/components/schemas/OrganizationSecurity'
 #      required:
+#        - id
 #        - name
+#        - ownerId
+#        - security
+
+    # CRUD Operation Schemas
+    OrganizationCreationRequest:
+      type: object
+      description: Request object for creating a new organization
+      properties:
+        name:
+          type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+          description: the Organization name
+        security:
+          $ref: '#/components/schemas/OrganizationSecurity'
+      required:
+        - name
+
+    UpdateOrganizationRequest:
+      type: object
+      description: Request object for updating an organization
+      properties:
+        name:
+          type: string
+          description: the Organization name
+
+    # Security Operation Schemas
     OrganizationSecurity:
       type: object
-      description: the Organization security information
+      description: Response object for organization security information
       properties:
         default:
           type: string
@@ -474,7 +501,7 @@ components:
         - accessControlList
     OrganizationAccessControl:
       type: object
-      description: a Organization access control item
+      description: Response object for organization access control
       properties:
         id:
           type: string
@@ -508,6 +535,7 @@ components:
             type: array
             items:
               type: string
+
   examples:
     NewOrganizationIn:
       summary: Create a new organization

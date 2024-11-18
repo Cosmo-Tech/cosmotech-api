@@ -22,7 +22,7 @@ All URIs are relative to *http://localhost*
 
 <a name="createOrganization"></a>
 # **createOrganization**
-> Organization createOrganization(Organization)
+> Organization createOrganization(OrganizationCreationRequest)
 
 create a new organization
 
@@ -30,7 +30,7 @@ create a new organization
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **Organization** | [**Organization**](../Models/Organization.md)| the Organization to create | |
+| **OrganizationCreationRequest** | [**OrganizationCreationRequest**](../Models/OrganizationCreationRequest.md)| the Organization to create | |
 
 ### Return type
 
@@ -299,7 +299,7 @@ This endpoint does not need any parameter.
 
 <a name="updateOrganization"></a>
 # **updateOrganization**
-> Organization updateOrganization(organization\_id, Organization)
+> Organization updateOrganization(organization\_id, UpdateOrganizationRequest)
 
 Update an Organization
 
@@ -308,7 +308,7 @@ Update an Organization
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **Organization** | [**Organization**](../Models/Organization.md)| the new Organization details. This endpoint can&#39;t be used to update security | |
+| **UpdateOrganizationRequest** | [**UpdateOrganizationRequest**](../Models/UpdateOrganizationRequest.md)| the new Organization details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
 
