@@ -82,6 +82,7 @@ class SolutionServiceImpl(
             solutionRepository.findByOrganizationId(organizationId, pageable).toList()
           }
     }
+    result.forEach { checkReadSecurity(it) }
     return result
   }
 
@@ -198,7 +199,7 @@ class SolutionServiceImpl(
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
     createdSolution.setRbac(csmRbac.initSecurity(solution.getRbac()))
 
-    return solutionRepository.save(createdSolution)
+    return checkReadSecurity(solutionRepository.save(createdSolution))
   }
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
@@ -255,9 +256,9 @@ class SolutionServiceImpl(
     }
 
     return if (hasChanged) {
-      solutionRepository.save(existingSolution)
+      checkReadSecurity(solutionRepository.save(existingSolution))
     } else {
-      existingSolution
+      checkReadSecurity(existingSolution)
     }
   }
 
@@ -387,7 +388,21 @@ class SolutionServiceImpl(
               "Solution $solutionId not found in organization $organizationId")
         }
     csmRbac.verify(solution.getRbac(), requiredPermission)
-    return solution
+    return checkReadSecurity(solution)
+  }
+
+  fun checkReadSecurity(solution: Solution): Solution {
+    val username = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    var userAC = SolutionAccessControl("", "")
+    val retrievedAC = solution.security!!.accessControlList.filter { it.id == username }
+    if (retrievedAC.isNotEmpty()) userAC = retrievedAC[0]
+    val safeSolution =
+        solution.copy(
+            security =
+                SolutionSecurity(
+                    default = solution.security!!.default,
+                    accessControlList = mutableListOf(userAC)))
+    return safeSolution
   }
 }
 
