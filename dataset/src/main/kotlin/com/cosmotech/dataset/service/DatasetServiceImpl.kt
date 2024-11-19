@@ -548,16 +548,8 @@ class DatasetServiceImpl(
   override fun deleteDataset(organizationId: String, datasetId: String) {
     val dataset = getVerifiedDataset(organizationId, datasetId, PERMISSION_DELETE)
 
-    val isPlatformAdmin =
-        getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
-    if (dataset.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
-        !isPlatformAdmin) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
-    }
-
     if (unifiedJedis.exists(dataset.twingraphId!!)) {
-      unifiedJedis.del(dataset.twingraphId!!)
+        unifiedJedis.del(dataset.twingraphId!!)
     }
 
     dataset.linkedWorkspaceIdList?.forEach { unlinkWorkspace(organizationId, datasetId, it) }
