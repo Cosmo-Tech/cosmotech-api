@@ -5,7 +5,6 @@ package com.cosmotech.dataset.service
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmAdmin
@@ -390,13 +389,12 @@ class DatasetServiceImplTests {
   }
 
   @Test
-  fun `deleteDataset should throw CsmAccessForbiddenException`() {
-    val dataset = baseDataset()
+  fun `deleteDataset do not throw error - rbac is disabled`() {
+    val dataset = baseDataset().apply { twingraphId = "mytwingraphId" }
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
-    assertThrows<CsmAccessForbiddenException> {
-      datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
-    }
+    datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
+    verify(exactly = 1) { datasetRepository.delete(any()) }
   }
 
   @Test
