@@ -565,8 +565,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             RunnerRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, runnerAccessControlRegistered.role)
 
-    logger.info(
-        "should let the Access Control as-is cause dataset ACL already contains info for this user")
+    logger.info("Should not change the datasets access control because ACL already exist on it")
     runnerSaved.datasetList!!.forEach {
       assertEquals(
           ROLE_VIEWER,
