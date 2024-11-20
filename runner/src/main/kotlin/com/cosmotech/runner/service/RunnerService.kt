@@ -21,6 +21,7 @@ import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
+import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
@@ -179,13 +180,9 @@ class RunnerService(
           ?.mapNotNull {
             datasetApiService.findByOrganizationIdAndDatasetId(organization!!.id!!, it)
           }
-          ?.forEach { newDataset ->
+          ?.forEach { dataset ->
             this.runner.security?.accessControlList?.forEach { roleDefinition ->
-              val newDatasetAcl = newDataset.getRbac().accessControlList
-              if (newDatasetAcl.none { it.id == roleDefinition.id }) {
-                datasetApiService.addOrUpdateAccessControl(
-                    organization!!.id!!, newDataset, roleDefinition.id, roleDefinition.role)
-              }
+              addUserAccessControlOnDataset(dataset, roleDefinition)
             }
           }
     }
@@ -226,11 +223,7 @@ class RunnerService(
       this.runner.datasetList!!
           .mapNotNull { datasetApiService.findByOrganizationIdAndDatasetId(organizationId, it) }
           .forEach { dataset ->
-            val datasetAcl = dataset.getRbac().accessControlList
-            if (datasetAcl.none { it.id == userId }) {
-              datasetApiService.addOrUpdateAccessControl(
-                  organizationId, dataset, userId, datasetRole)
-            }
+            addUserAccessControlOnDataset(dataset, RunnerAccessControl(userId, datasetRole))
           }
     }
 
@@ -294,6 +287,14 @@ class RunnerService(
       // create a rbacSecurity object from runner Rbac by changing default value
       val rbacSecurity = csmRbac.setDefault(this.getRbacSecurity(), role, this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
+    }
+  }
+
+  private fun addUserAccessControlOnDataset(dataset: Dataset, roleDefinition: RunnerAccessControl) {
+    val newDatasetAcl = dataset.getRbac().accessControlList
+    if (newDatasetAcl.none { it.id == roleDefinition.id }) {
+      datasetApiService.addOrUpdateAccessControl(
+          organization!!.id!!, dataset, roleDefinition.id, roleDefinition.role)
     }
   }
 }
