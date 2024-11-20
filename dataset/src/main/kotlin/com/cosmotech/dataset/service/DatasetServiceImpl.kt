@@ -549,7 +549,7 @@ class DatasetServiceImpl(
     val dataset = getVerifiedDataset(organizationId, datasetId, PERMISSION_DELETE)
 
     if (unifiedJedis.exists(dataset.twingraphId!!)) {
-        unifiedJedis.del(dataset.twingraphId!!)
+      unifiedJedis.del(dataset.twingraphId!!)
     }
 
     dataset.linkedWorkspaceIdList?.forEach { unlinkWorkspace(organizationId, datasetId, it) }

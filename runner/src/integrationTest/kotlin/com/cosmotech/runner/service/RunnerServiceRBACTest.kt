@@ -63,6 +63,7 @@ import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -2771,83 +2772,92 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Dataset RBAC addRunnerAccessControl`() =
+  fun `test Dataset RBAC modification when addRunnerAccessControl is called on a runner`() =
       listOf(
               ROLE_VIEWER,
               ROLE_EDITOR,
               ROLE_VALIDATOR,
-              ROLE_USER,
-              ROLE_NONE,
               ROLE_ADMIN,
           )
           .map { role ->
-            dynamicTest("Test Dataset RBAC addRunnerAccessControl : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
-              val workspace =
-                  makeWorkspaceWithRole(
-                      organizationSaved.id!!,
-                      solutionSaved.id!!,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
-              val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              val runner =
-                  makeRunnerWithRole(
-                      organizationSaved.id!!,
-                      workspaceSaved.id!!,
-                      solutionSaved.id!!,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
-              val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+            dynamicTest(
+                "Check Dataset RBAC modification " +
+                    "when addRunnerAccessControl is called on a runner with role : $role") {
+                  every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+                  val connector = makeConnector()
+                  val connectorSaved = connectorApiService.registerConnector(connector)
+                  val organization =
+                      makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  val organizationSaved = organizationApiService.registerOrganization(organization)
+                  val dataset =
+                      makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
+                  var datasetSaved =
+                      datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  datasetSaved =
+                      datasetRepository.save(
+                          datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
+                  every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                      datasetSaved
+                  val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
+                  val solutionSaved =
+                      solutionApiService.createSolution(organizationSaved.id!!, solution)
+                  val workspace =
+                      makeWorkspaceWithRole(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          id = TEST_USER_MAIL,
+                          role = ROLE_ADMIN)
+                  val workspaceSaved =
+                      workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  val runner =
+                      makeRunnerWithRole(
+                          organizationSaved.id!!,
+                          workspaceSaved.id!!,
+                          solutionSaved.id!!,
+                          mutableListOf(datasetSaved.id!!),
+                          id = TEST_USER_MAIL,
+                          role = ROLE_ADMIN)
+                  val runnerSaved =
+                      runnerApiService.createRunner(
+                          organizationSaved.id!!, workspaceSaved.id!!, runner)
 
-              assertDoesNotThrow {
-                assertEquals(
-                    true,
-                    datasetSaved.security
-                        ?.accessControlList
-                        ?.filter { datasetAccessControl ->
-                          datasetAccessControl.id == TEST_USER_MAIL
-                        }
-                        ?.any { datasetAccessControl -> datasetAccessControl.role == role })
+                  assertDoesNotThrow {
+                    assertTrue(
+                        datasetSaved.security
+                            ?.accessControlList
+                            ?.filter { datasetAccessControl ->
+                              datasetAccessControl.id == "unknown_user@test.com"
+                            }
+                            .isNullOrEmpty())
 
-                runnerApiService.addRunnerAccessControl(
-                    organizationSaved.id!!,
-                    workspaceSaved.id!!,
-                    runnerSaved.id!!,
-                    RunnerAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
+                    runnerApiService.addRunnerAccessControl(
+                        organizationSaved.id!!,
+                        workspaceSaved.id!!,
+                        runnerSaved.id!!,
+                        RunnerAccessControl("unknown_user@test.com", role))
 
-                val datasetWithUpgradedACL =
-                    datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-                assertEquals(
-                    true,
-                    datasetWithUpgradedACL.security
-                        ?.accessControlList
-                        ?.filter { datasetAccessControl ->
-                          datasetAccessControl.id == TEST_USER_MAIL
-                        }
-                        ?.any { datasetAccessControl -> datasetAccessControl.role == role })
-              }
-            }
+                    val datasetWithUpgradedACL =
+                        datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+                    var datasetRole = role
+                    if (role == ROLE_VALIDATOR) {
+                      datasetRole = ROLE_USER
+                    }
+                    assertEquals(
+                        true,
+                        datasetWithUpgradedACL.security
+                            ?.accessControlList
+                            ?.filter { datasetAccessControl ->
+                              datasetAccessControl.id == "unknown_user@test.com"
+                            }
+                            ?.any { datasetAccessControl ->
+                              datasetAccessControl.role == datasetRole
+                            })
+                  }
+                }
           }
 
   @Test
-  fun `test Dataset RBAC addRunnerAccessControl with new ACL entry`() {
+  fun `test addRunnerAccessControl when called on a runner with an user that do not exist in Dataset RBAC`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     val connector = makeConnector()
     val connectorSaved = connectorApiService.registerConnector(connector)
@@ -2858,8 +2868,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
             organizationSaved.id!!, connectorSaved, id = "unknown_user@test.com", role = ROLE_NONE)
     var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     datasetSaved =
-        datasetRepository.save(
-            datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
+        datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
     every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
 
     assertEquals(

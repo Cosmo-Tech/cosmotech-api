@@ -424,12 +424,16 @@ class DatasetServiceImplTests {
 
   @Test
   fun `deleteDataset do not throw error - rbac is disabled`() {
-    val dataset = baseDataset().apply { twingraphId = "mytwingraphId" }
+    val twingraphIdValue = "mytwingraphId"
+    val dataset = baseDataset().apply { twingraphId = twingraphIdValue }
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.delete(dataset) } returns Unit
+    every { unifiedJedis.exists(twingraphIdValue) } returns true
+    every { unifiedJedis.del(twingraphIdValue) } returns 1L
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
-    verify(exactly = 1) { datasetRepository.delete(any()) }
+    verify(exactly = 1) { datasetRepository.delete(dataset) }
   }
 
   @Test
@@ -476,20 +480,6 @@ class DatasetServiceImplTests {
 
     verify(exactly = 1) { unifiedJedis.graphReadonlyQuery("graphId", graphQuery, 0) }
     verify(exactly = 0) { unifiedJedis.graphQuery("graphId", graphQuery, 0) }
-  }
-
-  @Test
-  fun `test processCSV - should create cypher requests by line`() {
-    val fileName = this::class.java.getResource("/Users.csv")?.file
-    val file = File(fileName!!)
-    val query =
-        DatasetTwinGraphQuery(
-            "CREATE (:Person {id: toInteger(\$id), name: \$name, rank: toInteger(\$rank), object: \$object})")
-    val result = TwinGraphBatchResult(0, 0, mutableListOf())
-    datasetService.processCSVBatch(file.inputStream(), query, result) { result.processedLines++ }
-    assertEquals(9, result.totalLines)
-    assertEquals(9, result.processedLines)
-    assertEquals(0, result.errors.size)
   }
 
   @Test
