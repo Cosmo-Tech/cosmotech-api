@@ -13,6 +13,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.getAllRolesDefinition
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
@@ -269,16 +270,28 @@ class OrganizationServiceImpl(
   }
 
   fun checkReadSecurity(organization: Organization): Organization {
-    val username = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    var safeOrganization = organization
+    val username = getCurrentAccountIdentifier(csmPlatformProperties)
     var userAC = OrganizationAccessControl("", "")
     val retrievedAC = organization.security!!.accessControlList.filter { it.id == username }
-    if (retrievedAC.isNotEmpty()) userAC = retrievedAC[0]
-    val safeOrganization =
-        organization.copy(
-            security =
-                OrganizationSecurity(
-                    default = organization.security!!.default,
-                    accessControlList = mutableListOf(userAC)))
+    if (retrievedAC.isNotEmpty()) {
+      userAC = retrievedAC[0]
+      if (userAC.role == ROLE_VIEWER) {
+        safeOrganization =
+            organization.copy(
+                security =
+                    OrganizationSecurity(
+                        default = organization.security!!.default,
+                        accessControlList = mutableListOf(userAC)))
+      }
+    } else if (organization.security!!.default == ROLE_VIEWER) {
+      safeOrganization =
+          organization.copy(
+              security =
+                  OrganizationSecurity(
+                      default = organization.security!!.default,
+                      accessControlList = mutableListOf()))
+    }
     return safeOrganization
   }
 

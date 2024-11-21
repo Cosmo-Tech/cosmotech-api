@@ -28,6 +28,8 @@ import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.dataset.domain.DatasetAccessControl
+import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -36,6 +38,8 @@ import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceRole
@@ -355,10 +359,10 @@ class WorkspaceServiceImplTests {
             id = WORKSPACE_ID,
             key = "my-workspace-key",
             name = "my workspace name",
-            solution = WorkspaceSolution(solutionId = "SOL-my-solution-id"))
-    workspace.security = WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
+            solution = WorkspaceSolution(solutionId = "SOL-my-solution-id"),
+            security= WorkspaceSecurity(ROLE_ADMIN, mutableListOf()))
     every {
-      workspaceServiceImpl.getVerifiedWorkspace(ORGANIZATION_ID, WORKSPACE_ID, PERMISSION_WRITE)
+      workspaceRepository.findByIdOrNull(WORKSPACE_ID)
     } returns workspace
     every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
@@ -752,6 +756,7 @@ class WorkspaceServiceImplTests {
                 accessControlList =
                     mutableListOf(
                         WorkspaceAccessControl(id = roleName, role = role),
-                        WorkspaceAccessControl("2$roleName", "viewer"))))
+                        WorkspaceAccessControl("2$roleName", "viewer")
+                    )))
   }
 }
