@@ -215,6 +215,10 @@ internal class WorkspaceServiceImpl(
       throw IllegalArgumentException("Invalid destination: '$destination'. '..' is not allowed")
     }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
+    if (file?.filename?.contains("..") == true || file?.filename?.contains("/") == true) {
+      throw IllegalArgumentException(
+          "Invalid filename: '${file.filename}'. '..' and '/' are not allowed")
+    }
 
     logger.debug(
         "Uploading file resource to workspace #{} ({}): {} => {}",
