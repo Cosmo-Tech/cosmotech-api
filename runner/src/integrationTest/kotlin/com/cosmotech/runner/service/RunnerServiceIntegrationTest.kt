@@ -1026,6 +1026,33 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(expectedRunId, lastRunId)
   }
 
+  @Test
+  fun `viewerRole has limited vision on security`() {
+    every { getCurrentAccountIdentifier(any()) } returns defaultName
+    runner = makeRunner(userName = defaultName, role = ROLE_VIEWER)
+
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+    assertEquals(
+        RunnerSecurity(
+            default = ROLE_NONE, mutableListOf(RunnerAccessControl(defaultName, ROLE_VIEWER))),
+        runnerSaved.security)
+
+    runnerSaved =
+        runnerApiService.getRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+    assertEquals(
+        RunnerSecurity(
+            default = ROLE_NONE, mutableListOf(RunnerAccessControl(defaultName, ROLE_VIEWER))),
+        runnerSaved.security)
+
+    val runners = runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, 0, 10)
+    runners.forEach {
+      assertEquals(
+          RunnerSecurity(
+              default = ROLE_NONE, mutableListOf(RunnerAccessControl(defaultName, ROLE_VIEWER))),
+          runnerSaved.security)
+    }
+  }
+
   private fun makeConnector(name: String = "name"): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
@@ -1056,7 +1083,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                        DatasetAccessControl(defaultName, ROLE_USER))))
   }
 
   fun makeSolution(organizationId: String = organizationSaved.id!!): Solution {
@@ -1089,7 +1117,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                        SolutionAccessControl(id = defaultName, role = ROLE_USER))))
   }
 
   fun makeOrganization(

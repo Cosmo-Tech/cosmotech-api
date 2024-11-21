@@ -26,6 +26,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -81,6 +82,7 @@ import com.google.gson.reflect.TypeToken
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.time.Instant
+import kotlin.jvm.optionals.getOrNull
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -670,7 +672,11 @@ class DatasetServiceImpl(
       datasetId: String
   ): Dataset? {
     organizationService.getVerifiedOrganization(organizationId)
-    return findBy(organizationId, datasetId)
+    var dataset = datasetRepository.findBy(organizationId, datasetId).getOrNull()
+    if (dataset != null) {
+      dataset = checkReadSecurity(dataset)
+    }
+    return dataset
   }
 
   override fun addOrUpdateAccessControl(
@@ -1039,7 +1045,6 @@ class DatasetServiceImpl(
               .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
               .toList()
         }
-    val currentUser = getCurrentAuthenticatedUserName(csmPlatformProperties)
     datasetList.forEach { checkReadSecurity(it) }
     return datasetList
   }
@@ -1287,16 +1292,27 @@ class DatasetServiceImpl(
   }
 
   fun checkReadSecurity(dataset: Dataset): Dataset {
-    val username = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    var safeDataset = dataset
+    val username = getCurrentAccountIdentifier(csmPlatformProperties)
     var userAC = DatasetAccessControl("", "")
     val retrievedAC = dataset.security!!.accessControlList.filter { it.id == username }
-    if (retrievedAC.isNotEmpty()) userAC = retrievedAC[0]
-    val safeDataset =
-        dataset.copy(
-            security =
-                DatasetSecurity(
-                    default = dataset.security!!.default,
-                    accessControlList = mutableListOf(userAC)))
+    if (retrievedAC.isNotEmpty()) {
+      userAC = retrievedAC[0]
+      if (userAC.role == ROLE_VIEWER) {
+        safeDataset =
+            dataset.copy(
+                security =
+                    DatasetSecurity(
+                        default = dataset.security!!.default,
+                        accessControlList = mutableListOf(userAC)))
+      }
+    } else if (dataset.security!!.default == ROLE_VIEWER) {
+      safeDataset =
+          dataset.copy(
+              security =
+                  DatasetSecurity(
+                      default = dataset.security!!.default, accessControlList = mutableListOf()))
+    }
     return safeDataset
   }
 }

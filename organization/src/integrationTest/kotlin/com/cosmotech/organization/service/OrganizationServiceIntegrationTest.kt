@@ -1057,6 +1057,41 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         organizationApiService.getVerifiedOrganization("wrong_orga_id")
       }
     }
+
+    @Test
+    fun `viewerRole has limited vision on security`() {
+      val organization = makeOrganization(role = ROLE_VIEWER)
+
+      var organizationSaved = organizationApiService.registerOrganization(organization)
+      assertEquals(
+          OrganizationSecurity(
+              default = ROLE_NONE,
+              mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
+          organizationSaved.security)
+
+      organizationSaved = organizationApiService.findOrganizationById(organizationSaved.id!!)
+      assertEquals(
+          OrganizationSecurity(
+              default = ROLE_NONE,
+              mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
+          organizationSaved.security)
+
+      organizationSaved = organizationApiService.getVerifiedOrganization(organizationSaved.id!!)
+      assertEquals(
+          OrganizationSecurity(
+              default = ROLE_NONE,
+              mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
+          organizationSaved.security)
+
+      var organizations = organizationApiService.findAllOrganizations(0, 10)
+      organizations.forEach {
+        assertEquals(
+            OrganizationSecurity(
+                default = ROLE_NONE,
+                mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
+            organizationSaved.security)
+      }
+    }
   }
   @Nested
   inner class AsPlatformAdmin {
@@ -2244,6 +2279,24 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             OrganizationSecurity(
                 default = defaultSecurity,
                 accessControlList = mutableListOf(OrganizationAccessControl(userName, role))))
+  }
+
+  fun makeOrganization(
+      id: String = "organization_id",
+      userName: String = TEST_USER_ID,
+      role: String = ROLE_ADMIN
+  ): Organization {
+    return Organization(
+        id = id,
+        name = "Organization Name",
+        ownerId = "my.account-tester@cosmotech.com",
+        security =
+            OrganizationSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        OrganizationAccessControl(id = TEST_ADMIN_USER_ID, role = "admin"),
+                        OrganizationAccessControl(id = userName, role = role))))
   }
 
   internal fun testFindAllOrganizations(page: Int?, size: Int?, expectedResultSize: Int) {
