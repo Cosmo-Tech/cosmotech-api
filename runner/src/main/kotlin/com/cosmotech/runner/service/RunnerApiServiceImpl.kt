@@ -10,9 +10,10 @@ import com.cosmotech.api.rbac.PERMISSION_LAUNCH
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.CreatedRun
 import com.cosmotech.runner.domain.Runner
@@ -241,15 +242,27 @@ internal class RunnerApiServiceImpl(
   }
 
   fun checkReadSecurity(runner: Runner): Runner {
-    val username = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    var safeRunner = runner
+    val username = getCurrentAccountIdentifier(csmPlatformProperties)
     var userAC = RunnerAccessControl("", "")
     val retrievedAC = runner.security!!.accessControlList.filter { it.id == username }
-    if (retrievedAC.isNotEmpty()) userAC = retrievedAC[0]
-    val safeRunner =
-        runner.copy(
-            security =
-                RunnerSecurity(
-                    default = runner.security!!.default, accessControlList = mutableListOf(userAC)))
+    if (retrievedAC.isNotEmpty()) {
+      userAC = retrievedAC[0]
+      if (userAC.role == ROLE_VIEWER) {
+        safeRunner =
+            runner.copy(
+                security =
+                    RunnerSecurity(
+                        default = runner.security!!.default,
+                        accessControlList = mutableListOf(userAC)))
+      }
+    } else if (runner.security!!.default == ROLE_VIEWER) {
+      safeRunner =
+          runner.copy(
+              security =
+                  RunnerSecurity(
+                      default = runner.security!!.default, accessControlList = mutableListOf()))
+    }
     return safeRunner
   }
 }

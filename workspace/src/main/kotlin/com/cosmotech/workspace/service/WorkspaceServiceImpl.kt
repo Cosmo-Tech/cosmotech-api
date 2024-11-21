@@ -20,6 +20,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.rbac.model.RbacAccessControl
@@ -133,7 +134,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspace: Workspace
   ): Workspace {
-    val existingWorkspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
+    val existingWorkspace = this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
     var hasChanged =
         existingWorkspace
@@ -551,17 +552,24 @@ internal class WorkspaceServiceImpl(
   }
 
   fun checkReadSecurity(workspace: Workspace): Workspace {
-    val username = getCurrentAuthenticatedUserName(csmPlatformProperties)
-    var userAC = WorkspaceAccessControl("", "")
-    val retrievedAC = workspace.security!!.accessControlList.filter { it.id == username }
-    if (retrievedAC.isNotEmpty()) userAC = retrievedAC[0]
-    val safeWorkspace =
-        workspace.copy(
-            security =
-                WorkspaceSecurity(
-                    default = workspace.security!!.default,
-                    accessControlList = mutableListOf(userAC)))
-    return safeWorkspace
+
+    val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = workspace.security!!.accessControlList.firstOrNull { it.id == username }
+    if (retrievedAC != null) {
+      if (retrievedAC.role == ROLE_VIEWER) {
+        return workspace.copy(
+                security =
+                    WorkspaceSecurity(
+                        default = workspace.security!!.default,
+                        accessControlList = mutableListOf(retrievedAC)))
+      }
+    } else if (workspace.security!!.default == ROLE_VIEWER) {
+      return workspace.copy(
+              security =
+                  WorkspaceSecurity(
+                      default = workspace.security!!.default, accessControlList = mutableListOf()))
+    }
+    return workspace
   }
 }
 

@@ -14,6 +14,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -392,16 +393,27 @@ class SolutionServiceImpl(
   }
 
   fun checkReadSecurity(solution: Solution): Solution {
-    val username = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    var safeSolution = solution
+    val username = getCurrentAccountIdentifier(csmPlatformProperties)
     var userAC = SolutionAccessControl("", "")
     val retrievedAC = solution.security!!.accessControlList.filter { it.id == username }
-    if (retrievedAC.isNotEmpty()) userAC = retrievedAC[0]
-    val safeSolution =
-        solution.copy(
-            security =
-                SolutionSecurity(
-                    default = solution.security!!.default,
-                    accessControlList = mutableListOf(userAC)))
+    if (retrievedAC.isNotEmpty()) {
+      userAC = retrievedAC[0]
+      if (userAC.role == ROLE_VIEWER) {
+        safeSolution =
+            solution.copy(
+                security =
+                    SolutionSecurity(
+                        default = solution.security!!.default,
+                        accessControlList = mutableListOf(userAC)))
+      }
+    } else if (solution.security!!.default == ROLE_VIEWER) {
+      safeSolution =
+          solution.copy(
+              security =
+                  SolutionSecurity(
+                      default = solution.security!!.default, accessControlList = mutableListOf()))
+    }
     return safeSolution
   }
 }

@@ -1029,6 +1029,73 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(dataset1.connector!!.id, dataset2.connector!!.id)
   }
 
+  @Test
+  fun `viewerRole has limited vision on security`() {
+    dataset = makeDatasetWithRole(role = ROLE_VIEWER)
+
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    assertEquals(
+        DatasetSecurity(
+            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
+        datasetSaved.security)
+
+    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    assertEquals(
+        DatasetSecurity(
+            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
+        datasetSaved.security)
+
+    datasetSaved = datasetApiService.getVerifiedDataset(organizationSaved.id!!, datasetSaved.id!!)
+    assertEquals(
+        DatasetSecurity(
+            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
+        datasetSaved.security)
+
+    datasetSaved =
+        datasetApiService.linkWorkspace(
+            organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+    assertEquals(
+        DatasetSecurity(
+            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
+        datasetSaved.security)
+
+    datasetSaved =
+        datasetApiService.unlinkWorkspace(
+            organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+    assertEquals(
+        DatasetSecurity(
+            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
+        datasetSaved.security)
+
+    datasetSaved =
+        datasetApiService.findByOrganizationIdAndDatasetId(
+            organizationSaved.id!!, datasetSaved.id!!)!!
+    assertEquals(
+        DatasetSecurity(
+            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
+        datasetSaved.security)
+
+    var datasets = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, 10)
+    datasets.forEach {
+      assertEquals(
+          DatasetSecurity(
+              default = ROLE_NONE,
+              mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
+          datasetSaved.security)
+    }
+
+    datasets =
+        datasetApiService.searchDatasets(
+            organizationSaved.id!!, DatasetSearch(mutableListOf("dataset")), 0, 10)
+    datasets.forEach {
+      assertEquals(
+          DatasetSecurity(
+              default = ROLE_NONE,
+              mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
+          datasetSaved.security)
+    }
+  }
+
   fun makeConnector(): Connector {
     return Connector(
         key = "connector",
