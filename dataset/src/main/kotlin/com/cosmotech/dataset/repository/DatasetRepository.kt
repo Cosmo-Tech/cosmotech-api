@@ -20,7 +20,7 @@ interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
       @Sanitize @Param("datasetId") datasetId: String
   ): Optional<Dataset>
 
-  @Query("(@organizationId:{\$organizationId})  \$securityConstraint")
+  @Query("(@organizationId:{\$organizationId}) \$securityConstraint")
   fun findByOrganizationId(
       @Sanitize @Param("organizationId") organizationId: String,
       @SecurityConstraint @Param("securityConstraint") securityConstraint: String,

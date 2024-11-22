@@ -49,6 +49,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @Scope("prototype")
+@Suppress("TooManyFunctions")
 class RunnerService(
     private val runnerRepository: RunnerRepository,
     private val organizationApiService: OrganizationApiServiceInterface,
@@ -228,7 +229,7 @@ class RunnerService(
           runner.runTemplateId!!))
           throw IllegalArgumentException("Run Template not found: ${runner.runTemplateId}")
 
-      val beforeMutateDatasetList = this.runner.datasetList
+      val beforeMutateDatasetList = this.runner.datasetList ?: mutableListOf()
 
       val excludeFields =
           arrayOf(
