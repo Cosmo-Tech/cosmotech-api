@@ -401,6 +401,48 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `PROD-12947 - test find All Datasets as Organization User`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
+
+    // Create a dataset that current user should not see because he does not have permission to
+    val numberOfDatasets = 200
+    IntRange(1, numberOfDatasets).forEach {
+      datasetApiService.createDataset(
+          organizationSaved.id!!,
+          makeDatasetWithRole(
+              organizationId = organizationSaved.id!!, userName = "unknown_user@test.com"))
+    }
+
+    // Explicitly set connected user information
+    every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
+
+    logger.info("should not find a dataset because of lake of permission")
+    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    assertEquals(0, datasetList.size)
+
+    // Create a dataset that current user should not see because it has been created under another
+    // organization
+    val newOrganization = organizationApiService.registerOrganization(makeOrganizationWithRole())
+    val datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization =
+        datasetApiService.createDataset(
+            newOrganization.id!!, makeDatasetWithRole(organizationId = newOrganization.id!!))
+    assertNotNull(datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization)
+    logger.info(
+        "should not find a dataset because:" +
+            " one was created with no permission assigned " +
+            " one was created in another organization")
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    assertEquals(0, datasetList.size)
+
+    logger.info("should find only one dataset")
+    datasetList = datasetApiService.findAllDatasets(newOrganization.id!!, null, null)
+    assertEquals(1, datasetList.size)
+    assertEquals(datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization, datasetList[0])
+  }
+
+  @Test
   fun `test find All Datasets with different pagination params`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
     val numberOfDatasets = 20
