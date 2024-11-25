@@ -478,8 +478,7 @@ class DatasetServiceImplTests {
 
     datasetService.twingraphQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
 
-    verify(exactly = 1) { unifiedJedis.graphReadonlyQuery("graphId", graphQuery, 0) }
-    verify(exactly = 0) { unifiedJedis.graphQuery("graphId", graphQuery, 0) }
+    verify(exactly = 1) { unifiedJedis.graphQuery("graphId", graphQuery, 0) }
   }
 
   @Test
