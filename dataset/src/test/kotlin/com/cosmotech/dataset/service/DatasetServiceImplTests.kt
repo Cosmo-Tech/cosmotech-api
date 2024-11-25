@@ -383,8 +383,6 @@ class DatasetServiceImplTests {
     verify(exactly = 1) { unifiedJedis.del(any<String>()) }
   }
 
-
-
   @Test
   fun `test downloadGraph as Admin - should get graph data`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
