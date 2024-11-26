@@ -758,7 +758,9 @@ internal class ScenarioServiceImpl(
             solutionService.getVerifiedSolution(organizationId, it)
           }
       val runTemplate =
-          solution?.runTemplates?.find { runTemplate -> runTemplate.id == scenario.runTemplateId }
+          solution?.runTemplates?.find { runTemplate ->
+            runTemplate.id == existingScenario.runTemplateId
+          }
       val runTemplateParametersIds =
           solution
               ?.parameterGroups
