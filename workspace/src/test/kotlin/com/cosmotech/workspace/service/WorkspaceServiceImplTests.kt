@@ -11,7 +11,6 @@ import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_READ
-import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
@@ -22,8 +21,6 @@ import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -32,8 +29,6 @@ import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.solution.domain.SolutionAccessControl
-import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceRole
@@ -294,10 +289,8 @@ class WorkspaceServiceImplTests {
             key = "my-workspace-key",
             name = "my workspace name",
             solution = WorkspaceSolution(solutionId = "SOL-my-solution-id"),
-            security= WorkspaceSecurity(ROLE_ADMIN, mutableListOf()))
-    every {
-      workspaceRepository.findByIdOrNull(WORKSPACE_ID)
-    } returns workspace
+            security = WorkspaceSecurity(ROLE_ADMIN, mutableListOf()))
+    every { workspaceRepository.findByIdOrNull(WORKSPACE_ID) } returns workspace
     every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
     assertThrows<CsmResourceNotFoundException> {
@@ -675,7 +668,6 @@ class WorkspaceServiceImplTests {
                 accessControlList =
                     mutableListOf(
                         WorkspaceAccessControl(id = roleName, role = role),
-                        WorkspaceAccessControl("2$roleName", "viewer")
-                    )))
+                        WorkspaceAccessControl("2$roleName", "viewer"))))
   }
 }

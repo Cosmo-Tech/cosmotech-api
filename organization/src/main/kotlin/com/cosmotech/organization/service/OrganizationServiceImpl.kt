@@ -230,29 +230,23 @@ class OrganizationServiceImpl(
   }
 
   fun checkReadSecurity(organization: Organization): Organization {
-    var safeOrganization = organization
     val username = getCurrentAccountIdentifier(csmPlatformProperties)
-    var userAC = OrganizationAccessControl("", "")
-    val retrievedAC = organization.security!!.accessControlList.filter { it.id == username }
-    if (retrievedAC.isNotEmpty()) {
-      userAC = retrievedAC[0]
-      if (userAC.role == ROLE_VIEWER) {
-        safeOrganization =
-            organization.copy(
-                security =
-                    OrganizationSecurity(
-                        default = organization.security!!.default,
-                        accessControlList = mutableListOf(userAC)))
+    val retrievedAC = organization.security!!.accessControlList.firstOrNull { it.id == username }
+    if (retrievedAC != null) {
+      if (retrievedAC.role == ROLE_VIEWER) {
+        return organization.copy(
+            security =
+                OrganizationSecurity(
+                    default = organization.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
       }
     } else if (organization.security!!.default == ROLE_VIEWER) {
-      safeOrganization =
-          organization.copy(
-              security =
-                  OrganizationSecurity(
-                      default = organization.security!!.default,
-                      accessControlList = mutableListOf()))
+      return organization.copy(
+          security =
+              OrganizationSecurity(
+                  default = organization.security!!.default, accessControlList = mutableListOf()))
     }
-    return safeOrganization
+    return organization
   }
 }
 

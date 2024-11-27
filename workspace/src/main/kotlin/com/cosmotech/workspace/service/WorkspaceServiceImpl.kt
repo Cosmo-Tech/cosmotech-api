@@ -552,22 +552,21 @@ internal class WorkspaceServiceImpl(
   }
 
   fun checkReadSecurity(workspace: Workspace): Workspace {
-
     val username = getCurrentAccountIdentifier(csmPlatformProperties)
-      val retrievedAC = workspace.security!!.accessControlList.firstOrNull { it.id == username }
+    val retrievedAC = workspace.security!!.accessControlList.firstOrNull { it.id == username }
     if (retrievedAC != null) {
       if (retrievedAC.role == ROLE_VIEWER) {
         return workspace.copy(
-                security =
-                    WorkspaceSecurity(
-                        default = workspace.security!!.default,
-                        accessControlList = mutableListOf(retrievedAC)))
+            security =
+                WorkspaceSecurity(
+                    default = workspace.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
       }
     } else if (workspace.security!!.default == ROLE_VIEWER) {
       return workspace.copy(
-              security =
-                  WorkspaceSecurity(
-                      default = workspace.security!!.default, accessControlList = mutableListOf()))
+          security =
+              WorkspaceSecurity(
+                  default = workspace.security!!.default, accessControlList = mutableListOf()))
     }
     return workspace
   }
