@@ -22,13 +22,7 @@ import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.DatasetApiServiceInterface
-import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetConnector
-import com.cosmotech.dataset.domain.DatasetSecurity
-import com.cosmotech.dataset.domain.IngestionStatusEnum
-import com.cosmotech.dataset.domain.SubDatasetGraphQuery
-import com.cosmotech.dataset.domain.TwincacheStatusEnum
+import com.cosmotech.dataset.domain.*
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.organization.OrganizationApiServiceInterface
@@ -161,6 +155,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         makeWorkspaceEventHubInfo(false)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
+    rediSearchIndexer.createIndexFor(Connector::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
@@ -1113,13 +1108,15 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   fun makeDataset(
       organizationId: String = organizationSaved.id!!,
       name: String = "name",
-      connector: Connector = connectorSaved
+      connector: Connector = connectorSaved,
+      sourceType: DatasetSourceType = DatasetSourceType.Twincache
   ): Dataset {
     return Dataset(
         name = name,
         organizationId = organizationId,
         creationDate = Instant.now().toEpochMilli(),
         ownerId = "ownerId",
+        sourceType = sourceType,
         connector =
             DatasetConnector(
                 id = connector.id,

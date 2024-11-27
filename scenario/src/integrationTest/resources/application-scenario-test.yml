@@ -145,6 +145,7 @@ csm:
       username: "default"
       # Leave it as blank as there's no auth with test container
       password:
+      useGraphModule: true
       scenario:
         default-page-size: 20
     internalResultServices:
