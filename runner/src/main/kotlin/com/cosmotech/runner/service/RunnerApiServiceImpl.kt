@@ -236,27 +236,22 @@ internal class RunnerApiServiceImpl(
   }
 
   fun checkReadSecurity(runner: Runner): Runner {
-    var safeRunner = runner
     val username = getCurrentAccountIdentifier(csmPlatformProperties)
-    var userAC = RunnerAccessControl("", "")
-    val retrievedAC = runner.security!!.accessControlList.filter { it.id == username }
-    if (retrievedAC.isNotEmpty()) {
-      userAC = retrievedAC[0]
-      if (userAC.role == ROLE_VIEWER) {
-        safeRunner =
-            runner.copy(
-                security =
-                    RunnerSecurity(
-                        default = runner.security!!.default,
-                        accessControlList = mutableListOf(userAC)))
+    val retrievedAC = runner.security!!.accessControlList.firstOrNull { it.id == username }
+    if (retrievedAC != null) {
+      if (retrievedAC.role == ROLE_VIEWER) {
+        return runner.copy(
+            security =
+                RunnerSecurity(
+                    default = runner.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
       }
     } else if (runner.security!!.default == ROLE_VIEWER) {
-      safeRunner =
-          runner.copy(
-              security =
-                  RunnerSecurity(
-                      default = runner.security!!.default, accessControlList = mutableListOf()))
+      return runner.copy(
+          security =
+              RunnerSecurity(
+                  default = runner.security!!.default, accessControlList = mutableListOf()))
     }
-    return safeRunner
+    return runner
   }
 }

@@ -483,28 +483,23 @@ class SolutionServiceImpl(
   }
 
   fun checkReadSecurity(solution: Solution): Solution {
-    var safeSolution = solution
     val username = getCurrentAccountIdentifier(csmPlatformProperties)
-    var userAC = SolutionAccessControl("", "")
-    val retrievedAC = solution.security!!.accessControlList.filter { it.id == username }
-    if (retrievedAC.isNotEmpty()) {
-      userAC = retrievedAC[0]
-      if (userAC.role == ROLE_VIEWER) {
-        safeSolution =
-            solution.copy(
-                security =
-                    SolutionSecurity(
-                        default = solution.security!!.default,
-                        accessControlList = mutableListOf(userAC)))
+    val retrievedAC = solution.security!!.accessControlList.firstOrNull { it.id == username }
+    if (retrievedAC != null) {
+      if (retrievedAC.role == ROLE_VIEWER) {
+        return solution.copy(
+            security =
+                SolutionSecurity(
+                    default = solution.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
       }
     } else if (solution.security!!.default == ROLE_VIEWER) {
-      safeSolution =
-          solution.copy(
-              security =
-                  SolutionSecurity(
-                      default = solution.security!!.default, accessControlList = mutableListOf()))
+      return solution.copy(
+          security =
+              SolutionSecurity(
+                  default = solution.security!!.default, accessControlList = mutableListOf()))
     }
-    return safeSolution
+    return solution
   }
 
   private fun validateRunTemplate(

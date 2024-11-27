@@ -1293,28 +1293,23 @@ class DatasetServiceImpl(
   }
 
   fun checkReadSecurity(dataset: Dataset): Dataset {
-    var safeDataset = dataset
     val username = getCurrentAccountIdentifier(csmPlatformProperties)
-    var userAC = DatasetAccessControl("", "")
-    val retrievedAC = dataset.security!!.accessControlList.filter { it.id == username }
-    if (retrievedAC.isNotEmpty()) {
-      userAC = retrievedAC[0]
-      if (userAC.role == ROLE_VIEWER) {
-        safeDataset =
-            dataset.copy(
-                security =
-                    DatasetSecurity(
-                        default = dataset.security!!.default,
-                        accessControlList = mutableListOf(userAC)))
+    val retrievedAC = dataset.security!!.accessControlList.firstOrNull { it.id == username }
+    if (retrievedAC != null) {
+      if (retrievedAC.role == ROLE_VIEWER) {
+        return dataset.copy(
+            security =
+                DatasetSecurity(
+                    default = dataset.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
       }
     } else if (dataset.security!!.default == ROLE_VIEWER) {
-      safeDataset =
-          dataset.copy(
-              security =
-                  DatasetSecurity(
-                      default = dataset.security!!.default, accessControlList = mutableListOf()))
+      return dataset.copy(
+          security =
+              DatasetSecurity(
+                  default = dataset.security!!.default, accessControlList = mutableListOf()))
     }
-    return safeDataset
+    return dataset
   }
 }
 
