@@ -28,11 +28,7 @@ import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.api.DatasetApiService
-import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetConnector
-import com.cosmotech.dataset.domain.DatasetSecurity
-import com.cosmotech.dataset.domain.IngestionStatusEnum
+import com.cosmotech.dataset.domain.*
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -131,6 +127,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Dataset::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Scenario::class.java)
+    rediSearchIndexer.createIndexFor(Connector::class.java)
 
     val context = getContext(redisStackServer)
     val containerIp =
@@ -7083,12 +7080,19 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
         ioTypes = listOf(IoTypesEnum.read))
   }
 
-  fun makeDataset(organizationId: String, connector: Connector, id: String, role: String): Dataset {
+  fun makeDataset(
+      organizationId: String,
+      connector: Connector,
+      id: String,
+      role: String,
+      sourceType: DatasetSourceType = DatasetSourceType.Twincache
+  ): Dataset {
     return Dataset(
         name = "Dataset",
         organizationId = organizationId,
         ownerId = "ownerId",
         ingestionStatus = IngestionStatusEnum.SUCCESS,
+        sourceType = sourceType,
         connector =
             DatasetConnector(
                 id = connector.id,

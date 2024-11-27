@@ -147,6 +147,7 @@ csm:
       username: "default"
       # Leave it as blank as there's no auth with test container
       password:
+      useGraphModule: true
       scenariorun:
         default-page-size: 20
     rbac:
