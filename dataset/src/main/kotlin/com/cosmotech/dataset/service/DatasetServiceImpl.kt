@@ -719,8 +719,27 @@ class DatasetServiceImpl(
 
   override fun getDataInfo(organizationId: String, datasetId: String): Map<String, Any> {
     val result = mutableMapOf<String, Any>()
-    val nodeInfo = mutableMapOf<String, Any>()
-    val relInfo = mutableMapOf<String, Any>()
+    val nodeCount = mutableMapOf<String, Any>()
+    val relCount = mutableMapOf<String, Any>()
+    val entityProperties = mutableMapOf<String, Any>()
+
+    neo4jClient
+        .query(
+            "MATCH(n) " +
+                "WHERE n.datasetId = \"$datasetId\" " +
+                "UNWIND keys(n) AS key " +
+                "RETURN labels(n) as labels, " +
+                "collect(distinct key) AS distinct_keys " +
+                "ORDER BY labels ASC")
+        .fetch()
+        .all()
+        .map { it.values.toList() }
+        .filter { it.isNotEmpty() }
+        .forEach {
+          entityProperties[(it[0] as List<*>).first().toString()] =
+              (it[1] as List<String>).sortedBy { propertyName -> propertyName.lowercase() }
+        }
+
     neo4jClient
         .query(
             "MATCH (n) " +
@@ -730,8 +749,12 @@ class DatasetServiceImpl(
         .all()
         .map { it.values.toList() }
         .filter { it.isNotEmpty() }
-        .forEach { nodeInfo[(it[0] as List<*>).first().toString()] = it[1] }
-    result["nodeLabels"] = nodeInfo
+        .forEach { nodeCount[(it[0] as List<*>).first().toString()] = it[1] }
+
+    result["nodes"] =
+        nodeCount.map { (key, value) ->
+          mapOf(key to mapOf("count" to value, "properties" to entityProperties[key]))
+        }
 
     neo4jClient
         .query(
@@ -742,8 +765,12 @@ class DatasetServiceImpl(
         .all()
         .map { it.values.toList() }
         .filter { it.isNotEmpty() }
-        .forEach { relInfo[it[0].toString()] = it[1] }
-    result["relTypes"] = relInfo
+        .forEach { relCount[it[0].toString()] = it[1] }
+
+    result["relationships"] =
+        relCount.map { (key, value) ->
+          mapOf(key to mapOf("count" to value, "properties" to entityProperties[key]))
+        }
 
     return result
   }
