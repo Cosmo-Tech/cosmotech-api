@@ -14,6 +14,8 @@ import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
+import com.cosmotech.dataset.domain.DatasetSecurity
+import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.CreatedRun
 import com.cosmotech.runner.domain.Runner
@@ -46,14 +48,15 @@ internal class RunnerApiServiceImpl(
             .initParameters()
             .initDatasetList()
 
-    return checkReadSecurity(runnerService.saveInstance(runnerInstance))
+    return runnerService.saveInstance(runnerInstance)
   }
 
   override fun getRunner(organizationId: String, workspaceId: String, runnerId: String): Runner {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId)
 
-    return checkReadSecurity(runnerInstance.getRunnerDataObjet())
+    val runner = runnerInstance.getRunnerDataObjet()
+    return runner.checkReadSecurity(runnerInstance)
   }
 
   override fun updateRunner(
@@ -65,7 +68,7 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
 
-    return checkReadSecurity(runnerService.saveInstance(runnerInstance.setValueFrom(runner)))
+    return runnerService.saveInstance(runnerInstance.setValueFrom(runner))
   }
 
   override fun deleteRunner(organizationId: String, workspaceId: String, runnerId: String) {
@@ -241,23 +244,4 @@ internal class RunnerApiServiceImpl(
     runnerService.saveInstance(runnerInstance)
   }
 
-  fun checkReadSecurity(runner: Runner): Runner {
-    val username = getCurrentAccountIdentifier(csmPlatformProperties)
-    val retrievedAC = runner.security!!.accessControlList.firstOrNull { it.id == username }
-    if (retrievedAC != null) {
-      if (retrievedAC.role == ROLE_VIEWER) {
-        return runner.copy(
-            security =
-                RunnerSecurity(
-                    default = runner.security!!.default,
-                    accessControlList = mutableListOf(retrievedAC)))
-      }
-    } else if (runner.security!!.default == ROLE_VIEWER) {
-      return runner.copy(
-          security =
-              RunnerSecurity(
-                  default = runner.security!!.default, accessControlList = mutableListOf()))
-    }
-    return runner
-  }
 }

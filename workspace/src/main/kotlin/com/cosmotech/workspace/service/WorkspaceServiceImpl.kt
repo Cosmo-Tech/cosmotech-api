@@ -101,11 +101,12 @@ internal class WorkspaceServiceImpl(
                 .toList()
       }
     }
+    result.forEach { it.security = checkReadSecurity(it).security }
     return result
   }
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
-    return getVerifiedWorkspace(organizationId, workspaceId)
+    return checkReadSecurity(getVerifiedWorkspace(organizationId, workspaceId))
   }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
@@ -121,7 +122,7 @@ internal class WorkspaceServiceImpl(
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
     createdWorkspace.setRbac(csmRbac.initSecurity(workspace.getRbac()))
 
-    return checkReadSecurity(workspaceRepository.save(createdWorkspace))
+    return workspaceRepository.save(createdWorkspace)
   }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
@@ -155,9 +156,9 @@ internal class WorkspaceServiceImpl(
               " please refer to the appropriate security endpoints to perform this maneuver")
     }
     return if (hasChanged) {
-      checkReadSecurity(workspaceRepository.save(existingWorkspace))
+      workspaceRepository.save(existingWorkspace)
     } else {
-      checkReadSecurity(existingWorkspace)
+      existingWorkspace
     }
   }
 
@@ -306,13 +307,15 @@ internal class WorkspaceServiceImpl(
       datasetId: String
   ): Workspace {
     organizationService.getVerifiedOrganization(organizationId)
+    this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     sendAddWorkspaceToDatasetEvent(organizationId, datasetId, workspaceId)
-    return checkReadSecurity(
-        addDatasetToLinkedDatasetIdList(organizationId, workspaceId, datasetId))
+    return addDatasetToLinkedDatasetIdList(organizationId, workspaceId, datasetId)
   }
 
   @EventListener(AddDatasetToWorkspace::class)
   fun processEventAddDatasetToWorkspace(addDatasetToWorkspace: AddDatasetToWorkspace) {
+    this.getVerifiedWorkspace(
+        addDatasetToWorkspace.organizationId, addDatasetToWorkspace.workspaceId, PERMISSION_WRITE)
     addDatasetToLinkedDatasetIdList(
         addDatasetToWorkspace.organizationId,
         addDatasetToWorkspace.workspaceId,
@@ -324,15 +327,19 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       datasetId: String
   ): Workspace {
+    this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     sendRemoveWorkspaceFromDatasetEvent(organizationId, datasetId, workspaceId)
-    return checkReadSecurity(
-        removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId))
+    return removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId)
   }
 
   @EventListener(RemoveDatasetFromWorkspace::class)
   fun processEventRemoveDatasetFromWorkspace(
       removeDatasetFromWorkspace: RemoveDatasetFromWorkspace
   ) {
+    this.getVerifiedWorkspace(
+        removeDatasetFromWorkspace.organizationId,
+        removeDatasetFromWorkspace.workspaceId,
+        PERMISSION_WRITE)
     removeDatasetFromLinkedDatasetIdList(
         removeDatasetFromWorkspace.organizationId,
         removeDatasetFromWorkspace.workspaceId,
@@ -440,7 +447,7 @@ internal class WorkspaceServiceImpl(
         workspaceRepository.findByIdOrNull(workspaceId)
             ?: throw CsmResourceNotFoundException("Workspace $workspaceId does not exist!")
     csmRbac.verify(workspace.getRbac(), requiredPermission)
-    return checkReadSecurity(workspace)
+    return workspace
   }
 
   override fun addWorkspaceAccessControl(
@@ -548,21 +555,22 @@ internal class WorkspaceServiceImpl(
   }
 
   fun checkReadSecurity(workspace: Workspace): Workspace {
-    val username = getCurrentAccountIdentifier(csmPlatformProperties)
-    val retrievedAC = workspace.security!!.accessControlList.firstOrNull { it.id == username }
-    if (retrievedAC != null) {
-      if (retrievedAC.role == ROLE_VIEWER) {
+    if (csmRbac.check(workspace.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = workspace.security!!.accessControlList.firstOrNull { it.id == username }
+      if (retrievedAC != null) {
         return workspace.copy(
-            security =
-                WorkspaceSecurity(
-                    default = workspace.security!!.default,
-                    accessControlList = mutableListOf(retrievedAC)))
-      }
-    } else if (workspace.security!!.default == ROLE_VIEWER) {
-      return workspace.copy(
           security =
-              WorkspaceSecurity(
-                  default = workspace.security!!.default, accessControlList = mutableListOf()))
+          WorkspaceSecurity(
+            default = workspace.security!!.default,
+            accessControlList = mutableListOf(retrievedAC))
+        )
+      } else {
+        return workspace.copy(
+          security =
+          WorkspaceSecurity(
+            default = workspace.security!!.default, accessControlList = mutableListOf()))
+      }
     }
     return workspace
   }
