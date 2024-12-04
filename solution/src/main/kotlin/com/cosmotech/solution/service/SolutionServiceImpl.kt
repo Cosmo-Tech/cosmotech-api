@@ -16,7 +16,6 @@ import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -95,12 +94,12 @@ class SolutionServiceImpl(
             solutionRepository.findByOrganizationId(organizationId, pageable).toList()
           }
     }
-    result.forEach { checkReadSecurity(it) }
+    result.forEach { it.security = updateSecurityVisibility(it).security }
     return result
   }
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution {
-    return getVerifiedSolution(organizationId, solutionId)
+    return updateSecurityVisibility(getVerifiedSolution(organizationId, solutionId))
   }
 
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
@@ -213,7 +212,7 @@ class SolutionServiceImpl(
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
     createdSolution.setRbac(csmRbac.initSecurity(solution.getRbac()))
 
-    return checkReadSecurity(solutionRepository.save(createdSolution))
+    return solutionRepository.save(createdSolution)
   }
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
@@ -269,9 +268,9 @@ class SolutionServiceImpl(
     }
 
     return if (hasChanged) {
-      checkReadSecurity(solutionRepository.save(existingSolution))
+      solutionRepository.save(existingSolution)
     } else {
-      checkReadSecurity(existingSolution)
+      existingSolution
     }
   }
 
@@ -479,25 +478,25 @@ class SolutionServiceImpl(
               "Solution $solutionId not found in organization $organizationId")
         }
     csmRbac.verify(solution.getRbac(), requiredPermission)
-    return checkReadSecurity(solution)
+    return solution
   }
 
-  fun checkReadSecurity(solution: Solution): Solution {
-    val username = getCurrentAccountIdentifier(csmPlatformProperties)
-    val retrievedAC = solution.security!!.accessControlList.firstOrNull { it.id == username }
-    if (retrievedAC != null) {
-      if (retrievedAC.role == ROLE_VIEWER) {
+  fun updateSecurityVisibility(solution: Solution): Solution {
+    if (csmRbac.check(solution.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = solution.security!!.accessControlList.firstOrNull { it.id == username }
+      if (retrievedAC != null) {
         return solution.copy(
             security =
                 SolutionSecurity(
                     default = solution.security!!.default,
                     accessControlList = mutableListOf(retrievedAC)))
+      } else {
+        return solution.copy(
+            security =
+                SolutionSecurity(
+                    default = solution.security!!.default, accessControlList = mutableListOf()))
       }
-    } else if (solution.security!!.default == ROLE_VIEWER) {
-      return solution.copy(
-          security =
-              SolutionSecurity(
-                  default = solution.security!!.default, accessControlList = mutableListOf()))
     }
     return solution
   }

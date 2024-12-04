@@ -1316,15 +1316,9 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `viewerRole has limited vision on security`() {
+    fun `As a viewer, I can only see my information in security property for findOrganizationById`() {
       val organization = makeOrganization(role = ROLE_VIEWER)
-
       var organizationSaved = organizationApiService.registerOrganization(organization)
-      assertEquals(
-          OrganizationSecurity(
-              default = ROLE_NONE,
-              mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
-          organizationSaved.security)
 
       organizationSaved = organizationApiService.findOrganizationById(organizationSaved.id!!)
       assertEquals(
@@ -1332,21 +1326,22 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
               default = ROLE_NONE,
               mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
           organizationSaved.security)
+      assertEquals(1, organizationSaved.security!!.accessControlList.size)
+    }
 
-      organizationSaved = organizationApiService.getVerifiedOrganization(organizationSaved.id!!)
-      assertEquals(
-          OrganizationSecurity(
-              default = ROLE_NONE,
-              mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
-          organizationSaved.security)
+    @Test
+    fun `As a viewer, I can only see my information in security property for findAllOrganizations`() {
+      val organization = makeOrganization(role = ROLE_VIEWER)
+      organizationApiService.registerOrganization(organization)
 
-      var organizations = organizationApiService.findAllOrganizations(0, 10)
+      val organizations = organizationApiService.findAllOrganizations(null, null)
       organizations.forEach {
         assertEquals(
             OrganizationSecurity(
                 default = ROLE_NONE,
                 mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
-            organizationSaved.security)
+            it.security)
+        assertEquals(1, it.security!!.accessControlList.size)
       }
     }
   }

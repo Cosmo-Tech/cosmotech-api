@@ -34,6 +34,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -98,10 +99,10 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     val solution =
         Solution(
-            "id",
-            organizationSaved.id!!,
-            "key",
-            "name",
+            id = "id",
+            organizationId = organizationSaved.id!!,
+            key = "key",
+            name = "name",
             runTemplates = mutableListOf(RunTemplate(id = "one"), RunTemplate(id = "two")),
             security =
                 SolutionSecurity(
@@ -118,15 +119,15 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     val expectedSolution =
         Solution(
-            "id",
-            organizationSaved.id!!,
-            "key",
-            "name",
+            id = "id",
+            organizationId = organizationSaved.id!!,
+            key = "key",
+            name = "name",
             runTemplates =
                 mutableListOf(RunTemplate(id = "one", name = "name_one"), RunTemplate(id = "two")))
     // Assert that no runTemplate were deleted
-    assertEquals(expectedSolution.runTemplates!!.size, endTemplates.size)
-    assertEquals(expectedSolution.runTemplates!!, endTemplates)
+    assertEquals(expectedSolution.runTemplates.size, endTemplates.size)
+    assertEquals(expectedSolution.runTemplates, endTemplates)
   }
 
   @Test
@@ -562,16 +563,9 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `viewerRole has limited vision on security`() {
-    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
-    solution = makeSolution(userName = CONNECTED_READER_USER, role = ROLE_VIEWER)
-
+  fun `As viewer, I can only see my information in security property for findSolutionById`() {
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-    assertEquals(
-        SolutionSecurity(
-            default = ROLE_NONE,
-            mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER))),
-        solutionSaved.security)
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
 
     solutionSaved = solutionApiService.findSolutionById(organizationSaved.id!!, solutionSaved.id!!)
     assertEquals(
@@ -579,22 +573,22 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             default = ROLE_NONE,
             mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER))),
         solutionSaved.security)
+    assertEquals(1, solutionSaved.security!!.accessControlList.size)
+  }
 
-    solutionSaved =
-        solutionApiService.getVerifiedSolution(organizationSaved.id!!, solutionSaved.id!!)
-    assertEquals(
-        SolutionSecurity(
-            default = ROLE_NONE,
-            mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER))),
-        solutionSaved.security)
+  @Test
+  fun `As viewer, I can only see my information in security property for findAllSolutions`() {
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
 
-    var solutions = solutionApiService.findAllSolutions(organizationSaved.id!!, 0, 10)
+    val solutions = solutionApiService.findAllSolutions(organizationSaved.id!!, null, null)
     solutions.forEach {
       assertEquals(
           SolutionSecurity(
               default = ROLE_NONE,
               mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER))),
-          solutionSaved.security)
+          it.security)
+      assertEquals(1, it.security!!.accessControlList.size)
     }
   }
 
@@ -608,15 +602,15 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(id = CONNECTED_READER_USER, role = "user"),
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
+                        OrganizationAccessControl(id = CONNECTED_READER_USER, role = ROLE_VIEWER),
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
   fun makeSolution(
       organizationId: String = organizationSaved.id!!,
-      runTemplates: MutableList<RunTemplate>? = mutableListOf(),
+      runTemplates: MutableList<RunTemplate> = mutableListOf(),
       userName: String = CONNECTED_READER_USER,
-      role: String = "reader"
+      role: String = ROLE_VIEWER
   ): Solution {
     return Solution(
         id = "solutionId",
@@ -631,6 +625,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         SolutionAccessControl(id = userName, role = role),
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 }

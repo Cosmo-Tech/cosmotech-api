@@ -26,7 +26,6 @@ import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -168,12 +167,12 @@ class DatasetServiceImpl(
             datasetRepository.findAll(pageable).toList()
           }
     }
-    result.forEach { checkReadSecurity(it) }
+    result.forEach { it.security = updateSecurityVisibility(it).security }
     return result
   }
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset {
-    return getVerifiedDataset(organizationId, datasetId)
+    return updateSecurityVisibility(getVerifiedDataset(organizationId, datasetId))
   }
 
   override fun removeAllDatasetCompatibilityElements(organizationId: String, datasetId: String) {
@@ -238,7 +237,7 @@ class DatasetServiceImpl(
         version = existingConnector.version
       }
     }
-    return checkReadSecurity(datasetRepository.save(createdDataset))
+    return datasetRepository.save(createdDataset)
   }
 
   override fun createSubDataset(
@@ -301,7 +300,7 @@ class DatasetServiceImpl(
             })
       }
     }
-    return checkReadSecurity(datasetSaved)
+    return datasetSaved
   }
 
   private fun checkIfGraphFunctionalityIsAvailable() {
@@ -673,11 +672,7 @@ class DatasetServiceImpl(
       datasetId: String
   ): Dataset? {
     organizationService.getVerifiedOrganization(organizationId)
-    var dataset = datasetRepository.findBy(organizationId, datasetId).getOrNull()
-    if (dataset != null) {
-      dataset = checkReadSecurity(dataset)
-    }
-    return dataset
+    return datasetRepository.findBy(organizationId, datasetId).getOrNull()
   }
 
   override fun addOrUpdateAccessControl(
@@ -870,12 +865,15 @@ class DatasetServiceImpl(
       datasetId: String,
       workspaceId: String
   ): Dataset {
+    this.getVerifiedDataset(organizationId, datasetId, PERMISSION_WRITE)
     sendAddDatasetToWorkspaceEvent(organizationId, workspaceId, datasetId)
     return addWorkspaceToLinkedWorkspaceIdList(organizationId, datasetId, workspaceId)
   }
 
   @EventListener(AddWorkspaceToDataset::class)
   fun processEventAddWorkspace(addWorkspaceToDataset: AddWorkspaceToDataset) {
+    this.getVerifiedDataset(
+        addWorkspaceToDataset.organizationId, addWorkspaceToDataset.datasetId, PERMISSION_WRITE)
     addWorkspaceToLinkedWorkspaceIdList(
         addWorkspaceToDataset.organizationId,
         addWorkspaceToDataset.datasetId,
@@ -906,14 +904,17 @@ class DatasetServiceImpl(
       datasetId: String,
       workspaceId: String
   ): Dataset {
-
+    this.getVerifiedDataset(organizationId, datasetId, PERMISSION_WRITE)
     sendRemoveDatasetFromWorkspaceEvent(organizationId, workspaceId, datasetId)
-
     return removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, workspaceId)
   }
 
   @EventListener(RemoveWorkspaceFromDataset::class)
   fun processEventRemoveWorkspace(removeWorkspaceFromDataset: RemoveWorkspaceFromDataset) {
+    this.getVerifiedDataset(
+        removeWorkspaceFromDataset.organizationId,
+        removeWorkspaceFromDataset.datasetId,
+        PERMISSION_WRITE)
     removeWorkspaceFromLinkedWorkspaceIdList(
         removeWorkspaceFromDataset.organizationId,
         removeWorkspaceFromDataset.datasetId,
@@ -1046,7 +1047,7 @@ class DatasetServiceImpl(
               .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
               .toList()
         }
-    datasetList.forEach { checkReadSecurity(it) }
+    datasetList.forEach { it.security = updateSecurityVisibility(it).security }
     return datasetList
   }
 
@@ -1218,6 +1219,7 @@ class DatasetServiceImpl(
       }
     }
   }
+
   private fun sendTwingraphImportJobInfoRequestEvent(
       dataset: Dataset,
       organizationId: String
@@ -1277,37 +1279,31 @@ class DatasetServiceImpl(
       requiredPermission: String
   ): Dataset {
     organizationService.getVerifiedOrganization(organizationId)
-    val dataset = findBy(organizationId, datasetId)
-    csmRbac.verify(dataset.getRbac(), requiredPermission)
-    return dataset
-  }
-
-  fun findBy(organizationId: String, datasetId: String): Dataset {
-    var dataset =
+    val dataset =
         datasetRepository.findBy(organizationId, datasetId).orElseThrow {
           CsmResourceNotFoundException(
               "Dataset $datasetId not found in organization $organizationId")
         }
-    dataset = checkReadSecurity(dataset)
+    csmRbac.verify(dataset.getRbac(), requiredPermission)
     return dataset
   }
 
-  fun checkReadSecurity(dataset: Dataset): Dataset {
-    val username = getCurrentAccountIdentifier(csmPlatformProperties)
-    val retrievedAC = dataset.security!!.accessControlList.firstOrNull { it.id == username }
-    if (retrievedAC != null) {
-      if (retrievedAC.role == ROLE_VIEWER) {
+  fun updateSecurityVisibility(dataset: Dataset): Dataset {
+    if (csmRbac.check(dataset.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = dataset.security!!.accessControlList.firstOrNull { it.id == username }
+      if (retrievedAC != null) {
         return dataset.copy(
             security =
                 DatasetSecurity(
                     default = dataset.security!!.default,
                     accessControlList = mutableListOf(retrievedAC)))
+      } else {
+        return dataset.copy(
+            security =
+                DatasetSecurity(
+                    default = dataset.security!!.default, accessControlList = mutableListOf()))
       }
-    } else if (dataset.security!!.default == ROLE_VIEWER) {
-      return dataset.copy(
-          security =
-              DatasetSecurity(
-                  default = dataset.security!!.default, accessControlList = mutableListOf()))
     }
     return dataset
   }

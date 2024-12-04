@@ -13,7 +13,6 @@ import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.getAllRolesDefinition
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
@@ -71,12 +70,12 @@ class OrganizationServiceImpl(
             organizationRepository.findAll(pageable).toList()
           }
     }
-    result.forEach { checkReadSecurity(it) }
+    result.forEach { it.security = updateSecurityVisibility(it).security }
     return result
   }
 
   override fun findOrganizationById(organizationId: String): Organization {
-    return getVerifiedOrganization(organizationId, PERMISSION_READ)
+    return updateSecurityVisibility(getVerifiedOrganization(organizationId, PERMISSION_READ))
   }
 
   override fun registerOrganization(organization: Organization): Organization {
@@ -92,7 +91,7 @@ class OrganizationServiceImpl(
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
     createdOrganization.setRbac(csmRbac.initSecurity(organization.getRbac()))
 
-    return checkReadSecurity(organizationRepository.save(createdOrganization))
+    return organizationRepository.save(createdOrganization)
   }
 
   override fun unregisterOrganization(organizationId: String) {
@@ -124,9 +123,9 @@ class OrganizationServiceImpl(
     }
 
     return if (hasChanged) {
-      checkReadSecurity(organizationRepository.save(existingOrganization))
+      organizationRepository.save(existingOrganization)
     } else {
-      checkReadSecurity(existingOrganization)
+      existingOrganization
     }
   }
 
@@ -257,7 +256,7 @@ class OrganizationServiceImpl(
         organizationRepository.findByIdOrNull(organizationId)
             ?: throw CsmResourceNotFoundException("Organization $organizationId does not exist!")
     csmRbac.verify(organization.getRbac(), requiredPermission)
-    return checkReadSecurity(organization)
+    return organization
   }
 
   override fun getVerifiedOrganization(
@@ -269,22 +268,22 @@ class OrganizationServiceImpl(
     return organization
   }
 
-  fun checkReadSecurity(organization: Organization): Organization {
-    val username = getCurrentAccountIdentifier(csmPlatformProperties)
-    val retrievedAC = organization.security!!.accessControlList.firstOrNull { it.id == username }
-    if (retrievedAC != null) {
-      if (retrievedAC.role == ROLE_VIEWER) {
-        return organization.copy(
+  fun updateSecurityVisibility(organization: Organization): Organization {
+    if (csmRbac.check(organization.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = organization.security!!.accessControlList.firstOrNull { it.id == username }
+      return if (retrievedAC != null) {
+        organization.copy(
             security =
                 OrganizationSecurity(
                     default = organization.security!!.default,
                     accessControlList = mutableListOf(retrievedAC)))
+      } else {
+        organization.copy(
+            security =
+                OrganizationSecurity(
+                    default = organization.security!!.default, accessControlList = mutableListOf()))
       }
-    } else if (organization.security!!.default == ROLE_VIEWER) {
-      return organization.copy(
-          security =
-              OrganizationSecurity(
-                  default = organization.security!!.default, accessControlList = mutableListOf()))
     }
     return organization
   }
