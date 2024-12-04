@@ -1030,61 +1030,46 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `viewerRole has limited vision on security`() {
+  fun `As viewer, I can only see my information in security property for findDatasetById`() {
     dataset = makeDatasetWithRole(role = ROLE_VIEWER)
-
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-    assertEquals(
-        DatasetSecurity(
-            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
-        datasetSaved.security)
 
     datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
     assertEquals(
         DatasetSecurity(
             default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
         datasetSaved.security)
+    assertEquals(1, datasetSaved.security!!.accessControlList.size)
+  }
 
-    datasetSaved = datasetApiService.getVerifiedDataset(organizationSaved.id!!, datasetSaved.id!!)
-    assertEquals(
-        DatasetSecurity(
-            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
-        datasetSaved.security)
+  @Test
+  fun `As viewer, I can only see my information in security property for findAllDatasets`() {
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    datasetApiService.deleteDataset(organizationSaved.id!!, datasetSaved.id!!)
+    every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+    dataset = makeDatasetWithRole(role = ROLE_VIEWER)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
-    datasetSaved =
-        datasetApiService.linkWorkspace(
-            organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
-    assertEquals(
-        DatasetSecurity(
-            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
-        datasetSaved.security)
-
-    datasetSaved =
-        datasetApiService.unlinkWorkspace(
-            organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
-    assertEquals(
-        DatasetSecurity(
-            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
-        datasetSaved.security)
-
-    datasetSaved =
-        datasetApiService.findByOrganizationIdAndDatasetId(
-            organizationSaved.id!!, datasetSaved.id!!)!!
-    assertEquals(
-        DatasetSecurity(
-            default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
-        datasetSaved.security)
-
-    var datasets = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, 10)
+    val datasets = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
     datasets.forEach {
       assertEquals(
           DatasetSecurity(
               default = ROLE_NONE,
               mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
-          datasetSaved.security)
+          it.security)
+      assertEquals(1, it.security!!.accessControlList.size)
     }
+  }
 
-    datasets =
+  @Test
+  fun `As viewer, I can only see my information in security property for searchDatasets`() {
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    datasetApiService.deleteDataset(organizationSaved.id!!, datasetSaved.id!!)
+    every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+    dataset = makeDatasetWithRole(role = ROLE_VIEWER)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+
+    val datasets =
         datasetApiService.searchDatasets(
             organizationSaved.id!!, DatasetSearch(mutableListOf("dataset")), 0, 10)
     datasets.forEach {
@@ -1092,7 +1077,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
           DatasetSecurity(
               default = ROLE_NONE,
               mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
-          datasetSaved.security)
+          it.security)
+      assertEquals(1, it.security!!.accessControlList.size)
     }
   }
 

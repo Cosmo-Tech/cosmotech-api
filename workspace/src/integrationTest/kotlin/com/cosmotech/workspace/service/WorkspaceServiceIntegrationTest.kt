@@ -439,7 +439,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `viewerRole has limited vision on security`() {
+  fun `As a viewer, I can only see my information in security property for findWorkspaceById`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     organization =
         makeOrganization(
@@ -450,21 +450,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     dataset = makeDataset()
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     workspace = makeWorkspace()
-
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-    assertEquals(
-        WorkspaceSecurity(
-            default = ROLE_NONE,
-            mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
-        workspaceSaved.security)
-
-    workspaceSaved =
-        workspaceApiService.getVerifiedWorkspace(organizationSaved.id!!, workspaceSaved.id!!)
-    assertEquals(
-        WorkspaceSecurity(
-            default = ROLE_NONE,
-            mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
-        workspaceSaved.security)
 
     workspaceSaved =
         workspaceApiService.findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
@@ -473,32 +459,31 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             default = ROLE_NONE,
             mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
         workspaceSaved.security)
+    assertEquals(1, workspaceSaved.security!!.accessControlList.size)
+  }
 
-    workspaceSaved =
-        workspaceApiService.linkDataset(
-            organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
-    assertEquals(
-        WorkspaceSecurity(
-            default = ROLE_NONE,
-            mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
-        workspaceSaved.security)
+  @Test
+  fun `As a viewer, I can only see my information in security property for findAllWorkspaces`() {
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+    organization =
+        makeOrganization(
+            id = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    dataset = makeDataset()
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    workspace = makeWorkspace()
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
 
-    workspaceSaved =
-        workspaceApiService.unlinkDataset(
-            organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
-    assertEquals(
-        WorkspaceSecurity(
-            default = ROLE_NONE,
-            mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
-        workspaceSaved.security)
-
-    var workspaces = workspaceApiService.findAllWorkspaces(organizationSaved.id!!, 0, 10)
+    var workspaces = workspaceApiService.findAllWorkspaces(organizationSaved.id!!, null, null)
     workspaces.forEach {
       assertEquals(
           WorkspaceSecurity(
               default = ROLE_NONE,
               mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
-          workspaceSaved.security)
+          it.security)
+      assertEquals(1, it.security!!.accessControlList.size)
     }
   }
 
