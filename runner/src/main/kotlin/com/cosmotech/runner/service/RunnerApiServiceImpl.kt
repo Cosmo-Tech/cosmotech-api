@@ -46,7 +46,7 @@ internal class RunnerApiServiceImpl(
             .initParameters()
             .initDatasetList()
 
-    return checkReadSecurity(runnerService.saveInstance(runnerInstance))
+    return runnerService.saveInstance(runnerInstance)
   }
 
   override fun getRunner(organizationId: String, workspaceId: String, runnerId: String): Runner {
@@ -65,7 +65,7 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
 
-    return checkReadSecurity(runnerService.saveInstance(runnerInstance.setValueFrom(runner)))
+    return runnerService.saveInstance(runnerInstance.setValueFrom(runner))
   }
 
   override fun deleteRunner(organizationId: String, workspaceId: String, runnerId: String) {
@@ -242,6 +242,7 @@ internal class RunnerApiServiceImpl(
   }
 
   fun checkReadSecurity(runner: Runner): Runner {
+    csmPlatformProperties
     val username = getCurrentAccountIdentifier(csmPlatformProperties)
     val retrievedAC = runner.security!!.accessControlList.firstOrNull { it.id == username }
     if (retrievedAC != null) {
