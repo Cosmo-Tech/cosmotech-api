@@ -339,7 +339,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     organizationSaved = organizationApiService.registerOrganization(organization)
     val numberOfDatasets = 20
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
-    val expectedSize = 15
+    val expectedPageSize = 15
     IntRange(1, numberOfDatasets).forEach {
       datasetApiService.createDataset(
           organizationSaved.id!!, makeDataset("d-dataset-$it", "dataset-$it"))
@@ -351,19 +351,19 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should find all datasets and assert there are $numberOfDatasets")
     var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
-    assertEquals(numberOfDatasets + 1, datasetList.size)
+    assertEquals(numberOfDatasets, datasetList.size)
 
     logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
     datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, null)
     assertEquals(defaultPageSize, datasetList.size)
 
-    logger.info("should find all datasets and assert there are expected size: $expectedSize")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, expectedSize)
-    assertEquals(expectedSize, datasetList.size)
+    logger.info("should find all datasets and assert there are expected size: $expectedPageSize")
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, expectedPageSize)
+    assertEquals(expectedPageSize, datasetList.size)
 
     logger.info("should find all solutions and assert it returns the second / last page")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 1, expectedSize)
-    assertEquals(numberOfDatasets - expectedSize + 1, datasetList.size)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 1, expectedPageSize)
+    assertEquals(numberOfDatasets - expectedPageSize, datasetList.size)
   }
 
   @Test
@@ -440,33 +440,43 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test find All Datasets with different pagination params`() {
+  fun `PROD-12947 - test find All Datasets as Platform Admin`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
+
+    // Create a dataset that current user should not see because he does not have permission to
     val numberOfDatasets = 20
-    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
-    val expectedSize = 15
     IntRange(1, numberOfDatasets).forEach {
       datasetApiService.createDataset(
-          organizationSaved.id!!, makeDatasetWithRole("d-dataset-$it", "dataset-$it"))
+          organizationSaved.id!!,
+          makeDatasetWithRole(
+              organizationId = organizationSaved.id!!, userName = "unknown_user@test.com"))
     }
 
-    logger.info("should find all datasets and assert there are $numberOfDatasets")
+    // Explicitly set connected user information
+    every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+
+    logger.info("should find all datasets because of admin permission")
     var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
     assertEquals(numberOfDatasets, datasetList.size)
 
-    logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, null)
-    assertEquals(defaultPageSize, datasetList.size)
+    // Create a dataset that current user should not see because it has been created under another
+    // organization
+    val newOrganization = organizationApiService.registerOrganization(makeOrganizationWithRole())
+    val datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization =
+        datasetApiService.createDataset(
+            newOrganization.id!!, makeDatasetWithRole(organizationId = newOrganization.id!!))
+    assertNotNull(datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization)
+    logger.info("should not find the new dataset because it was created in another organization")
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    assertEquals(numberOfDatasets, datasetList.size)
 
-    logger.info("should find all datasets and assert there are expected size: $expectedSize")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, expectedSize)
-    assertEquals(expectedSize, datasetList.size)
-
-    logger.info("should find all solutions and assert it returns the second / last page")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 1, expectedSize)
-    assertEquals(numberOfDatasets - expectedSize, datasetList.size)
+    logger.info("should find only one dataset")
+    datasetList = datasetApiService.findAllDatasets(newOrganization.id!!, null, null)
+    assertEquals(1, datasetList.size)
+    assertEquals(datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization, datasetList[0])
   }
-
   @Test
   fun `test find All Datasets with wrong pagination params`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
