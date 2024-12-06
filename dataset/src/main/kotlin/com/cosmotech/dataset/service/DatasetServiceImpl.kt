@@ -167,12 +167,12 @@ class DatasetServiceImpl(
             datasetRepository.findByOrganizationIdNoSecurity(organizationId, pageable).toList()
           }
     }
-
+    result.forEach { it.security = checkReadSecurity(it).security }
     return result
   }
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset {
-    return getVerifiedDataset(organizationId, datasetId)
+    return checkReadSecurity(getVerifiedDataset(organizationId, datasetId))
   }
 
   override fun removeAllDatasetCompatibilityElements(organizationId: String, datasetId: String) {
@@ -237,7 +237,6 @@ class DatasetServiceImpl(
         version = existingConnector.version
       }
     }
-
     return datasetRepository.save(createdDataset)
   }
 
@@ -672,7 +671,11 @@ class DatasetServiceImpl(
       datasetId: String
   ): Dataset? {
     organizationService.getVerifiedOrganization(organizationId)
-    return datasetRepository.findBy(organizationId, datasetId).getOrNull()
+    var dataset = datasetRepository.findBy(organizationId, datasetId).getOrNull()
+    if (dataset != null) {
+      dataset = checkReadSecurity(dataset)
+    }
+    return dataset
   }
 
   override fun addOrUpdateAccessControl(
@@ -1028,16 +1031,21 @@ class DatasetServiceImpl(
 
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
+    var datasetList = listOf<Dataset>()
     if (pageable != null) {
-      return datasetRepository
-          .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), pageable)
-          .toList()
+      datasetList =
+          datasetRepository
+              .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), pageable)
+              .toList()
     }
-    return findAllPaginated(defaultPageSize) {
-      datasetRepository
-          .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
-          .toList()
-    }
+    datasetList =
+        findAllPaginated(defaultPageSize) {
+          datasetRepository
+              .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
+              .toList()
+        }
+    datasetList.forEach { it.security = checkReadSecurity(it).security }
+    return datasetList
   }
 
   override fun getDatasetSecurity(organizationId: String, datasetId: String): DatasetSecurity {
@@ -1208,6 +1216,7 @@ class DatasetServiceImpl(
       }
     }
   }
+
   private fun sendTwingraphImportJobInfoRequestEvent(
       dataset: Dataset,
       organizationId: String
@@ -1273,6 +1282,36 @@ class DatasetServiceImpl(
               "Dataset $datasetId not found in organization $organizationId")
         }
     csmRbac.verify(dataset.getRbac(), requiredPermission)
+    return dataset
+  }
+
+  fun findBy(organizationId: String, datasetId: String): Dataset {
+    var dataset =
+        datasetRepository.findBy(organizationId, datasetId).orElseThrow {
+          CsmResourceNotFoundException(
+              "Dataset $datasetId not found in organization $organizationId")
+        }
+    dataset = checkReadSecurity(dataset)
+    return dataset
+  }
+
+  fun checkReadSecurity(dataset: Dataset): Dataset {
+    if (csmRbac.check(dataset.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = dataset.security!!.accessControlList.firstOrNull { it.id == username }
+      if (retrievedAC != null) {
+        return dataset.copy(
+            security =
+                DatasetSecurity(
+                    default = dataset.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
+      } else {
+        return dataset.copy(
+            security =
+                DatasetSecurity(
+                    default = dataset.security!!.default, accessControlList = mutableListOf()))
+      }
+    }
     return dataset
   }
 }

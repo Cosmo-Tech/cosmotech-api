@@ -10,8 +10,10 @@ import com.cosmotech.api.rbac.PERMISSION_LAUNCH
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.CreatedRun
 import com.cosmotech.runner.domain.Runner
@@ -51,7 +53,7 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId)
 
-    return runnerInstance.getRunnerDataObjet()
+    return checkReadSecurity(runnerInstance.getRunnerDataObjet())
   }
 
   override fun updateRunner(
@@ -84,8 +86,9 @@ internal class RunnerApiServiceImpl(
     val defaultPageSize = csmPlatformProperties.twincache.runner.defaultPageSize
     val pageRequest =
         constructPageRequest(page, size, defaultPageSize) ?: PageRequest.of(0, defaultPageSize)
-
-    return runnerService.listInstances(pageRequest)
+    var runners = runnerService.listInstances(pageRequest)
+    runners.forEach { checkReadSecurity(it) }
+    return runners
   }
 
   override fun startRun(organizationId: String, workspaceId: String, runnerId: String): CreatedRun {
@@ -236,5 +239,26 @@ internal class RunnerApiServiceImpl(
       runnerInstance.getRunnerDataObjet().lastRunId = null
     }
     runnerService.saveInstance(runnerInstance)
+  }
+
+  fun checkReadSecurity(runner: Runner): Runner {
+    csmPlatformProperties
+    val username = getCurrentAccountIdentifier(csmPlatformProperties)
+    val retrievedAC = runner.security!!.accessControlList.firstOrNull { it.id == username }
+    if (retrievedAC != null) {
+      if (retrievedAC.role == ROLE_VIEWER) {
+        return runner.copy(
+            security =
+                RunnerSecurity(
+                    default = runner.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
+      }
+    } else if (runner.security!!.default == ROLE_VIEWER) {
+      return runner.copy(
+          security =
+              RunnerSecurity(
+                  default = runner.security!!.default, accessControlList = mutableListOf()))
+    }
+    return runner
   }
 }

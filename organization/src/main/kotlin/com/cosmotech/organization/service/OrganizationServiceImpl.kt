@@ -67,12 +67,12 @@ class OrganizationServiceImpl(
             organizationRepository.findAll(pageable).toList()
           }
     }
-
+    result.forEach { it.security = checkReadSecurity(it).security }
     return result
   }
 
   override fun findOrganizationById(organizationId: String): Organization {
-    return getVerifiedOrganization(organizationId, PERMISSION_READ)
+    return checkReadSecurity(getVerifiedOrganization(organizationId, PERMISSION_READ))
   }
 
   override fun registerOrganization(organization: Organization): Organization {
@@ -225,6 +225,26 @@ class OrganizationServiceImpl(
   ): Organization {
     val organization = getVerifiedOrganization(organizationId)
     requiredPermissions.forEach { csmRbac.verify(organization.getRbac(), it) }
+    return organization
+  }
+
+  fun checkReadSecurity(organization: Organization): Organization {
+    if (csmRbac.check(organization.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = organization.security!!.accessControlList.firstOrNull { it.id == username }
+      return if (retrievedAC != null) {
+        organization.copy(
+            security =
+                OrganizationSecurity(
+                    default = organization.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
+      } else {
+        organization.copy(
+            security =
+                OrganizationSecurity(
+                    default = organization.security!!.default, accessControlList = mutableListOf()))
+      }
+    }
     return organization
   }
 }

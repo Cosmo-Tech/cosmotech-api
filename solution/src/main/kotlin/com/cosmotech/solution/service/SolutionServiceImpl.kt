@@ -14,6 +14,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -82,6 +83,7 @@ class SolutionServiceImpl(
             solutionRepository.findByOrganizationId(organizationId, pageable).toList()
           }
     }
+    result.forEach { checkReadSecurity(it) }
     return result
   }
 
@@ -198,7 +200,7 @@ class SolutionServiceImpl(
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
     createdSolution.setRbac(csmRbac.initSecurity(solution.getRbac()))
 
-    return solutionRepository.save(createdSolution)
+    return checkReadSecurity(solutionRepository.save(createdSolution))
   }
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
@@ -255,9 +257,9 @@ class SolutionServiceImpl(
     }
 
     return if (hasChanged) {
-      solutionRepository.save(existingSolution)
+      checkReadSecurity(solutionRepository.save(existingSolution))
     } else {
-      existingSolution
+      checkReadSecurity(existingSolution)
     }
   }
 
@@ -387,6 +389,26 @@ class SolutionServiceImpl(
               "Solution $solutionId not found in organization $organizationId")
         }
     csmRbac.verify(solution.getRbac(), requiredPermission)
+    return checkReadSecurity(solution)
+  }
+
+  fun checkReadSecurity(solution: Solution): Solution {
+    val username = getCurrentAccountIdentifier(csmPlatformProperties)
+    val retrievedAC = solution.security!!.accessControlList.firstOrNull { it.id == username }
+    if (retrievedAC != null) {
+      if (retrievedAC.role == ROLE_VIEWER) {
+        return solution.copy(
+            security =
+                SolutionSecurity(
+                    default = solution.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
+      }
+    } else if (solution.security!!.default == ROLE_VIEWER) {
+      return solution.copy(
+          security =
+              SolutionSecurity(
+                  default = solution.security!!.default, accessControlList = mutableListOf()))
+    }
     return solution
   }
 }
