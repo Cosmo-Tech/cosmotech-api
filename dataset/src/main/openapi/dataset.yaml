@@ -506,7 +506,8 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                type: object
+                additionalProperties: true
     get:
       operationId: getTwingraphEntities
       tags:
@@ -530,7 +531,8 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                type: object
+                additionalProperties: true
     patch:
       operationId: updateTwingraphEntities
       tags:
@@ -557,7 +559,8 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                type: object
+                additionalProperties: true
     delete:
       operationId: deleteTwingraphEntities
       tags:

@@ -178,7 +178,7 @@ Create a sub-dataset from the dataset in parameter
 
 <a name="createTwingraphEntities"></a>
 # **createTwingraphEntities**
-> String createTwingraphEntities(organization\_id, dataset\_id, type, GraphProperties)
+> Map createTwingraphEntities(organization\_id, dataset\_id, type, GraphProperties)
 
 Create new entities in a graph instance
 
@@ -195,7 +195,7 @@ Create new entities in a graph instance
 
 ### Return type
 
-**String**
+[**Map**](../Models/AnyType.md)
 
 ### Authorization
 
@@ -505,7 +505,7 @@ Get the dataset&#39;s refresh job status
 
 <a name="getTwingraphEntities"></a>
 # **getTwingraphEntities**
-> String getTwingraphEntities(organization\_id, dataset\_id, type, ids)
+> Map getTwingraphEntities(organization\_id, dataset\_id, type, ids)
 
 Get entities in a graph instance
 
@@ -522,7 +522,7 @@ Get entities in a graph instance
 
 ### Return type
 
-**String**
+[**Map**](../Models/AnyType.md)
 
 ### Authorization
 
@@ -896,7 +896,7 @@ Update the specified access to User for a Dataset
 
 <a name="updateTwingraphEntities"></a>
 # **updateTwingraphEntities**
-> String updateTwingraphEntities(organization\_id, dataset\_id, type, GraphProperties)
+> Map updateTwingraphEntities(organization\_id, dataset\_id, type, GraphProperties)
 
 Update entities in a graph instance
 
@@ -913,7 +913,7 @@ Update entities in a graph instance
 
 ### Return type
 
-**String**
+[**Map**](../Models/AnyType.md)
 
 ### Authorization
 

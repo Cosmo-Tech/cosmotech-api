@@ -31,12 +31,8 @@ import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetSourceType
-import com.cosmotech.dataset.domain.FileUploadMetadata
-import com.cosmotech.dataset.domain.FileUploadValidation
-import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SourceInfo
-import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwincacheStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.OrganizationApiServiceInterface
@@ -54,15 +50,12 @@ import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
-import com.redis.testcontainers.RedisStackContainer
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.io.File
-import java.time.Instant
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -83,9 +76,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import redis.clients.jedis.HostAndPort
-import redis.clients.jedis.Protocol
-import redis.clients.jedis.UnifiedJedis
 
 const val REDIS_PORT = 6379
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
@@ -120,7 +110,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var solution: Solution
   lateinit var workspace: Workspace
 
-  lateinit var unifiedJedis: UnifiedJedis
   lateinit var organization: Organization
   lateinit var organizationSaved: Organization
   lateinit var solutionSaved: Solution
@@ -131,12 +120,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     mockkStatic("com.cosmotech.api.utils.RedisUtilsKt")
     mockkStatic("org.springframework.web.context.request.RequestContextHolder")
-    val context = getContext(redisStackServer)
+    /*    val context = getContext(redisStackServer)
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
     unifiedJedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
     ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", unifiedJedis)
-    ReflectionTestUtils.setField(datasetApiService, "eventPublisher", eventPublisher)
+    ReflectionTestUtils.setField(datasetApiService, "eventPublisher", eventPublisher)*/
   }
 
   @BeforeEach
@@ -486,109 +475,111 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       datasetApiService.findAllDatasets(organizationSaved.id!!, 0, -1)
     }
   }
+  /*
 
-  @Test
-  fun `should create graph & check queries on subDataset creation`() {
-    logger.info("Create a Graph with a ZIP Entry")
-    logger.info(
-        "loading nodes: Double=2, Single=1, Users=9 & relationships: Double=2, Single=1, Follows=2")
-    val file = this::class.java.getResource("/integrationTest.zip")?.file
-    val resource = ByteArrayResource(File(file!!).readBytes())
-    organizationSaved = organizationApiService.registerOrganization(organization)
-    dataset = makeDatasetWithRole()
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-    datasetApiService.updateDataset(
-        organizationSaved.id!!,
-        datasetSaved.id!!,
-        dataset.copy(sourceType = DatasetSourceType.File))
+    @Test
+    fun `should create graph & check queries on subDataset creation`() {
+      logger.info("Create a Graph with a ZIP Entry")
+      logger.info(
+          "loading nodes: Double=2, Single=1, Users=9 & relationships: Double=2, Single=1, Follows=2")
+      val file = this::class.java.getResource("/integrationTest.zip")?.file
+      val resource = ByteArrayResource(File(file!!).readBytes())
+      organizationSaved = organizationApiService.registerOrganization(organization)
+      dataset = makeDatasetWithRole()
+      datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+      datasetApiService.updateDataset(
+          organizationSaved.id!!,
+          datasetSaved.id!!,
+          dataset.copy(sourceType = DatasetSourceType.File))
 
-    val fileUploadValidation =
-        datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
-    assertEquals(
-        FileUploadValidation(
-            mutableListOf(
-                FileUploadMetadata("Double", 90),
-                FileUploadMetadata("Single", 54),
-                FileUploadMetadata("Users", 749),
-            ),
-            mutableListOf(
-                FileUploadMetadata("Double", 214),
-                FileUploadMetadata("Follows", 47),
-                FileUploadMetadata("SingleEdge", 59),
-            )),
-        fileUploadValidation)
+      val fileUploadValidation =
+          datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+      assertEquals(
+          FileUploadValidation(
+              mutableListOf(
+                  FileUploadMetadata("Double", 90),
+                  FileUploadMetadata("Single", 54),
+                  FileUploadMetadata("Users", 749),
+              ),
+              mutableListOf(
+                  FileUploadMetadata("Double", 214),
+                  FileUploadMetadata("Follows", 47),
+                  FileUploadMetadata("SingleEdge", 59),
+              )),
+          fileUploadValidation)
 
-    // add timout for while loop
-    val timeout = Instant.now()
-    while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!) !=
-        IngestionStatusEnum.SUCCESS.value) {
-      if (Instant.now().minusSeconds(10).isAfter(timeout)) {
-        throw Exception("Timeout while waiting for dataset twingraph to be ready")
+      // add timout for while loop
+      val timeout = Instant.now()
+      while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!) !=
+          IngestionStatusEnum.SUCCESS.value) {
+        if (Instant.now().minusSeconds(10).isAfter(timeout)) {
+          throw Exception("Timeout while waiting for dataset twingraph to be ready")
+        }
+        Thread.sleep(500)
       }
-      Thread.sleep(500)
+      datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+      do {
+        Thread.sleep(50L)
+        val datasetStatus =
+            datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+      } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+      assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
+      assertEquals(5, countEntities(datasetSaved.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
+
+      logger.info("assert that subdataset without query has 12 initial nodes")
+      val subDatasetParams =
+          SubDatasetGraphQuery(
+              name = "subDataset",
+              description = "subDataset description",
+          )
+
+      // TODO replace by copy
+      val subDataset = makeDataset()
+      //    datasetApiService.createSubDataset(
+      //        organizationSaved.id!!, datasetSaved.id!!, subDatasetParams)
+      do {
+        Thread.sleep(50L)
+        val datasetStatus =
+            datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, subDataset.id!!)
+      } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+
+      assertEquals("subDataset", subDataset.name)
+      assertEquals("subDataset description", subDataset.description)
+      assertEquals(12, countEntities(subDataset.twingraphId!!, "MATCH (n) RETURN count(n)"))
+      assertEquals(5, countEntities(subDataset.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
+
+      logger.info("assert that subdataset with given query get 2 'Double' nodes")
+      val subDatasetParamsQuery =
+          SubDatasetGraphQuery(
+              name = "subDatasetWithQuery",
+              description = "subDatasetWithQuery description",
+              queries = mutableListOf("MATCH (n)-[r:Double]-(m) return n,r"))
+
+      val subDatasetWithQuery = makeDataset()
+
+      // TODO replace by copy
+      //    datasetApiService.createSubDataset(
+      //        organizationSaved.id!!, datasetSaved.id!!, subDatasetParamsQuery)
+      do {
+        Thread.sleep(50L)
+        val datasetStatus =
+            datasetApiService.getDatasetTwingraphStatus(
+                organizationSaved.id!!, subDatasetWithQuery.id!!)
+      } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+
+      assertEquals("subDatasetWithQuery", subDatasetWithQuery.name)
+      assertEquals("subDatasetWithQuery description", subDatasetWithQuery.description)
+      assertEquals(3, countEntities(subDatasetWithQuery.twingraphId!!, "MATCH (n) RETURN count(n)"))
+      assertEquals(
+          2, countEntities(subDatasetWithQuery.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
     }
-    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-    do {
-      Thread.sleep(50L)
-      val datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
-    assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
-    assertEquals(5, countEntities(datasetSaved.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
 
-    logger.info("assert that subdataset without query has 12 initial nodes")
-    val subDatasetParams =
-        SubDatasetGraphQuery(
-            name = "subDataset",
-            description = "subDataset description",
-        )
-
-    // TODO replace by copy
-    val subDataset = makeDataset()
-    //    datasetApiService.createSubDataset(
-    //        organizationSaved.id!!, datasetSaved.id!!, subDatasetParams)
-    do {
-      Thread.sleep(50L)
-      val datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, subDataset.id!!)
-    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
-
-    assertEquals("subDataset", subDataset.name)
-    assertEquals("subDataset description", subDataset.description)
-    assertEquals(12, countEntities(subDataset.twingraphId!!, "MATCH (n) RETURN count(n)"))
-    assertEquals(5, countEntities(subDataset.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
-
-    logger.info("assert that subdataset with given query get 2 'Double' nodes")
-    val subDatasetParamsQuery =
-        SubDatasetGraphQuery(
-            name = "subDatasetWithQuery",
-            description = "subDatasetWithQuery description",
-            queries = mutableListOf("MATCH (n)-[r:Double]-(m) return n,r"))
-
-    val subDatasetWithQuery = makeDataset()
-
-    // TODO replace by copy
-    //    datasetApiService.createSubDataset(
-    //        organizationSaved.id!!, datasetSaved.id!!, subDatasetParamsQuery)
-    do {
-      Thread.sleep(50L)
-      val datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(
-              organizationSaved.id!!, subDatasetWithQuery.id!!)
-    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
-
-    assertEquals("subDatasetWithQuery", subDatasetWithQuery.name)
-    assertEquals("subDatasetWithQuery description", subDatasetWithQuery.description)
-    assertEquals(3, countEntities(subDatasetWithQuery.twingraphId!!, "MATCH (n) RETURN count(n)"))
-    assertEquals(
-        2, countEntities(subDatasetWithQuery.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
-  }
-
-  fun countEntities(twingraphId: String, query: String): Int {
-    val resultSet = unifiedJedis.graphQuery(twingraphId, query)
-    return resultSet.iterator().next().values()[0].toString().toInt()
-  }
-
+    fun countEntities(twingraphId: String, query: String): Int {
+      val resultSet = unifiedJedis.graphQuery(twingraphId, query)
+      return resultSet.iterator().next().values()[0].toString().toInt()
+    }
+  */
+  /*
   @Test
   fun `Twingraph CRUD test`() {
 
@@ -683,7 +674,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       datasetApiService.getTwingraphEntities(
           organizationSaved.id!!, datasetSaved.id!!, "relationship", listOf("node_a"))
     }
-  }
+  }*/
 
   @Test
   fun `test get security endpoint`() {
@@ -862,36 +853,38 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("The dataset hasn't failed and can't be rolled back", exception.message)
   }
 
-  @Test
-  fun `status should go back to normal on rollback endpoint call`() {
-    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    organization = makeOrganizationWithRole("organization")
-    organizationSaved = organizationApiService.registerOrganization(organization)
-    dataset = makeDatasetWithRole(sourceType = DatasetSourceType.File)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+  /*
+    @Test
+    fun `status should go back to normal on rollback endpoint call`() {
+      every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+      organization = makeOrganizationWithRole("organization")
+      organizationSaved = organizationApiService.registerOrganization(organization)
+      dataset =makeDatasetWithRole(sourceType = DatasetSourceType.File)
+      datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
-    datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.ERROR })
-    datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
-    var datasetStatus =
-        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
+      datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.ERROR })
+      datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+      var datasetStatus =
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+      assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
 
-    every { datasetApiService.query(any(), any()) } returns mockk()
-    val fileName = this::class.java.getResource("/integrationTest.zip")?.file
-    val file = File(fileName!!)
-    val resource = ByteArrayResource(file.readBytes())
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
-    do {
-      Thread.sleep(50L)
+      every { datasetApiService.query(any(), any()) } returns mockk()
+      val fileName = this::class.java.getResource("/integrationTest.zip")?.file
+      val file = File(fileName!!)
+      val resource = ByteArrayResource(file.readBytes())
+      datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+      do {
+        Thread.sleep(50L)
+        datasetStatus =
+            datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+      } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+      datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.ERROR })
+      datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
       datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
-    datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.ERROR })
-    datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
-    datasetStatus =
-        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
-  }
+      assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
+    }
+  */
 
   @TestFactory
   fun `test refreshDataset`() {

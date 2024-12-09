@@ -36,12 +36,10 @@ import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
-import com.cosmotech.api.utils.bulkQueryKey
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
-import com.cosmotech.api.utils.formatQuery
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -62,19 +60,15 @@ import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetSourceType
 import com.cosmotech.dataset.domain.DatasetTwinGraphInfo
-import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
 import com.cosmotech.dataset.domain.FileUploadMetadata
 import com.cosmotech.dataset.domain.FileUploadValidation
 import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SourceInfo
-import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.domain.TwincacheStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
-import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.getRbac
-import java.io.InputStream
 import java.time.Instant
 import java.time.OffsetDateTime
 import kotlin.jvm.optionals.getOrNull
@@ -82,7 +76,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVRecord
 import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Value
 import org.neo4j.driver.internal.InternalNode
@@ -92,14 +85,8 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.neo4j.core.Neo4jClient
-import org.springframework.http.ContentDisposition
-import org.springframework.http.HttpHeaders
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
-import redis.clients.jedis.UnifiedJedis
-import redis.clients.jedis.graph.ResultSet
 
 const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
@@ -122,7 +109,6 @@ class DatasetServiceImpl(
     private val connectorService: ConnectorApiServiceInterface,
     private val organizationService: OrganizationApiServiceInterface,
     private val datasetRepository: DatasetRepository,
-    private val unifiedJedis: UnifiedJedis,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val csmRbac: CsmRbac,
     private val csmAdmin: CsmAdmin,
@@ -399,7 +385,7 @@ class DatasetServiceImpl(
       null -> IngestionStatusEnum.NONE.value
       DatasetSourceType.None -> {
         var twincacheStatus = TwincacheStatusEnum.EMPTY
-        if (useGraphModule && unifiedJedis.exists(dataset.twingraphId!!)) {
+        if (useGraphModule && neo4jClient.exists(datasetId)) {
           twincacheStatus = TwincacheStatusEnum.FULL
         }
         datasetRepository.apply { dataset.twincacheStatus = twincacheStatus }
@@ -412,7 +398,7 @@ class DatasetServiceImpl(
         }
         if (dataset.ingestionStatus == IngestionStatusEnum.ERROR) {
           return IngestionStatusEnum.ERROR.value
-        } else if (useGraphModule && !unifiedJedis.exists(dataset.twingraphId!!)) {
+        } else if (useGraphModule && !neo4jClient.exists(datasetId)) {
           IngestionStatusEnum.PENDING.value
         } else {
           dataset
@@ -549,8 +535,11 @@ class DatasetServiceImpl(
   override fun deleteDataset(organizationId: String, datasetId: String) {
     val dataset = getVerifiedDataset(organizationId, datasetId, PERMISSION_DELETE)
 
-    if (useGraphModule && unifiedJedis.exists(dataset.twingraphId!!)) {
-      unifiedJedis.del(dataset.twingraphId!!)
+    if (useGraphModule && neo4jClient.exists(datasetId)) {
+      val deletionResults = neo4jClient.del(datasetId)
+      logger.debug(
+          "${deletionResults["nodesDeleted"]} have been deleted and " +
+              "${deletionResults["relationshipsDeleted"]} have been deleted")
     }
 
     dataset.linkedWorkspaceIdList?.forEach { unlinkWorkspace(organizationId, datasetId, it) }
@@ -614,16 +603,6 @@ class DatasetServiceImpl(
     }
   }
 
-  override fun query(dataset: Dataset, query: String, isReadOnly: Boolean): ResultSet {
-    return if (isReadOnly) {
-      unifiedJedis.graphReadonlyQuery(
-          dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout)
-    } else {
-      unifiedJedis.graphQuery(
-          dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout)
-    }
-  }
-
   override fun findByOrganizationIdAndDatasetId(
       organizationId: String,
       datasetId: String
@@ -665,9 +644,9 @@ class DatasetServiceImpl(
       return neo4jClient
           .query(
               "MATCH (n)-[r]->(m) " +
-                  "WHERE n.dataset= \"$datasetId\" AND " +
-                  "r.dataset= \"$datasetId\" AND " +
-                  "m.dataset= \"$datasetId\" " +
+                  "WHERE n.datasetId= \"$datasetId\" AND " +
+                  "r.datasetId= \"$datasetId\" AND " +
+                  "m.datasetId= \"$datasetId\" " +
                   "return n,r,m")
           .fetch()
           .all()
@@ -682,7 +661,7 @@ class DatasetServiceImpl(
     }
     val nodeResult =
         neo4jClient
-            .query("MATCH (n:$name) WHERE n.dataset= \"$datasetId\"return n")
+            .query("MATCH (n:$name) WHERE n.datasetId= \"$datasetId\"return n")
             .fetch()
             .all()
             .map { it.values.toList() }
@@ -696,9 +675,9 @@ class DatasetServiceImpl(
         neo4jClient
             .query(
                 "MATCH (n)-[r:$name]->(m) " +
-                    "WHERE n.dataset= \"$datasetId\" AND " +
-                    "r.dataset= \"$datasetId\" AND " +
-                    "m.dataset= \"$datasetId\" " +
+                    "WHERE n.datasetId= \"$datasetId\" AND " +
+                    "r.datasetId= \"$datasetId\" AND " +
+                    "m.datasetId= \"$datasetId\" " +
                     "return n,r,m")
             .fetch()
             .all()
@@ -791,26 +770,26 @@ class DatasetServiceImpl(
     return properties
   }
 
-  override fun downloadTwingraph(organizationId: String, hash: String): Resource {
+  @Suppress("MagicNumber")
+  override fun downloadTwingraph(organizationId: String, datasetId: String): Resource {
     checkIfGraphFunctionalityIsAvailable()
     organizationService.getVerifiedOrganization(organizationId)
 
-    val bulkQueryId = bulkQueryKey(hash)
-    if (!unifiedJedis.exists(bulkQueryId)) {
-      throw CsmResourceNotFoundException("No graph found with hash: $hash  Try later")
-    } else if (unifiedJedis.ttl(bulkQueryId) < 0) {
-      throw CsmResourceNotFoundException(
-          "Graph with hash: $hash is expired. Try to repeat bulk query")
+    if (!neo4jClient.exists(datasetId)) {
+      throw CsmResourceNotFoundException("No graph found with datasetId: $datasetId  Try later")
     }
-    val twinData = unifiedJedis.get(bulkQueryId)
 
-    val httpServletResponse =
-        ((RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response)
-    val contentDisposition =
-        ContentDisposition.builder("attachment").filename("TwinGraph-$hash.zip").build()
-    httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+    /*
+        val twinData = unifiedJedis.get(bulkQueryId)
 
-    return ByteArrayResource(twinData)
+        val httpServletResponse =
+            ((RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response)
+        val contentDisposition =
+            ContentDisposition.builder("attachment").filename("TwinGraph-$datasetId.zip").build()
+        httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+    */
+
+    return ByteArrayResource(ByteArray(10))
   }
 
   @Suppress("ThrowsCount")
@@ -828,41 +807,48 @@ class DatasetServiceImpl(
     return dataset
   }
 
-  fun processCSVBatch(
-      inputStream: InputStream,
-      twinGraphQuery: DatasetTwinGraphQuery,
-      result: TwinGraphBatchResult,
-      actionLambda: (String) -> Unit
-  ) = readCSV(inputStream, result) { actionLambda(twinGraphQuery.query.formatQuery(it)) }
-
   override fun createTwingraphEntities(
       organizationId: String,
       datasetId: String,
       type: String,
       graphProperties: List<GraphProperties>
-  ): String {
+  ): Map<String, Any> {
     checkIfGraphFunctionalityIsAvailable()
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
-    var result = ""
+    val result = mutableMapOf<String, Any>()
     trx(dataset) { localDataset ->
       when (type) {
         TYPE_NODE ->
             graphProperties.forEach {
-              result +=
-                  query(
-                          localDataset,
-                          "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
-                      .toJsonString()
+              val nodeInfo =
+                  neo4jClient
+                      .query(
+                          "CREATE (a:${it.type} {id:'${it.name}',datasetId:'$datasetId',${it.params}}) " +
+                              "RETURN a")
+                      .fetch()
+                      .all()
+                      .map { queryResult -> queryResult.values.toList() }
+                      .filter { values -> values.isNotEmpty() }
+              result.putAll((nodeInfo[0] as InternalNode).toMap())
             }
         TYPE_RELATIONSHIP ->
             graphProperties.forEach {
-              result +=
-                  query(
-                          localDataset,
-                          "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
-                              "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
-                      .toJsonString()
+              val relInfo =
+                  neo4jClient
+                      .query(
+                          "MATCH (a),(b) " +
+                              "WHERE a.id='${it.source}' " +
+                              "AND b.id='${it.target}' " +
+                              "AND a.datasetId='$datasetId' " +
+                              "AND b.datasetId='$datasetId' " +
+                              "CREATE (a)-[r:${it.type} {id:'${it.name}',datasetId:'$datasetId',${it.params}}]->(b) " +
+                              "RETURN r")
+                      .fetch()
+                      .all()
+                      .map { queryResult -> queryResult.values.toList() }
+                      .filter { values -> values.isNotEmpty() }
+              result.putAll((relInfo[0] as InternalRelationship).toMap())
             }
         else -> throw CsmResourceNotFoundException("Bad Type : $type")
       }
@@ -875,19 +861,38 @@ class DatasetServiceImpl(
       datasetId: String,
       type: String,
       ids: List<String>
-  ): String {
+  ): Map<String, Any> {
     checkIfGraphFunctionalityIsAvailable()
-    val dataset = getDatasetWithStatus(organizationId, datasetId)
-    var result = ""
+    getDatasetWithStatus(organizationId, datasetId)
+    var result = mutableMapOf<String, Any>()
     when (type) {
       TYPE_NODE ->
           ids.forEach {
-            result += query(dataset, "MATCH (a) WHERE a.id='$it' RETURN a", true).toJsonString()
+            val nodeInfo =
+                neo4jClient
+                    .query(
+                        "MATCH (a) " +
+                            "WHERE a.id='$it' AND a.datasetId='$datasetId' " +
+                            "RETURN a")
+                    .fetch()
+                    .all()
+                    .map { queryResult -> queryResult.values.toList() }
+                    .filter { values -> values.isNotEmpty() }
+            result.putAll((nodeInfo[0] as InternalNode).toMap())
           }
       TYPE_RELATIONSHIP ->
           ids.forEach {
-            result +=
-                query(dataset, "MATCH ()-[r]->() WHERE r.id='$it' RETURN r", true).toJsonString()
+            val relInfo =
+                neo4jClient
+                    .query(
+                        "MATCH ()-[r]->() " +
+                            "WHERE r.id='$it' AND r.datasetId='$datasetId' " +
+                            "RETURN r")
+                    .fetch()
+                    .all()
+                    .map { queryResult -> queryResult.values.toList() }
+                    .filter { values -> values.isNotEmpty() }
+            result.putAll((relInfo[0] as InternalRelationship).toMap())
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
@@ -971,29 +976,40 @@ class DatasetServiceImpl(
       datasetId: String,
       type: String,
       graphProperties: List<GraphProperties>
-  ): String {
+  ): Map<String, Any> {
     checkIfGraphFunctionalityIsAvailable()
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
-    var result = ""
+    val result = mutableMapOf<String, Any>()
     trx(dataset) { localDataset ->
       when (type) {
         TYPE_NODE ->
             graphProperties.forEach {
-              result +=
-                  query(
-                          localDataset,
-                          "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
-                      .toJsonString()
+              val nodeInfo =
+                  neo4jClient
+                      .query(
+                          "MATCH (a {id:'${it.name}',datasetId='$datasetId'}) " +
+                              "SET a = {id:'${it.name}',datasetId='$datasetId',${it.params}} " +
+                              "RETURN a")
+                      .fetch()
+                      .all()
+                      .map { queryResult -> queryResult.values.toList() }
+                      .filter { values -> values.isNotEmpty() }
+              result.putAll((nodeInfo[0] as InternalNode).toMap())
             }
         TYPE_RELATIONSHIP ->
             graphProperties.forEach {
-              result +=
-                  query(
-                          dataset,
-                          "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', " +
-                              "${it.params}} RETURN r")
-                      .toJsonString()
+              val relInfo =
+                  neo4jClient
+                      .query(
+                          "MATCH ()-[r {id:'${it.name},datasetId='$datasetId'}]-() " +
+                              "SET r = {id:'${it.name}',datasetId='$datasetId',${it.params}} " +
+                              "RETURN r")
+                      .fetch()
+                      .all()
+                      .map { queryResult -> queryResult.values.toList() }
+                      .filter { values -> values.isNotEmpty() }
+              result.putAll((relInfo[0] as InternalRelationship).toMap())
             }
         else -> throw CsmResourceNotFoundException("Bad Type : $type")
       }
@@ -1010,13 +1026,38 @@ class DatasetServiceImpl(
     checkIfGraphFunctionalityIsAvailable()
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
-    return trx(dataset) { localDataset ->
+    return trx(dataset) {
+      var nodesDeleted = 0
+      var relsDeleted = 0
       when (type) {
-        TYPE_NODE -> ids.forEach { query(localDataset, "MATCH (a) WHERE a.id='$it' DELETE a") }
+        TYPE_NODE ->
+            ids.forEach {
+              nodesDeleted +=
+                  neo4jClient
+                      .query(
+                          "MATCH (a) " +
+                              "WHERE a.id='$it' AND a.datasetId='$datasetId' " +
+                              "DELETE a")
+                      .run()
+                      .counters()
+                      .nodesDeleted()
+            }
         TYPE_RELATIONSHIP ->
-            ids.forEach { query(localDataset, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r") }
+            ids.forEach {
+              relsDeleted +=
+                  neo4jClient
+                      .query(
+                          "MATCH ()-[r]-() " +
+                              "WHERE r.id='$it' AND r.datasetId='$datasetId' " +
+                              "DELETE r")
+                      .run()
+                      .counters()
+                      .relationshipsDeleted()
+            }
         else -> throw CsmResourceNotFoundException("Bad Type : $type")
       }
+      logger.debug(
+          "$nodesDeleted nodes have been deleted and $relsDeleted relationships have been deleted")
     }
   }
 
@@ -1188,25 +1229,6 @@ class DatasetServiceImpl(
     } while (datasetList.isNotEmpty())
   }
 
-  private fun readCSV(
-      inputStream: InputStream,
-      result: TwinGraphBatchResult? = null,
-      actionLambda: (Map<String, String>) -> Unit
-  ): Map<String, String> {
-    var map = mapOf<String, String>()
-    inputStream.bufferedReader().use { reader ->
-      val csvFormat: CSVFormat = CSVFormat.DEFAULT.builder().setHeader().setTrim(true).build()
-
-      val records: Iterable<CSVRecord> = csvFormat.parse(reader)
-      records.forEach { record ->
-        map = record.parser.headerNames.zip(record.values()).toMap()
-        actionLambda(map)
-        result?.let { result.totalLines++ }
-      }
-    }
-    return map
-  }
-
   fun getCreateTwincacheConnector(): Connector {
     val twinCacheConnectorProperties =
         csmPlatformProperties.containers.find { it.name == TWINCACHE_CONNECTOR }
@@ -1326,4 +1348,16 @@ fun Dataset.setRbac(rbacSecurity: RbacSecurity) {
           rbacSecurity.accessControlList
               .map { DatasetAccessControl(it.id, it.role) }
               .toMutableList())
+}
+
+fun Neo4jClient.exists(datasetId: String): Boolean {
+  return !this.query("MATCH (n) WHERE n.datasetId='$datasetId' RETURN n").fetch().all().isEmpty()
+}
+
+fun Neo4jClient.del(datasetId: String): Map<String, Int> {
+  val summaryCounters =
+      this.query("MATCH (n) WHERE n.datasetId='$datasetId' DETACH DELETE n").run().counters()
+  return mapOf(
+      "nodesDeleted" to summaryCounters.nodesDeleted(),
+      "relationshipsDeleted" to summaryCounters.relationshipsDeleted())
 }
