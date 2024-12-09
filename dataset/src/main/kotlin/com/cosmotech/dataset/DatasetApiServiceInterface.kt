@@ -8,7 +8,6 @@ import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
-import redis.clients.jedis.graph.ResultSet
 
 interface DatasetApiServiceInterface : DatasetApiService {
 
@@ -17,8 +16,6 @@ interface DatasetApiServiceInterface : DatasetApiService {
       datasetId: String,
       requiredPermission: String = PERMISSION_READ
   ): Dataset
-
-  fun query(dataset: Dataset, query: String, isReadOnly: Boolean = false): ResultSet
 
   /**
    * Find Dataset by Organization Id and Dataset Id (checking ONLY READ_PERMISSION on targeted
