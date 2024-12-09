@@ -20,6 +20,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.rbac.model.RbacAccessControl
@@ -100,11 +101,12 @@ internal class WorkspaceServiceImpl(
                 .toList()
       }
     }
+    result.forEach { it.security = checkReadSecurity(it).security }
     return result
   }
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
-    return getVerifiedWorkspace(organizationId, workspaceId)
+    return checkReadSecurity(getVerifiedWorkspace(organizationId, workspaceId))
   }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
@@ -133,7 +135,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspace: Workspace
   ): Workspace {
-    val existingWorkspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
+    val existingWorkspace = this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
     var hasChanged =
         existingWorkspace
@@ -309,12 +311,15 @@ internal class WorkspaceServiceImpl(
       datasetId: String
   ): Workspace {
     organizationService.getVerifiedOrganization(organizationId)
+    this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     sendAddWorkspaceToDatasetEvent(organizationId, datasetId, workspaceId)
     return addDatasetToLinkedDatasetIdList(organizationId, workspaceId, datasetId)
   }
 
   @EventListener(AddDatasetToWorkspace::class)
   fun processEventAddDatasetToWorkspace(addDatasetToWorkspace: AddDatasetToWorkspace) {
+    this.getVerifiedWorkspace(
+        addDatasetToWorkspace.organizationId, addDatasetToWorkspace.workspaceId, PERMISSION_WRITE)
     addDatasetToLinkedDatasetIdList(
         addDatasetToWorkspace.organizationId,
         addDatasetToWorkspace.workspaceId,
@@ -326,6 +331,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       datasetId: String
   ): Workspace {
+    this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     sendRemoveWorkspaceFromDatasetEvent(organizationId, datasetId, workspaceId)
     return removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId)
   }
@@ -334,6 +340,10 @@ internal class WorkspaceServiceImpl(
   fun processEventRemoveDatasetFromWorkspace(
       removeDatasetFromWorkspace: RemoveDatasetFromWorkspace
   ) {
+    this.getVerifiedWorkspace(
+        removeDatasetFromWorkspace.organizationId,
+        removeDatasetFromWorkspace.workspaceId,
+        PERMISSION_WRITE)
     removeDatasetFromLinkedDatasetIdList(
         removeDatasetFromWorkspace.organizationId,
         removeDatasetFromWorkspace.workspaceId,
@@ -546,6 +556,27 @@ internal class WorkspaceServiceImpl(
   ) {
     this.eventPublisher.publishEvent(
         DeleteHistoricalDataWorkspace(this, organizationId, it.id!!, data.deleteUnknown))
+  }
+
+  fun checkReadSecurity(workspace: Workspace): Workspace {
+    if (csmRbac.check(workspace.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = workspace.security!!.accessControlList.firstOrNull { it.id == username }
+      if (retrievedAC != null) {
+        return workspace.copy(
+          security =
+          WorkspaceSecurity(
+            default = workspace.security!!.default,
+            accessControlList = mutableListOf(retrievedAC))
+        )
+      } else {
+        return workspace.copy(
+          security =
+          WorkspaceSecurity(
+            default = workspace.security!!.default, accessControlList = mutableListOf()))
+      }
+    }
+    return workspace
   }
 }
 

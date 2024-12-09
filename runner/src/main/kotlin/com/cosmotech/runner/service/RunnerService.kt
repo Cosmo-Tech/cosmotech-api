@@ -11,6 +11,7 @@ import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
@@ -217,6 +218,24 @@ class RunnerService(
 
     fun userHasPermission(permission: String): RunnerInstance = apply {
       csmRbac.verify(this.getRbacSecurity(), permission, this.roleDefinition)
+    }
+
+    fun checkReadSecurity(runner: Runner): RunnerInstance = apply {
+      if (csmRbac.check(runner.getRbac(), PERMISSION_READ_SECURITY).not()) {
+        val username = getCurrentAccountIdentifier(csmPlatformProperties)
+        val retrievedAC = runner.security!!.accessControlList.firstOrNull { it.id == username }
+        if (retrievedAC != null) {
+          runner.security =
+            RunnerSecurity(
+              default = runner.security!!.default,
+              accessControlList = mutableListOf(retrievedAC)
+            )
+        } else {
+          runner.security =
+            RunnerSecurity(
+              default = runner.security!!.default, accessControlList = mutableListOf())
+        }
+      }
     }
 
     fun setValueFrom(runner: Runner): RunnerInstance = apply {

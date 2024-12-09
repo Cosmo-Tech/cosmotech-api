@@ -519,7 +519,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Solution RBAC getSolutionAccessControl`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_USER to false,
               ROLE_NONE to true,
@@ -596,7 +596,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Solution RBAC getSolutionSecurityUsers`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_USER to false,
               ROLE_NONE to true,
@@ -1473,7 +1473,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Solution RBAC getSolutionSecurity`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_USER to false,
               ROLE_NONE to true,

@@ -364,7 +364,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "organization",
                   roles =
                       mutableMapOf(
-                          ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+                          ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_USER to
                               mutableListOf(
                                   PERMISSION_READ,
@@ -389,7 +389,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "workspace",
                   roles =
                       mutableMapOf(
-                          ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+                          ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_USER to
                               mutableListOf(
                                   PERMISSION_READ,
@@ -414,7 +414,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "runner",
                   roles =
                       mutableMapOf(
-                          ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+                          ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_EDITOR to
                               mutableListOf(
                                   PERMISSION_READ,
@@ -450,8 +450,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         var organizationUserPermissions =
             organizationApiService.getOrganizationPermissions(
                 organizationRegistered.id!!, ROLE_VIEWER)
-        assertEquals(
-            mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY), organizationUserPermissions)
+        assertEquals(mutableListOf(PERMISSION_READ), organizationUserPermissions)
         organizationUserPermissions =
             organizationApiService.getOrganizationPermissions(
                 organizationRegistered.id!!, ROLE_USER)
@@ -494,14 +493,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         runAsDifferentOrganizationUser()
         val organizationRegistered =
             organizationApiService.registerOrganization(
-                createTestOrganizationWithSimpleSecurity(
-                    name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER))
+                createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_USER))
         runAsOrganizationUser()
         var organizationUserPermissions =
             organizationApiService.getOrganizationPermissions(
                 organizationRegistered.id!!, ROLE_VIEWER)
-        assertEquals(
-            mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY), organizationUserPermissions)
+        assertEquals(mutableListOf(PERMISSION_READ), organizationUserPermissions)
         organizationUserPermissions =
             organizationApiService.getOrganizationPermissions(
                 organizationRegistered.id!!, ROLE_USER)
@@ -573,8 +570,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         runAsDifferentOrganizationUser()
         val organizationRegistered =
             organizationApiService.registerOrganization(
-                createTestOrganizationWithSimpleSecurity(
-                    name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER))
+                createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_USER))
         runAsOrganizationUser()
         assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id!!))
       }
@@ -685,14 +681,13 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         runAsDifferentOrganizationUser()
         val organizationRegistered =
             organizationApiService.registerOrganization(
-                createTestOrganizationWithSimpleSecurity(
-                    name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER))
+                createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_USER))
         runAsOrganizationUser()
         val organizationRole =
             organizationApiService.getOrganizationAccessControl(
                 organizationRegistered.id!!, TEST_USER_ID)
         assertNotNull(organizationRole)
-        assertEquals(ROLE_VIEWER, organizationRole.role)
+        assertEquals(ROLE_USER, organizationRole.role)
         assertEquals(TEST_USER_ID, organizationRole.id)
       }
     }
@@ -704,8 +699,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         runAsDifferentOrganizationUser()
         val organizationRegistered =
             organizationApiService.registerOrganization(
-                createTestOrganizationWithSimpleSecurity(
-                    name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER))
+                createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_USER))
         runAsOrganizationUser()
         organizationApiService.getOrganizationAccessControl(
             organizationRegistered.id!!, UNKNOWN_IDENTIFIER)
@@ -793,8 +787,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         runAsDifferentOrganizationUser()
         val organizationRegistered =
             organizationApiService.registerOrganization(
-                createTestOrganizationWithSimpleSecurity(
-                    name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER))
+                createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_USER))
         runAsOrganizationUser()
         assertThrows<CsmResourceNotFoundException> {
           organizationApiService.getOrganizationAccessControl(
@@ -1013,7 +1006,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       runAsDifferentOrganizationUser()
       val organizationRegistered =
           organizationApiService.registerOrganization(
-              createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER))
+              createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_USER))
       runAsOrganizationUser()
       val orgaUsers =
           organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
@@ -1062,6 +1055,36 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     fun `testVerifyPermissionsAndReturnOrganization with unknown organization id`() {
       assertThrows<CsmResourceNotFoundException> {
         organizationApiService.getVerifiedOrganization("wrong_orga_id")
+      }
+    }
+
+    @Test
+    fun `As a viewer, I can only see my information in security property for findOrganizationById`() {
+      val organization = makeOrganization(role = ROLE_VIEWER)
+      var organizationSaved = organizationApiService.registerOrganization(organization)
+
+      organizationSaved = organizationApiService.findOrganizationById(organizationSaved.id!!)
+      assertEquals(
+          OrganizationSecurity(
+              default = ROLE_NONE,
+              mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
+          organizationSaved.security)
+      assertEquals(1, organizationSaved.security!!.accessControlList.size)
+    }
+
+    @Test
+    fun `As a viewer, I can only see my information in security property for findAllOrganizations`() {
+      val organization = makeOrganization(role = ROLE_VIEWER)
+      organizationApiService.registerOrganization(organization)
+
+      val organizations = organizationApiService.findAllOrganizations(null, null)
+      organizations.forEach {
+        assertEquals(
+            OrganizationSecurity(
+                default = ROLE_NONE,
+                mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
+            it.security)
+        assertEquals(1, it.security!!.accessControlList.size)
       }
     }
   }
@@ -1292,7 +1315,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "organization",
                   roles =
                       mutableMapOf(
-                          ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+                          ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_USER to
                               mutableListOf(
                                   PERMISSION_READ,
@@ -1317,7 +1340,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "workspace",
                   roles =
                       mutableMapOf(
-                          ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+                          ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_USER to
                               mutableListOf(
                                   PERMISSION_READ,
@@ -1342,7 +1365,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "runner",
                   roles =
                       mutableMapOf(
-                          ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+                          ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_EDITOR to
                               mutableListOf(
                                   PERMISSION_READ,
@@ -1378,8 +1401,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         var organizationUserPermissions =
             organizationApiService.getOrganizationPermissions(
                 organizationRegistered.id!!, ROLE_VIEWER)
-        assertEquals(
-            mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY), organizationUserPermissions)
+        assertEquals(mutableListOf(PERMISSION_READ), organizationUserPermissions)
         organizationUserPermissions =
             organizationApiService.getOrganizationPermissions(
                 organizationRegistered.id!!, ROLE_USER)
@@ -1428,8 +1450,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         var organizationUserPermissions =
             organizationApiService.getOrganizationPermissions(
                 organizationRegistered.id!!, ROLE_VIEWER)
-        assertEquals(
-            mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY), organizationUserPermissions)
+        assertEquals(mutableListOf(PERMISSION_READ), organizationUserPermissions)
         organizationUserPermissions =
             organizationApiService.getOrganizationPermissions(
                 organizationRegistered.id!!, ROLE_USER)
@@ -1478,8 +1499,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         var organizationUserPermissions =
             organizationApiService.getOrganizationPermissions(
                 organizationRegistered.id!!, ROLE_VIEWER)
-        assertEquals(
-            mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY), organizationUserPermissions)
+        assertEquals(mutableListOf(PERMISSION_READ), organizationUserPermissions)
         organizationUserPermissions =
             organizationApiService.getOrganizationPermissions(
                 organizationRegistered.id!!, ROLE_USER)
@@ -2254,6 +2274,24 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             OrganizationSecurity(
                 default = defaultSecurity,
                 accessControlList = mutableListOf(OrganizationAccessControl(userName, role))))
+  }
+
+  fun makeOrganization(
+      id: String = "organization_id",
+      userName: String = TEST_USER_ID,
+      role: String = ROLE_ADMIN
+  ): Organization {
+    return Organization(
+        id = id,
+        name = "Organization Name",
+        ownerId = "my.account-tester@cosmotech.com",
+        security =
+            OrganizationSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        OrganizationAccessControl(id = TEST_ADMIN_USER_ID, role = "admin"),
+                        OrganizationAccessControl(id = userName, role = role))))
   }
 
   internal fun testFindAllOrganizations(page: Int?, size: Int?, expectedResultSize: Int) {

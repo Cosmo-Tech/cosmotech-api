@@ -10,8 +10,12 @@ import com.cosmotech.api.rbac.PERMISSION_LAUNCH
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
+import com.cosmotech.dataset.domain.DatasetSecurity
+import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.CreatedRun
 import com.cosmotech.runner.domain.Runner
@@ -51,7 +55,8 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId)
 
-    return runnerInstance.getRunnerDataObjet()
+    val runner = runnerInstance.getRunnerDataObjet()
+    return runner.checkReadSecurity(runnerInstance)
   }
 
   override fun updateRunner(
@@ -84,8 +89,9 @@ internal class RunnerApiServiceImpl(
     val defaultPageSize = csmPlatformProperties.twincache.runner.defaultPageSize
     val pageRequest =
         constructPageRequest(page, size, defaultPageSize) ?: PageRequest.of(0, defaultPageSize)
-
-    return runnerService.listInstances(pageRequest)
+    var runners = runnerService.listInstances(pageRequest)
+    runners.forEach { checkReadSecurity(it) }
+    return runners
   }
 
   override fun startRun(organizationId: String, workspaceId: String, runnerId: String): CreatedRun {
@@ -237,4 +243,5 @@ internal class RunnerApiServiceImpl(
     }
     runnerService.saveInstance(runnerInstance)
   }
+
 }

@@ -1955,7 +1955,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Runner RBAC getRunnerPermissions`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
               ROLE_NONE to true,
@@ -2278,7 +2278,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Runner RBAC getRunnerSecurity`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
               ROLE_NONE to true,
@@ -3390,7 +3390,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Runner RBAC getRunnerAccessControl`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
               ROLE_NONE to true,
@@ -4459,7 +4459,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Runner RBAC getRunnerSecurityUsers`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
               ROLE_NONE to true,

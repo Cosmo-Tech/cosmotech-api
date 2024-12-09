@@ -520,6 +520,36 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `As viewer, I can only see my information in security property for findSolutionById`() {
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
+
+    solutionSaved = solutionApiService.findSolutionById(organizationSaved.id!!, solutionSaved.id!!)
+    assertEquals(
+        SolutionSecurity(
+            default = ROLE_NONE,
+            mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER))),
+        solutionSaved.security)
+    assertEquals(1, solutionSaved.security!!.accessControlList.size)
+  }
+
+  @Test
+  fun `As viewer, I can only see my information in security property for findAllSolutions`() {
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
+
+    val solutions = solutionApiService.findAllSolutions(organizationSaved.id!!, 0, 10)
+    solutions.forEach {
+      assertEquals(
+          SolutionSecurity(
+              default = ROLE_NONE,
+              mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER))),
+          it.security)
+      assertEquals(1, it.security!!.accessControlList.size)
+    }
+  }
+
   fun makeOrganization(id: String = "organization_id"): Organization {
     return Organization(
         id = id,
@@ -530,13 +560,15 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
+                        OrganizationAccessControl(id = CONNECTED_READER_USER, role = ROLE_VIEWER),
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
   fun makeSolution(
       organizationId: String = organizationSaved.id!!,
-      runTemplates: MutableList<RunTemplate> = mutableListOf()
+      runTemplates: MutableList<RunTemplate> = mutableListOf(),
+      userName: String = CONNECTED_READER_USER,
+      role: String = ROLE_VIEWER
   ): Solution {
     return Solution(
         id = "solutionId",
@@ -550,7 +582,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        SolutionAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
+                        SolutionAccessControl(id = userName, role = role),
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 }

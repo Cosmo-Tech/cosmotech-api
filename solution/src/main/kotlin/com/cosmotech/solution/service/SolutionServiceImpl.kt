@@ -82,11 +82,12 @@ class SolutionServiceImpl(
             solutionRepository.findByOrganizationId(organizationId, pageable).toList()
           }
     }
+    result.forEach { it.security = checkReadSecurity(it).security }
     return result
   }
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution {
-    return getVerifiedSolution(organizationId, solutionId)
+    return checkReadSecurity(getVerifiedSolution(organizationId, solutionId))
   }
 
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
@@ -387,6 +388,26 @@ class SolutionServiceImpl(
               "Solution $solutionId not found in organization $organizationId")
         }
     csmRbac.verify(solution.getRbac(), requiredPermission)
+    return solution
+  }
+
+  fun checkReadSecurity(solution: Solution): Solution {
+    if (csmRbac.check(solution.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = solution.security!!.accessControlList.firstOrNull { it.id == username }
+      if (retrievedAC != null) {
+        return solution.copy(
+            security =
+                SolutionSecurity(
+                    default = solution.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
+      } else {
+        return solution.copy(
+            security =
+                SolutionSecurity(
+                    default = solution.security!!.default, accessControlList = mutableListOf()))
+      }
+    }
     return solution
   }
 }
