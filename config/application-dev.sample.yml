@@ -14,6 +14,8 @@ logging:
 
 server:
   error:
+    whitelabel:
+      enabled: true
     include-stacktrace: always
 
 management:
