@@ -135,9 +135,9 @@ class DatasetServiceImpl(
   @Value("\${csm.platform.twincache.useGraphModule}") private var useGraphModule: Boolean = true
 
   private val notImplementedExceptionMessage =
-      "The API is not configured to use Graph functionnalities. " +
+      "The API is not configured to use Graph functionalities. " +
           "This endpoint is deactivated. " +
-          "To change that, set the API configuration entry 'csm.platform.twincache.useGraphModule' to true"
+          "To activate that, set the API configuration correctly."
 
   override fun findAllDatasets(organizationId: String, page: Int?, size: Int?): List<Dataset> {
     organizationService.getVerifiedOrganization(organizationId)

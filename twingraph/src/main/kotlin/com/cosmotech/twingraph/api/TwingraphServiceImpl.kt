@@ -35,6 +35,8 @@ import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
+import org.apache.commons.lang3.NotImplementedException
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.http.ContentDisposition
@@ -65,7 +67,15 @@ class TwingraphServiceImpl(
     private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), TwingraphApiServiceInterface {
 
+  @Value("\${csm.platform.twincache.useGraphModule}") private var useGraphModule: Boolean = true
+
+  private val notImplementedExceptionMessage =
+      "The API is not configured to use Graph functionalities. " +
+          "This endpoint is deactivated. " +
+          "To activate that, set the API configuration correctly."
+
   override fun createGraph(organizationId: String, graphId: String, body: Resource?) {
+    checkIfGraphFunctionalityIsAvailable()
     val graphList = mutableListOf<String>()
     findAllTwingraphs(organizationId).forEach { graphList.add(it.split(":").first()) }
     if (graphList.contains(graphId))
@@ -107,6 +117,7 @@ class TwingraphServiceImpl(
   }
 
   override fun jobStatus(organizationId: String, jobId: String): String {
+    checkIfGraphFunctionalityIsAvailable()
     val twingraphImportJobInfoRequest = TwingraphImportJobInfoRequest(this, jobId, organizationId)
     this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
     logger.debug("TwingraphImportEventResponse={}", twingraphImportJobInfoRequest.response)
@@ -115,12 +126,14 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
+    checkIfGraphFunctionalityIsAvailable()
     organizationService.getVerifiedOrganization(organizationId, PERMISSION_DELETE)
     val versions = getRedisKeyList("$graphId:*")
     versions.forEach { unifiedJedis.graphDelete(it) }
   }
 
   override fun findAllTwingraphs(organizationId: String): List<String> {
+    checkIfGraphFunctionalityIsAvailable()
     organizationService.getVerifiedOrganization(organizationId)
     return getRedisKeyList("*")
   }
@@ -137,6 +150,7 @@ class TwingraphServiceImpl(
   }
 
   override fun getGraphMetaData(organizationId: String, graphId: String): Map<String, String> {
+    checkIfGraphFunctionalityIsAvailable()
     if (unifiedJedis.exists(graphId.toRedisMetaDataKey())) {
       return unifiedJedis.hgetAll(graphId.toRedisMetaDataKey())
     }
@@ -173,6 +187,7 @@ class TwingraphServiceImpl(
       graphId: String,
       twinGraphQuery: TwinGraphQuery
   ): String {
+    checkIfGraphFunctionalityIsAvailable()
     checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery, true)
     val resultSet =
         unifiedJedis.graphQuery(
@@ -187,6 +202,7 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: Map<String, String>
   ): Any {
+    checkIfGraphFunctionalityIsAvailable()
     organizationService.getVerifiedOrganization(organizationId)
 
     val graphRotation = requestBody[GRAPH_ROTATION]?.toInt()
@@ -208,6 +224,7 @@ class TwingraphServiceImpl(
       graphId: String,
       twinGraphQuery: TwinGraphQuery
   ): TwinGraphHash {
+    checkIfGraphFunctionalityIsAvailable()
     checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery, true)
     val redisGraphKey = redisGraphKey(graphId, twinGraphQuery.version!!)
     val bulkQueryKey = bulkQueryKey(graphId, twinGraphQuery.query, twinGraphQuery.version!!)
@@ -233,6 +250,7 @@ class TwingraphServiceImpl(
       twinGraphQuery: TwinGraphQuery,
       body: Resource
   ): TwinGraphBatchResult {
+    checkIfGraphFunctionalityIsAvailable()
     checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery, false)
     resourceScanner.scanMimeTypes(body, listOf("text/csv", "text/plain"))
 
@@ -275,6 +293,7 @@ class TwingraphServiceImpl(
   ) = readCSV(inputStream, result) { actionLambda(twinGraphQuery.query.formatQuery(it)) }
 
   override fun downloadGraph(organizationId: String, hash: String): Resource {
+    checkIfGraphFunctionalityIsAvailable()
     organizationService.getVerifiedOrganization(organizationId)
 
     val bulkQueryId = bulkQueryKey(hash)
@@ -301,6 +320,7 @@ class TwingraphServiceImpl(
       type: String,
       graphProperties: List<GraphProperties>
   ): String {
+    checkIfGraphFunctionalityIsAvailable()
     var result = ""
     updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getLocalDateNow()))
     when (type) {
@@ -334,6 +354,7 @@ class TwingraphServiceImpl(
       type: String,
       ids: List<String>
   ): String {
+    checkIfGraphFunctionalityIsAvailable()
     var result = ""
     updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getLocalDateNow()))
     when (type) {
@@ -366,6 +387,7 @@ class TwingraphServiceImpl(
       type: String,
       graphProperties: List<GraphProperties>
   ): String {
+    checkIfGraphFunctionalityIsAvailable()
     var result = ""
     updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getLocalDateNow()))
     when (type) {
@@ -398,6 +420,7 @@ class TwingraphServiceImpl(
       type: String,
       ids: List<String>
   ) {
+    checkIfGraphFunctionalityIsAvailable()
     updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getLocalDateNow()))
     return when (type) {
       TYPE_NODE ->
@@ -418,5 +441,11 @@ class TwingraphServiceImpl(
   fun getLastVersion(organizationId: String, graphId: String): String {
     val graphMetadata = getGraphMetaData(organizationId, graphId)
     return graphId + ":" + graphMetadata["lastVersion"].toString()
+  }
+
+  private fun checkIfGraphFunctionalityIsAvailable() {
+    if (!useGraphModule) {
+      throw NotImplementedException(notImplementedExceptionMessage)
+    }
   }
 }

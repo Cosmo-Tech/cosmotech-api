@@ -143,6 +143,7 @@ csm:
       host: "localhost"
       port: "6379"
       username: "default"
+      useGraphModule: true
       # Leave it as blank as there's no auth with test container
       password:
       solution:
