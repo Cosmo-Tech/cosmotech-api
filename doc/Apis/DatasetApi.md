@@ -8,7 +8,6 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 | [**addOrReplaceDatasetCompatibilityElements**](DatasetApi.md#addOrReplaceDatasetCompatibilityElements) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Add Dataset Compatibility elements. |
 | [**copyDataset**](DatasetApi.md#copyDataset) | **POST** /organizations/{organization_id}/datasets/copy | Copy a Dataset to another Dataset. |
 | [**createDataset**](DatasetApi.md#createDataset) | **POST** /organizations/{organization_id}/datasets | Create a new Dataset |
-| [**createSubDataset**](DatasetApi.md#createSubDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/subdataset | Create a sub-dataset from the dataset in parameter |
 | [**createTwingraphEntities**](DatasetApi.md#createTwingraphEntities) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Create new entities in a graph instance |
 | [**deleteDataset**](DatasetApi.md#deleteDataset) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id} | Delete a dataset |
 | [**deleteTwingraphEntities**](DatasetApi.md#deleteTwingraphEntities) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Delete entities in a graph instance |
@@ -29,9 +28,6 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 | [**rollbackRefresh**](DatasetApi.md#rollbackRefresh) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh/rollback | Rollback the dataset after a failed refresh |
 | [**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets by tags |
 | [**setDatasetDefaultSecurity**](DatasetApi.md#setDatasetDefaultSecurity) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/security/default | Set the Dataset default security |
-| [**twingraphBatchQuery**](DatasetApi.md#twingraphBatchQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch-query | Run a query on a graph instance and return the result as a zip file in async mode |
-| [**twingraphBatchUpdate**](DatasetApi.md#twingraphBatchUpdate) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch | Async batch update by loading a CSV file on a graph instance  |
-| [**twingraphQuery**](DatasetApi.md#twingraphQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph | Return the result of a query made on the graph instance as a json |
 | [**unlinkWorkspace**](DatasetApi.md#unlinkWorkspace) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/unlink |  |
 | [**updateDataset**](DatasetApi.md#updateDataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset |
 | [**updateDatasetAccessControl**](DatasetApi.md#updateDatasetAccessControl) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset |
@@ -145,35 +141,6 @@ Create a new Dataset
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
-
-<a name="createSubDataset"></a>
-# **createSubDataset**
-> Dataset createSubDataset(organization\_id, dataset\_id, SubDatasetGraphQuery)
-
-Create a sub-dataset from the dataset in parameter
-
-    Create a copy of the dataset using the results of the list of queries given in parameter. Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
-| **SubDatasetGraphQuery** | [**SubDatasetGraphQuery**](../Models/SubDatasetGraphQuery.md)| the Cypher query to filter | |
-
-### Return type
-
-[**Dataset**](../Models/Dataset.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
 - **Accept**: application/json
 
 <a name="createTwingraphEntities"></a>
@@ -724,94 +691,6 @@ Set the Dataset default security
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
-<a name="twingraphBatchQuery"></a>
-# **twingraphBatchQuery**
-> DatasetTwinGraphHash twingraphBatchQuery(organization\_id, dataset\_id, DatasetTwinGraphQuery)
-
-Run a query on a graph instance and return the result as a zip file in async mode
-
-    Run a query on a graph instance and return the result as a zip file in async mode Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **dataset\_id** | **String**| the Graph Identifier | [default to null] |
-| **DatasetTwinGraphQuery** | [**DatasetTwinGraphQuery**](../Models/DatasetTwinGraphQuery.md)| the query to run | |
-
-### Return type
-
-[**DatasetTwinGraphHash**](../Models/DatasetTwinGraphHash.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-<a name="twingraphBatchUpdate"></a>
-# **twingraphBatchUpdate**
-> TwinGraphBatchResult twingraphBatchUpdate(organization\_id, dataset\_id, twinGraphQuery, body)
-
-Async batch update by loading a CSV file on a graph instance 
-
-    Async batch update by loading a CSV file on a graph instance  Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **dataset\_id** | **String**| the Dataset Identifier | [default to null] |
-| **twinGraphQuery** | [**DatasetTwinGraphQuery**](../Models/.md)|  | [default to null] |
-| **body** | **File**|  | |
-
-### Return type
-
-[**TwinGraphBatchResult**](../Models/TwinGraphBatchResult.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: text/csv, application/octet-stream
-- **Accept**: application/json
-
-<a name="twingraphQuery"></a>
-# **twingraphQuery**
-> List twingraphQuery(organization\_id, dataset\_id, DatasetTwinGraphQuery)
-
-Return the result of a query made on the graph instance as a json
-
-    Run a query on a graph instance and return the result as a json Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
-| **DatasetTwinGraphQuery** | [**DatasetTwinGraphQuery**](../Models/DatasetTwinGraphQuery.md)| the query to run | |
-
-### Return type
-
-**List**
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
 <a name="unlinkWorkspace"></a>
 # **unlinkWorkspace**
 > Dataset unlinkWorkspace(organization\_id, dataset\_id, workspaceId)
@@ -930,7 +809,7 @@ Update entities in a graph instance
 
 Upload data from zip file to dataset&#39;s twingraph
 
-    To create a new graph from flat files,  you need to create a Zip file. This Zip file must countain two folders named Edges and Nodes.  .zip hierarchy: *main_folder/Nodes *main_folder/Edges  In each folder you can place one or multiple csv files containing your Nodes or Edges data.  Your csv files must follow the following header (column name) requirements:  The Nodes CSVs requires at least one column (the 1st).Column name &#x3D; &#39;id&#39;. It will represent the nodes ID Ids must be populated with string  The Edges CSVs require three columns named, in order, * source * target * id  those colomns represent * The source of the edge * The target of the edge * The id of the edge  All following columns content are up to you. Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
+    To create a new graph from flat files,  you need to create a Zip file. This Zip file must countain two folders named Edges and Nodes.  .zip hierarchy: *main_folder/nodes *main_folder/edges  In each folder you can place one or multiple csv files containing your Nodes or Edges data.  Your csv files must follow the following header (column name) requirements:  The Nodes CSVs requires at least one column (the 1st).Column name &#x3D; &#39;id&#39;. It will represent the nodes ID Ids must be populated with string  The Edges CSVs require five columns named, in order, * source * sourceType * target * targetType * id  those colomns represent * The source of the edge * The source&#39;s type of the edge * The target of the edge * The target&#39;s type of the edge * The id of the edge  All following columns content are up to you. Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 

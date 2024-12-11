@@ -77,9 +77,9 @@ import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.lang3.NotImplementedException
-import org.springframework.beans.factory.annotation.Value
 import org.neo4j.driver.internal.InternalNode
 import org.neo4j.driver.internal.InternalRelationship
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
@@ -222,6 +222,12 @@ class DatasetServiceImpl(
     }
 
     return datasetRepository.save(createdDataset)
+  }
+
+  private fun checkIfGraphFunctionalityIsAvailable() {
+    if (!useGraphModule) {
+      throw NotImplementedException(notImplementedExceptionMessage)
+    }
   }
 
   @Suppress("MagicNumber")
