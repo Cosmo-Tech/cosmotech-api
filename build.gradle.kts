@@ -50,7 +50,7 @@ version = scmVersion.version
 
 // Required versions
 val jacksonVersion = "2.15.3"
-val springWebVersion = "6.1.4"
+val springWebVersion = "6.1.7"
 
 // Implementation
 val kotlinJvmTarget = 21
