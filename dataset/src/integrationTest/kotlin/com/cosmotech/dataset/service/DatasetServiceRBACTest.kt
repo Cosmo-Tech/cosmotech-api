@@ -1858,7 +1858,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Dataset RBAC getDatasetAccessControl`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_USER to false,
               ROLE_NONE to true,
@@ -2104,7 +2104,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Dataset RBAC getDatasetSecurityUsers`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_USER to false,
               ROLE_NONE to true,
@@ -2180,7 +2180,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Dataset RBAC getDatasetSecurity`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_USER to false,
               ROLE_NONE to true,

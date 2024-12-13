@@ -12,6 +12,7 @@ import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
+import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -59,7 +60,10 @@ fun baseDataset() =
         name = "My Dataset",
         description = "My Dataset description",
         organizationId = ORGANIZATION_ID,
-    )
+        security =
+            DatasetSecurity(
+                default = ROLE_NONE,
+                accessControlList = mutableListOf(DatasetAccessControl(USER_ID, ROLE_NONE))))
 
 @ExtendWith(MockKExtension::class)
 class DatasetServiceImplTests {
@@ -427,11 +431,7 @@ class DatasetServiceImplTests {
 
   @Test
   fun `deleteDataset should delete Dataset and its twingraph`() {
-    val dataset =
-        baseDataset()
-            .copy(
-                twingraphId = "twingraphId",
-            )
+    val dataset = baseDataset().copy(twingraphId = "twingraphId")
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { getCurrentAuthenticatedRoles(csmPlatformProperties) } returns

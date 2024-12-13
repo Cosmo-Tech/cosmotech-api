@@ -865,6 +865,44 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(expectedRunId, lastRunId)
   }
 
+  @Test
+  fun `As a viewer, I can only see my information in security property for getRunner`() {
+    every { getCurrentAccountIdentifier(any()) } returns defaultName
+    runner = makeRunner(userName = defaultName, role = ROLE_VIEWER)
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+
+    runnerSaved =
+        runnerApiService.getRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+    assertEquals(
+        RunnerSecurity(
+            default = ROLE_NONE, mutableListOf(RunnerAccessControl(defaultName, ROLE_VIEWER))),
+        runnerSaved.security)
+    assertEquals(1, runnerSaved.security!!.accessControlList.size)
+  }
+
+  @Test
+  fun `As a viewer, I can only see my information in security property for listRunners`() {
+    every { getCurrentAccountIdentifier(any()) } returns defaultName
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    materializeTwingraph()
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    workspace = makeWorkspace()
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    runner = makeRunner(userName = defaultName, role = ROLE_VIEWER)
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+
+    val runners =
+        runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+    runners.forEach {
+      assertEquals(
+          RunnerSecurity(
+              default = ROLE_NONE, mutableListOf(RunnerAccessControl(defaultName, ROLE_VIEWER))),
+          it.security)
+      assertEquals(1, it.security!!.accessControlList.size)
+    }
+  }
+
   private fun makeConnector(name: String = "name"): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
@@ -895,7 +933,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                        DatasetAccessControl(defaultName, ROLE_USER))))
   }
 
   fun makeSolution(organizationId: String = organizationSaved.id!!): Solution {
@@ -928,7 +967,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                        SolutionAccessControl(id = defaultName, role = ROLE_USER))))
   }
 
   fun makeOrganization(

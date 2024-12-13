@@ -78,7 +78,6 @@ internal class RunnerApiServiceImpl(
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
     val pageRequest =
         constructPageRequest(page, size, defaultPageSize) ?: PageRequest.of(0, defaultPageSize)
-
     return runnerService.listInstances(pageRequest)
   }
 

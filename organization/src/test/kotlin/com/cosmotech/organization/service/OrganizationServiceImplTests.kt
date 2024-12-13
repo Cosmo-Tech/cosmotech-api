@@ -282,7 +282,7 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC getOrganizationSecurity organization`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
@@ -315,7 +315,7 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC getOrganizationAccessControl organization`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
@@ -384,7 +384,7 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test getOrganizationSecurityUsers`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
