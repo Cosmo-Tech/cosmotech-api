@@ -18,8 +18,8 @@ import io.mockk.mockk
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 
 private const val DEFAULT_ENTRY_POINT = "entrypoint.py"
