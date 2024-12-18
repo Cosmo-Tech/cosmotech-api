@@ -30,14 +30,14 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.15.5"
   id("com.diffplug.spotless") version "6.22.0"
-  id("org.springframework.boot") version "3.2.10" apply false
+  id("org.springframework.boot") version "3.3.6" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "9.0.2"
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.6"
   id("org.openapi.generator") version "7.8.0" apply false
-  id("com.google.cloud.tools.jib") version "3.4.0" apply false
+  id("com.google.cloud.tools.jib") version "3.4.4" apply false
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -50,7 +50,7 @@ version = scmVersion.version
 
 // Required versions
 val jacksonVersion = "2.15.3"
-val springWebVersion = "6.1.4"
+val springWebVersion = "6.1.16"
 
 // Implementation
 val kotlinJvmTarget = 21
@@ -58,13 +58,13 @@ val cosmotechApiCommonVersion = "2.0.1-SNAPSHOT"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.2.2"
 val redisOmSpringVersion = "0.9.1"
-val kotlinCoroutinesCoreVersion = "1.7.3"
+val kotlinCoroutinesCoreVersion = "1.8.1"
 val oktaSpringBootVersion = "3.0.5"
 val springDocVersion = "2.5.0"
 val swaggerParserVersion = "2.1.22"
 val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
-val kubernetesClientVersion = "21.0.0"
+val kubernetesClientVersion = "22.0.0"
 
 // Checks
 val detektVersion = "1.23.6"
