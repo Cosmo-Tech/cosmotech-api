@@ -29,13 +29,13 @@ plugins {
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.15.5"
-  id("com.diffplug.spotless") version "6.22.0"
+  id("com.diffplug.spotless") version "6.25.0"
   id("org.springframework.boot") version "3.3.6" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "9.0.2"
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
-  id("io.gitlab.arturbosch.detekt") version "1.23.6"
+  id("io.gitlab.arturbosch.detekt") version "1.23.7"
   id("org.openapi.generator") version "7.8.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.4" apply false
 }
@@ -67,7 +67,7 @@ val apiValidationVersion = "3.0.2"
 val kubernetesClientVersion = "22.0.0"
 
 // Checks
-val detektVersion = "1.23.6"
+val detektVersion = "1.23.7"
 
 // Tests
 val jUnitBomVersion = "5.10.0"
