@@ -32,7 +32,6 @@ plugins {
   id("com.diffplug.spotless") version "6.25.0"
   id("org.springframework.boot") version "3.3.6" apply false
   id("project-report")
-  id("org.owasp.dependencycheck") version "9.0.2"
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.7"
@@ -121,7 +120,6 @@ allprojects {
   apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "io.gitlab.arturbosch.detekt")
   apply(plugin = "project-report")
-  apply(plugin = "org.owasp.dependencycheck")
 
   java {
     targetCompatibility = JavaVersion.VERSION_21
