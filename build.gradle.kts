@@ -30,7 +30,7 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.15.5"
   id("com.diffplug.spotless") version "6.25.0"
-  id("org.springframework.boot") version "3.3.6" apply false
+  id("org.springframework.boot") version "3.4.1" apply false
   id("project-report")
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
@@ -49,18 +49,18 @@ version = scmVersion.version
 
 // Required versions
 val jacksonVersion = "2.15.3"
-val springWebVersion = "6.1.16"
+val springWebVersion = "6.2.1"
 
 // Implementation
 val kotlinJvmTarget = 21
 val cosmotechApiCommonVersion = "2.1.0-SNAPSHOT"
 val jedisVersion = "4.4.6"
-val springOauthVersion = "6.2.2"
-val redisOmSpringVersion = "0.9.1"
+val springOauthVersion = "6.4.2"
+val redisOmSpringVersion = "0.9.7"
 val kotlinCoroutinesCoreVersion = "1.8.1"
-val oktaSpringBootVersion = "3.0.5"
+val oktaSpringBootVersion = "3.0.7"
 val springDocVersion = "2.5.0"
-val swaggerParserVersion = "2.1.22"
+val swaggerParserVersion = "2.1.24"
 val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
 val kubernetesClientVersion = "22.0.0"
@@ -70,7 +70,7 @@ val detektVersion = "1.23.7"
 
 // Tests
 val jUnitBomVersion = "5.10.0"
-val mockkVersion = "1.13.8"
+val mockkVersion = "1.13.13"
 val awaitilityKVersion = "4.2.0"
 val testcontainersRedis = "1.6.4"
 val springMockkVersion = "4.0.2"
@@ -286,9 +286,8 @@ subprojects {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}")
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.security:spring-security-oauth2-jose:${springOauthVersion}")
-    implementation(
-        "org.springframework.security:spring-security-oauth2-resource-server:${springOauthVersion}")
+    implementation("org.springframework.security:spring-security-oauth2-jose")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server")
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
