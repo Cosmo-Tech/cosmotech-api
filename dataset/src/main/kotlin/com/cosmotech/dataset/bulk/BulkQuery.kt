@@ -21,11 +21,13 @@ private constructor(
       private var typedBinaryEdges: Map<String, BinaryEntities> = mapOf()
   ) {
     fun graphName(name: String) = apply { this.graphName = name }
+
     fun first() = apply { this.begin = true }
 
     fun addNodeTypeGroup(type: String, binaryEntities: BinaryEntities) = apply {
       if (type !in typedBinaryNodes) this.typedBinaryNodes += type to binaryEntities
     }
+
     fun addNodeToNodeTypeGroup(type: String, node: Node) = apply {
       if (type in this.typedBinaryNodes) this.typedBinaryNodes[type]?.addEntity(node)
     }
@@ -33,9 +35,11 @@ private constructor(
     fun addEdgeTypeGroup(type: String, typeEdge: BinaryEntities) = apply {
       if (type !in typedBinaryEdges) this.typedBinaryEdges += type to typeEdge
     }
+
     fun addEdgeToEdgeTypeGroup(type: String, edge: Edge) = apply {
       if (type in this.typedBinaryEdges) this.typedBinaryEdges[type]?.addEntity(edge)
     }
+
     // For ease, those sizes are not calculated as there are very small
     //   GRAPH.BULK     string to byteArray size
     //   graphName      string to byteArray size
@@ -73,6 +77,7 @@ private constructor(
 
   private fun ByteArray.toHex(): String =
       joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
   override fun toString(): String {
     return generateQueryArgs().joinToString(separator = " - ") { bytes -> bytes.toHex() }
   }

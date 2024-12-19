@@ -477,6 +477,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(1, datasetList.size)
     assertEquals(datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization, datasetList[0])
   }
+
   @Test
   fun `test find All Datasets with wrong pagination params`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
@@ -1108,6 +1109,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         OrganizationAccessControl(id = userName, role = role))))
   }
+
   fun makeDataset(
       organizationId: String = organizationSaved.id!!,
       parentId: String = "",
