@@ -338,6 +338,7 @@ class RunContainerFactory(
 
 /**
  * Get scopes used by containers
+ *
  * @return all scopes defined join by ","
  */
 internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): String {

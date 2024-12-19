@@ -23,6 +23,7 @@ interface DatasetApiServiceInterface : DatasetApiService {
   /**
    * Find Dataset by Organization Id and Dataset Id (checking ONLY READ_PERMISSION on targeted
    * organization)
+   *
    * @param organizationId an organization Id
    * @param datasetId a dataset Id
    * @return a Dataset or null
@@ -31,6 +32,7 @@ interface DatasetApiServiceInterface : DatasetApiService {
 
   /**
    * Add a new entry (ou update existing one) on dataset passed in parameter
+   *
    * @param organizationId an organization id
    * @param dataset a dataset to update
    * @param identity a user/application identity

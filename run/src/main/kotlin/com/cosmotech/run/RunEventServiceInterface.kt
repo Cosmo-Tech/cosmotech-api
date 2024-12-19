@@ -8,5 +8,6 @@ import org.springframework.context.event.EventListener
 
 interface RunEventServiceInterface {
   @EventListener(AskRunStatusEvent::class) fun getRunStatus(askRunStatusEvent: AskRunStatusEvent)
+
   @EventListener(HasRunningRuns::class) fun hasRunningRuns(hasRunningRuns: HasRunningRuns)
 }

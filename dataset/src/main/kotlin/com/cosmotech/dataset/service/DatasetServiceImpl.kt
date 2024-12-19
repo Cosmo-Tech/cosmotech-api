@@ -194,9 +194,7 @@ class DatasetServiceImpl(
     dataset.takeUnless {
       datasetSourceType in listOf(DatasetSourceType.ADT, DatasetSourceType.AzureStorage) &&
           dataset.source == null
-    }
-        ?: throw IllegalArgumentException(
-            "Source cannot be null for source type 'ADT' or 'Storage'")
+    } ?: throw IllegalArgumentException("Source cannot be null for source type 'ADT' or 'Storage'")
 
     var twingraphId: String? = null
 
@@ -1004,8 +1002,7 @@ class DatasetServiceImpl(
     val datasetCompatibilityMap =
         existingDataset.compatibility
             ?.associateBy { "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}" }
-            ?.toMutableMap()
-            ?: mutableMapOf()
+            ?.toMutableMap() ?: mutableMapOf()
     datasetCompatibilityMap.putAll(
         datasetCompatibility
             .filter { it.solutionKey.isNotBlank() }

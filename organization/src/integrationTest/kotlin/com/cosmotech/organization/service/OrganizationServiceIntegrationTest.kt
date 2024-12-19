@@ -1088,6 +1088,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       }
     }
   }
+
   @Nested
   inner class AsPlatformAdmin {
 

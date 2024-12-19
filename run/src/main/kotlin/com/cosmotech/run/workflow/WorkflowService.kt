@@ -20,6 +20,7 @@ interface WorkflowService : HealthIndicator {
 
   /**
    * Launch a new Scenario run, using the request specified
+   *
    * @param runStartContainers the scenario run start request
    * @param executionTimeout the duration in which the workflow is allowed to run
    * @param alwaysPull the image pull policy
@@ -35,6 +36,7 @@ interface WorkflowService : HealthIndicator {
 
   /**
    * Find WorkflowStatus by label
+   *
    * @param labelSelector a label used to filter workflow
    * @return a list of all WorkflowStatus corresponding to the labelSelector
    */
@@ -42,6 +44,7 @@ interface WorkflowService : HealthIndicator {
 
   /**
    * Get a Run status
+   *
    * @param run the Run
    * @return the Run status
    */
@@ -49,6 +52,7 @@ interface WorkflowService : HealthIndicator {
 
   /**
    * Get all logs of a Run, as a structured object
+   *
    * @param run the Run
    * @return the RunLogs object
    */
@@ -56,6 +60,7 @@ interface WorkflowService : HealthIndicator {
 
   /**
    * Stop the running workflow
+   *
    * @param run the run object
    * @return the Run status
    */

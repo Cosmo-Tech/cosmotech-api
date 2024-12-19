@@ -7,6 +7,7 @@ import com.cosmotech.api.metrics.PersistentMetric
 interface MetricsService {
   /**
    * Store a metric in the persistent database.
+   *
    * @param metric The metric to store.
    */
   fun storeMetric(metric: PersistentMetric)

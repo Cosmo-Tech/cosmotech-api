@@ -27,6 +27,7 @@ class QueryBuffer(val unifiedJedis: UnifiedJedis, val graphName: String) {
 
   private val nodeSet: HashSet<String> = hashSetOf()
   private val edgeSet: HashSet<String> = hashSetOf()
+
   fun addNode(type: String, id: String, properties: Map<String, Any?>) {
     addEntity(type, properties) {
       if (id in nodeSet) return@addEntity null

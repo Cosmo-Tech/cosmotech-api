@@ -573,6 +573,7 @@ class WorkspaceServiceImplTests {
                   it.organization.id!!, it.workspace.id!!, "2$CONNECTED_DEFAULT_USER")
             }
           }
+
   @TestFactory
   fun `test RBAC get workspace security users`() =
       mapOf(
