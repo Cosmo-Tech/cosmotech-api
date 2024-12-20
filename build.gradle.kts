@@ -3,12 +3,10 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.*
-import com.github.jk1.license.task.CheckLicenseTask
 import com.github.jk1.license.task.ReportTask
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
 import io.gitlab.arturbosch.detekt.Detekt
-import java.io.FileOutputStream
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -32,7 +30,7 @@ plugins {
   id("com.diffplug.spotless") version "6.25.0"
   id("org.springframework.boot") version "3.4.1" apply false
   id("project-report")
-  id("com.github.jk1.dependency-license-report") version "2.5"
+  id("com.github.jk1.dependency-license-report") version "2.9"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.7"
   id("org.openapi.generator") version "7.8.0" apply false
@@ -81,38 +79,22 @@ val configBuildDir = "${layout.buildDirectory.get()}/config"
 
 mkdir(configBuildDir)
 
-fun downloadLicenseConfigFile(name: String): String {
-  val localPath = "$configBuildDir/$name"
-  val f = file(localPath)
-  f.delete()
-  val url = "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/main/config/$name"
-  logger.info("Downloading license config file from $url to $localPath")
-  uri(url).toURL().openStream().use { it.copyTo(FileOutputStream(f)) }
-  return localPath
-}
-
-val licenseNormalizerPath = downloadLicenseConfigFile("license-normalizer-bundle.json")
-val licenseAllowedPath =
-    if (project.properties["useLocalLicenseAllowedFile"] == "true") {
-      "$projectDir/config/allowed-licenses.json"
-    } else {
-      downloadLicenseConfigFile("allowed-licenses.json")
-    }
-
-logger.info("Using licenses allowed file: $licenseAllowedPath")
-
-val licenseEmptyPath = downloadLicenseConfigFile("empty-dependencies-resume.json")
-// Plugin uses a generated report to check the licenses in a prepation task
 val hardCodedLicensesReportPath = "project-licenses-for-check-license-task.json"
 
 licenseReport {
   outputDir = licenseReportDir
-  allowedLicensesFile = file(licenseAllowedPath)
+  allowedLicensesFile =
+      "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/allowed-licenses.json"
+  val bundle =
+      "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/license-normalizer-bundle.json"
+
   renderers =
       arrayOf<ReportRenderer>(
           InventoryHtmlReportRenderer("index.html"),
           JsonReportRenderer("project-licenses-for-check-license-task.json", false))
-  filters = arrayOf<LicenseBundleNormalizer>(LicenseBundleNormalizer(licenseNormalizerPath, true))
+  filters =
+      arrayOf<LicenseBundleNormalizer>(
+          LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true))
 }
 
 allprojects {
@@ -555,41 +537,7 @@ extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverReportExtension> {
 }
 
 // https://github.com/jk1/Gradle-License-Report/blob/master/README.md
-tasks.register<ReportTask>("generateLicenseDoc") {}
+tasks.register<ReportTask>(
+    "generateLicenseDoc") {}
 
-tasks.register<CheckLicenseTask>("validateLicense") {
-  dependsOn("generateLicenseDoc")
-  // Gradle task must be rerun each time to take new allowed-license into account.
-  // Due to an issue in the plugin, we must define each module name for null licenses
-  // to avoid false negatives in the allowed-license file.
-  outputs.upToDateWhen { false }
-}
 
-tasks.register("displayLicensesNotAllowed") {
-  val notAllowedFile =
-      file(
-          buildString {
-            append(licenseReportDir)
-            append("/dependencies-without-allowed-license.json")
-          })
-  val dependenciesEmptyResumeTemplate = file(licenseEmptyPath)
-  if (notAllowedFile.exists() && dependenciesEmptyResumeTemplate.exists()) {
-    if (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText()) {
-      logger.warn("Licenses not allowed:")
-      logger.warn(notAllowedFile.readText())
-      logger.warn(
-          "Please review licenses and add new license check rules in https://github.com/Cosmo-Tech/cosmotech-license")
-    } else {
-      logger.warn("No error in licences detected!")
-    }
-  }
-}
-
-gradle.buildFinished {
-  if (project.properties["skipLicenses"] != "true") {
-    val validateLicenseTask = tasks.getByName("validateLicense")
-    validateLicenseTask.run {}
-    val displayTask = tasks.getByName("displayLicensesNotAllowed")
-    displayTask.run {}
-  }
-}
