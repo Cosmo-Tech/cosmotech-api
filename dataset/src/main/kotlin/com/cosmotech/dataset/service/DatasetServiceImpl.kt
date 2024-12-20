@@ -155,7 +155,7 @@ class DatasetServiceImpl(
               val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
               datasetRepository.findByOrganizationId(organizationId, currentUser, it).toList()
             } else {
-              datasetRepository.findAll(it).toList()
+              datasetRepository.findByOrganizationIdNoSecurity(organizationId, it).toList()
             }
           }
     } else {
@@ -164,7 +164,7 @@ class DatasetServiceImpl(
             val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
             datasetRepository.findByOrganizationId(organizationId, currentUser, pageable).toList()
           } else {
-            datasetRepository.findAll(pageable).toList()
+            datasetRepository.findByOrganizationIdNoSecurity(organizationId, pageable).toList()
           }
     }
     result.forEach { it.security = updateSecurityVisibility(it).security }
