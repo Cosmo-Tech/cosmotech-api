@@ -43,6 +43,7 @@ import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.service.getRbac
+import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
@@ -432,15 +433,21 @@ internal class ScenarioServiceImpl(
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
+    var scenarios = listOf<Scenario>()
     if (pageable != null) {
-      return this.findPaginatedScenariosStateOption(
-          organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
+      scenarios =
+          this.findPaginatedScenariosStateOption(
+              organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
+    } else {
+      scenarios =
+          findAllPaginated(defaultPageSize) {
+            this.findPaginatedScenariosStateOption(
+                    organizationId, workspaceId, it.pageNumber, it.pageSize, true)
+                .toMutableList()
+          }
     }
-    return findAllPaginated(defaultPageSize) {
-      this.findPaginatedScenariosStateOption(
-              organizationId, workspaceId, it.pageNumber, it.pageSize, true)
-          .toMutableList()
-    }
+    scenarios.forEach { it.security = updateSecurityVisibility(it).security }
+    return scenarios
   }
 
   override fun findAllScenariosByValidationStatus(
@@ -590,7 +597,8 @@ internal class ScenarioServiceImpl(
       scenarioId: String
   ): Scenario {
     checkInternalResultDataServiceConfiguration()
-    return findScenarioById(organizationId, workspaceId, scenarioId, withState = true)
+    val scenario = findScenarioById(organizationId, workspaceId, scenarioId, withState = true)
+    return updateSecurityVisibility(scenario)
   }
 
   override fun findScenarioById(
@@ -1166,5 +1174,25 @@ internal class ScenarioServiceImpl(
     if (csmPlatformProperties.internalResultServices?.enabled == true) {
       throw NotImplementedException(notImplementedExceptionMessage)
     }
+  }
+
+  fun updateSecurityVisibility(scenario: Scenario): Scenario {
+    if (csmRbac.check(scenario.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = scenario.security!!.accessControlList.firstOrNull { it.id == username }
+      return if (retrievedAC != null) {
+        scenario.copy(
+            security =
+                ScenarioSecurity(
+                    default = scenario.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
+      } else {
+        scenario.copy(
+            security =
+                ScenarioSecurity(
+                    default = scenario.security!!.default, accessControlList = mutableListOf()))
+      }
+    }
+    return scenario
   }
 }
