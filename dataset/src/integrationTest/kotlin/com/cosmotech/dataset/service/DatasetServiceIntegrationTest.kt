@@ -354,7 +354,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should find all datasets and assert there are $numberOfDatasets")
     var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
-    assertEquals(numberOfDatasets + 1, datasetList.size)
+    assertEquals(numberOfDatasets, datasetList.size)
 
     logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
     datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, null)
@@ -366,7 +366,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should find all solutions and assert it returns the second / last page")
     datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 1, expectedSize)
-    assertEquals(numberOfDatasets - expectedSize + 1, datasetList.size)
+    assertEquals(numberOfDatasets - expectedSize, datasetList.size)
   }
 
   @Test
