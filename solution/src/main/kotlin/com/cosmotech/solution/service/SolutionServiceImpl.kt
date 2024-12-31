@@ -94,11 +94,12 @@ class SolutionServiceImpl(
             solutionRepository.findByOrganizationId(organizationId, pageable).toList()
           }
     }
+    result.forEach { it.security = updateSecurityVisibility(it).security }
     return result
   }
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution {
-    return getVerifiedSolution(organizationId, solutionId)
+    return updateSecurityVisibility(getVerifiedSolution(organizationId, solutionId))
   }
 
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
@@ -243,7 +244,8 @@ class SolutionServiceImpl(
     // solutionId update is allowed but must be done with care. Maybe limit to minor update?
     var hasChanged =
         existingSolution
-            .compareToAndMutateIfNeeded(solution, excludedFields = arrayOf("ownerId"))
+            .compareToAndMutateIfNeeded(
+                solution, excludedFields = arrayOf("ownerId", "runTemplates"))
             .isNotEmpty()
 
     if (solution.ownerId != null && solution.changed(existingSolution) { ownerId }) {
@@ -477,6 +479,26 @@ class SolutionServiceImpl(
               "Solution $solutionId not found in organization $organizationId")
         }
     csmRbac.verify(solution.getRbac(), requiredPermission)
+    return solution
+  }
+
+  fun updateSecurityVisibility(solution: Solution): Solution {
+    if (csmRbac.check(solution.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = solution.security!!.accessControlList.firstOrNull { it.id == username }
+      if (retrievedAC != null) {
+        return solution.copy(
+            security =
+                SolutionSecurity(
+                    default = solution.security!!.default,
+                    accessControlList = mutableListOf(retrievedAC)))
+      } else {
+        return solution.copy(
+            security =
+                SolutionSecurity(
+                    default = solution.security!!.default, accessControlList = mutableListOf()))
+      }
+    }
     return solution
   }
 

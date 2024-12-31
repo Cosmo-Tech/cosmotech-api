@@ -30,13 +30,13 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.15.5"
   id("com.diffplug.spotless") version "6.22.0"
-  id("org.springframework.boot") version "3.2.5" apply false
+  id("org.springframework.boot") version "3.2.10" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "9.0.2"
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
-  id("io.gitlab.arturbosch.detekt") version "1.23.5"
-  id("org.openapi.generator") version "7.3.0" apply false
+  id("io.gitlab.arturbosch.detekt") version "1.23.6"
+  id("org.openapi.generator") version "7.8.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.0" apply false
 }
 
@@ -54,7 +54,7 @@ val springWebVersion = "6.1.4"
 
 // Implementation
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "1.0.6"
+val cosmotechApiCommonVersion = "1.0.7"
 val cosmotechApiAzureVersion = "1.0.1"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.2.2"
@@ -68,7 +68,7 @@ val apiValidationVersion = "3.0.2"
 val kubernetesClientVersion = "21.0.0"
 
 // Checks
-val detektVersion = "1.23.5"
+val detektVersion = "1.23.6"
 
 // Tests
 val jUnitBomVersion = "5.10.0"

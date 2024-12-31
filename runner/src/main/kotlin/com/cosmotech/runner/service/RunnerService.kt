@@ -11,6 +11,7 @@ import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
@@ -56,6 +57,22 @@ class RunnerService(
     private var organization: Organization? = null,
     private var workspace: Workspace? = null,
 ) : CsmPhoenixService() {
+
+  fun updateSecurityVisibility(runner: Runner): Runner {
+    if (csmRbac.check(runner.getRbac(), PERMISSION_READ_SECURITY).not()) {
+      val username = getCurrentAccountIdentifier(csmPlatformProperties)
+      val retrievedAC = runner.security!!.accessControlList.firstOrNull { it.id == username }
+      if (retrievedAC != null) {
+        runner.security =
+            RunnerSecurity(
+                default = runner.security!!.default, accessControlList = mutableListOf(retrievedAC))
+      } else {
+        runner.security =
+            RunnerSecurity(default = runner.security!!.default, accessControlList = mutableListOf())
+      }
+    }
+    return runner
+  }
 
   fun inOrganization(organizationId: String): RunnerService = apply {
     this.organization = organizationApiService.findOrganizationById(organizationId)
@@ -114,24 +131,29 @@ class RunnerService(
           CsmResourceNotFoundException(
               "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
         }
-
+    updateSecurityVisibility(runner)
     return RunnerInstance(runner).userHasPermission(PERMISSION_READ)
   }
 
   fun listInstances(pageRequest: PageRequest): List<Runner> {
     val isPlatformAdmin =
         getCurrentAuthenticatedRoles(this.csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
-    return if (!this.csmPlatformProperties.rbac.enabled || isPlatformAdmin) {
-      runnerRepository
-          .findByWorkspaceId(organization!!.id!!, workspace!!.id!!, pageRequest)
-          .toList()
+    var runners = listOf<Runner>()
+    if (!this.csmPlatformProperties.rbac.enabled || isPlatformAdmin) {
+      runners =
+          runnerRepository
+              .findByWorkspaceId(organization!!.id!!, workspace!!.id!!, pageRequest)
+              .toList()
     } else {
       val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
-      runnerRepository
-          .findByWorkspaceIdAndSecurity(
-              organization!!.id!!, workspace!!.id!!, currentUser, pageRequest)
-          .toList()
+      runners =
+          runnerRepository
+              .findByWorkspaceIdAndSecurity(
+                  organization!!.id!!, workspace!!.id!!, currentUser, pageRequest)
+              .toList()
     }
+    runners.forEach { it.security = updateSecurityVisibility(it).security }
+    return runners
   }
 
   fun startRunWith(runnerInstance: RunnerInstance): String {

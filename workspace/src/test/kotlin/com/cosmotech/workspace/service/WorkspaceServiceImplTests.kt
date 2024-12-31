@@ -16,7 +16,6 @@ import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_READ
-import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
@@ -355,11 +354,9 @@ class WorkspaceServiceImplTests {
             id = WORKSPACE_ID,
             key = "my-workspace-key",
             name = "my workspace name",
-            solution = WorkspaceSolution(solutionId = "SOL-my-solution-id"))
-    workspace.security = WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every {
-      workspaceServiceImpl.getVerifiedWorkspace(ORGANIZATION_ID, WORKSPACE_ID, PERMISSION_WRITE)
-    } returns workspace
+            solution = WorkspaceSolution(solutionId = "SOL-my-solution-id"),
+            security = WorkspaceSecurity(ROLE_ADMIN, mutableListOf()))
+    every { workspaceRepository.findByIdOrNull(WORKSPACE_ID) } returns workspace
     every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
     assertThrows<CsmResourceNotFoundException> {
@@ -551,7 +548,7 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC get workspace security`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
@@ -585,7 +582,7 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC get workspace access control`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
@@ -660,7 +657,7 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC get workspace security users`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,

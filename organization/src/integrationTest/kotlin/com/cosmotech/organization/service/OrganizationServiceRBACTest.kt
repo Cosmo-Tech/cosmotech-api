@@ -300,7 +300,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test RBAC getOrganizationPermissions`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
@@ -331,7 +331,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test RBAC getOrganizationSecurity`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
@@ -431,7 +431,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test RBAC getOrganizationAccessControl`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
@@ -533,7 +533,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test RBAC getOrganizationSecurityUsers`() =
       mapOf(
-              ROLE_VIEWER to false,
+              ROLE_VIEWER to true,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,

@@ -34,6 +34,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -98,10 +99,10 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     val solution =
         Solution(
-            "id",
-            organizationSaved.id!!,
-            "key",
-            "name",
+            id = "id",
+            organizationId = organizationSaved.id!!,
+            key = "key",
+            name = "name",
             runTemplates = mutableListOf(RunTemplate(id = "one"), RunTemplate(id = "two")),
             security =
                 SolutionSecurity(
@@ -118,10 +119,10 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     val expectedSolution =
         Solution(
-            "id",
-            organizationSaved.id!!,
-            "key",
-            "name",
+            id = "id",
+            organizationId = organizationSaved.id!!,
+            key = "key",
+            name = "name",
             runTemplates =
                 mutableListOf(RunTemplate(id = "one", name = "name_one"), RunTemplate(id = "two")))
     // Assert that no runTemplate were deleted
@@ -380,6 +381,102 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test create solution with null runTemplates`() {
+
+    val solutionWithNullRunTemplates = makeSolution(organizationSaved.id!!)
+    val solutionWithNullRunTemplatesSaved =
+        solutionApiService.createSolution(organizationSaved.id!!, solutionWithNullRunTemplates)
+
+    assertNotNull(solutionWithNullRunTemplatesSaved)
+    assertNotNull(solutionWithNullRunTemplatesSaved.runTemplates)
+    assertEquals(0, solutionWithNullRunTemplatesSaved.runTemplates!!.size)
+  }
+
+  @Test
+  fun `test create solution with empty runTemplates list`() {
+
+    val solutionWithNullRunTemplates =
+        makeSolution(organizationSaved.id!!, runTemplates = mutableListOf())
+    val solutionWithNullRunTemplatesSaved =
+        solutionApiService.createSolution(organizationSaved.id!!, solutionWithNullRunTemplates)
+
+    assertNotNull(solutionWithNullRunTemplatesSaved)
+    assertNotNull(solutionWithNullRunTemplatesSaved.runTemplates)
+    assertEquals(0, solutionWithNullRunTemplatesSaved.runTemplates!!.size)
+  }
+
+  @Test
+  fun `test update solution RunTemplate with wrong runTemplateId`() {
+
+    val baseSolution = makeSolution(organizationSaved.id!!)
+    val baseSolutionSaved = solutionApiService.createSolution(organizationSaved.id!!, baseSolution)
+
+    val assertThrows =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.updateSolutionRunTemplate(
+              organizationSaved.id!!,
+              baseSolutionSaved.id!!,
+              "WrongRunTemplateId",
+              RunTemplate(id = "FakeRunTemplateId"))
+        }
+    assertEquals("Run Template 'WrongRunTemplateId' *not* found", assertThrows.message)
+  }
+
+  @Test
+  fun `test update solution with runTemplates specified`() {
+
+    val baseSolutionRunTemplates =
+        mutableListOf(
+            RunTemplate(
+                id = "runtemplate1",
+                name = "rt_name1",
+                run = true,
+                parameterGroups = mutableListOf("p_1", "p_2")))
+
+    val modifiedSolutionRunTemplates =
+        mutableListOf(
+            RunTemplate(
+                id = "new_runtemplate1",
+                name = "new_rt_name1",
+                run = false,
+                parameterGroups = mutableListOf("new_p_1", "new_p_2")))
+
+    val baseSolution = makeSolution(organizationSaved.id!!, baseSolutionRunTemplates)
+    val baseSolutionSaved = solutionApiService.createSolution(organizationSaved.id!!, baseSolution)
+
+    val updateSolutionSaved =
+        solutionApiService.updateSolution(
+            organizationSaved.id!!,
+            baseSolutionSaved.id!!,
+            baseSolutionSaved.apply { runTemplates = modifiedSolutionRunTemplates })
+
+    assertEquals(baseSolutionRunTemplates, updateSolutionSaved.runTemplates)
+  }
+
+  @Test
+  fun `test update solution with empty runTemplates specified`() {
+
+    val baseSolutionRunTemplates =
+        mutableListOf(
+            RunTemplate(
+                id = "runtemplate1",
+                name = "rt_name1",
+                run = true,
+                parameterGroups = mutableListOf("p_1", "p_2")))
+
+    val baseSolution = makeSolution(organizationSaved.id!!, baseSolutionRunTemplates)
+    val baseSolutionSaved = solutionApiService.createSolution(organizationSaved.id!!, baseSolution)
+
+    val updateSolutionSaved =
+        solutionApiService.updateSolution(
+            organizationSaved.id!!,
+            baseSolutionSaved.id!!,
+            baseSolutionSaved.apply { runTemplates = mutableListOf() })
+
+    assertEquals(baseSolutionRunTemplates, updateSolutionSaved.runTemplates)
+  }
+
+  @Test
   fun `test get security endpoint`() {
     // should return the current security
     val solutionSecurity =
@@ -434,7 +531,10 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test update solution with runTemplates null`() {
 
-    val baseSolution = makeSolution(organizationSaved.id!!, runTemplates = null)
+    val baseSolution =
+        makeSolution(
+            organizationSaved.id!!,
+        )
     val baseSolutionSaved = solutionApiService.createSolution(organizationSaved.id!!, baseSolution)
 
     val assertThrows =
@@ -465,6 +565,36 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("Run Template 'WrongRunTemplateId' *not* found", assertThrows.message)
   }
 
+  @Test
+  fun `As viewer, I can only see my information in security property for findSolutionById`() {
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
+
+    solutionSaved = solutionApiService.findSolutionById(organizationSaved.id!!, solutionSaved.id!!)
+    assertEquals(
+        SolutionSecurity(
+            default = ROLE_NONE,
+            mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER))),
+        solutionSaved.security)
+    assertEquals(1, solutionSaved.security!!.accessControlList.size)
+  }
+
+  @Test
+  fun `As viewer, I can only see my information in security property for findAllSolutions`() {
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
+
+    val solutions = solutionApiService.findAllSolutions(organizationSaved.id!!, null, null)
+    solutions.forEach {
+      assertEquals(
+          SolutionSecurity(
+              default = ROLE_NONE,
+              mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER))),
+          it.security)
+      assertEquals(1, it.security!!.accessControlList.size)
+    }
+  }
+
   fun makeOrganization(id: String = "organization_id"): Organization {
     return Organization(
         id = id,
@@ -475,13 +605,15 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
+                        OrganizationAccessControl(id = CONNECTED_READER_USER, role = ROLE_VIEWER),
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
   fun makeSolution(
       organizationId: String = organizationSaved.id!!,
-      runTemplates: MutableList<RunTemplate>? = mutableListOf()
+      runTemplates: MutableList<RunTemplate> = mutableListOf(),
+      userName: String = CONNECTED_READER_USER,
+      role: String = ROLE_VIEWER
   ): Solution {
     return Solution(
         id = "solutionId",
@@ -495,7 +627,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        SolutionAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
+                        SolutionAccessControl(id = userName, role = role),
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 }

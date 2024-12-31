@@ -9,6 +9,7 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.SecretManager
@@ -450,6 +451,55 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             .linkedDatasetIdList)
   }
 
+  @Test
+  fun `As a viewer, I can only see my information in security property for findWorkspaceById`() {
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+    organization =
+        makeOrganization(
+            id = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    dataset = makeDataset()
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    workspace = makeWorkspace()
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+
+    workspaceSaved =
+        workspaceApiService.findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+    assertEquals(
+        WorkspaceSecurity(
+            default = ROLE_NONE,
+            mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
+        workspaceSaved.security)
+    assertEquals(1, workspaceSaved.security!!.accessControlList.size)
+  }
+
+  @Test
+  fun `As a viewer, I can only see my information in security property for findAllWorkspaces`() {
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+    organization =
+        makeOrganization(
+            id = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    dataset = makeDataset()
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    workspace = makeWorkspace()
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+
+    var workspaces = workspaceApiService.findAllWorkspaces(organizationSaved.id!!, null, null)
+    workspaces.forEach {
+      assertEquals(
+          WorkspaceSecurity(
+              default = ROLE_NONE,
+              mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
+          it.security)
+      assertEquals(1, it.security!!.accessControlList.size)
+    }
+  }
+
   fun makeOrganization(
       id: String,
       userName: String = CONNECTED_ADMIN_USER,
@@ -468,7 +518,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                         OrganizationAccessControl("userLambda", "viewer"))))
   }
 
-  fun makeSolution(organizationId: String = organizationSaved.id!!): Solution {
+  fun makeSolution(
+      organizationId: String = organizationSaved.id!!,
+      userName: String = CONNECTED_DEFAULT_USER,
+      role: String = ROLE_USER
+  ): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
@@ -480,7 +534,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                        SolutionAccessControl(id = userName, role = role))))
   }
 
   fun makeWorkspace(
@@ -520,7 +575,9 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   fun makeDataset(
       organizationId: String = organizationSaved.id!!,
       name: String = "name",
-      connector: Connector = connectorSaved
+      connector: Connector = connectorSaved,
+      userName: String = CONNECTED_DEFAULT_USER,
+      role: String = ROLE_ADMIN
   ): Dataset {
     return Dataset(
         name = name,
@@ -537,6 +594,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
+                        DatasetAccessControl(id = userName, role = role),
                         DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 }
