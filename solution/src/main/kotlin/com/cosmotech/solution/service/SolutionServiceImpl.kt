@@ -244,7 +244,8 @@ class SolutionServiceImpl(
     // solutionId update is allowed but must be done with care. Maybe limit to minor update?
     var hasChanged =
         existingSolution
-            .compareToAndMutateIfNeeded(solution, excludedFields = arrayOf("ownerId"))
+            .compareToAndMutateIfNeeded(
+                solution, excludedFields = arrayOf("ownerId", "runTemplates"))
             .isNotEmpty()
 
     if (solution.ownerId != null && solution.changed(existingSolution) { ownerId }) {
