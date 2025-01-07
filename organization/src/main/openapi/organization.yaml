@@ -511,43 +511,53 @@ components:
   examples:
     NewOrganizationIn:
       summary: Create a new organization
-      description: Create a new organization with 2 users
+      description: Create a new organization request example
       value:
-        name: Cosmo Tech
+        name: "Cosmo Tech Organization"
+        tags: ["manufacturing", "optimization", "digital-twin"]
         security:
-          default: reader
+          default: "none"
           accessControlList:
-            - id: "jane.doe@cosmotech.com"
+            - id: "admin@cosmotech.com"
+              role: "admin"
+            - id: "dev.team@cosmotech.com"
               role: "editor"
-            - id: "john.doe@cosmotech.com"
+            - id: "data.team@cosmotech.com"
               role: "viewer"
     CosmoOrganization:
-      summary: Cosmo Tech Organization example
-      description: Cosmo Tech Organization example
+      summary: Organization response example
+      description: Example of an organization response after creation
       value:
-        id: "1"
-        name: Cosmo Tech
-        ownerId: "1"
+        id: "o-123456789"
+        name: "Cosmo Tech Organization"
+        ownerId: "admin-user-id"
+        tags: ["manufacturing", "optimization", "digital-twin"]
         security:
-          default: reader
+          default: "none"
           accessControlList:
-            - id: "jane.doe@cosmotech.com"
+            - id: "admin@cosmotech.com"
+              role: "admin"
+            - id: "dev.team@cosmotech.com"
               role: "editor"
-            - id: "john.doe@cosmotech.com"
+            - id: "data.team@cosmotech.com"
               role: "viewer"
     BreweryOrganizationSecurity:
-      summary: Brewery Organization security
-      description: Brewery Organization security example
+      summary: Organization security example
+      description: Example of organization security configuration
       value:
-        default: "viewer"
+        default: "none"
         accessControlList:
-          - id: "bob@mycosmocompany.com"
+          - id: "security.admin@cosmotech.com"
+            role: "admin"
+          - id: "platform.dev@cosmotech.com"
             role: "editor"
+          - id: "data.analyst@cosmotech.com"
+            role: "viewer"
     BreweryOrganizationAccessControl:
-      summary: Set an access control.
-      description: Set an access control for a user to an organization.
+      summary: Add organization access control
+      description: Example request to add a new access control to an organization
       value:
-        id: "bob@mycompany.com"
+        id: "new.user@cosmotech.com"
         role: "editor"
     BreweryOrganizationRole:
       summary: Set an Organization Role.
@@ -555,41 +565,52 @@ components:
       value:
         role: "editor"
     CosmoThreeUsers:
-      summary: Cosmo Tech Organization with 3 users
-      description: Cosmo Tech Organization 3 users example
+      summary: Updated organization response
+      description: Example response after updating organization access control
       value:
-        id: "1"
-        name: Cosmo Tech
+        id: "o-123456789"
+        name: "Cosmo Tech Organization"
+        ownerId: "admin-user-id"
+        tags: ["manufacturing", "optimization", "digital-twin"]
         security:
-          default: reader
+          default: "none"
           accessControlList:
-            - id: "bob.doe@cosmotech.com"
-              role: "viewer"
-            - id: "alice.doe@cosmotech.com"
-              role: "viewer"
-            - id: "xavier.doe@cosmotech.com"
+            - id: "team.lead@cosmotech.com"
+              role: "admin"
+            - id: "developer@cosmotech.com"
               role: "editor"
+            - id: "analyst@cosmotech.com"
+              role: "viewer"
     TwoOrganizations:
-      summary: Two Orgnizations
-      description: Two Organizations example
+      summary: List organizations response
+      description: Example response when listing multiple organizations
       value:
-        - id: "1"
-          name: Cosmo Tech
-          ownerId: "1"
+        - id: "o-123456789"
+          name: "Manufacturing Solutions"
+          ownerId: "admin-id-1"
+          tags: ["manufacturing", "optimization", "digital-twin"]
           security:
-            default: reader
+            default: "none"
             accessControlList:
-              - id: "bob.doe@cosmotech.com"
+              - id: "manufacturing.admin@cosmotech.com"
+                role: "admin"
+              - id: "manufacturing.dev@cosmotech.com"
                 role: "editor"
-              - id: "alice.doe@cosmotech.com"
+              - id: "manufacturing.analyst@cosmotech.com"
                 role: "viewer"
-        - id: "2"
-          name: Phoenix
+        - id: "o-987654321"
+          name: "Supply Chain Analytics"
+          ownerId: "admin-id-2"
+          tags: ["supply-chain", "logistics", "analytics"]
           security:
-            default: rolereader
+            default: "none"
             accessControlList:
-              - id: "bob.doe@cosmotech.com"
+              - id: "supply.admin@cosmotech.com"
+                role: "admin"
+              - id: "supply.dev@cosmotech.com"
                 role: "editor"
+              - id: "supply.analyst@cosmotech.com"
+                role: "viewer"
     BreweryDefaultSecurityRoleWriter:
       summary: Brewery Scenario Writer default security
       description: Brewery Scenario example
@@ -668,4 +689,3 @@ components:
               - validate
               - write_security
               - delete
-
