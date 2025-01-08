@@ -33,15 +33,15 @@ paths:
             schema:
               $ref: '#/components/schemas/Solution'
             examples:
-              Brewery:
-                $ref: '#/components/examples/Brewery'
+              BreweryRequest:
+                $ref: '#/components/examples/BreweryRequest'
           application/yaml:
             schema:
               type: string
               format: binary
             examples:
               ADTConnector:
-                $ref: '#/components/examples/Brewery'
+                $ref: '#/components/examples/BreweryRequest'
       responses:
         "201":
           description: the solution details
@@ -50,8 +50,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Solution'
               examples:
-                Brewery:
-                  $ref: '#/components/examples/Brewery'
+                BreweryResponse:
+                  $ref: '#/components/examples/BreweryResponse'
         "400":
           description: Bad request
     get:
@@ -112,8 +112,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Solution'
               examples:
-                Brewery:
-                  $ref: '#/components/examples/Brewery'
+                BreweryResponse:
+                  $ref: '#/components/examples/BreweryResponse'
         "404":
           description: the Solution specified is unknown or you don't have access to it
     patch:
@@ -128,16 +128,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Solution'
-            examples:
-              BreweryUpdate:
-                $ref: '#/components/examples/BreweryUpdate'
+              examples:
+                BreweryUpdateRequest:
+                  $ref: '#/components/examples/BreweryUpdateRequest'
           application/yaml:
             schema:
               type: string
               format: binary
-            examples:
-              BreweryUpdate:
-                $ref: '#/components/examples/BreweryUpdate'
+              examples:
+                BreweryUpdateRequest:
+                  $ref: '#/components/examples/BreweryUpdateRequest'
       responses:
         "200":
           description: the solution details
@@ -146,8 +146,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Solution'
               examples:
-                BreweryUpdated:
-                  $ref: '#/components/examples/BreweryUpdated'
+                BreweryUpdateResponse:
+                  $ref: '#/components/examples/BreweryUpdateResponse'
         "400":
           description: Bad request
         "404":
@@ -436,16 +436,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SolutionRole'
-            examples:
-              BrewerySolutionRole:
-                $ref: '#/components/examples/BrewerySolutionRole'
+              examples:
+                BrewerySolutionRole:
+                  $ref: '#/components/examples/BrewerySolutionRoleRequest'
           application/yaml:
             schema:
               type: string
               format: binary
-            examples:
-              BrewerySolutionRole:
-                $ref: '#/components/examples/BrewerySolutionRole'
+              examples:
+                BrewerySolutionRole:
+                  $ref: '#/components/examples/BrewerySolutionRoleRequest'
       responses:
         "201":
           description: The Solution default visibility
@@ -514,9 +514,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SolutionAccessControl'
-            examples:
-              SolutionAccess:
-                $ref: '#/components/examples/BrewerySolutionAccessControl'
+              examples:
+                SolutionAccess:
+                  $ref: '#/components/examples/BrewerySolutionAccessControlRequest'
           application/yaml:
             schema:
               type: string
@@ -533,7 +533,7 @@ paths:
                 $ref: '#/components/schemas/SolutionAccessControl'
               examples:
                 SolutionAccessControl:
-                  $ref: '#/components/examples/BrewerySolutionAccessControl'
+                  $ref: '#/components/examples/BrewerySolutionAccessControlResponse'
         "404":
           description: the Solution specified is unknown or you don't have access to it
 
@@ -571,7 +571,7 @@ paths:
                 $ref: '#/components/schemas/SolutionAccessControl'
               examples:
                 SolutionAccessControl:
-                  $ref: '#/components/examples/BrewerySolutionAccessControl'
+                  $ref: '#/components/examples/BrewerySolutionAccessControlResponse'
         "404":
           description: The Solution or user specified is unknown or you don't have access to it
     patch:
@@ -598,7 +598,7 @@ paths:
                 $ref: '#/components/schemas/SolutionAccessControl'
               examples:
                 SolutionAccessControl:
-                  $ref: '#/components/examples/BrewerySolutionAccessControl'
+                  $ref: '#/components/examples/BrewerySolutionAccessControlResponse'
         "404":
           description: The Solution specified is unknown or you don't have access to it
     delete:
@@ -969,13 +969,53 @@ components:
       additionalProperties:
         type: string
   examples:
-    Brewery:
-      summary: Brewery Solution
-      description: Brewery Solution example
+    BreweryRequest:
+      summary: Create Brewery Solution Request
+      description: Example of a request to create a Brewery Solution
+      value:
+        key: Brewery Solution
+        name: Brewery Solution
+        description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
+        repository: brewery_solution
+        version: "1.0.0"
+        url: https://github.com/Cosmo-Tech/brewery_sample_solution
+        tags:
+          - Brewery
+        parameters:
+          - id: prefix
+            labels:
+              fr: Prefix des noms
+              en: Names prefix
+            varType: string
+        parameterGroups:
+          - id: consumers
+            labels:
+              fr: Consommateurs
+              en: Consumers
+            parameters:
+              - prefix
+        runTemplates:
+          - id: hundred
+            name: Full simulation 100 steps
+            description: Run a full simulation with 100 steps
+            csmSimulation: DeployedSimulation
+            tags:
+              - Full
+              - Supply
+            computeSize: highcpu
+            parameterGroups:
+              - consumers
+            deleteHistoricalData:
+              enable: true
+              pollFrequency: 10000
+    BreweryResponse:
+      summary: Brewery Solution Response
+      description: Example of a response after creating a Brewery Solution
       value:
         id: "1"
+        organizationId: "1"
         key: Brewery Solution
-        name:  Brewery Solution
+        name: Brewery Solution
         description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
         repository: brewery_solution
         version: "1.0.0"
@@ -1017,18 +1057,19 @@ components:
               role: "editor"
             - id: "john.doe@cosmotech.com"
               role: "viewer"
-    BreweryUpdate:
-      summary: Brewery Solution update
-      description: Brewery Solution update example
+    BreweryUpdateRequest:
+      summary: Update Brewery Solution Request
+      description: Example of a request to update a Brewery Solution
       value:
         name: Brewery Solution 2021
-    BreweryUpdated:
-      summary: Brewery Solution
-      description: Brewery Solution example
+    BreweryUpdateResponse:
+      summary: Updated Brewery Solution Response
+      description: Example of a response after updating a Brewery Solution
       value:
         id: "1"
+        organizationId: "1"
         key: Brewery Solution
-        name:  Brewery Solution 2021
+        name: Brewery Solution 2021
         description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
         repository: brewery_solution
         version: "1.0.0"
@@ -1060,20 +1101,41 @@ components:
             computeSize: highcpu
             parameterGroups:
               - consumers
-    BrewerySolutionAccessControl:
-      summary: Set an access control.
-      description: Set an access control for a user to a solution.
+            deleteHistoricalData:
+              enable: true
+              pollFrequency: 10000
+        security:
+          default: none
+          accessControlList:
+            - id: "jane.doe@cosmotech.com"
+              role: "editor"
+            - id: "john.doe@cosmotech.com"
+              role: "viewer"
+    BrewerySolutionAccessControlRequest:
+      summary: Set Solution Access Control Request
+      description: Example of a request to set access control for a user to a solution
       value:
         id: "bob.doe@cosmotech.com"
         role: "editor"
-    BrewerySolutionRole:
-      summary: Set a Solution Role.
-      description: Set a Role for a user to a solution.
+    BrewerySolutionAccessControlResponse:
+      summary: Solution Access Control Response
+      description: Example of a response after setting access control for a user to a solution
+      value:
+        id: "bob.doe@cosmotech.com"
+        role: "editor"
+    BrewerySolutionRoleRequest:
+      summary: Set Solution Role Request
+      description: Example of a request to set a role for a user to a solution
+      value:
+        role: "editor"
+    BrewerySolutionRoleResponse:
+      summary: Solution Role Response
+      description: Example of a response after setting a role for a user to a solution
       value:
         role: "editor"
     OneSolution:
-      summary: Brewery Solution
-      description: Brewery Solution example
+      summary: List Solutions Response
+      description: Example of a response when listing solutions
       value:
         - id: "1"
           key: Brewery Solution
