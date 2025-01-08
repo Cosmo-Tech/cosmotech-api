@@ -135,9 +135,9 @@ paths:
             schema:
               type: string
               format: binary
-              examples:
-                BreweryUpdateRequest:
-                  $ref: '#/components/examples/BreweryUpdateRequest'
+            examples:
+              BreweryUpdateRequest:
+                $ref: '#/components/examples/BreweryUpdateRequest'
       responses:
         "200":
           description: the solution details
@@ -443,9 +443,9 @@ paths:
             schema:
               type: string
               format: binary
-              examples:
-                BrewerySolutionRole:
-                  $ref: '#/components/examples/BrewerySolutionRoleRequest'
+            examples:
+              BrewerySolutionRole:
+                $ref: '#/components/examples/BrewerySolutionRoleRequest'
       responses:
         "201":
           description: The Solution default visibility

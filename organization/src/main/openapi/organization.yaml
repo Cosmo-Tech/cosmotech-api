@@ -391,7 +391,6 @@ paths:
           description: Request succeeded
         "404":
           description: the Organization or the user specified is unknown or you don't have access to them
-
   /organizations/{organization_id}/security/users:
     parameters:
       - name: organization_id
@@ -402,6 +401,8 @@ paths:
           type: string
     get:
       operationId: getOrganizationSecurityUsers
+      tags:
+        - organization
       summary: Get the Organization security users list
       responses:
         "200":
