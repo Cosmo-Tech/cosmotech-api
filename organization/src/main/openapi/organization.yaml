@@ -402,8 +402,6 @@ paths:
           type: string
     get:
       operationId: getOrganizationSecurityUsers
-      tags:
-        - organization
       summary: Get the Organization security users list
       responses:
         "200":
@@ -514,7 +512,6 @@ components:
       description: Create a new organization request example
       value:
         name: "Cosmo Tech Organization"
-        tags: ["manufacturing", "optimization", "digital-twin"]
         security:
           default: "none"
           accessControlList:
@@ -531,7 +528,6 @@ components:
         id: "o-123456789"
         name: "Cosmo Tech Organization"
         ownerId: "admin-user-id"
-        tags: ["manufacturing", "optimization", "digital-twin"]
         security:
           default: "none"
           accessControlList:
@@ -571,7 +567,6 @@ components:
         id: "o-123456789"
         name: "Cosmo Tech Organization"
         ownerId: "admin-user-id"
-        tags: ["manufacturing", "optimization", "digital-twin"]
         security:
           default: "none"
           accessControlList:
@@ -588,7 +583,6 @@ components:
         - id: "o-123456789"
           name: "Manufacturing Solutions"
           ownerId: "admin-id-1"
-          tags: ["manufacturing", "optimization", "digital-twin"]
           security:
             default: "none"
             accessControlList:
@@ -601,7 +595,6 @@ components:
         - id: "o-987654321"
           name: "Supply Chain Analytics"
           ownerId: "admin-id-2"
-          tags: ["supply-chain", "logistics", "analytics"]
           security:
             default: "none"
             accessControlList:
