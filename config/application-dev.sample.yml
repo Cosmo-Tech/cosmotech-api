@@ -11,8 +11,11 @@ logging:
     com.cosmotech: DEBUG
     web: INFO
     org.springframework: WARN
+    org.springframework.security: INFO
+    com.redis: INFO
 
 server:
+  port: 8080
   error:
     whitelabel:
       enabled: true
@@ -28,53 +31,117 @@ management:
       exposure:
         include: "*"
   server:
-    port: 8080
+    port: 8081
+
+spring:
+  ssl:
+    bundle:
+      pem:
+        keycloak:
+          truststore:
+            certificate: "classpath:GandiRSADomainValidationSecureServerCA3.pem"
 
 csm:
   platform:
+    containerRegistry:
+      checkSolutionImage : false
+    api:
+      base-path: /
+      base-url: "[fill-this-value]" # e.g for running it locally http://localhost:8080
+      version: latest
+    id-generator:
+      type: hashid
+    event-publisher:
+      type: in_process
+    authorization:
+      roles-jwt-claim: "userRoles"
+      principal-jwt-claim: "email"
+      allowedTenants:
+        - "[fill-this-value]" # NAMESPACE
     identityProvider:
-      code: azure
-      # Use to overwrite openAPI configuration
-      authorizationUrl: "[fill-this-value]"
-      tokenUrl: "[fill-this-value]"
+      tls:
+        enabled: true
+        bundle: "keycloak"
+      audience: account
+      authorizationUrl: "https://kubernetes.cosmotech.com/keycloak/realms/brewery/protocol/openid-connect/auth"
+      code: keycloak
       defaultScopes:
-        "[fill-this-value]": "[fill-this-value]"
-      containerScopes:
-        "[fill-this-value]": "[fill-this-value]"
-      # Here you can set custom user and admin groups
-      # - adminGroup will have same rights that Platform.Admin
-      # - userGroup will have same rights that Organization.User
-      # - viewerGroup will have same rights that Organization.Viewer
-      # adminGroup : "myCustomAdminGroup"
-      # userGroup : "myCustomUserGroup"
-      # userGroup : "myCustomViewerGroup"
-    storage:
-      host: "localhost"
-      reader:
-        username: "storage_reader_username"
-        password: "storage_reader_password"
-      admin:
-        username: "storage_admin_username"
-        password: "storage_admin_password"
-    eventbus:
-      host: "localhost"
-      username: "eventbus_admin_username"
-      password: "eventbus_admin_password"
-    blobPersistence:
-      path: /tmp/cosmotech-api-data-dev
-    argo:
-      base-uri: "http://localhost:2746"
-    azure:
-      credentials:
-        # TODO Fill these values or reach out to the Cosmo Tech Platform Team for support
-        tenantId: "e413b834-8be8-4822-a370-be619545cb49"
+        openid: OpenId Scope
+      identity:
         clientId: "[fill-this-value]"
         clientSecret: "[fill-this-value]"
-      dataWarehouseCluster:
-        baseUri: "https://phoenixdev.westeurope.kusto.windows.net"
-        options:
-          ingestionUri: "https://ingest-phoenixdev.westeurope.kusto.windows.net"
+        tenantId: "[fill-this-value]" # NAMESPACE
+      serverBaseUrl: "[fill-this-value]" # e.g https://kubernetes.cosmotech.com/keycloak
+      tokenUrl: "[fill-this-value]" # eg. https://kubernetes.cosmotech.com/keycloak/realms/brewery/protocol/openid-connect/token
+    metrics:
+      enabled: false
+    argo:
+      base-uri: "http://localhost:2746"
+      workflows:
+        namespace: "[fill-this-value]" # NAMESPACE
+        service-account-name: "[fill-this-value]" # e.g argo-workflows-$NAMESPACE-service-account
+        nodePoolLabel: ""
+    loki:
+      # base Url of Loki where to query logs
+      baseUrl: http://localhost:3100
+      containerRegistry:
+        host: "[fill-this-value]"
+        password: "[fill-this-value]"
+        provider: "[fill-this-value]"
+        registryPassword: "[fill-this-value]"
+        registryUrl: "[fill-this-value]"
+        registryUserName: "[fill-this-value]"
+        scheme: https
+        username: "[fill-this-value]"
+    images:
+      scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
+      send-datawarehouse: cosmo-tech/azure-data-explorer-connector
+      scenario-data-upload: cosmo-tech/azure-storage-publish:latest
+    containers:
+      - name: "ADTTwingraphImport"
+        imageRegistry: "ghcr.io"
+        imageName: "cosmo-tech/adt-twincache-connector"
+        imageVersion: "0.3.0"
+      - name: "AzureStorageTwingraphImport"
+        imageRegistry: "ghcr.io"
+        imageName: "cosmo-tech/azstorage-twincache-connector"
+        imageVersion: "1.2.0"
+      - name: "TwincacheConnector"
+        imageRegistry: "ghcr.io"
+        imageName: "cosmo-tech/twincache-connector"
+        imageVersion: "0.4.1"
+    twincache:
+      host: "localhost"
+      password: ""[fill-this-value]""
+      port: 6379
+      tls:
+        enabled: false
+      username: default
+    internalResultServices:
+      enabled: false
       eventBus:
-        baseUri: "amqps://phoenixdev.servicebus.windows.net"
-      containerRegistries:
-        solutions: "localhost:5000"
+        enabled: false
+        host: "[fill-this-value]" #e.g rabbitmq-NAMESPACE.NAMESPACE.svc.cluster.local
+        listener:
+          password: "[fill-this-value]"
+          username: "[fill-this-value]"
+        port: 5672
+        sender:
+          password: "[fill-this-value]"
+          username: "[fill-this-value]"
+        tls:
+          enabled: false
+      storage:
+        admin:
+          password: "[fill-this-value]"
+          username: "[fill-this-value]"
+        host: "[fill-this-value]" # postgresql-NAMESPACE.NAMESPACE.svc.cluster.local
+        port: 5432
+        reader:
+          password: "[fill-this-value]"
+          username: cosmotech_api_reader
+        writer:
+          password: "[fill-this-value]"
+          username: cosmotech_api_writer
+
+
