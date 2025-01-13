@@ -55,7 +55,7 @@ paths:
         "400":
           description: Bad request
     get:
-      operationId: findAllWorkspaces
+      operationId: listWorkspaces
       parameters:
         - name: page
           in: query
@@ -99,7 +99,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: findWorkspaceById
+      operationId: getWorkspace
       tags:
         - workspace
       summary: Get the details of an workspace
@@ -246,7 +246,7 @@ paths:
         "400":
           description: Bad request
     get:
-      operationId: findAllWorkspaceFiles
+      operationId: listWorkspaceFiles
       tags:
         - workspace
       summary: List all Workspace files
@@ -265,7 +265,7 @@ paths:
         "404":
           description: the Workspace specified is unknown or you don't have access to it
     delete:
-      operationId: deleteAllWorkspaceFiles
+      operationId: deleteWorkspaceFiles
       tags:
         - workspace
       summary: Delete all Workspace files
@@ -296,7 +296,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: downloadWorkspaceFile
+      operationId: getWorkspaceFile
       tags:
         - workspace
       summary: Download the Workspace File specified
@@ -364,7 +364,7 @@ paths:
           required: true
           schema:
             type: string
-      operationId: linkDataset
+      operationId: linkWorkspaceDataset
       tags:
         - workspace
       responses:
@@ -404,7 +404,7 @@ paths:
           required: true
           schema:
             type: string
-      operationId: unlinkDataset
+      operationId: unlinkWorkspaceDataset
       tags:
         - workspace
       responses:
@@ -658,7 +658,7 @@ paths:
         "404":
           description: The Workspace specified is unknown or you don't have access to it
     delete:
-      operationId: removeWorkspaceAccessControl
+      operationId: deleteWorkspaceAccessControl
       tags:
         - workspace
       summary: Remove the specified access from the given Organization Workspace
@@ -683,7 +683,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getWorkspaceSecurityUsers
+      operationId: listWorkspaceSecurityUsers
       tags:
         - workspace
       summary: Get the Workspace security users list
@@ -1101,4 +1101,3 @@ components:
         - fileName: myData.csv
         - fileName: myData2.csv
         - fileName: myData3.csv
-
