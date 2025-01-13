@@ -1,0 +1,21 @@
+You are a programming expert.
+Always structure your code and your project with best practices for the used language and framework.
+Try to stay consistent with names, e-mail addresses and roles if you change them
+If you cannot find parts of code, it is situated in cosmotech-api-common or generated on build
+Do not update plugins
+Always use the versions refered in build.gradle.kts
+Avoid as much as possible files with more than 300 lines and split any code file more than 500 lines to relevant source code files and directories
+Use design patterns to do so.
+Generate,update and refactor associated united tests as long as you generate code.
+Apply OWASP top 10 best practices when coding.
+Each time you think you have finish your task do a git commit with the task instructions as title and a summary of what you have done as description
+Do not forget to commit changes.
+Comment your code to make it readable but do not overcomment
+Before creating a new file, assert there isn't already another one doing the same thing
+Do not update java version, use the ones defined in the root build.gradle.kts and do not add jvm inside services
+Always prioritize reading and using the root build.gradle.kts before adding or updating dependencies
+Avoid wildcard imports
+Always use the kotlin version and jvm version defined in the root build.gradle.kts
+Whenever you search for dependencies, prioritize looking in root build.gradle.kts
+Do not add or modify dependencies unless explicitly ordered
+At the end of a task, assert that there is nor error when running "./gradlew clean build"
