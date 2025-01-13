@@ -4,25 +4,50 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**addOrganizationAccessControl**](OrganizationApi.md#addOrganizationAccessControl) | **POST** /organizations/{organization_id}/security/access | Add a control access to the Organization |
-| [**findAllOrganizations**](OrganizationApi.md#findAllOrganizations) | **GET** /organizations | List all Organizations |
-| [**findOrganizationById**](OrganizationApi.md#findOrganizationById) | **GET** /organizations/{organization_id} | Get the details of an Organization |
-| [**getAllPermissions**](OrganizationApi.md#getAllPermissions) | **GET** /organizations/permissions | Get all permissions per components |
+| [**createOrganization**](OrganizationApi.md#createOrganization) | **POST** /organizations | create a new organization |
+| [**createOrganizationAccessControl**](OrganizationApi.md#createOrganizationAccessControl) | **POST** /organizations/{organization_id}/security/access | Add a control access to the Organization |
+| [**deleteOrganization**](OrganizationApi.md#deleteOrganization) | **DELETE** /organizations/{organization_id} | delete an organization |
+| [**deleteOrganizationAccessControl**](OrganizationApi.md#deleteOrganizationAccessControl) | **DELETE** /organizations/{organization_id}/security/access/{identity_id} | Remove the specified access from the given Organization |
+| [**getOrganization**](OrganizationApi.md#getOrganization) | **GET** /organizations/{organization_id} | Get the details of an Organization |
 | [**getOrganizationAccessControl**](OrganizationApi.md#getOrganizationAccessControl) | **GET** /organizations/{organization_id}/security/access/{identity_id} | Get a control access for the Organization |
 | [**getOrganizationPermissions**](OrganizationApi.md#getOrganizationPermissions) | **GET** /organizations/{organization_id}/permissions/{role} | Get the Organization permissions by given role |
 | [**getOrganizationSecurity**](OrganizationApi.md#getOrganizationSecurity) | **GET** /organizations/{organization_id}/security | Get the Organization security information |
-| [**getOrganizationSecurityUsers**](OrganizationApi.md#getOrganizationSecurityUsers) | **GET** /organizations/{organization_id}/security/users | Get the Organization security users list |
-| [**registerOrganization**](OrganizationApi.md#registerOrganization) | **POST** /organizations | Register a new organization |
-| [**removeOrganizationAccessControl**](OrganizationApi.md#removeOrganizationAccessControl) | **DELETE** /organizations/{organization_id}/security/access/{identity_id} | Remove the specified access from the given Organization |
-| [**setOrganizationDefaultSecurity**](OrganizationApi.md#setOrganizationDefaultSecurity) | **POST** /organizations/{organization_id}/security/default | Set the Organization default security |
-| [**unregisterOrganization**](OrganizationApi.md#unregisterOrganization) | **DELETE** /organizations/{organization_id} | Unregister an organization |
+| [**listOrganizationSecurityUsers**](OrganizationApi.md#listOrganizationSecurityUsers) | **GET** /organizations/{organization_id}/security/users | Get the Organization security users list |
+| [**listOrganizations**](OrganizationApi.md#listOrganizations) | **GET** /organizations | List all Organizations |
+| [**listPermissions**](OrganizationApi.md#listPermissions) | **GET** /organizations/permissions | Get all permissions per components |
 | [**updateOrganization**](OrganizationApi.md#updateOrganization) | **PATCH** /organizations/{organization_id} | Update an Organization |
 | [**updateOrganizationAccessControl**](OrganizationApi.md#updateOrganizationAccessControl) | **PATCH** /organizations/{organization_id}/security/access/{identity_id} | Update the specified access to User for an Organization |
+| [**updateOrganizationDefaultSecurity**](OrganizationApi.md#updateOrganizationDefaultSecurity) | **POST** /organizations/{organization_id}/security/default | Update the Organization default security |
 
 
-<a name="addOrganizationAccessControl"></a>
-# **addOrganizationAccessControl**
-> OrganizationAccessControl addOrganizationAccessControl(organization\_id, OrganizationAccessControl)
+<a name="createOrganization"></a>
+# **createOrganization**
+> Organization createOrganization(Organization)
+
+create a new organization
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **Organization** | [**Organization**](../Models/Organization.md)| the Organization to create | |
+
+### Return type
+
+[**Organization**](../Models/Organization.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
+<a name="createOrganizationAccessControl"></a>
+# **createOrganizationAccessControl**
+> OrganizationAccessControl createOrganizationAccessControl(organization\_id, OrganizationAccessControl)
 
 Add a control access to the Organization
 
@@ -46,22 +71,21 @@ Add a control access to the Organization
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
-<a name="findAllOrganizations"></a>
-# **findAllOrganizations**
-> List findAllOrganizations(page, size)
+<a name="deleteOrganization"></a>
+# **deleteOrganization**
+> deleteOrganization(organization\_id)
 
-List all Organizations
+delete an organization
 
 ### Parameters
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **page** | **Integer**| page number to query (first page is at index 0) | [optional] [default to null] |
-| **size** | **Integer**| amount of result by page | [optional] [default to null] |
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
 
 ### Return type
 
-[**List**](../Models/Organization.md)
+null (empty response body)
 
 ### Authorization
 
@@ -70,11 +94,37 @@ List all Organizations
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
-<a name="findOrganizationById"></a>
-# **findOrganizationById**
-> Organization findOrganizationById(organization\_id)
+<a name="deleteOrganizationAccessControl"></a>
+# **deleteOrganizationAccessControl**
+> deleteOrganizationAccessControl(organization\_id, identity\_id)
+
+Remove the specified access from the given Organization
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **identity\_id** | **String**| the User identifier | [default to null] |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="getOrganization"></a>
+# **getOrganization**
+> Organization getOrganization(organization\_id)
 
 Get the details of an Organization
 
@@ -87,28 +137,6 @@ Get the details of an Organization
 ### Return type
 
 [**Organization**](../Models/Organization.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-<a name="getAllPermissions"></a>
-# **getAllPermissions**
-> List getAllPermissions()
-
-Get all permissions per components
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-[**List**](../Models/ComponentRolePermissions.md)
 
 ### Authorization
 
@@ -196,9 +224,9 @@ Get the Organization security information
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getOrganizationSecurityUsers"></a>
-# **getOrganizationSecurityUsers**
-> List getOrganizationSecurityUsers(organization\_id)
+<a name="listOrganizationSecurityUsers"></a>
+# **listOrganizationSecurityUsers**
+> List listOrganizationSecurityUsers(organization\_id)
 
 Get the Organization security users list
 
@@ -221,47 +249,22 @@ Get the Organization security users list
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="registerOrganization"></a>
-# **registerOrganization**
-> Organization registerOrganization(Organization)
+<a name="listOrganizations"></a>
+# **listOrganizations**
+> List listOrganizations(page, size)
 
-Register a new organization
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **Organization** | [**Organization**](../Models/Organization.md)| the Organization to register | |
-
-### Return type
-
-[**Organization**](../Models/Organization.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
-
-<a name="removeOrganizationAccessControl"></a>
-# **removeOrganizationAccessControl**
-> removeOrganizationAccessControl(organization\_id, identity\_id)
-
-Remove the specified access from the given Organization
+List all Organizations
 
 ### Parameters
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **page** | **Integer**| page number to query (first page is at index 0) | [optional] [default to null] |
+| **size** | **Integer**| amount of result by page | [optional] [default to null] |
 
 ### Return type
 
-null (empty response body)
+[**List**](../Models/Organization.md)
 
 ### Authorization
 
@@ -270,49 +273,20 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
-
-<a name="setOrganizationDefaultSecurity"></a>
-# **setOrganizationDefaultSecurity**
-> OrganizationSecurity setOrganizationDefaultSecurity(organization\_id, OrganizationRole)
-
-Set the Organization default security
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| This change the organization default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the organization. | |
-
-### Return type
-
-[**OrganizationSecurity**](../Models/OrganizationSecurity.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
-<a name="unregisterOrganization"></a>
-# **unregisterOrganization**
-> unregisterOrganization(organization\_id)
+<a name="listPermissions"></a>
+# **listPermissions**
+> List listPermissions()
 
-Unregister an organization
+Get all permissions per components
 
 ### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
+This endpoint does not need any parameter.
 
 ### Return type
 
-null (empty response body)
+[**List**](../Models/ComponentRolePermissions.md)
 
 ### Authorization
 
@@ -321,7 +295,7 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: application/json
 
 <a name="updateOrganization"></a>
 # **updateOrganization**
@@ -374,5 +348,31 @@ Update the specified access to User for an Organization
 ### HTTP request headers
 
 - **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="updateOrganizationDefaultSecurity"></a>
+# **updateOrganizationDefaultSecurity**
+> OrganizationSecurity updateOrganizationDefaultSecurity(organization\_id, OrganizationRole)
+
+Update the Organization default security
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| This change the organization default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the organization. | |
+
+### Return type
+
+[**OrganizationSecurity**](../Models/OrganizationSecurity.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 

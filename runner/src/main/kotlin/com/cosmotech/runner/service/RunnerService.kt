@@ -79,7 +79,7 @@ class RunnerService(
   }
 
   fun inOrganization(organizationId: String): RunnerService = apply {
-    this.organization = organizationApiService.findOrganizationById(organizationId)
+    this.organization = organizationApiService.getOrganization(organizationId)
   }
 
   fun inWorkspace(workspaceId: String): RunnerService = apply {

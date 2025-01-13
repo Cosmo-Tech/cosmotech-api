@@ -540,7 +540,7 @@ class DatasetServiceImplTests {
   fun `test downloadGraph as Admin - should throw exception if data not found`() {
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk()
+    every { organizationService.getOrganization(any()) } returns mockk()
     every { unifiedJedis.exists(any<ByteArray>()) } returns false
 
     assertThrows<CsmResourceNotFoundException> {
