@@ -1941,7 +1941,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
     val otherUserACL = OrganizationAccessControl(id = OTHER_TEST_USER_ID, role = ROLE_VIEWER)
     organizationApiService.createOrganizationAccessControl(
-        organizationRegistered.id!!, otherUserACL)
+          organizationRegistered.id!!, otherUserACL)
 
     organizationApiService.deleteOrganizationAccessControl(
         organizationRegistered.id!!, OTHER_TEST_USER_ID)
@@ -1960,7 +1960,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
     val otherUserACL = OrganizationAccessControl(id = TEST_USER_ID, role = ROLE_ADMIN)
     organizationApiService.createOrganizationAccessControl(
-        organizationRegistered.id!!, otherUserACL)
+          organizationRegistered.id!!, otherUserACL)
 
     runAsPlatformAdmin()
     organizationApiService.deleteOrganizationAccessControl(
@@ -1980,7 +1980,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
     val otherUserACL = OrganizationAccessControl(id = TEST_USER_ID, role = ROLE_ADMIN)
     organizationApiService.createOrganizationAccessControl(
-        organizationRegistered.id!!, otherUserACL)
+          organizationRegistered.id!!, otherUserACL)
 
     runAsPlatformAdmin()
     organizationApiService.deleteOrganizationAccessControl(

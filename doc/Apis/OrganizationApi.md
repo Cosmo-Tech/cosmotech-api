@@ -4,9 +4,9 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**createOrganization**](OrganizationApi.md#createOrganization) | **POST** /organizations | Create a new organization |
+| [**createOrganization**](OrganizationApi.md#createOrganization) | **POST** /organizations | create a new organization |
 | [**createOrganizationAccessControl**](OrganizationApi.md#createOrganizationAccessControl) | **POST** /organizations/{organization_id}/security/access | Add a control access to the Organization |
-| [**deleteOrganization**](OrganizationApi.md#deleteOrganization) | **DELETE** /organizations/{organization_id} | Delete an organization |
+| [**deleteOrganization**](OrganizationApi.md#deleteOrganization) | **DELETE** /organizations/{organization_id} | delete an organization |
 | [**deleteOrganizationAccessControl**](OrganizationApi.md#deleteOrganizationAccessControl) | **DELETE** /organizations/{organization_id}/security/access/{identity_id} | Remove the specified access from the given Organization |
 | [**getOrganization**](OrganizationApi.md#getOrganization) | **GET** /organizations/{organization_id} | Get the details of an Organization |
 | [**getOrganizationAccessControl**](OrganizationApi.md#getOrganizationAccessControl) | **GET** /organizations/{organization_id}/security/access/{identity_id} | Get a control access for the Organization |
@@ -22,15 +22,15 @@ All URIs are relative to *http://localhost*
 
 <a name="createOrganization"></a>
 # **createOrganization**
-> Organization createOrganization(OrganizationCreateRequest)
+> Organization createOrganization(Organization)
 
-Create a new organization
+create a new organization
 
 ### Parameters
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **OrganizationCreateRequest** | [**OrganizationCreateRequest**](../Models/OrganizationCreateRequest.md)| the Organization to create | |
+| **Organization** | [**Organization**](../Models/Organization.md)| the Organization to create | |
 
 ### Return type
 
@@ -75,7 +75,7 @@ Add a control access to the Organization
 # **deleteOrganization**
 > deleteOrganization(organization\_id)
 
-Delete an organization
+delete an organization
 
 ### Parameters
 
@@ -299,7 +299,7 @@ This endpoint does not need any parameter.
 
 <a name="updateOrganization"></a>
 # **updateOrganization**
-> Organization updateOrganization(organization\_id, OrganizationUpdateRequest)
+> Organization updateOrganization(organization\_id, Organization)
 
 Update an Organization
 
@@ -308,7 +308,7 @@ Update an Organization
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationUpdateRequest** | [**OrganizationUpdateRequest**](../Models/OrganizationUpdateRequest.md)| the new Organization details. This endpoint can&#39;t be used to update security | |
+| **Organization** | [**Organization**](../Models/Organization.md)| the new Organization details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
 
