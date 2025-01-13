@@ -1,155 +1,153 @@
-components:
-  examples:
-    ADTConnectorRequest:
-      summary: ADT Connector Request
-      description: Example request body for registering an ADT connector
-      value:
-        key: azure-dt
-        name: Azure Digital Twins Connector
-        description: Connector for Azure Digital Twins integration - reads ADT data and exports to CSV
-        repository: cosmotech/azure-digital-twins-connector
-        version: "2.0.0"
-        tags:
-          - azure
-          - adt
-          - digital-twins
-        url: https://github.com/Cosmo-Tech/azure-digital-twins-connector
-        ioTypes:
-          - read
-        parameterGroups:
-          - id: authentication
-            label: Azure Authentication
-            parameters:
-              - id: AZURE_TENANT_ID
-                label: Azure Tenant ID
-                valueType: string
-                envVar: AZURE_TENANT_ID
-              - id: AZURE_CLIENT_ID
-                label: Azure Client ID
-                valueType: string
-                envVar: AZURE_CLIENT_ID
-              - id: AZURE_CLIENT_SECRET
-                label: Azure Client Secret
-                valueType: password
-                envVar: AZURE_CLIENT_SECRET
-          - id: configuration
-            label: ADT Configuration
-            parameters:
-              - id: AZURE_DT_ENDPOINT
-                label: ADT Instance Endpoint
-                valueType: string
-                envVar: AZURE_DT_ENDPOINT
-              - id: QUERY_FILTER
-                label: ADT Query Filter
-                valueType: string
-                envVar: ADT_QUERY_FILTER
-                default: SELECT * FROM digitaltwins
-              - id: OUTPUT_PATH
-                label: Output File Path
-                valueType: string
-                default: /data/output
-                envVar: CSV_OUTPUT_PATH
+ADTConnectorRequest:
+  summary: ADT Connector Request
+  description: Example request body for registering an ADT connector
+  value:
+    key: azure-dt
+    name: Azure Digital Twins Connector
+    description: Connector for Azure Digital Twins integration - reads ADT data and exports to CSV
+    repository: cosmotech/azure-digital-twins-connector
+    version: "2.0.0"
+    tags:
+      - azure
+      - adt
+      - digital-twins
+    url: https://github.com/Cosmo-Tech/azure-digital-twins-connector
+    ioTypes:
+      - read
+    parameterGroups:
+      - id: authentication
+        label: Azure Authentication
+        parameters:
+          - id: AZURE_TENANT_ID
+            label: Azure Tenant ID
+            valueType: string
+            envVar: AZURE_TENANT_ID
+          - id: AZURE_CLIENT_ID
+            label: Azure Client ID
+            valueType: string
+            envVar: AZURE_CLIENT_ID
+          - id: AZURE_CLIENT_SECRET
+            label: Azure Client Secret
+            valueType: password
+            envVar: AZURE_CLIENT_SECRET
+      - id: configuration
+        label: ADT Configuration
+        parameters:
+          - id: AZURE_DT_ENDPOINT
+            label: ADT Instance Endpoint
+            valueType: string
+            envVar: AZURE_DT_ENDPOINT
+          - id: QUERY_FILTER
+            label: ADT Query Filter
+            valueType: string
+            envVar: ADT_QUERY_FILTER
+            default: SELECT * FROM digitaltwins
+          - id: OUTPUT_PATH
+            label: Output File Path
+            valueType: string
+            default: /data/output
+            envVar: CSV_OUTPUT_PATH
 
-    ADTConnectorResponse:
-      summary: ADT Connector Response
-      description: Example response for a registered ADT connector
-      value:
-        id: "c12e3456-78ab-90cd-efgh-ijklmnopqrst"
-        key: azure-dt
-        name: Azure Digital Twins Connector
-        description: Connector for Azure Digital Twins integration - reads ADT data and exports to CSV
-        repository: cosmotech/azure-digital-twins-connector
-        version: "2.0.0"
-        tags:
-          - azure
-          - adt
-          - digital-twins
-        ownerId: "u98f7654-32dc-10ba-hgfe-tsrqponmlkji"
-        url: https://github.com/Cosmo-Tech/azure-digital-twins-connector
-        ioTypes:
-          - read
-        parameterGroups:
-          - id: authentication
-            label: Azure Authentication
-            parameters:
-              - id: AZURE_TENANT_ID
-                label: Azure Tenant ID
-                valueType: string
-                envVar: AZURE_TENANT_ID
-              - id: AZURE_CLIENT_ID
-                label: Azure Client ID
-                valueType: string
-                envVar: AZURE_CLIENT_ID
-              - id: AZURE_CLIENT_SECRET
-                label: Azure Client Secret
-                valueType: password
-                envVar: AZURE_CLIENT_SECRET
-          - id: configuration
-            label: ADT Configuration
-            parameters:
-              - id: AZURE_DT_ENDPOINT
-                label: ADT Instance Endpoint
-                valueType: string
-                envVar: AZURE_DT_ENDPOINT
-              - id: QUERY_FILTER
-                label: ADT Query Filter
-                valueType: string
-                envVar: ADT_QUERY_FILTER
-                default: SELECT * FROM digitaltwins
-              - id: OUTPUT_PATH
-                label: Output File Path
-                valueType: string
-                default: /data/output
-                envVar: CSV_OUTPUT_PATH
+ADTConnectorResponse:
+  summary: ADT Connector Response
+  description: Example response for a registered ADT connector
+  value:
+    id: "c12e3456-78ab-90cd-efgh-ijklmnopqrst"
+    key: azure-dt
+    name: Azure Digital Twins Connector
+    description: Connector for Azure Digital Twins integration - reads ADT data and exports to CSV
+    repository: cosmotech/azure-digital-twins-connector
+    version: "2.0.0"
+    tags:
+      - azure
+      - adt
+      - digital-twins
+    ownerId: "u98f7654-32dc-10ba-hgfe-tsrqponmlkji"
+    url: https://github.com/Cosmo-Tech/azure-digital-twins-connector
+    ioTypes:
+      - read
+    parameterGroups:
+      - id: authentication
+        label: Azure Authentication
+        parameters:
+          - id: AZURE_TENANT_ID
+            label: Azure Tenant ID
+            valueType: string
+            envVar: AZURE_TENANT_ID
+          - id: AZURE_CLIENT_ID
+            label: Azure Client ID
+            valueType: string
+            envVar: AZURE_CLIENT_ID
+          - id: AZURE_CLIENT_SECRET
+            label: Azure Client Secret
+            valueType: password
+            envVar: AZURE_CLIENT_SECRET
+      - id: configuration
+        label: ADT Configuration
+        parameters:
+          - id: AZURE_DT_ENDPOINT
+            label: ADT Instance Endpoint
+            valueType: string
+            envVar: AZURE_DT_ENDPOINT
+          - id: QUERY_FILTER
+            label: ADT Query Filter
+            valueType: string
+            envVar: ADT_QUERY_FILTER
+            default: SELECT * FROM digitaltwins
+          - id: OUTPUT_PATH
+            label: Output File Path
+            valueType: string
+            default: /data/output
+            envVar: CSV_OUTPUT_PATH
 
-    ConnectorListResponse:
-      summary: Connector List Response
-      description: Example response for listing connectors
-      value:
-        - id: "c12e3456-78ab-90cd-efgh-ijklmnopqrst"
-          key: azure-dt
-          name: Azure Digital Twins Connector
-          description: Connector for Azure Digital Twins integration - reads ADT data and exports to CSV
-          repository: cosmotech/azure-digital-twins-connector
-          version: "2.0.0"
-          tags:
-            - azure
-            - adt
-            - digital-twins
-          ownerId: "u98f7654-32dc-10ba-hgfe-tsrqponmlkji"
-          url: https://github.com/Cosmo-Tech/azure-digital-twins-connector
-          ioTypes:
-            - read
-          parameterGroups:
-            - id: authentication
-              label: Azure Authentication
-              parameters:
-                - id: AZURE_TENANT_ID
-                  label: Azure Tenant ID
-                  valueType: string
-                  envVar: AZURE_TENANT_ID
-                - id: AZURE_CLIENT_ID
-                  label: Azure Client ID
-                  valueType: string
-                  envVar: AZURE_CLIENT_ID
-                - id: AZURE_CLIENT_SECRET
-                  label: Azure Client Secret
-                  valueType: password
-                  envVar: AZURE_CLIENT_SECRET
-            - id: configuration
-              label: ADT Configuration
-              parameters:
-                - id: AZURE_DT_ENDPOINT
-                  label: ADT Instance Endpoint
-                  valueType: string
-                  envVar: AZURE_DT_ENDPOINT
-                - id: QUERY_FILTER
-                  label: ADT Query Filter
-                  valueType: string
-                  envVar: ADT_QUERY_FILTER
-                  default: SELECT * FROM digitaltwins
-                - id: OUTPUT_PATH
-                  label: Output File Path
-                  valueType: string
-                  default: /data/output
-                  envVar: CSV_OUTPUT_PATH
+ConnectorListResponse:
+  summary: Connector List Response
+  description: Example response for listing connectors
+  value:
+    - id: "c12e3456-78ab-90cd-efgh-ijklmnopqrst"
+      key: azure-dt
+      name: Azure Digital Twins Connector
+      description: Connector for Azure Digital Twins integration - reads ADT data and exports to CSV
+      repository: cosmotech/azure-digital-twins-connector
+      version: "2.0.0"
+      tags:
+        - azure
+        - adt
+        - digital-twins
+      ownerId: "u98f7654-32dc-10ba-hgfe-tsrqponmlkji"
+      url: https://github.com/Cosmo-Tech/azure-digital-twins-connector
+      ioTypes:
+        - read
+      parameterGroups:
+        - id: authentication
+          label: Azure Authentication
+          parameters:
+            - id: AZURE_TENANT_ID
+              label: Azure Tenant ID
+              valueType: string
+              envVar: AZURE_TENANT_ID
+            - id: AZURE_CLIENT_ID
+              label: Azure Client ID
+              valueType: string
+              envVar: AZURE_CLIENT_ID
+            - id: AZURE_CLIENT_SECRET
+              label: Azure Client Secret
+              valueType: password
+              envVar: AZURE_CLIENT_SECRET
+        - id: configuration
+          label: ADT Configuration
+          parameters:
+            - id: AZURE_DT_ENDPOINT
+              label: ADT Instance Endpoint
+              valueType: string
+              envVar: AZURE_DT_ENDPOINT
+            - id: QUERY_FILTER
+              label: ADT Query Filter
+              valueType: string
+              envVar: ADT_QUERY_FILTER
+              default: SELECT * FROM digitaltwins
+            - id: OUTPUT_PATH
+              label: Output File Path
+              valueType: string
+              default: /data/output
+              envVar: CSV_OUTPUT_PATH

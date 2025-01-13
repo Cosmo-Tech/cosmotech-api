@@ -1,8 +1,9 @@
 openapi: 3.0.3
 
 info:
-  title: ""
-  version: ""
+  title: "Cosmotech Connector API"
+  version: "3.0.0"
+  description: "Cosmotech Connector API"
 
 security:
   - oAuth2AuthCode: []
@@ -12,7 +13,10 @@ tags:
   description: Connector Management
 
 paths:
-  $ref: './paths/connector.yaml#/'
+  /connectors:
+    $ref: './paths/connector.yaml#/paths/connectors'
+  '/connectors/{connector_id}':
+    $ref: './paths/connector.yaml#/paths/connectors/{connector_id}'
 
 components:
   securitySchemes:
@@ -25,6 +29,18 @@ components:
           tokenUrl: "https://example.com/token"
           scopes: {}
   schemas:
-    $ref: './schemas/connector.yaml#/components/schemas'
+    Connector:
+      $ref: './schemas/connector.yaml#/Connector'
+    ioTypesEnum:
+      $ref: './schemas/connector.yaml#/ioTypesEnum'
+    ConnectorParameterGroup:
+      $ref: './schemas/connector.yaml#/ConnectorParameterGroup'
+    ConnectorParameter:
+      $ref: './schemas/connector.yaml#/ConnectorParameter'
   examples:
-    $ref: './examples/connector.yaml#/components/examples'
+    ADTConnectorRequest:
+      $ref: './examples/connector.yaml#/ADTConnectorRequest'
+    ADTConnectorResponse:
+      $ref: './examples/connector.yaml#/ADTConnectorResponse'
+    ConnectorListResponse:
+      $ref: './examples/connector.yaml#/ConnectorListResponse'

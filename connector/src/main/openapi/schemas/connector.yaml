@@ -1,101 +1,99 @@
-components:
-  schemas:
-    Connector:
-      type: object
-      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
-      description: a version of a Connector
-      properties:
-        id:
-          type: string
-          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
-          readOnly: true
-          description: the Connector version unique identifier
-        key:
-          type: string
-          description: the Connector key which group Connector versions
-        name:
-          type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
-          description: the Connector name
-        description:
-          type: string
-          description: the Connector description
-        repository:
-          type: string
-          description: the registry repository containing the image
-        version:
-          type: string
-          description: the Connector version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
-        tags:
-          type: array
-          description: the list of tags
-          items:
-            type: string
-        ownerId:
-          type: string
-          readOnly: true
-          description: the user id which own this connector version
-        url:
-          type: string
-          description: an optional URL link to connector page
-        ioTypes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ioTypesEnum'
-        parameterGroups:
-          type: array
-          description: the list of connector parameters groups
-          items:
-            $ref: '#/components/schemas/ConnectorParameterGroup'
-    ioTypesEnum:
+Connector:
+  type: object
+  x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
+  description: a version of a Connector
+  properties:
+    id:
       type: string
-      description: The read and write capabilities of connector
-      enum:
-        - read
-        - write
-    ConnectorParameterGroup:
-      type: object
-      description: a connector parameters group
-      properties:
-        id:
-          type: string
-          description: the connector parameter group id
-        label:
-          type: string
-          description: the list of translated parameter group labels
-        parameters:
-          type: array
-          description: the list of parameters
-          items:
-            $ref: '#/components/schemas/ConnectorParameter'
-      required:
-        - id
-        - label
-        - parameters
-    ConnectorParameter:
-      type: object
-      description: a connector parameter
-      properties:
-        id:
-          type: string
-          description: the connector parameter id
-        label:
-          type: string
-          description: the list of translated parameter group labels
-        valueType:
-          type: string
-          description: the parameter value type
-        options:
-          type: array
-          description: the list of available and valid values for the parameter
-          items:
-            type: string
-        default:
-          type: string
-          description: the default value
-        envVar:
-          type: string
-          description: associated environment variable in connector image
-      required:
-        - id
-        - label
+      x-field-extra-annotation: "@org.springframework.data.annotation.Id"
+      readOnly: true
+      description: the Connector version unique identifier
+    key:
+      type: string
+      description: the Connector key which group Connector versions
+    name:
+      type: string
+      x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+      description: the Connector name
+    description:
+      type: string
+      description: the Connector description
+    repository:
+      type: string
+      description: the registry repository containing the image
+    version:
+      type: string
+      description: the Connector version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
+    tags:
+      type: array
+      description: the list of tags
+      items:
+        type: string
+    ownerId:
+      type: string
+      readOnly: true
+      description: the user id which own this connector version
+    url:
+      type: string
+      description: an optional URL link to connector page
+    ioTypes:
+      type: array
+      items:
+        $ref: '#/ioTypesEnum'
+    parameterGroups:
+      type: array
+      description: the list of connector parameters groups
+      items:
+        $ref: '#/ConnectorParameterGroup'
+ioTypesEnum:
+  type: string
+  description: The read and write capabilities of connector
+  enum:
+    - read
+    - write
+ConnectorParameterGroup:
+  type: object
+  description: a connector parameters group
+  properties:
+    id:
+      type: string
+      description: the connector parameter group id
+    label:
+      type: string
+      description: the list of translated parameter group labels
+    parameters:
+      type: array
+      description: the list of parameters
+      items:
+        $ref: '#/ConnectorParameter'
+  required:
+    - id
+    - label
+    - parameters
+ConnectorParameter:
+  type: object
+  description: a connector parameter
+  properties:
+    id:
+      type: string
+      description: the connector parameter id
+    label:
+      type: string
+      description: the list of translated parameter group labels
+    valueType:
+      type: string
+      description: the parameter value type
+    options:
+      type: array
+      description: the list of available and valid values for the parameter
+      items:
+        type: string
+    default:
+      type: string
+      description: the default value
+    envVar:
+      type: string
+      description: associated environment variable in connector image
+  required:
+    - id
+    - label
