@@ -14,7 +14,7 @@ tags:
 paths:
   /organizations:
     post:
-      operationId: registerOrganization
+      operationId: createOrganization
       tags:
         - organization
       summary: Register a new organization
@@ -48,7 +48,7 @@ paths:
         "400":
           description: Bad request
     get:
-      operationId: findAllOrganizations
+      operationId: listOrganizations
       parameters:
         - name: page
           in: query
@@ -87,7 +87,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: findOrganizationById
+      operationId: getOrganization
       tags:
         - organization
       summary: Get the details of an Organization
@@ -146,7 +146,7 @@ paths:
         "404":
           description: the Organization specified is unknown or you don't have access to it
     delete:
-      operationId: unregisterOrganization
+      operationId: deleteOrganization
       tags:
         - organization
       summary: Unregister an organization
@@ -158,7 +158,7 @@ paths:
 
   /organizations/permissions:
     get:
-      operationId: getAllPermissions
+      operationId: listPermissions
       tags:
         - organization
       summary: Get all permissions per components
@@ -244,7 +244,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: setOrganizationDefaultSecurity
+      operationId: updateOrganizationDefaultSecurity
       tags:
         - organization
       summary: Set the Organization default security
@@ -289,7 +289,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: addOrganizationAccessControl
+      operationId: createOrganizationAccessControl
       tags:
         - organization
       summary: Add a control access to the Organization
@@ -382,7 +382,7 @@ paths:
         "404":
           description: The Organization specified is unknown or you don't have access to it
     delete:
-      operationId: removeOrganizationAccessControl
+      operationId: deleteOrganizationAccessControl
       tags:
         - organization
       summary: Remove the specified access from the given Organization
@@ -401,7 +401,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getOrganizationSecurityUsers
+      operationId: listOrganizationSecurityUsers
       tags:
         - organization
       summary: Get the Organization security users list
@@ -668,4 +668,3 @@ components:
               - validate
               - write_security
               - delete
-
