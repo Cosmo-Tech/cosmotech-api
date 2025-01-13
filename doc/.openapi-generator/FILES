@@ -67,11 +67,16 @@ Models/RunnerChangedParameterValue.md
 Models/RunnerComparisonResult.md
 Models/RunnerDataDownloadInfo.md
 Models/RunnerDataDownloadJob.md
+Models/RunnerJobState.md
+Models/RunnerLastRun.md
 Models/RunnerResourceSizing.md
 Models/RunnerRole.md
 Models/RunnerRunTemplateParameterValue.md
 Models/RunnerSecurity.md
 Models/RunnerValidationStatus.md
+Models/Runner_lastRun.md
+Models/Runner_parentLastRun.md
+Models/Runner_rootLastRun.md
 Models/Scenario.md
 Models/ScenarioAccessControl.md
 Models/ScenarioChangedParameterValue.md

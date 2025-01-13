@@ -418,6 +418,7 @@ entity Runner {
     runTemplateId: String
     organizationId: String
     workspaceId: String
+    state: RunnerJobState
     creationDate: Long
     lastUpdate: Long
     ownerName: String
@@ -426,7 +427,9 @@ entity Runner {
     datasetList: List<String>
     runSizing: RunnerResourceSizing
     parametersValues: List<RunnerRunTemplateParameterValue>
-    lastRunId: String
+    lastRun: RunnerLastRun
+    parentLastRun: RunnerParentLastRun
+    rootLastRun: RunnerRootLastRun
     validationStatus: RunnerValidationStatus
     security: RunnerSecurity
 }
@@ -451,10 +454,20 @@ entity RunnerComparisonResult {
 
 entity RunnerDataDownloadInfo {
     url: String
+    state: RunnerJobState
 }
 
 entity RunnerDataDownloadJob {
     id: String
+}
+
+entity RunnerJobState {
+}
+
+entity RunnerLastRun {
+}
+
+entity RunnerParentLastRun {
 }
 
 entity RunnerResourceSizing {
@@ -464,6 +477,9 @@ entity RunnerResourceSizing {
 
 entity RunnerRole {
     * role: String
+}
+
+entity RunnerRootLastRun {
 }
 
 entity RunnerRunTemplateParameterValue {
@@ -826,6 +842,9 @@ entity WorkspaceWebApp {
     options: Map
 }
 
+RunnerLastRun <|--- RunnerLastRun
+RunnerLastRun <|--- RunnerParentLastRun
+RunnerLastRun <|--- RunnerRootLastRun
 
 ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
@@ -879,6 +898,9 @@ ScenarioRunStatusNode -- ScenarioRunResourceRequested : resourcesDuration
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
+Runner -- RunnerLastRun : lastRun
+Runner -- RunnerParentLastRun : parentLastRun
+Runner -- RunnerRootLastRun : rootLastRun
 Runner -- RunnerSecurity : security
 RunStatus -- "0..*" RunStatusNode : nodes
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList

@@ -31,9 +31,8 @@ import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
-import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
-import com.cosmotech.runner.domain.RunnerJobState
 import com.cosmotech.runner.domain.RunnerLastRun
+import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.repository.RunnerRepository
 import com.cosmotech.solution.SolutionApiServiceInterface
@@ -183,10 +182,6 @@ class RunnerService(
   @Suppress("TooManyFunctions")
   inner class RunnerInstance(var runner: Runner = Runner()) {
     private val roleDefinition: RolesDefinition = getScenarioRolesDefinition()
-
-    fun isRunning(): Boolean {
-      return this.runner.state == RunnerJobState.Running
-    }
 
     fun initialize(): RunnerInstance = apply {
       val now = Instant.now().toEpochMilli()

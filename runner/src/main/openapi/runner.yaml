@@ -213,7 +213,7 @@ paths:
         "202":
           description: the Run id started
           content:
-            text/plain:
+            application/json:
               schema:
                 $ref: '#/components/schemas/RunnerLastRun'
         "404":

@@ -230,8 +230,8 @@ internal class RunnerApiServiceImpl(
             .inOrganization(runDeleted.organizationId)
             .inWorkspace(runDeleted.workspaceId)
     val runnerInstance = runnerService.getInstance(runDeleted.runnerId)
-    if (runnerInstance.getRunnerDataObjet().lastRunId == runDeleted.runId) {
-      runnerInstance.getRunnerDataObjet().lastRunId = null
+    if (runnerInstance.getRunnerDataObjet().lastRun?.runnerRunId == runDeleted.runId) {
+      runnerInstance.getRunnerDataObjet().lastRun?.runnerRunId = null
     }
     runnerService.saveInstance(runnerInstance)
   }
