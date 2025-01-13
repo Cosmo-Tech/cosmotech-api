@@ -103,7 +103,7 @@ class RunContainerFactory(
       workflowType: String,
       runId: String
   ): StartInfo {
-    val organization = organizationService.findOrganizationById(organizationId)
+    val organization = organizationService.getOrganization(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     if (workspace.solution.solutionId == null)
         throw CsmClientException(

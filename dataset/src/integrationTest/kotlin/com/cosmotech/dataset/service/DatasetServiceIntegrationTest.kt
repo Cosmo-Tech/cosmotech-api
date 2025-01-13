@@ -154,7 +154,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
 
     organization = makeOrganizationWithRole()
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     dataset = makeDatasetWithRole()
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     dataset2 = makeDataset()
@@ -172,7 +172,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test Dataset CRUD`() {
 
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     val registeredDataset2 = datasetApiService.createDataset(organizationSaved.id!!, dataset2)
@@ -196,7 +196,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test Dataset - findByOrganizationIdAndDatasetId`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     logger.info("Fetch dataset...")
@@ -209,7 +209,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test Dataset - findByOrganizationIdAndDatasetId wrong dataset id`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     logger.info("Fetch dataset...")
@@ -222,7 +222,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `can delete dataset when user is not the owner and is Platform Admin`() {
 
     logger.info("Register dataset : ${dataset.id}...")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
@@ -242,7 +242,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `can not delete dataset when user is not the owner and not Platform Admin`() {
 
     logger.info("Register dataset : ${dataset.id}...")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
@@ -259,7 +259,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `can update dataset owner when user is not the owner and is Platform Admin`() {
 
     logger.info("Register dataset : ${dataset.id}...")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
@@ -282,7 +282,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `cannot update dataset owner when user is not the owner and is not Platform Admin`() {
 
     logger.info("Register dataset : ${dataset.id}...")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
@@ -336,7 +336,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test find All Datasets as Platform Admin`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     val numberOfDatasets = 20
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val expectedPageSize = 15
@@ -368,7 +368,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test find All Datasets as Organization User`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     val numberOfDatasets = 20
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val expectedSize = 15
@@ -399,7 +399,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `PROD-12947 - test find All Datasets as Organization User`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
 
     // Create a dataset that current user should not see because he does not have permission to
     val numberOfDatasets = 200
@@ -421,7 +421,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     // Create a dataset that current user should not see because it has been created under another
     // organization
-    val newOrganization = organizationApiService.registerOrganization(makeOrganizationWithRole())
+    val newOrganization = organizationApiService.createOrganization(makeOrganizationWithRole())
     val datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization =
         datasetApiService.createDataset(
             newOrganization.id!!, makeDatasetWithRole(organizationId = newOrganization.id!!))
@@ -441,7 +441,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `PROD-12947 - test find All Datasets as Platform Admin`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
 
     // Create a dataset that current user should not see because he does not have permission to
     val numberOfDatasets = 20
@@ -463,7 +463,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     // Create a dataset that current user should not see because it has been created under another
     // organization
-    val newOrganization = organizationApiService.registerOrganization(makeOrganizationWithRole())
+    val newOrganization = organizationApiService.createOrganization(makeOrganizationWithRole())
     val datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization =
         datasetApiService.createDataset(
             newOrganization.id!!, makeDatasetWithRole(organizationId = newOrganization.id!!))
@@ -479,7 +479,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
   @Test
   fun `test find All Datasets with wrong pagination params`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     logger.info("Should throw IllegalArgumentException when page and size are zeros")
@@ -505,7 +505,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         "loading nodes: Double=2, Single=1, Users=9 & relationships: Double=2, Single=1, Follows=2")
     val file = this::class.java.getResource("/integrationTest.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     dataset = makeDatasetWithRole()
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     datasetApiService.updateDataset(
@@ -600,7 +600,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `Twingraph CRUD test`() {
 
     logger.info("Create Nodes")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     val nodeStart =
         datasetApiService.createTwingraphEntities(
@@ -694,7 +694,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test get security endpoint`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     // should return the current security
     val datasetSecurity =
@@ -704,7 +704,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test set default security endpoint`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     // should update the default security and assert it worked
     val datasetDefaultSecurity =
@@ -716,7 +716,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test uploadTwingraph status`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     dataset.apply { sourceType = DatasetSourceType.File }
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     val file = this::class.java.getResource("/integrationTest.zip")?.file
@@ -741,7 +741,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test uploadTwingraph fail set dataset status to error`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     dataset.apply { sourceType = DatasetSourceType.File }
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     val file = this::class.java.getResource("/brokenGraph.zip")?.file
@@ -767,7 +767,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
-    organizationSaved = organizationApiService.registerOrganization(makeOrganizationWithRole())
+    organizationSaved = organizationApiService.createOrganization(makeOrganizationWithRole())
     val brokenDataset =
         Dataset(
             name = "dataset",
@@ -787,7 +787,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
-    organizationSaved = organizationApiService.registerOrganization(makeOrganizationWithRole())
+    organizationSaved = organizationApiService.createOrganization(makeOrganizationWithRole())
     val workingDataset = makeDatasetWithRole("dataset", sourceType = DatasetSourceType.None)
     val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, workingDataset)
 
@@ -801,7 +801,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `reupload a twingraph in dataset with source type File`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     dataset.apply { sourceType = DatasetSourceType.File }
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
@@ -838,7 +838,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `rollback endpoint call should fail if status is not ERROR`() {
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     datasetSaved =
@@ -870,7 +870,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `status should go back to normal on rollback endpoint call`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     organization = makeOrganizationWithRole("organization")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     dataset = makeDatasetWithRole(sourceType = DatasetSourceType.File)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
@@ -910,8 +910,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
           DynamicTest.dynamicTest("Test RBAC refreshDataset : $sourceType") {
             every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
             organizationSaved =
-                organizationApiService.registerOrganization(
-                    makeOrganizationWithRole("organization"))
+                organizationApiService.createOrganization(makeOrganizationWithRole("organization"))
             val parentDataset =
                 datasetApiService.createDataset(
                     organizationSaved.id!!, makeDatasetWithRole(sourceType = sourceType))

@@ -40,7 +40,7 @@ class OrganizationServiceImpl(
     private val organizationRepository: OrganizationRepository
 ) : CsmPhoenixService(), OrganizationApiServiceInterface {
 
-  override fun findAllOrganizations(page: Int?, size: Int?): List<Organization> {
+  override fun listOrganizations(page: Int?, size: Int?): List<Organization> {
     val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
@@ -71,11 +71,11 @@ class OrganizationServiceImpl(
     return result
   }
 
-  override fun findOrganizationById(organizationId: String): Organization {
+  override fun getOrganization(organizationId: String): Organization {
     return updateSecurityVisibility(getVerifiedOrganization(organizationId, PERMISSION_READ))
   }
 
-  override fun registerOrganization(organization: Organization): Organization {
+  override fun createOrganization(organization: Organization): Organization {
     logger.trace("Registering organization: {}", organization)
 
     if (organization.name.isNullOrBlank()) {
@@ -91,7 +91,7 @@ class OrganizationServiceImpl(
     return organizationRepository.save(createdOrganization)
   }
 
-  override fun unregisterOrganization(organizationId: String) {
+  override fun deleteOrganization(organizationId: String) {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_DELETE)
     organizationRepository.delete(organization)
     this.eventPublisher.publishEvent(OrganizationUnregistered(this, organizationId))
@@ -122,7 +122,7 @@ class OrganizationServiceImpl(
     }
   }
 
-  override fun getAllPermissions(): List<ComponentRolePermissions> {
+  override fun listPermissions(): List<ComponentRolePermissions> {
     return getAllRolesDefinition().mapNotNull { ComponentRolePermissions(it.key, it.value) }
   }
 
@@ -137,7 +137,7 @@ class OrganizationServiceImpl(
         ?: throw CsmResourceNotFoundException("RBAC not defined for ${organization.id}")
   }
 
-  override fun setOrganizationDefaultSecurity(
+  override fun updateOrganizationDefaultSecurity(
       organizationId: String,
       organizationRole: OrganizationRole
   ): OrganizationSecurity {
@@ -157,13 +157,13 @@ class OrganizationServiceImpl(
     return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
-  override fun addOrganizationAccessControl(
+  override fun createOrganizationAccessControl(
       organizationId: String,
       organizationAccessControl: OrganizationAccessControl
   ): OrganizationAccessControl {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_WRITE_SECURITY)
 
-    val users = getOrganizationSecurityUsers(organizationId)
+    val users = listOrganizationSecurityUsers(organizationId)
     if (users.contains(organizationAccessControl.id)) {
       throw IllegalArgumentException("User is already in this Organization security")
     }
@@ -196,14 +196,14 @@ class OrganizationServiceImpl(
     return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
-  override fun removeOrganizationAccessControl(organizationId: String, identityId: String) {
+  override fun deleteOrganizationAccessControl(organizationId: String, identityId: String) {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.removeUser(organization.getRbac(), identityId)
     organization.setRbac(rbacSecurity)
     organizationRepository.save(organization)
   }
 
-  override fun getOrganizationSecurityUsers(organizationId: String): List<String> {
+  override fun listOrganizationSecurityUsers(organizationId: String): List<String> {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(organization.getRbac())
   }
