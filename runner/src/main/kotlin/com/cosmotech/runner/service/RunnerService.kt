@@ -32,6 +32,8 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
+import com.cosmotech.runner.domain.RunnerJobState
+import com.cosmotech.runner.domain.RunnerLastRun
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.repository.RunnerRepository
 import com.cosmotech.solution.SolutionApiServiceInterface
@@ -156,25 +158,35 @@ class RunnerService(
     return runners
   }
 
-  fun startRunWith(runnerInstance: RunnerInstance): String {
+  fun startRunWith(runnerInstance: RunnerInstance): RunnerLastRun {
     val startEvent = RunStart(this, runnerInstance.getRunnerDataObjet())
     this.eventPublisher.publishEvent(startEvent)
+
     val runId = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
-    runnerInstance.setLastRunId(runId)
+    val runInfo = RunnerLastRun(runnerRunId = runId)
+    runnerInstance.setLastRun(runInfo)
+
     runnerRepository.save(runnerInstance.getRunnerDataObjet())
-    return runId
+
+    return runInfo
   }
 
   fun stopLastRunOf(runnerInstance: RunnerInstance) {
     val runner = runnerInstance.getRunnerDataObjet()
-    runner.lastRunId
-        ?: throw IllegalArgumentException("Runner ${runner.id} doesn't have a last run")
+    val runId =
+        runner.lastRun?.runnerRunId
+            ?: throw IllegalArgumentException("Runner ${runner.id} doesn't have a last run")
+
     this.eventPublisher.publishEvent(RunStop(this, runner))
   }
 
   @Suppress("TooManyFunctions")
   inner class RunnerInstance(var runner: Runner = Runner()) {
     private val roleDefinition: RolesDefinition = getScenarioRolesDefinition()
+
+    fun isRunning(): Boolean {
+      return this.runner.state == RunnerJobState.Running
+    }
 
     fun initialize(): RunnerInstance = apply {
       val now = Instant.now().toEpochMilli()
@@ -225,8 +237,8 @@ class RunnerService(
           }
     }
 
-    fun setLastRunId(runInfo: String) {
-      this.runner.lastRunId = runInfo
+    fun setLastRun(runInfo: RunnerLastRun) {
+      this.runner.lastRun = runInfo
     }
 
     fun initSecurity(runner: Runner): RunnerInstance = apply {
