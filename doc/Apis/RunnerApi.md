@@ -349,7 +349,7 @@ Start a run with runner parameters
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: text/plain
+- **Accept**: application/json
 
 <a name="stopRun"></a>
 # **stopRun**

@@ -198,11 +198,9 @@ class DatasetServiceImpl(
         ?: throw IllegalArgumentException(
             "Source cannot be null for source type 'ADT' or 'Storage'")
 
-    var twingraphId: String? = null
+    val twingraphId = idGenerator.generate("twingraph")
 
-    if (datasetSourceType == DatasetSourceType.Twincache && useGraphModule) {
-
-      twingraphId = idGenerator.generate("twingraph")
+    if (datasetSourceType != null && useGraphModule) {
       val twincacheConnector = getCreateTwincacheConnector()
       dataset.connector =
           DatasetConnector(
@@ -215,17 +213,14 @@ class DatasetServiceImpl(
             id = idGenerator.generate("dataset"),
             sourceType = datasetSourceType ?: DatasetSourceType.None,
             source = dataset.source ?: SourceInfo("none"),
+            twingraphId = twingraphId,
             main = dataset.main ?: true,
             creationDate = Instant.now().toEpochMilli(),
             ingestionStatus = IngestionStatusEnum.NONE,
             twincacheStatus = TwincacheStatusEnum.EMPTY,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId)
-    createdDataset.apply {
-      if (!twingraphId.isNullOrBlank()) {
-        this.twingraphId = twingraphId
-      }
-    }
+
     createdDataset.setRbac(csmRbac.initSecurity(dataset.getRbac()))
 
     if (dataset.connector != null && !dataset.connector!!.id.isNullOrBlank()) {
