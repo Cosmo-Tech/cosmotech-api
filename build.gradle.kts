@@ -30,6 +30,7 @@ plugins {
   id("com.diffplug.spotless") version "6.25.0"
   id("org.springframework.boot") version "3.4.1" apply false
   id("project-report")
+  id("org.owasp.dependencycheck") version "12.0.0"
   id("com.github.jk1.dependency-license-report") version "2.9"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.7"
@@ -81,6 +82,12 @@ mkdir(configBuildDir)
 
 val hardCodedLicensesReportPath = "project-licenses-for-check-license-task.json"
 
+dependencyCheck{
+  nvd{
+    apiKey = System.getenv("NVD_API_key")
+  }
+}
+
 licenseReport {
   outputDir = licenseReportDir
   allowedLicensesFile =
@@ -102,6 +109,7 @@ allprojects {
   apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "io.gitlab.arturbosch.detekt")
   apply(plugin = "project-report")
+  apply(plugin = "org.owasp.dependencycheck")
 
   java {
     targetCompatibility = JavaVersion.VERSION_21

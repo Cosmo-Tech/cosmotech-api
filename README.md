@@ -359,6 +359,26 @@ kube-linter --config api/kubernetes/.kube-linter.yaml lint api/kubernetes/helm-c
 kube-linter --config api/kubernetes/.kube-linter.yaml lint api/kubernetes/csm-argo
 ```
 
+#### Vulnerability report
+
+To generate a report of publicly disclosed vulnerabilities in the dependencies
+add your API key for the National Vulnerability Database (https://nvd.nist.gov/)
+as a property available to gradle. If you don't have a key get one from
+here: https://nvd.nist.gov/developers/request-an-api-key. Add your key in your
+`~/.gradle/gradle.properties` file (create the file if it does not exist)
+
+```properties
+NVD_API_key=[key]
+```
+
+Then run the dependency check task which can take about 10 minutes:
+
+```shell
+./gradlew dependencyCheckAggregate
+```
+
+an html report will be generated under `/build/reports`
+
 ## License
 
     Copyright 2021 Cosmo Tech
