@@ -24,7 +24,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/CreateOrganizationRequest'
             examples:
               NewOrganizationIn:
                 $ref: '#/components/examples/NewOrganizationIn'
@@ -41,7 +41,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
+                $ref: '#/components/schemas/OrganizationResponse'
               examples:
                 CosmoOrganization:
                   $ref: '#/components/examples/CosmoOrganization'
@@ -73,7 +73,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Organization'
+                  $ref: '#/components/schemas/OrganizationResponse'
               examples:
                 TwoOrganizations:
                   $ref: '#/components/examples/TwoOrganizations'
@@ -97,7 +97,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
+                $ref: '#/components/schemas/OrganizationResponse'
               examples:
                 CosmoOrganization:
                   $ref: '#/components/examples/CosmoOrganization'
@@ -114,7 +114,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/UpdateOrganizationRequest'
             examples:
               ChangeName:
                 summary: Change Name of Organization
@@ -137,7 +137,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
+                $ref: '#/components/schemas/OrganizationResponse'
               examples:
                 CosmoThreeUsers:
                   $ref: '#/components/examples/CosmoThreeUsers'
@@ -174,7 +174,6 @@ paths:
               examples:
                 permissions:
                   $ref: '#/components/examples/Permissions'
-
 
   /organizations/{organization_id}/permissions/{role}:
     parameters:
@@ -228,7 +227,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationSecurity'
+                $ref: '#/components/schemas/OrganizationSecurityResponse'
               examples:
                 OrganizationSecurity:
                   $ref: '#/components/examples/BreweryOrganizationSecurity'
@@ -256,7 +255,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrganizationRole'
+              $ref: '#/components/schemas/OrganizationRoleRequest'
             examples:
               BreweryOrganizationRole:
                 $ref: '#/components/examples/BreweryOrganizationRole'
@@ -273,7 +272,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationSecurity'
+                $ref: '#/components/schemas/OrganizationSecurityResponse'
               examples:
                 WriterOrganizationSecurity:
                   $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
@@ -299,7 +298,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrganizationAccessControl'
+              $ref: '#/components/schemas/OrganizationAccessControlRequest'
             examples:
               OrganizationAccess:
                 $ref: '#/components/examples/BreweryOrganizationAccessControl'
@@ -316,7 +315,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationAccessControl'
+                $ref: '#/components/schemas/OrganizationAccessControlResponse'
               examples:
                 OrganizationAccessControl:
                   $ref: '#/components/examples/BreweryOrganizationAccessControl'
@@ -348,7 +347,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationAccessControl'
+                $ref: '#/components/schemas/OrganizationAccessControlResponse'
               examples:
                 OrganizationAccessControl:
                   $ref: '#/components/examples/BreweryOrganizationAccessControl'
@@ -365,7 +364,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrganizationRole'
+              $ref: '#/components/schemas/OrganizationRoleRequest'
             examples:
               BreweryOrganizationRole:
                 $ref: '#/components/examples/BreweryOrganizationRole'
@@ -375,7 +374,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationAccessControl'
+                $ref: '#/components/schemas/OrganizationAccessControlResponse'
               examples:
                 OrganizationAccessControl:
                   $ref: '#/components/examples/BreweryOrganizationAccessControl'
@@ -431,33 +430,82 @@ components:
           tokenUrl: "https://example.com/token"
           scopes: {}
   schemas:
+    # Base Organization object that includes all information
     Organization:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: an Organization
+      allOf:
+        - $ref: '#/components/schemas/CreateOrganizationRequest'
+        - type: object
+          properties:
+            id:
+              x-field-extra-annotation: "@org.springframework.data.annotation.Id"
+              type: string
+              readOnly: true
+              description: the Organization unique identifier
+            ownerId:
+              type: string
+              readOnly: true
+              description: the Owner User Id
+            security:
+              x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+              allOf:
+                - $ref: '#/components/schemas/OrganizationSecurityResponse'
+      required:
+        - id
+        - name
+        - ownerId
+        - security
+
+    # CRUD Operation Schemas
+    CreateOrganizationRequest:
+      type: object
+      description: Request object for creating a new organization
       properties:
-        id:
-          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
-          type: string
-          readOnly: true
-          description: the Organization unique identifier
         name:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Organization name
-        ownerId:
-          type: string
-          readOnly: true
-          description: the Owner User Id
         security:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          allOf:
-            - $ref: '#/components/schemas/OrganizationSecurity'
-#      required:
-#        - name
-    OrganizationSecurity:
+          $ref: '#/components/schemas/OrganizationSecurityRequest'
+      required:
+        - name
+
+    UpdateOrganizationRequest:
       type: object
-      description: the Organization security information
+      description: Request object for updating an organization
+      properties:
+        name:
+          type: string
+          description: the Organization name
+
+    OrganizationResponse:
+      type: object
+      description: Response object containing organization details
+      allOf:
+        - $ref: '#/components/schemas/Organization'
+
+    # Security Operation Schemas
+    OrganizationSecurityRequest:
+      type: object
+      description: Request object for organization security settings
+      properties:
+        default:
+          type: string
+          description: the role by default
+        accessControlList:
+          type: array
+          description: the list which can access this Organization with detailed access control information
+          items:
+            $ref: '#/components/schemas/OrganizationAccessControlRequest'
+      required:
+        - default
+        - accessControlList
+
+    OrganizationSecurityResponse:
+      type: object
+      description: Response object for organization security information
       properties:
         default:
           type: string
@@ -468,13 +516,28 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the list which can access this Organization with detailed access control information
           items:
-            $ref: '#/components/schemas/OrganizationAccessControl'
+            $ref: '#/components/schemas/OrganizationAccessControlResponse'
       required:
         - default
         - accessControlList
-    OrganizationAccessControl:
+
+    OrganizationAccessControlRequest:
       type: object
-      description: a Organization access control item
+      description: Request object for organization access control
+      properties:
+        id:
+          type: string
+          description: the identity id
+        role:
+          type: string
+          description: a role
+      required:
+        - id
+        - role
+
+    OrganizationAccessControlResponse:
+      type: object
+      description: Response object for organization access control
       properties:
         id:
           type: string
@@ -487,15 +550,17 @@ components:
       required:
         - id
         - role
-    OrganizationRole:
+
+    OrganizationRoleRequest:
       type: object
-      description: the Organization Role
+      description: Request object for organization role
       properties:
         role:
           type: string
           description: the Organization Role
       required:
         - role
+
     ComponentRolePermissions:
       type: object
       description: a RBAC by component
@@ -508,6 +573,7 @@ components:
             type: array
             items:
               type: string
+
   examples:
     NewOrganizationIn:
       summary: Create a new organization
