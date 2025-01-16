@@ -159,7 +159,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -198,7 +198,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = ROLE_ADMIN)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -237,7 +237,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -282,7 +282,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -334,7 +334,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                   every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
                   val organization = makeOrganizationWithRole(role = role)
-                  organizationSaved = organizationApiService.registerOrganization(organization)
+                  organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
                   datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
                   materializeTwingraph()
@@ -378,7 +378,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                   every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
                   val organization = makeOrganizationWithRole()
-                  organizationSaved = organizationApiService.registerOrganization(organization)
+                  organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = role)
                   datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
                   materializeTwingraph()
@@ -421,7 +421,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -456,7 +456,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -497,7 +497,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -544,7 +544,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -589,7 +589,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -640,7 +640,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -677,7 +677,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -714,7 +714,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -753,7 +753,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -798,7 +798,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -842,7 +842,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -879,7 +879,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -916,7 +916,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -953,7 +953,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -992,7 +992,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1031,7 +1031,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1070,7 +1070,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1109,7 +1109,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
             val organization = makeOrganizationWithRole(role = role)
-            organizationSaved = organizationApiService.registerOrganization(organization)
+            organizationSaved = organizationApiService.createOrganization(organization)
             val dataset =
                 makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.Twincache)
             val datasetParentSaved =
@@ -1158,7 +1158,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
             val organization = makeOrganizationWithRole()
-            organizationSaved = organizationApiService.registerOrganization(organization)
+            organizationSaved = organizationApiService.createOrganization(organization)
             val dataset = makeDatasetWithRole(role = role, sourceType = DatasetSourceType.Twincache)
             val datasetParentSaved =
                 datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1213,7 +1213,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                   every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
                   val organization = makeOrganizationWithRole(role = role)
-                  organizationSaved = organizationApiService.registerOrganization(organization)
+                  organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
                   datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
                   materializeTwingraph()
@@ -1253,7 +1253,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                   every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
                   val organization = makeOrganizationWithRole()
-                  organizationSaved = organizationApiService.registerOrganization(organization)
+                  organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = role)
                   datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
                   materializeTwingraph()
@@ -1292,7 +1292,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1333,7 +1333,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1375,7 +1375,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1417,7 +1417,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1457,7 +1457,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1497,7 +1497,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1536,7 +1536,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1575,7 +1575,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1614,7 +1614,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1659,7 +1659,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.File)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1701,7 +1701,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role, sourceType = DatasetSourceType.File)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               val fileName = this::class.java.getResource("/integrationTest.zip")?.file
@@ -1748,7 +1748,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1789,7 +1789,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1830,7 +1830,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.None)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1869,7 +1869,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1908,7 +1908,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1953,7 +1953,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -1998,7 +1998,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -2037,7 +2037,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -2076,7 +2076,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -2115,7 +2115,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
@@ -2154,7 +2154,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
@@ -2191,7 +2191,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
@@ -2228,7 +2228,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
@@ -2266,7 +2266,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
+              organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 

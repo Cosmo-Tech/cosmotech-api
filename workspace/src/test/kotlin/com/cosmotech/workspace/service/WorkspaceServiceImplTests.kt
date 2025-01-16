@@ -265,7 +265,7 @@ class WorkspaceServiceImplTests {
 
     val organization = mockOrganization(ORGANIZATION_ID)
     organization.security = OrganizationSecurity(ROLE_ADMIN, mutableListOf())
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
+    every { organizationService.getOrganization(ORGANIZATION_ID) } returns organization
     val workspace =
         Workspace(
             key = "my-workspace-key",

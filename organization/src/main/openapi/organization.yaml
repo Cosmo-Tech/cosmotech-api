@@ -14,12 +14,12 @@ tags:
 paths:
   /organizations:
     post:
-      operationId: registerOrganization
+      operationId: createOrganization
       tags:
         - organization
-      summary: Register a new organization
+      summary: create a new organization
       requestBody:
-        description: the Organization to register
+        description: the Organization to create
         required: true
         content:
           application/json:
@@ -48,7 +48,7 @@ paths:
         "400":
           description: Bad request
     get:
-      operationId: findAllOrganizations
+      operationId: listOrganizations
       parameters:
         - name: page
           in: query
@@ -87,7 +87,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: findOrganizationById
+      operationId: getOrganization
       tags:
         - organization
       summary: Get the details of an Organization
@@ -146,10 +146,10 @@ paths:
         "404":
           description: the Organization specified is unknown or you don't have access to it
     delete:
-      operationId: unregisterOrganization
+      operationId: deleteOrganization
       tags:
         - organization
-      summary: Unregister an organization
+      summary: delete an organization
       responses:
         "204":
           description: Request succeeded
@@ -158,7 +158,7 @@ paths:
 
   /organizations/permissions:
     get:
-      operationId: getAllPermissions
+      operationId: listPermissions
       tags:
         - organization
       summary: Get all permissions per components
@@ -244,10 +244,10 @@ paths:
         schema:
           type: string
     post:
-      operationId: setOrganizationDefaultSecurity
+      operationId: updateOrganizationDefaultSecurity
       tags:
         - organization
-      summary: Set the Organization default security
+      summary: Update the Organization default security
       requestBody:
         description: This change the organization default security.
                     The default security is the role assigned to any person not on the Access Control List.
@@ -289,7 +289,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: addOrganizationAccessControl
+      operationId: createOrganizationAccessControl
       tags:
         - organization
       summary: Add a control access to the Organization
@@ -382,7 +382,7 @@ paths:
         "404":
           description: The Organization specified is unknown or you don't have access to it
     delete:
-      operationId: removeOrganizationAccessControl
+      operationId: deleteOrganizationAccessControl
       tags:
         - organization
       summary: Remove the specified access from the given Organization
@@ -401,7 +401,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getOrganizationSecurityUsers
+      operationId: listOrganizationSecurityUsers
       tags:
         - organization
       summary: Get the Organization security users list
@@ -544,14 +544,14 @@ components:
           - id: "bob@mycosmocompany.com"
             role: "editor"
     BreweryOrganizationAccessControl:
-      summary: Set an access control.
-      description: Set an access control for a user to an organization.
+      summary: Update an access control.
+      description: Update an access control for a user to an organization.
       value:
         id: "bob@mycompany.com"
         role: "editor"
     BreweryOrganizationRole:
-      summary: Set an Organization Role.
-      description: Set an role for a user to an organization.
+      summary: Update an Organization Role.
+      description: Update an role for a user to an organization.
       value:
         role: "editor"
     CosmoThreeUsers:
@@ -668,4 +668,3 @@ components:
               - validate
               - write_security
               - delete
-

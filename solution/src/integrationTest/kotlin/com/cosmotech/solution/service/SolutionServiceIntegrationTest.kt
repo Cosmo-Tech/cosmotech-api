@@ -80,7 +80,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Solution::class.java)
 
     organization = makeOrganization("Organization test")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
 
     solution = makeSolution(organizationSaved.id!!)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -488,8 +488,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
+    organizationSaved = organizationApiService.createOrganization(makeOrganization("organization"))
     val brokenSolution =
         Solution(
             name = "solution",
@@ -507,8 +506,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
+    organizationSaved = organizationApiService.createOrganization(makeOrganization("organization"))
     val workingSolution = makeSolution()
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, workingSolution)
 

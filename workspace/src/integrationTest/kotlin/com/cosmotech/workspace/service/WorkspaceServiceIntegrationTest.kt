@@ -102,7 +102,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Dataset::class.java)
 
     organization = makeOrganization("Organization test")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
 
     solution = makeSolution(organizationSaved.id!!)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -331,8 +331,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
+    organizationSaved = organizationApiService.createOrganization(makeOrganization("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     val brokenWorkspace =
         Workspace(
@@ -353,8 +352,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
+    organizationSaved = organizationApiService.createOrganization(makeOrganization("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     val workingWorkspace = makeWorkspace()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workingWorkspace)
@@ -444,7 +442,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     organization =
         makeOrganization(
             id = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
     dataset = makeDataset()
@@ -468,7 +466,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     organization =
         makeOrganization(
             id = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
     dataset = makeDataset()

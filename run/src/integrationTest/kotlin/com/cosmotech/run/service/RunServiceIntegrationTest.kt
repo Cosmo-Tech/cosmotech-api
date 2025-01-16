@@ -141,7 +141,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     connectorSaved = connectorApiService.registerConnector(connector)
 
     organization = mockOrganization("Organization")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
 
     dataset = mockDataset(organizationSaved.id!!, "Dataset", connectorSaved)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)

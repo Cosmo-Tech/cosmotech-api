@@ -168,7 +168,7 @@ class OrganizationServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC read: $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
-              organizationApiService.findOrganizationById(it.id!!)
+              organizationApiService.getOrganization(it.id!!)
             }
           }
 
@@ -185,7 +185,7 @@ class OrganizationServiceImplTests {
             rbacTest("Test RBAC unregister : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.delete(any()) } returns Unit
-              organizationApiService.unregisterOrganization(it.id!!)
+              organizationApiService.deleteOrganization(it.id!!)
             }
           }
 
@@ -236,7 +236,8 @@ class OrganizationServiceImplTests {
             rbacTest("Test RBAC setOrganizationDefaultSecurity : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
-              organizationApiService.setOrganizationDefaultSecurity(it.id!!, OrganizationRole(role))
+              organizationApiService.updateOrganizationDefaultSecurity(
+                  it.id!!, OrganizationRole(role))
             }
           }
 
@@ -269,7 +270,7 @@ class OrganizationServiceImplTests {
             rbacTest("Test RBAC addOrganizationAccessControl : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
-              organizationApiService.addOrganizationAccessControl(
+              organizationApiService.createOrganizationAccessControl(
                   it.id!!, OrganizationAccessControl("id", "viewer"))
             }
           }
@@ -305,7 +306,7 @@ class OrganizationServiceImplTests {
             rbacTest("Test RBAC removeOrganizationAccessControl  : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
-              organizationApiService.removeOrganizationAccessControl(it.id!!, "2$USER_ID")
+              organizationApiService.deleteOrganizationAccessControl(it.id!!, "2$USER_ID")
             }
           }
 
@@ -321,7 +322,7 @@ class OrganizationServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get users with role : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
-              organizationApiService.getOrganizationSecurityUsers(it.id!!)
+              organizationApiService.listOrganizationSecurityUsers(it.id!!)
             }
           }
 

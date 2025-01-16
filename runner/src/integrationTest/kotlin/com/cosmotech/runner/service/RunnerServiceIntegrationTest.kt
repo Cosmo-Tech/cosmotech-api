@@ -159,7 +159,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     connectorSaved = connectorApiService.registerConnector(connector)
 
     organization = makeOrganization("Organization")
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
 
     dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -791,8 +791,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
+    organizationSaved = organizationApiService.createOrganization(makeOrganization("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
     val brokenRunner =
@@ -812,8 +811,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list can't add an existing user`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
+    organizationSaved = organizationApiService.createOrganization(makeOrganization("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
     val workingRunner = makeRunner()
@@ -842,8 +840,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list can't update a non-existing user`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
+    organizationSaved = organizationApiService.createOrganization(makeOrganization("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
     val workingRunner = makeRunner()
@@ -1044,7 +1041,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `As a viewer, I can only see my information in security property for listRunners`() {
     every { getCurrentAccountIdentifier(any()) } returns defaultName
-    organizationSaved = organizationApiService.registerOrganization(organization)
+    organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     materializeTwingraph()
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)

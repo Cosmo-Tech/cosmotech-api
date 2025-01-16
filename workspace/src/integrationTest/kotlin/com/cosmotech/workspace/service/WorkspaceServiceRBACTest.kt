@@ -113,7 +113,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC findAllWorkspaces : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -156,7 +156,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC createWorkspace : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -217,7 +217,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC findWorkspaceById : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -268,7 +268,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC findWorkspaceById : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -313,7 +313,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC deleteWorkspace : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -358,7 +358,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC deleteWorkspace : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -403,7 +403,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC updateWorkspace : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -461,7 +461,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC updateWorkspace : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -519,7 +519,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC findAllWorkspaceFiles : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -565,7 +565,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC findAllWorkspaceFiles : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -611,7 +611,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC uploadWorkspaceFile : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -659,7 +659,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC uploadWorkspaceFile : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -707,7 +707,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC deleteAllWorkspaceFiles : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -753,7 +753,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC deleteAllWorkspaceFiles : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -799,7 +799,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC downloadWorkspaceFile : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -853,7 +853,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC downloadWorkspaceFile : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -907,7 +907,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC deleteWorkspaceFile : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -953,7 +953,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC deleteWorkspaceFile : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -999,7 +999,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC getWorkspacePermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1045,7 +1045,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC getWorkspacePermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1091,7 +1091,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC getWorkspaceSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1137,7 +1137,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC getWorkspaceSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1183,7 +1183,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC setWorkspaceDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1229,7 +1229,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC setWorkspaceDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1275,7 +1275,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC addWorkspaceAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1325,7 +1325,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC addWorkspaceAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1375,7 +1375,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC getWorkspaceAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1421,7 +1421,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC getWorkspaceAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1467,7 +1467,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC removeWorkspaceAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1513,7 +1513,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC removeWorkspaceAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1559,7 +1559,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC updateWorkspaceAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1611,7 +1611,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC updateWorkspaceAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1663,7 +1663,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC getWorkspaceSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1709,7 +1709,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Workspace RBAC getWorkspaceSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
-                  organizationApiService.registerOrganization(
+                  organizationApiService.createOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               val solutionSaved =
                   solutionApiService.createSolution(
