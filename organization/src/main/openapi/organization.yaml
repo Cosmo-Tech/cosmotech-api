@@ -24,7 +24,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateOrganizationRequest'
+              $ref: '#/components/schemas/OrganizationCreationRequest'
             examples:
               NewOrganizationIn:
                 $ref: '#/components/examples/NewOrganizationIn'
@@ -41,7 +41,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationResponse'
+                $ref: '#/components/schemas/Organization'
               examples:
                 CosmoOrganization:
                   $ref: '#/components/examples/CosmoOrganization'
@@ -73,7 +73,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OrganizationResponse'
+                  $ref: '#/components/schemas/Organization'
               examples:
                 TwoOrganizations:
                   $ref: '#/components/examples/TwoOrganizations'
@@ -97,7 +97,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationResponse'
+                $ref: '#/components/schemas/Organization'
               examples:
                 CosmoOrganization:
                   $ref: '#/components/examples/CosmoOrganization'
@@ -137,7 +137,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrganizationResponse'
+                $ref: '#/components/schemas/Organization'
               examples:
                 CosmoThreeUsers:
                   $ref: '#/components/examples/CosmoThreeUsers'
@@ -435,23 +435,21 @@ components:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: an Organization
-      allOf:
-        - $ref: '#/components/schemas/CreateOrganizationRequest'
-        - type: object
-          properties:
-            id:
-              x-field-extra-annotation: "@org.springframework.data.annotation.Id"
-              type: string
-              readOnly: true
-              description: the Organization unique identifier
-            ownerId:
-              type: string
-              readOnly: true
-              description: the Owner User Id
-            security:
-              x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-              allOf:
-                - $ref: '#/components/schemas/OrganizationSecurityResponse'
+      properties:
+              id:
+                x-field-extra-annotation: "@org.springframework.data.annotation.Id"
+                type: string
+                readOnly: true
+                description: the Organization unique identifier
+              name:
+                type: string
+                description: the Organization name
+              ownerId:
+                type: string
+                readOnly: true
+                description: the Owner User Id
+              security:
+                $ref: '#/components/schemas/OrganizationSecurityResponse'
       required:
         - id
         - name
@@ -459,7 +457,7 @@ components:
         - security
 
     # CRUD Operation Schemas
-    CreateOrganizationRequest:
+    OrganizationCreationRequest:
       type: object
       description: Request object for creating a new organization
       properties:
@@ -480,11 +478,29 @@ components:
           type: string
           description: the Organization name
 
-    OrganizationResponse:
-      type: object
-      description: Response object containing organization details
-      allOf:
-        - $ref: '#/components/schemas/Organization'
+#    OrganizationResponse:
+#      type: object
+#      description: Response object containing organization details
+#      properties:
+#        id:
+#          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
+#          type: string
+#          readOnly: true
+#          description: the Organization unique identifier
+#        name:
+#          type: string
+#          description: the Organization name
+#        ownerId:
+#          type: string
+#          readOnly: true
+#          description: the Owner User Id
+#        security:
+#          $ref: '#/components/schemas/OrganizationSecurityResponse'
+#      required:
+#      - id
+#      - name
+#      - ownerId
+#      - security
 
     # Security Operation Schemas
     OrganizationSecurityRequest:

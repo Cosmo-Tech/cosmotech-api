@@ -22,8 +22,9 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.organization.domain.OrganizationAccessControlRequest
+import com.cosmotech.organization.domain.OrganizationCreationRequest
+import com.cosmotech.organization.domain.OrganizationSecurityRequest
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
@@ -1742,18 +1743,16 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
-  fun makeOrganizationWithRole(id: String, role: String): Organization {
-    return Organization(
-        id = UUID.randomUUID().toString(),
+  fun makeOrganizationWithRole(id: String, role: String): OrganizationCreationRequest {
+    return OrganizationCreationRequest(
         name = "Organization",
-        ownerId = "my.account-tester@cosmotech.com",
         security =
-            OrganizationSecurity(
+            OrganizationSecurityRequest(
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                        OrganizationAccessControl(id = id, role = role))))
+                        OrganizationAccessControlRequest(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                        OrganizationAccessControlRequest(id = id, role = role))))
   }
 
   fun makeSolution(organizationId: String): Solution {

@@ -4,8 +4,11 @@ package com.cosmotech.run
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.containerregistry.ContainerRegistryService
+import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.organization.domain.OrganizationAccessControlResponse
+import com.cosmotech.organization.domain.OrganizationSecurityResponse
 import com.cosmotech.run.domain.ContainerResourceSizeInfo
 import com.cosmotech.run.domain.ContainerResourceSizing
 import com.cosmotech.run.domain.RunContainer
@@ -270,6 +273,9 @@ class ContainerFactoryTests {
     return Organization(
         id = "Organizationid",
         name = "Organization Test",
-    )
+        ownerId = "ownerId",
+        security =
+            OrganizationSecurityResponse(
+                ROLE_ADMIN, mutableListOf(OrganizationAccessControlResponse("user", ROLE_ADMIN))))
   }
 }

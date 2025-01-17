@@ -23,8 +23,9 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.organization.domain.OrganizationAccessControlRequest
+import com.cosmotech.organization.domain.OrganizationCreationRequest
+import com.cosmotech.organization.domain.OrganizationSecurityRequest
 import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.SolutionApiServiceInterface
@@ -262,9 +263,8 @@ class WorkspaceServiceImplTests {
 
   @Test
   fun `should reject creation request if solution ID is not valid`() {
-
-    val organization = mockOrganization(ORGANIZATION_ID)
-    organization.security = OrganizationSecurity(ROLE_ADMIN, mutableListOf())
+    val organizationRequest = mockOrganizationCreationRequest()
+    val organization = organizationService.createOrganization(organizationRequest)
     every { organizationService.getOrganization(ORGANIZATION_ID) } returns organization
     val workspace =
         Workspace(
@@ -597,10 +597,11 @@ class WorkspaceServiceImplTests {
       shouldThrow: Boolean,
       testLambda: (ctx: WorkspaceTestContext) -> Unit
   ): DynamicTest? {
-    val organization = mockOrganization("o-org-id", CONNECTED_DEFAULT_USER, role)
-    val solution = mockSolution(organization.id!!)
+    val organizationRequest = mockOrganizationCreationRequest(role = role)
+    val organization = organizationService.createOrganization(organizationRequest)
+    val solution = mockSolution(organization.id)
     val workspace =
-        mockWorkspace(organization.id!!, solution.id!!, "Workspace", CONNECTED_DEFAULT_USER, role)
+        mockWorkspace(organization.id, solution.id!!, "Workspace", CONNECTED_DEFAULT_USER, role)
     return DynamicTest.dynamicTest(testName) {
       if (shouldThrow) {
         assertThrows<CsmAccessForbiddenException> {
@@ -618,22 +619,19 @@ class WorkspaceServiceImplTests {
       val workspace: Workspace
   )
 
-  fun mockOrganization(
-      id: String,
-      roleName: String = CONNECTED_ADMIN_USER,
+  fun mockOrganizationCreationRequest(
+      username: String = CONNECTED_ADMIN_USER,
       role: String = ROLE_ADMIN
-  ): Organization {
-    return Organization(
-        id = id,
+  ): OrganizationCreationRequest {
+    return OrganizationCreationRequest(
         name = "Organization Name",
-        ownerId = "my.account-tester@cosmotech.com",
         security =
-            OrganizationSecurity(
+            OrganizationSecurityRequest(
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(id = roleName, role = role),
-                        OrganizationAccessControl("userLambda", "viewer"))))
+                        OrganizationAccessControlRequest(id = username, role = role),
+                        OrganizationAccessControlRequest("userLambda", "viewer"))))
   }
 
   fun mockSolution(organizationId: String): Solution {

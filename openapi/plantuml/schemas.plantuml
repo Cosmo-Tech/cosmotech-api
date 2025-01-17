@@ -161,24 +161,39 @@ entity IoTypesEnum {
 }
 
 entity Organization {
-    id: String
-    name: String
-    ownerId: String
-    security: OrganizationSecurity
+    * id: String
+    * name: String
+    * ownerId: String
+    * security: OrganizationSecurityResponse
 }
 
-entity OrganizationAccessControl {
+entity OrganizationAccessControlRequest {
     * id: String
     * role: String
 }
 
-entity OrganizationRole {
+entity OrganizationAccessControlResponse {
+    * id: String
     * role: String
 }
 
-entity OrganizationSecurity {
+entity OrganizationCreationRequest {
+    * name: String
+    security: OrganizationSecurityRequest
+}
+
+entity OrganizationRoleRequest {
+    * role: String
+}
+
+entity OrganizationSecurityRequest {
     * default: String
-    * accessControlList: List<OrganizationAccessControl>
+    * accessControlList: List<OrganizationAccessControlRequest>
+}
+
+entity OrganizationSecurityResponse {
+    * default: String
+    * accessControlList: List<OrganizationAccessControlResponse>
 }
 
 entity QueryResult {
@@ -475,6 +490,10 @@ entity TwinGraphBatchResult {
 entity TwincacheStatusEnum {
 }
 
+entity UpdateOrganizationRequest {
+    name: String
+}
+
 entity Workspace {
     id: String
     organizationId: String
@@ -528,6 +547,7 @@ entity WorkspaceWebApp {
 }
 
 
+OrganizationSecurityResponse -- "0..*" OrganizationAccessControlResponse : accessControlList
 RunTemplateResourceSizing -- ResourceSizeInfo : requests
 RunTemplateResourceSizing -- ResourceSizeInfo : limits
 DatasetSecurity -- "0..*" DatasetAccessControl : accessControlList
@@ -535,14 +555,16 @@ ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
 SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
 RunLogs -- "0..*" RunLogsEntry : logs
+OrganizationSecurityRequest -- "0..*" OrganizationAccessControlRequest : accessControlList
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
+OrganizationCreationRequest -- OrganizationSecurityRequest : security
 RunContainer -- ContainerResourceSizing : runSizing
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
 Runner -- RunnerSecurity : security
-Organization -- OrganizationSecurity : security
+Organization -- OrganizationSecurityResponse : security
 RunStatus -- "0..*" RunStatusNode : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : edges
@@ -560,7 +582,6 @@ Dataset -- "0..*" DatasetCompatibility : compatibility
 Dataset -- DatasetSecurity : security
 Run -- "0..*" RunTemplateParameterValue : parametersValues
 Run -- "0..*" RunContainer : containers
-OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 RunnerResourceSizing -- ResourceSizeInfo : requests
 RunnerResourceSizing -- ResourceSizeInfo : limits
 Workspace -- WorkspaceSolution : solution

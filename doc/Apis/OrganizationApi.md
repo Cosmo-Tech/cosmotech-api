@@ -22,7 +22,7 @@ All URIs are relative to *http://localhost*
 
 <a name="createOrganization"></a>
 # **createOrganization**
-> Organization createOrganization(Organization)
+> Organization createOrganization(OrganizationCreationRequest)
 
 create a new organization
 
@@ -30,7 +30,7 @@ create a new organization
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **Organization** | [**Organization**](../Models/Organization.md)| the Organization to create | |
+| **OrganizationCreationRequest** | [**OrganizationCreationRequest**](../Models/OrganizationCreationRequest.md)| the Organization to create | |
 
 ### Return type
 
@@ -47,7 +47,7 @@ create a new organization
 
 <a name="createOrganizationAccessControl"></a>
 # **createOrganizationAccessControl**
-> OrganizationAccessControl createOrganizationAccessControl(organization\_id, OrganizationAccessControl)
+> OrganizationAccessControlResponse createOrganizationAccessControl(organization\_id, OrganizationAccessControlRequest)
 
 Add a control access to the Organization
 
@@ -56,11 +56,11 @@ Add a control access to the Organization
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationAccessControl** | [**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)| the new Organization security access to add. | |
+| **OrganizationAccessControlRequest** | [**OrganizationAccessControlRequest**](../Models/OrganizationAccessControlRequest.md)| the new Organization security access to add. | |
 
 ### Return type
 
-[**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)
+[**OrganizationAccessControlResponse**](../Models/OrganizationAccessControlResponse.md)
 
 ### Authorization
 
@@ -149,7 +149,7 @@ Get the details of an Organization
 
 <a name="getOrganizationAccessControl"></a>
 # **getOrganizationAccessControl**
-> OrganizationAccessControl getOrganizationAccessControl(organization\_id, identity\_id)
+> OrganizationAccessControlResponse getOrganizationAccessControl(organization\_id, identity\_id)
 
 Get a control access for the Organization
 
@@ -162,7 +162,7 @@ Get a control access for the Organization
 
 ### Return type
 
-[**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)
+[**OrganizationAccessControlResponse**](../Models/OrganizationAccessControlResponse.md)
 
 ### Authorization
 
@@ -201,7 +201,7 @@ Get the Organization permissions by given role
 
 <a name="getOrganizationSecurity"></a>
 # **getOrganizationSecurity**
-> OrganizationSecurity getOrganizationSecurity(organization\_id)
+> OrganizationSecurityResponse getOrganizationSecurity(organization\_id)
 
 Get the Organization security information
 
@@ -213,7 +213,7 @@ Get the Organization security information
 
 ### Return type
 
-[**OrganizationSecurity**](../Models/OrganizationSecurity.md)
+[**OrganizationSecurityResponse**](../Models/OrganizationSecurityResponse.md)
 
 ### Authorization
 
@@ -299,7 +299,7 @@ This endpoint does not need any parameter.
 
 <a name="updateOrganization"></a>
 # **updateOrganization**
-> Organization updateOrganization(organization\_id, Organization)
+> Organization updateOrganization(organization\_id, UpdateOrganizationRequest)
 
 Update an Organization
 
@@ -308,7 +308,7 @@ Update an Organization
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **Organization** | [**Organization**](../Models/Organization.md)| the new Organization details. This endpoint can&#39;t be used to update security | |
+| **UpdateOrganizationRequest** | [**UpdateOrganizationRequest**](../Models/UpdateOrganizationRequest.md)| the new Organization details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
 
@@ -325,7 +325,7 @@ Update an Organization
 
 <a name="updateOrganizationAccessControl"></a>
 # **updateOrganizationAccessControl**
-> OrganizationAccessControl updateOrganizationAccessControl(organization\_id, identity\_id, OrganizationRole)
+> OrganizationAccessControlResponse updateOrganizationAccessControl(organization\_id, identity\_id, OrganizationRoleRequest)
 
 Update the specified access to User for an Organization
 
@@ -335,11 +335,11 @@ Update the specified access to User for an Organization
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **identity\_id** | **String**| the User identifier | [default to null] |
-| **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| The new Organization Access Control | |
+| **OrganizationRoleRequest** | [**OrganizationRoleRequest**](../Models/OrganizationRoleRequest.md)| The new Organization Access Control | |
 
 ### Return type
 
-[**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)
+[**OrganizationAccessControlResponse**](../Models/OrganizationAccessControlResponse.md)
 
 ### Authorization
 
@@ -352,7 +352,7 @@ Update the specified access to User for an Organization
 
 <a name="updateOrganizationDefaultSecurity"></a>
 # **updateOrganizationDefaultSecurity**
-> OrganizationSecurity updateOrganizationDefaultSecurity(organization\_id, OrganizationRole)
+> OrganizationSecurityResponse updateOrganizationDefaultSecurity(organization\_id, OrganizationRoleRequest)
 
 Update the Organization default security
 
@@ -361,11 +361,11 @@ Update the Organization default security
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| This change the organization default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the organization. | |
+| **OrganizationRoleRequest** | [**OrganizationRoleRequest**](../Models/OrganizationRoleRequest.md)| This change the organization default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the organization. | |
 
 ### Return type
 
-[**OrganizationSecurity**](../Models/OrganizationSecurity.md)
+[**OrganizationSecurityResponse**](../Models/OrganizationSecurityResponse.md)
 
 ### Authorization
 

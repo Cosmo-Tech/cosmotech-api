@@ -21,9 +21,11 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationRole
-import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.organization.domain.OrganizationAccessControlRequest
+import com.cosmotech.organization.domain.OrganizationCreationRequest
+import com.cosmotech.organization.domain.OrganizationRoleRequest
+import com.cosmotech.organization.domain.OrganizationSecurityRequest
+import com.cosmotech.organization.domain.UpdateOrganizationRequest
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -174,8 +176,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganization(
-                          organization.id!!,
-                          mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
+                          organization.id!!, UpdateOrganizationRequest("name"))
                     }
                 assertEquals(
                     "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE",
@@ -183,7 +184,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganization(
-                      organization.id!!, mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
+                      organization.id!!, UpdateOrganizationRequest("name"))
                 }
               }
             }
@@ -272,7 +273,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganizationDefaultSecurity(
-                          organization.id!!, OrganizationRole(role))
+                          organization.id!!, OrganizationRoleRequest(role))
                     }
                 assertEquals(
                     "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
@@ -280,7 +281,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganizationDefaultSecurity(
-                      organization.id!!, OrganizationRole(role))
+                      organization.id!!, OrganizationRoleRequest(role))
                 }
               }
             }
@@ -306,7 +307,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.createOrganizationAccessControl(
-                          organization.id!!, OrganizationAccessControl("id", role))
+                          organization.id!!, OrganizationAccessControlRequest("id", role))
                     }
                 assertEquals(
                     "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
@@ -314,7 +315,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   organizationApiService.createOrganizationAccessControl(
-                      organization.id!!, OrganizationAccessControl("id", role))
+                      organization.id!!, OrganizationAccessControlRequest("id", role))
                 }
               }
             }
@@ -408,7 +409,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganizationAccessControl(
-                          organization.id!!, TEST_USER_MAIL, OrganizationRole(role))
+                          organization.id!!, TEST_USER_MAIL, OrganizationRoleRequest(role))
                     }
                 assertEquals(
                     "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
@@ -416,7 +417,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganizationAccessControl(
-                      organization.id!!, TEST_USER_MAIL, OrganizationRole(role))
+                      organization.id!!, TEST_USER_MAIL, OrganizationRoleRequest(role))
                 }
               }
             }
@@ -454,17 +455,15 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
-  fun mockOrganizationWithRole(id: String, role: String): Organization {
-    return Organization(
-        id = UUID.randomUUID().toString(),
+  fun mockOrganizationWithRole(id: String, role: String): OrganizationCreationRequest {
+    return OrganizationCreationRequest(
         name = "Organization Name",
-        ownerId = "my.account-tester@cosmotech.com",
         security =
-            OrganizationSecurity(
+            OrganizationSecurityRequest(
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                        OrganizationAccessControl(id = id, role = role))))
+                        OrganizationAccessControlRequest(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                        OrganizationAccessControlRequest(id = id, role = role))))
   }
 }
