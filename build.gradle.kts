@@ -3,12 +3,10 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.*
-import com.github.jk1.license.task.CheckLicenseTask
 import com.github.jk1.license.task.ReportTask
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
 import io.gitlab.arturbosch.detekt.Detekt
-import java.io.FileOutputStream
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -29,13 +27,13 @@ plugins {
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.15.5"
-  id("com.diffplug.spotless") version "6.22.0"
-  id("org.springframework.boot") version "3.3.6" apply false
+  id("com.diffplug.spotless") version "6.25.0"
+  id("org.springframework.boot") version "3.4.1" apply false
   id("project-report")
-  id("org.owasp.dependencycheck") version "9.0.2"
-  id("com.github.jk1.dependency-license-report") version "2.5"
+  id("org.owasp.dependencycheck") version "12.0.0"
+  id("com.github.jk1.dependency-license-report") version "2.9"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
-  id("io.gitlab.arturbosch.detekt") version "1.23.6"
+  id("io.gitlab.arturbosch.detekt") version "1.23.7"
   id("org.openapi.generator") version "7.8.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.4" apply false
 }
@@ -50,28 +48,28 @@ version = scmVersion.version
 
 // Required versions
 val jacksonVersion = "2.15.3"
-val springWebVersion = "6.1.16"
+val springWebVersion = "6.2.1"
 
 // Implementation
 val kotlinJvmTarget = 21
 val cosmotechApiCommonVersion = "2.1.0-SNAPSHOT"
 val jedisVersion = "4.4.6"
-val springOauthVersion = "6.2.2"
-val redisOmSpringVersion = "0.9.1"
+val springOauthVersion = "6.4.2"
+val redisOmSpringVersion = "0.9.7"
 val kotlinCoroutinesCoreVersion = "1.8.1"
-val oktaSpringBootVersion = "3.0.5"
+val oktaSpringBootVersion = "3.0.7"
 val springDocVersion = "2.5.0"
-val swaggerParserVersion = "2.1.22"
+val swaggerParserVersion = "2.1.24"
 val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
 val kubernetesClientVersion = "22.0.0"
 
 // Checks
-val detektVersion = "1.23.6"
+val detektVersion = "1.23.7"
 
 // Tests
 val jUnitBomVersion = "5.10.0"
-val mockkVersion = "1.13.8"
+val mockkVersion = "1.13.13"
 val awaitilityKVersion = "4.2.0"
 val testcontainersRedis = "1.6.4"
 val springMockkVersion = "4.0.2"
@@ -82,38 +80,33 @@ val configBuildDir = "${layout.buildDirectory.get()}/config"
 
 mkdir(configBuildDir)
 
-fun downloadLicenseConfigFile(name: String): String {
-  val localPath = "$configBuildDir/$name"
-  val f = file(localPath)
-  f.delete()
-  val url = "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/main/config/$name"
-  logger.info("Downloading license config file from $url to $localPath")
-  uri(url).toURL().openStream().use { it.copyTo(FileOutputStream(f)) }
-  return localPath
-}
-
-val licenseNormalizerPath = downloadLicenseConfigFile("license-normalizer-bundle.json")
-val licenseAllowedPath =
-    if (project.properties["useLocalLicenseAllowedFile"] == "true") {
-      "$projectDir/config/allowed-licenses.json"
-    } else {
-      downloadLicenseConfigFile("allowed-licenses.json")
-    }
-
-logger.info("Using licenses allowed file: $licenseAllowedPath")
-
-val licenseEmptyPath = downloadLicenseConfigFile("empty-dependencies-resume.json")
-// Plugin uses a generated report to check the licenses in a prepation task
 val hardCodedLicensesReportPath = "project-licenses-for-check-license-task.json"
+
+dependencyCheck{
+  // Configure dependency check plugin. It checks for publicly disclosed
+  // vulnerabilities in project dependencies. To use it, you need to have an
+  // API key from the NVD (National Vulnerability Database), pass it by setting
+  // the environment variable NVD_API_key (See project README.md: Static Code
+  // Analysis -> Vulnerability report).
+  nvd{
+    apiKey = System.getenv("NVD_API_key")
+  }
+}
 
 licenseReport {
   outputDir = licenseReportDir
-  allowedLicensesFile = file(licenseAllowedPath)
+  allowedLicensesFile =
+      "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/allowed-licenses.json"
+  val bundle =
+      "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/license-normalizer-bundle.json"
+
   renderers =
       arrayOf<ReportRenderer>(
           InventoryHtmlReportRenderer("index.html"),
           JsonReportRenderer("project-licenses-for-check-license-task.json", false))
-  filters = arrayOf<LicenseBundleNormalizer>(LicenseBundleNormalizer(licenseNormalizerPath, true))
+  filters =
+      arrayOf<LicenseBundleNormalizer>(
+          LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true))
 }
 
 allprojects {
@@ -169,12 +162,10 @@ allprojects {
       licenseHeader(licenseHeaderComment)
     }
     kotlin {
-      ktfmt("0.41")
       target("**/*.kt")
       licenseHeader(licenseHeaderComment)
     }
     kotlinGradle {
-      ktfmt("0.41")
       target("**/*.kts")
       //      licenseHeader(licenseHeaderComment, "import")
     }
@@ -288,9 +279,8 @@ subprojects {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}")
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.security:spring-security-oauth2-jose:${springOauthVersion}")
-    implementation(
-        "org.springframework.security:spring-security-oauth2-resource-server:${springOauthVersion}")
+    implementation("org.springframework.security:spring-security-oauth2-jose")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server")
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
@@ -558,41 +548,7 @@ extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverReportExtension> {
 }
 
 // https://github.com/jk1/Gradle-License-Report/blob/master/README.md
-tasks.register<ReportTask>("generateLicenseDoc") {}
+tasks.register<ReportTask>(
+    "generateLicenseDoc") {}
 
-tasks.register<CheckLicenseTask>("validateLicense") {
-  dependsOn("generateLicenseDoc")
-  // Gradle task must be rerun each time to take new allowed-license into account.
-  // Due to an issue in the plugin, we must define each module name for null licenses
-  // to avoid false negatives in the allowed-license file.
-  outputs.upToDateWhen { false }
-}
 
-tasks.register("displayLicensesNotAllowed") {
-  val notAllowedFile =
-      file(
-          buildString {
-            append(licenseReportDir)
-            append("/dependencies-without-allowed-license.json")
-          })
-  val dependenciesEmptyResumeTemplate = file(licenseEmptyPath)
-  if (notAllowedFile.exists() && dependenciesEmptyResumeTemplate.exists()) {
-    if (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText()) {
-      logger.warn("Licenses not allowed:")
-      logger.warn(notAllowedFile.readText())
-      logger.warn(
-          "Please review licenses and add new license check rules in https://github.com/Cosmo-Tech/cosmotech-license")
-    } else {
-      logger.warn("No error in licences detected!")
-    }
-  }
-}
-
-gradle.buildFinished {
-  if (project.properties["skipLicenses"] != "true") {
-    val validateLicenseTask = tasks.getByName("validateLicense")
-    validateLicenseTask.run {}
-    val displayTask = tasks.getByName("displayLicensesNotAllowed")
-    displayTask.run {}
-  }
-}

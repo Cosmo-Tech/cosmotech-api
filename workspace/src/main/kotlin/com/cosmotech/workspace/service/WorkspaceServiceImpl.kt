@@ -548,6 +548,7 @@ internal class WorkspaceServiceImpl(
     this.eventPublisher.publishEvent(
         AddWorkspaceToDataset(this, organizationId, datasetId, workspaceId))
   }
+
   private fun sendDeleteHistoricalDataWorkspaceEvent(
       organizationId: String,
       it: Workspace,
