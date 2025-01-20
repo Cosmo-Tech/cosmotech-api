@@ -7,8 +7,8 @@ import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControlResponse
-import com.cosmotech.organization.domain.OrganizationSecurityResponse
+import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.run.domain.ContainerResourceSizeInfo
 import com.cosmotech.run.domain.ContainerResourceSizing
 import com.cosmotech.run.domain.RunContainer
@@ -275,7 +275,7 @@ class ContainerFactoryTests {
         name = "Organization Test",
         ownerId = "ownerId",
         security =
-            OrganizationSecurityResponse(
-                ROLE_ADMIN, mutableListOf(OrganizationAccessControlResponse("user", ROLE_ADMIN))))
+            OrganizationSecurity(
+                ROLE_ADMIN, mutableListOf(OrganizationAccessControl("user", ROLE_ADMIN))))
   }
 }

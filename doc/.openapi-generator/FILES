@@ -30,12 +30,10 @@ Models/FileUploadValidation.md
 Models/GraphProperties.md
 Models/IngestionStatusEnum.md
 Models/Organization.md
-Models/OrganizationAccessControlRequest.md
-Models/OrganizationAccessControlResponse.md
+Models/OrganizationAccessControl.md
 Models/OrganizationCreationRequest.md
-Models/OrganizationRoleRequest.md
-Models/OrganizationSecurityRequest.md
-Models/OrganizationSecurityResponse.md
+Models/OrganizationRole.md
+Models/OrganizationSecurity.md
 Models/QueryResult.md
 Models/ResourceSizeInfo.md
 Models/Run.md

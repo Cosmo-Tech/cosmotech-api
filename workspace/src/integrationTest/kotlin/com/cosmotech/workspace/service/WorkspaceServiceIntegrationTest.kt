@@ -24,9 +24,9 @@ import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControlRequest
+import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreationRequest
-import com.cosmotech.organization.domain.OrganizationSecurityRequest
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
@@ -496,12 +496,12 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     return OrganizationCreationRequest(
         name = "Organization Name",
         security =
-            OrganizationSecurityRequest(
+            OrganizationSecurity(
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControlRequest(id = userName, role = role),
-                        OrganizationAccessControlRequest("userLambda", "viewer"))))
+                        OrganizationAccessControl(id = userName, role = role),
+                        OrganizationAccessControl("userLambda", "viewer"))))
   }
 
   fun makeSolution(

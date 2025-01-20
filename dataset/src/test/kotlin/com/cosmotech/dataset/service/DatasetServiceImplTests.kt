@@ -29,8 +29,8 @@ import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControlResponse
-import com.cosmotech.organization.domain.OrganizationSecurityResponse
+import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationSecurity
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -601,9 +601,9 @@ class DatasetServiceImplTests {
 
 private fun mockOrganization(
     name: String = "orgaName",
-    security: OrganizationSecurityResponse =
-        OrganizationSecurityResponse(
-            ROLE_VIEWER, mutableListOf(OrganizationAccessControlResponse(USER_ID, ROLE_ADMIN)))
+    security: OrganizationSecurity =
+        OrganizationSecurity(
+            ROLE_VIEWER, mutableListOf(OrganizationAccessControl(USER_ID, ROLE_ADMIN)))
 ): Organization {
   return Organization(id = "o-123456789", name = name, ownerId = "123456789", security = security)
 }

@@ -47,7 +47,7 @@ create a new organization
 
 <a name="createOrganizationAccessControl"></a>
 # **createOrganizationAccessControl**
-> OrganizationAccessControlResponse createOrganizationAccessControl(organization\_id, OrganizationAccessControlRequest)
+> OrganizationAccessControl createOrganizationAccessControl(organization\_id, OrganizationAccessControl)
 
 Add a control access to the Organization
 
@@ -56,11 +56,11 @@ Add a control access to the Organization
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationAccessControlRequest** | [**OrganizationAccessControlRequest**](../Models/OrganizationAccessControlRequest.md)| the new Organization security access to add. | |
+| **OrganizationAccessControl** | [**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)| the new Organization security access to add. | |
 
 ### Return type
 
-[**OrganizationAccessControlResponse**](../Models/OrganizationAccessControlResponse.md)
+[**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)
 
 ### Authorization
 
@@ -149,7 +149,7 @@ Get the details of an Organization
 
 <a name="getOrganizationAccessControl"></a>
 # **getOrganizationAccessControl**
-> OrganizationAccessControlResponse getOrganizationAccessControl(organization\_id, identity\_id)
+> OrganizationAccessControl getOrganizationAccessControl(organization\_id, identity\_id)
 
 Get a control access for the Organization
 
@@ -162,7 +162,7 @@ Get a control access for the Organization
 
 ### Return type
 
-[**OrganizationAccessControlResponse**](../Models/OrganizationAccessControlResponse.md)
+[**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)
 
 ### Authorization
 
@@ -201,7 +201,7 @@ Get the Organization permissions by given role
 
 <a name="getOrganizationSecurity"></a>
 # **getOrganizationSecurity**
-> OrganizationSecurityResponse getOrganizationSecurity(organization\_id)
+> OrganizationSecurity getOrganizationSecurity(organization\_id)
 
 Get the Organization security information
 
@@ -213,7 +213,7 @@ Get the Organization security information
 
 ### Return type
 
-[**OrganizationSecurityResponse**](../Models/OrganizationSecurityResponse.md)
+[**OrganizationSecurity**](../Models/OrganizationSecurity.md)
 
 ### Authorization
 
@@ -325,7 +325,7 @@ Update an Organization
 
 <a name="updateOrganizationAccessControl"></a>
 # **updateOrganizationAccessControl**
-> OrganizationAccessControlResponse updateOrganizationAccessControl(organization\_id, identity\_id, OrganizationRoleRequest)
+> OrganizationAccessControl updateOrganizationAccessControl(organization\_id, identity\_id, OrganizationRole)
 
 Update the specified access to User for an Organization
 
@@ -335,11 +335,11 @@ Update the specified access to User for an Organization
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **identity\_id** | **String**| the User identifier | [default to null] |
-| **OrganizationRoleRequest** | [**OrganizationRoleRequest**](../Models/OrganizationRoleRequest.md)| The new Organization Access Control | |
+| **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| The new Organization Access Control | |
 
 ### Return type
 
-[**OrganizationAccessControlResponse**](../Models/OrganizationAccessControlResponse.md)
+[**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)
 
 ### Authorization
 
@@ -352,7 +352,7 @@ Update the specified access to User for an Organization
 
 <a name="updateOrganizationDefaultSecurity"></a>
 # **updateOrganizationDefaultSecurity**
-> OrganizationSecurityResponse updateOrganizationDefaultSecurity(organization\_id, OrganizationRoleRequest)
+> OrganizationSecurity updateOrganizationDefaultSecurity(organization\_id, OrganizationRole)
 
 Update the Organization default security
 
@@ -361,11 +361,11 @@ Update the Organization default security
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationRoleRequest** | [**OrganizationRoleRequest**](../Models/OrganizationRoleRequest.md)| This change the organization default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the organization. | |
+| **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| This change the organization default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the organization. | |
 
 ### Return type
 
-[**OrganizationSecurityResponse**](../Models/OrganizationSecurityResponse.md)
+[**OrganizationSecurity**](../Models/OrganizationSecurity.md)
 
 ### Authorization
 

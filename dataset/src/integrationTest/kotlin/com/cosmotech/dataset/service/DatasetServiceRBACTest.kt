@@ -44,9 +44,9 @@ import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControlRequest
+import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreationRequest
-import com.cosmotech.organization.domain.OrganizationSecurityRequest
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
@@ -2337,12 +2337,11 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
     return OrganizationCreationRequest(
         name = name,
         security =
-            OrganizationSecurityRequest(
+            OrganizationSecurity(
                 default = ROLE_ADMIN,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControlRequest(
-                            id = CONNECTED_ADMIN_USER, role = "admin"))))
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 
   fun makeOrganizationRequestWithRole(
@@ -2352,13 +2351,12 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
     return OrganizationCreationRequest(
         name = "Organization NameRbac",
         security =
-            OrganizationSecurityRequest(
+            OrganizationSecurity(
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControlRequest(
-                            id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        OrganizationAccessControlRequest(id = id, role = role))))
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                        OrganizationAccessControl(id = id, role = role))))
   }
 
   fun makeDatasetWithRole(

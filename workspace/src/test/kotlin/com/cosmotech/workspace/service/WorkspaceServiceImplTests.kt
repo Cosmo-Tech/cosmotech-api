@@ -23,9 +23,9 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControlRequest
+import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreationRequest
-import com.cosmotech.organization.domain.OrganizationSecurityRequest
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.SolutionApiServiceInterface
@@ -599,9 +599,9 @@ class WorkspaceServiceImplTests {
   ): DynamicTest? {
     val organizationRequest = mockOrganizationCreationRequest(role = role)
     val organization = organizationService.createOrganization(organizationRequest)
-    val solution = mockSolution(organization.id)
+    val solution = mockSolution(organization.id!!)
     val workspace =
-        mockWorkspace(organization.id, solution.id!!, "Workspace", CONNECTED_DEFAULT_USER, role)
+        mockWorkspace(organization.id!!, solution.id!!, "Workspace", CONNECTED_DEFAULT_USER, role)
     return DynamicTest.dynamicTest(testName) {
       if (shouldThrow) {
         assertThrows<CsmAccessForbiddenException> {
@@ -626,12 +626,12 @@ class WorkspaceServiceImplTests {
     return OrganizationCreationRequest(
         name = "Organization Name",
         security =
-            OrganizationSecurityRequest(
+            OrganizationSecurity(
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControlRequest(id = username, role = role),
-                        OrganizationAccessControlRequest("userLambda", "viewer"))))
+                        OrganizationAccessControl(id = username, role = role),
+                        OrganizationAccessControl("userLambda", "viewer"))))
   }
 
   fun mockSolution(organizationId: String): Solution {

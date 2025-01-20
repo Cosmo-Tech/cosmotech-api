@@ -21,10 +21,10 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControlRequest
+import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreationRequest
-import com.cosmotech.organization.domain.OrganizationRoleRequest
-import com.cosmotech.organization.domain.OrganizationSecurityRequest
+import com.cosmotech.organization.domain.OrganizationRole
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.UpdateOrganizationRequest
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
@@ -273,7 +273,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganizationDefaultSecurity(
-                          organization.id!!, OrganizationRoleRequest(role))
+                          organization.id!!, OrganizationRole(role))
                     }
                 assertEquals(
                     "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
@@ -281,7 +281,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganizationDefaultSecurity(
-                      organization.id!!, OrganizationRoleRequest(role))
+                      organization.id!!, OrganizationRole(role))
                 }
               }
             }
@@ -307,7 +307,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.createOrganizationAccessControl(
-                          organization.id!!, OrganizationAccessControlRequest("id", role))
+                          organization.id!!, OrganizationAccessControl("id", role))
                     }
                 assertEquals(
                     "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
@@ -315,7 +315,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   organizationApiService.createOrganizationAccessControl(
-                      organization.id!!, OrganizationAccessControlRequest("id", role))
+                      organization.id!!, OrganizationAccessControl("id", role))
                 }
               }
             }
@@ -409,7 +409,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganizationAccessControl(
-                          organization.id!!, TEST_USER_MAIL, OrganizationRoleRequest(role))
+                          organization.id!!, TEST_USER_MAIL, OrganizationRole(role))
                     }
                 assertEquals(
                     "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
@@ -417,7 +417,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganizationAccessControl(
-                      organization.id!!, TEST_USER_MAIL, OrganizationRoleRequest(role))
+                      organization.id!!, TEST_USER_MAIL, OrganizationRole(role))
                 }
               }
             }
@@ -459,11 +459,11 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
     return OrganizationCreationRequest(
         name = "Organization Name",
         security =
-            OrganizationSecurityRequest(
+            OrganizationSecurity(
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControlRequest(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                        OrganizationAccessControlRequest(id = id, role = role))))
+                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                        OrganizationAccessControl(id = id, role = role))))
   }
 }

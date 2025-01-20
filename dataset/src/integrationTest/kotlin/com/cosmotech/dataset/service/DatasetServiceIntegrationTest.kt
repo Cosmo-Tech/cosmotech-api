@@ -42,9 +42,9 @@ import com.cosmotech.dataset.domain.TwincacheStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControlRequest
+import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreationRequest
-import com.cosmotech.organization.domain.OrganizationSecurityRequest
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
@@ -1102,13 +1102,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     return OrganizationCreationRequest(
         name = "Organization NameRbac",
         security =
-            OrganizationSecurityRequest(
+            OrganizationSecurity(
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControlRequest(
-                            id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        OrganizationAccessControlRequest(id = userName, role = role))))
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                        OrganizationAccessControl(id = userName, role = role))))
   }
   fun makeDataset(
       organizationId: String = organizationSaved.id!!,

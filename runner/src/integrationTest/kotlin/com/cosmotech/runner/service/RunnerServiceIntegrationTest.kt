@@ -34,9 +34,9 @@ import com.cosmotech.dataset.domain.TwincacheStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControlRequest
+import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreationRequest
-import com.cosmotech.organization.domain.OrganizationSecurityRequest
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.*
 import com.cosmotech.runner.domain.RunnerRole
@@ -1140,14 +1140,13 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     return OrganizationCreationRequest(
         name = "Organization Name",
         security =
-            OrganizationSecurityRequest(
+            OrganizationSecurity(
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControlRequest(
-                            id = CONNECTED_READER_USER, role = "reader"),
-                        OrganizationAccessControlRequest(id = CONNECTED_ADMIN_USER, role = "admin"),
-                        OrganizationAccessControlRequest(id = userName, role = role))))
+                        OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
+                        OrganizationAccessControl(id = userName, role = role))))
   }
 
   fun makeWorkspace(

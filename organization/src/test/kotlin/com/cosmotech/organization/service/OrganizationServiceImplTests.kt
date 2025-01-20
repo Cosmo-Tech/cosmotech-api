@@ -21,12 +21,10 @@ import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControlRequest
-import com.cosmotech.organization.domain.OrganizationAccessControlResponse
+import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreationRequest
-import com.cosmotech.organization.domain.OrganizationRoleRequest
-import com.cosmotech.organization.domain.OrganizationSecurityRequest
-import com.cosmotech.organization.domain.OrganizationSecurityResponse
+import com.cosmotech.organization.domain.OrganizationRole
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.UpdateOrganizationRequest
 import com.cosmotech.organization.repository.OrganizationRepository
 import io.mockk.MockKAnnotations
@@ -80,11 +78,11 @@ class OrganizationServiceImplTests {
   @Test
   fun `should update organization control & returns Organization Access control`() {
     val organization = getMockOrganization()
-    val organizationRole = OrganizationRoleRequest(role = ROLE_VIEWER)
+    val organizationRole = OrganizationRole(role = ROLE_VIEWER)
     val rbacSecurity =
         RbacSecurity(
             organization.id,
-            organization.security!!.default,
+            organization.security!!.default!!,
             mutableListOf(RbacAccessControl("ID", ROLE_VIEWER)))
     val rbacAccessControl = RbacAccessControl(USER_ID, ROLE_ADMIN)
     every { organizationRepository.findByIdOrNull(any()) } returns organization
@@ -114,7 +112,7 @@ class OrganizationServiceImplTests {
     every { csmRbac.verify(any(), any()) } returns Unit
     every { csmRbac.checkUserExists(any(), any(), any()) } throws
         mockk<CsmResourceNotFoundException>()
-    val organizationRole = OrganizationRoleRequest(role = ROLE_VIEWER)
+    val organizationRole = OrganizationRole(role = ROLE_VIEWER)
     assertThrows<CsmResourceNotFoundException> {
       organizationApiService.updateOrganizationAccessControl(
           ORGANIZATION_ID, USER_ID, organizationRole)
@@ -154,8 +152,8 @@ class OrganizationServiceImplTests {
     assertEquals(newRbacSecurity, organization.getRbac())
 
     val expectedOrganizationSecurity =
-        OrganizationSecurityResponse(
-            ROLE_VIEWER, mutableListOf(OrganizationAccessControlResponse("ID2", ROLE_ADMIN)))
+        OrganizationSecurity(
+            ROLE_VIEWER, mutableListOf(OrganizationAccessControl("ID2", ROLE_ADMIN)))
 
     assertEquals(expectedOrganizationSecurity, organization.security)
   }
@@ -206,7 +204,7 @@ class OrganizationServiceImplTests {
             rbacTest("Test RBAC update : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
-              organizationApiService.updateOrganization(it.id, UpdateOrganizationRequest("toto"))
+              organizationApiService.updateOrganization(it.id!!, UpdateOrganizationRequest("toto"))
             }
           }
 
@@ -240,7 +238,7 @@ class OrganizationServiceImplTests {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
               organizationApiService.updateOrganizationDefaultSecurity(
-                  it.id!!, OrganizationRoleRequest(role))
+                  it.id!!, OrganizationRole(role))
             }
           }
 
@@ -274,7 +272,7 @@ class OrganizationServiceImplTests {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
               organizationApiService.createOrganizationAccessControl(
-                  it.id!!, OrganizationAccessControlRequest("id", "viewer"))
+                  it.id!!, OrganizationAccessControl("id", "viewer"))
             }
           }
 
@@ -292,7 +290,7 @@ class OrganizationServiceImplTests {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
               organizationApiService.updateOrganizationAccessControl(
-                  it.id!!, "2$USER_ID", OrganizationRoleRequest("user"))
+                  it.id!!, "2$USER_ID", OrganizationRole("user"))
             }
           }
 
@@ -335,16 +333,8 @@ class OrganizationServiceImplTests {
       shouldThrow: Boolean,
       testLambda: (organization: Organization) -> Unit
   ): DynamicTest? {
-    val organizationRequest = makeOrganizationRequestWithRole(name, role)
-    val organizationResponse = organizationApiService.createOrganization(organizationRequest)
-    val organizationSecurity =
-        organizationApiService.getOrganizationSecurity(organizationResponse.id)
-    val organization =
-        Organization(
-            organizationResponse.id,
-            organizationResponse.name,
-            organizationResponse.ownerId,
-            security = organizationSecurity)
+    val organizationRequest = makeOrganizationRequestWithRole(USER_ID, role)
+    val organization = organizationApiService.createOrganization(organizationRequest)
     return DynamicTest.dynamicTest(name) {
       if (shouldThrow) {
         assertThrows<CsmAccessForbiddenException> { testLambda(organization) }
@@ -358,18 +348,18 @@ class OrganizationServiceImplTests {
     return OrganizationCreationRequest(
         name = name,
         security =
-            OrganizationSecurityRequest(
+            OrganizationSecurity(
                 default = "none",
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControlRequest(name, role),
-                        OrganizationAccessControlRequest("2$name", "viewer"))))
+                        OrganizationAccessControl(name, role),
+                        OrganizationAccessControl("2$name", "viewer"))))
   }
 
   fun getMockOrganization(): Organization {
     val security =
-        OrganizationSecurityResponse(
-            ROLE_VIEWER, mutableListOf(OrganizationAccessControlResponse("ID", ROLE_VIEWER)))
+        OrganizationSecurity(
+            ROLE_VIEWER, mutableListOf(OrganizationAccessControl("ID", ROLE_VIEWER)))
     val organization =
         Organization(id = ORGANIZATION_ID, name = "name", ownerId = "ownerId", security = security)
     return organization
