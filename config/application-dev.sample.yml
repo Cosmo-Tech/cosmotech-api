@@ -39,7 +39,7 @@ spring:
       pem:
         keycloak:
           truststore:
-            certificate: "classpath:GandiRSADomainValidationSecureServerCA3.pem"
+            certificate: "classpath:[fill-this-value].pem" # certificate file
 
 csm:
   platform:
@@ -53,9 +53,6 @@ csm:
       type: hashid
     event-publisher:
       type: in_process
-    authorization:
-      roles-jwt-claim: "userRoles"
-      principal-jwt-claim: "email"
       allowedTenants:
         - "[fill-this-value]" # NAMESPACE
     identityProvider:
@@ -63,7 +60,7 @@ csm:
         enabled: true
         bundle: "keycloak"
       audience: account
-      authorizationUrl: "https://kubernetes.cosmotech.com/keycloak/realms/brewery/protocol/openid-connect/auth"
+      authorizationUrl: "[fill-this-value]" # keycloak auth endpoint
       code: keycloak
       defaultScopes:
         openid: OpenId Scope
@@ -112,7 +109,7 @@ csm:
         imageVersion: "0.4.1"
     twincache:
       host: "localhost"
-      password: ""[fill-this-value]""
+      password: "[fill-this-value]"
       port: 6379
       tls:
         enabled: false
