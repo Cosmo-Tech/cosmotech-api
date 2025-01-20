@@ -83,6 +83,11 @@ mkdir(configBuildDir)
 val hardCodedLicensesReportPath = "project-licenses-for-check-license-task.json"
 
 dependencyCheck{
+  // Configure dependency check plugin. It checks for publicly disclosed
+  // vulnerabilities in project dependencies. To use it, you need to have an
+  // API key from the NVD (National Vulnerability Database), pass it by setting
+  // the environment variable NVD_API_key (See project README.md: Static Code
+  // Analysis -> Vulnerability report).
   nvd{
     apiKey = System.getenv("NVD_API_key")
   }
