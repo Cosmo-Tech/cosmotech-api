@@ -1,8 +1,9 @@
 openapi: 3.0.3
 
 info:
-  title: ""
-  version: ""
+  title: "Cosmo Tech Organization Manager API"
+  description: "Cosmo Tech Organization Manager API"
+  version: "1.0.0"
 
 security:
   - oAuth2AuthCode: []
@@ -118,9 +119,9 @@ paths:
             examples:
               ChangeName:
                 summary: Change Name of Organization
-                description: Change the name of Organization 1 to CosmoTech Digital Twins Engine
+                description: Change the name of an organization
                 value:
-                  name: "CosmoTech Digital Twins Engine"
+                  name: "Digital Twin Solutions"
           application/yaml:
             schema:
               type: string
@@ -128,9 +129,9 @@ paths:
             examples:
               ChangeName:
                 summary: Change Name of Organization
-                description: Change the name of Organization 1 to CosmoTech Digital Twins Engine
+                description: Change the name of an organization
                 value:
-                  name: "CosmoTech Digital Twins Engine"
+                  name: "Digital Twin Solutions"
       responses:
         "200":
           description: the organization details
@@ -139,8 +140,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Organization'
               examples:
-                CosmoThreeUsers:
-                  $ref: '#/components/examples/CosmoThreeUsers'
+                UpdatedOrganization:
+                  $ref: '#/components/examples/UpdatedOrganization'
         "400":
           description: Bad request
         "404":
@@ -230,7 +231,7 @@ paths:
                 $ref: '#/components/schemas/OrganizationSecurity'
               examples:
                 OrganizationSecurity:
-                  $ref: '#/components/examples/BreweryOrganizationSecurity'
+                  $ref: '#/components/examples/OrganizationSecurity'
         "404":
           description: the Organization specified is unknown or you don't have access to it
 
@@ -257,15 +258,15 @@ paths:
             schema:
               $ref: '#/components/schemas/OrganizationRole'
             examples:
-              BreweryOrganizationRole:
-                $ref: '#/components/examples/BreweryOrganizationRole'
+              DefaultRole:
+                $ref: '#/components/examples/DefaultRole'
           application/yaml:
             schema:
               type: string
               format: binary
             examples:
-              BreweryOrganizationRole:
-                $ref: '#/components/examples/BreweryOrganizationRole'
+              DefaultRole:
+                $ref: '#/components/examples/DefaultRole'
       responses:
         "201":
           description: The Organization default visibility
@@ -274,8 +275,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrganizationSecurity'
               examples:
-                WriterOrganizationSecurity:
-                  $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
+                UpdatedSecurity:
+                  $ref: '#/components/examples/UpdatedSecurity'
         "404":
           description: the Organization specified is unknown or you don't have access to it
 
@@ -301,14 +302,14 @@ paths:
               $ref: '#/components/schemas/OrganizationAccessControl'
             examples:
               OrganizationAccess:
-                $ref: '#/components/examples/BreweryOrganizationAccessControl'
+                $ref: '#/components/examples/OrganizationAccess'
           application/yaml:
             schema:
               type: string
               format: binary
             examples:
               OrganizationAccess:
-                $ref: '#/components/examples/BreweryOrganizationAccessControl'
+                $ref: '#/components/examples/OrganizationAccess'
       responses:
         "201":
           description: The Organization access
@@ -318,7 +319,7 @@ paths:
                 $ref: '#/components/schemas/OrganizationAccessControl'
               examples:
                 OrganizationAccessControl:
-                  $ref: '#/components/examples/BreweryOrganizationAccessControl'
+                  $ref: '#/components/examples/OrganizationAccessControl'
         "404":
           description: the Organization specified is unknown or you don't have access to it
 
@@ -350,7 +351,7 @@ paths:
                 $ref: '#/components/schemas/OrganizationAccessControl'
               examples:
                 OrganizationAccessControl:
-                  $ref: '#/components/examples/BreweryOrganizationAccessControl'
+                  $ref: '#/components/examples/OrganizationAccessControl'
         "404":
           description: The Organization or user specified is unknown or you don't have access to it
     patch:
@@ -366,8 +367,8 @@ paths:
             schema:
               $ref: '#/components/schemas/OrganizationRole'
             examples:
-              BreweryOrganizationRole:
-                $ref: '#/components/examples/BreweryOrganizationRole'
+              UpdateRole:
+                $ref: '#/components/examples/UpdateRole'
       responses:
         "200":
           description: The Organization access
@@ -376,8 +377,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/OrganizationAccessControl'
               examples:
-                OrganizationAccessControl:
-                  $ref: '#/components/examples/BreweryOrganizationAccessControl'
+                UpdatedAccessControl:
+                  $ref: '#/components/examples/UpdatedAccessControl'
         "404":
           description: The Organization specified is unknown or you don't have access to it
     delete:
@@ -414,8 +415,8 @@ paths:
                 items:
                   type: string
                 example:
-                  - alice@mycompany.com
-                  - bob@mycompany.com
+                  - "alice@mycompany.com"
+                  - "bob@mycompany.com"
         "404":
           description: the Organization specified is unknown or you don't have access to it
 
@@ -547,160 +548,181 @@ components:
   examples:
     NewOrganizationIn:
       summary: Create a new organization
-      description: Create a new organization with 2 users
+      description: Create a new organization with security settings
       value:
-        name: Cosmo Tech
+        name: "Digital Twin Solutions"
         security:
-          default: reader
+          default: "viewer"
           accessControlList:
-            - id: "jane.doe@cosmotech.com"
+            - id: "admin@company.com"
+              role: "admin"
+            - id: "editor@company.com"
               role: "editor"
-            - id: "john.doe@cosmotech.com"
-              role: "viewer"
+
     CosmoOrganization:
-      summary: Cosmo Tech Organization example
-      description: Cosmo Tech Organization example
+      summary: Organization response example
+      description: Example of an organization response with full details
       value:
-        id: "1"
-        name: Cosmo Tech
-        ownerId: "1"
+        id: "org-123"
+        name: "Digital Twin Solutions"
+        ownerId: "admin-user-123"
         security:
-          default: reader
+          default: "viewer"
           accessControlList:
-            - id: "jane.doe@cosmotech.com"
+            - id: "admin@company.com"
+              role: "admin"
+            - id: "editor@company.com"
               role: "editor"
-            - id: "john.doe@cosmotech.com"
-              role: "viewer"
-    BreweryOrganizationSecurity:
-      summary: Brewery Organization security
-      description: Brewery Organization security example
+
+    UpdatedOrganization:
+      summary: Updated organization example
+      description: Example of an organization after update
+      value:
+        id: "org-123"
+        name: "Updated Digital Twin Solutions"
+        ownerId: "admin-user-123"
+        security:
+          default: "viewer"
+          accessControlList:
+            - id: "admin@company.com"
+              role: "admin"
+            - id: "editor@company.com"
+              role: "editor"
+
+    TwoOrganizations:
+      summary: Multiple organizations example
+      description: Example of multiple organizations in a list
+      value:
+        - id: "org-123"
+          name: "Digital Twin Solutions"
+          ownerId: "admin-user-123"
+          security:
+            default: "viewer"
+            accessControlList:
+              - id: "admin@company.com"
+                role: "admin"
+        - id: "org-456"
+          name: "Supply Chain Analytics"
+          ownerId: "admin-user-456"
+          security:
+            default: "viewer"
+            accessControlList:
+              - id: "manager@company.com"
+                role: "admin"
+
+    OrganizationSecurity:
+      summary: Organization security example
+      description: Example of organization security settings
       value:
         default: "viewer"
         accessControlList:
-          - id: "bob@mycosmocompany.com"
+          - id: "admin@company.com"
+            role: "admin"
+          - id: "editor@company.com"
             role: "editor"
-    BreweryOrganizationAccessControl:
-      summary: Update an access control.
-      description: Update an access control for a user to an organization.
+
+    OrganizationAccess:
+      summary: Organization access control example
+      description: Example of adding a new access control
       value:
-        id: "bob@mycompany.com"
+        id: "new.user@company.com"
         role: "editor"
-    BreweryOrganizationRole:
-      summary: Update an Organization Role.
-      description: Update an role for a user to an organization.
+
+    OrganizationAccessControl:
+      summary: Organization access control response
+      description: Example of access control response
+      value:
+        id: "user@company.com"
+        role: "editor"
+
+    DefaultRole:
+      summary: Update default role
+      description: Example of updating the default role
+      value:
+        role: "viewer"
+
+    UpdateRole:
+      summary: Update user role
+      description: Example of updating a user's role
       value:
         role: "editor"
-    CosmoThreeUsers:
-      summary: Cosmo Tech Organization with 3 users
-      description: Cosmo Tech Organization 3 users example
+
+    UpdatedAccessControl:
+      summary: Updated access control
+      description: Example of updated access control
       value:
-        id: "1"
-        name: Cosmo Tech
-        security:
-          default: reader
-          accessControlList:
-            - id: "bob.doe@cosmotech.com"
-              role: "viewer"
-            - id: "alice.doe@cosmotech.com"
-              role: "viewer"
-            - id: "xavier.doe@cosmotech.com"
-              role: "editor"
-    TwoOrganizations:
-      summary: Two Orgnizations
-      description: Two Organizations example
+        id: "user@company.com"
+        role: "editor"
+
+    UpdatedSecurity:
+      summary: Updated security settings
+      description: Example of updated security settings
       value:
-        - id: "1"
-          name: Cosmo Tech
-          ownerId: "1"
-          security:
-            default: reader
-            accessControlList:
-              - id: "bob.doe@cosmotech.com"
-                role: "editor"
-              - id: "alice.doe@cosmotech.com"
-                role: "viewer"
-        - id: "2"
-          name: Phoenix
-          security:
-            default: rolereader
-            accessControlList:
-              - id: "bob.doe@cosmotech.com"
-                role: "editor"
-    BreweryDefaultSecurityRoleWriter:
-      summary: Brewery Scenario Writer default security
-      description: Brewery Scenario example
-      value:
-        default: "editor"
+        default: "viewer"
+        accessControlList:
+          - id: "admin@company.com"
+            role: "admin"
+          - id: "editor@company.com"
+            role: "editor"
+
     Permissions:
-      summary: Permissions
-      description: Permissions for Organization
+      summary: Component permissions
+      description: Example of component role permissions
       value:
-        - component: organization
+        - component: "organization"
           roles:
             none: []
             viewer:
-              - read
-              - read_security
-            user:
-              - read
-              - read_security
-              - create_children
+              - "read"
+              - "read_security"
             editor:
-              - read
-              - read_security
-              - create_children
-              - write
+              - "read"
+              - "read_security"
+              - "write"
             admin:
-              - read
-              - read_security
-              - create_children
-              - write
-              - write_security
-              - delete
-        - component: workspace
+              - "read"
+              - "read_security"
+              - "write"
+              - "write_security"
+              - "delete"
+        - component: "workspace"
           roles:
             none: []
             viewer:
-              - read
-              - read_security
-            user:
-              - read
-              - read_security
-              - create_children
+              - "read"
+              - "read_security"
             editor:
-              - read
-              - read_security
-              - create_children
-              - write
+              - "read"
+              - "read_security"
+              - "write"
             admin:
-              - read
-              - read_security
-              - create_children
-              - write
-              - write_security
-              - delete
-        - component: runner
+              - "read"
+              - "read_security"
+              - "write"
+              - "write_security"
+              - "delete"
+        - component: "runner"
           roles:
             none: []
             viewer:
-              - read
-              - read_security
+              - "read"
+              - "read_security"
             editor:
-              - read
-              - read_security
-              - launch
-              - write
+              - "read"
+              - "read_security"
+              - "launch"
+              - "write"
             validator:
-              - read
-              - read_security
-              - launch
-              - write
-              - validate
+              - "read"
+              - "read_security"
+              - "launch"
+              - "write"
+              - "validate"
             admin:
-              - read
-              - read_security
-              - launch
-              - write
-              - validate
-              - write_security
-              - delete
+              - "read"
+              - "read_security"
+              - "launch"
+              - "write"
+              - "validate"
+              - "write_security"
+              - "delete"

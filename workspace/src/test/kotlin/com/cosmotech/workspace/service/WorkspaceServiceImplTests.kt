@@ -333,7 +333,8 @@ class WorkspaceServiceImplTests {
             rbacTest("Test RBAC create workspace: $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it.organization
               listOf(PERMISSION_READ, PERMISSION_CREATE_CHILDREN).forEach { permission ->
-                csmRbac.verify(it.organization.security.toGenericSecurity(it.organization.id), permission)
+                csmRbac.verify(
+                    it.organization.security.toGenericSecurity(it.organization.id), permission)
               }
               every { workspaceRepository.save(any()) } returns it.workspace
               every { solutionService.findSolutionById(any(), any()) } returns it.solution
