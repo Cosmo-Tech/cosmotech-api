@@ -35,6 +35,7 @@ import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationCreationRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.*
@@ -106,7 +107,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var connector: Connector
   lateinit var dataset: Dataset
   lateinit var solution: Solution
-  lateinit var organization: Organization
+  lateinit var organization: OrganizationCreationRequest
   lateinit var workspace: Workspace
   lateinit var runner: Runner
   lateinit var parentRunner: Runner
@@ -158,7 +159,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     connector = makeConnector("Connector")
     connectorSaved = connectorApiService.registerConnector(connector)
 
-    organization = makeOrganization("Organization")
+    organization = makeOrganizationRequest()
     organizationSaved = organizationApiService.createOrganization(organization)
 
     dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
@@ -791,7 +792,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
-    organizationSaved = organizationApiService.createOrganization(makeOrganization("organization"))
+    organizationSaved =
+        organizationApiService.createOrganization(makeOrganizationRequest("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
     val brokenRunner =
@@ -811,7 +813,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list can't add an existing user`() {
-    organizationSaved = organizationApiService.createOrganization(makeOrganization("organization"))
+    organizationSaved =
+        organizationApiService.createOrganization(makeOrganizationRequest("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
     val workingRunner = makeRunner()
@@ -840,7 +843,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list can't update a non-existing user`() {
-    organizationSaved = organizationApiService.createOrganization(makeOrganization("organization"))
+    organizationSaved =
+        organizationApiService.createOrganization(makeOrganizationRequest("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
     val workingRunner = makeRunner()
@@ -1129,15 +1133,12 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                         SolutionAccessControl(id = defaultName, role = ROLE_USER))))
   }
 
-  fun makeOrganization(
-      id: String = "id",
+  fun makeOrganizationRequest(
       userName: String = defaultName,
       role: String = ROLE_ADMIN
-  ): Organization {
-    return Organization(
-        id = id,
+  ): OrganizationCreationRequest {
+    return OrganizationCreationRequest(
         name = "Organization Name",
-        ownerId = "my.account-tester@cosmotech.com",
         security =
             OrganizationSecurity(
                 default = ROLE_NONE,

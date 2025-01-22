@@ -22,8 +22,10 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationCreationRequest
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.organization.domain.UpdateOrganizationRequest
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -174,8 +176,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganization(
-                          organization.id!!,
-                          mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
+                          organization.id!!, UpdateOrganizationRequest("name"))
                     }
                 assertEquals(
                     "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE",
@@ -183,7 +184,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganization(
-                      organization.id!!, mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
+                      organization.id!!, UpdateOrganizationRequest("name"))
                 }
               }
             }
@@ -454,11 +455,9 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
-  fun mockOrganizationWithRole(id: String, role: String): Organization {
-    return Organization(
-        id = UUID.randomUUID().toString(),
+  fun mockOrganizationWithRole(id: String, role: String): OrganizationCreationRequest {
+    return OrganizationCreationRequest(
         name = "Organization Name",
-        ownerId = "my.account-tester@cosmotech.com",
         security =
             OrganizationSecurity(
                 default = ROLE_NONE,

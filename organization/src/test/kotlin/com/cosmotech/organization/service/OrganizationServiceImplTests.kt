@@ -24,6 +24,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.organization.domain.UpdateOrganizationRequest
 import com.cosmotech.organization.repository.OrganizationRepository
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -80,7 +81,7 @@ class OrganizationServiceImplTests {
     val rbacSecurity =
         RbacSecurity(
             organization.id,
-            organization.security!!.default,
+            organization.security!!.default!!,
             mutableListOf(RbacAccessControl("ID", ROLE_VIEWER)))
     val rbacAccessControl = RbacAccessControl(USER_ID, ROLE_ADMIN)
     every { organizationRepository.findByIdOrNull(any()) } returns organization
@@ -202,8 +203,7 @@ class OrganizationServiceImplTests {
             rbacTest("Test RBAC update : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
-              organizationApiService.updateOrganization(
-                  it.id!!, makeOrganizationWithRole(it.id!!, "modifiedOrganization", role))
+              organizationApiService.updateOrganization(it.id!!, UpdateOrganizationRequest("toto"))
             }
           }
 
@@ -332,7 +332,7 @@ class OrganizationServiceImplTests {
       shouldThrow: Boolean,
       testLambda: (organization: Organization) -> Unit
   ): DynamicTest? {
-    val organization = makeOrganizationWithRole("id", USER_ID, role)
+    val organization = makeOrganizationRequestWithRole(USER_ID, role)
     return DynamicTest.dynamicTest(name) {
       if (shouldThrow) {
         assertThrows<CsmAccessForbiddenException> { testLambda(organization) }
@@ -342,27 +342,27 @@ class OrganizationServiceImplTests {
     }
   }
 
-  fun makeOrganizationWithRole(id: String, name: String, role: String): Organization {
+  fun makeOrganizationRequestWithRole(name: String, role: String): Organization {
     return Organization(
-        id = id,
-        name = name,
-        ownerId = name,
+        id = "o-123456789",
+        name = "test-orga",
+        ownerId = USER_ID,
         security =
             OrganizationSecurity(
                 default = "none",
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(name, role),
-                        OrganizationAccessControl("2$name", "viewer"))))
+                        OrganizationAccessControl("2$name", "viewer"),
+                        OrganizationAccessControl("admin", ROLE_ADMIN))))
   }
 
   fun getMockOrganization(): Organization {
-    val organization = Organization()
-    organization.id = ORGANIZATION_ID
-    val organizationSecurity =
+    val security =
         OrganizationSecurity(
             ROLE_VIEWER, mutableListOf(OrganizationAccessControl("ID", ROLE_VIEWER)))
-    organization.security = organizationSecurity
+    val organization =
+        Organization(id = ORGANIZATION_ID, name = "name", ownerId = "ownerId", security = security)
     return organization
   }
 }
