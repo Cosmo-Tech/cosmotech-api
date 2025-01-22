@@ -162,7 +162,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
               datasetRepository.save(
                   datasetSaved.apply { datasetSaved.ingestionStatus = IngestionStatusEnum.ERROR })
@@ -172,14 +172,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+                      datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+                  datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -201,7 +201,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
               datasetRepository.save(
                   datasetSaved.apply { datasetSaved.ingestionStatus = IngestionStatusEnum.ERROR })
@@ -211,14 +211,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+                      datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+                  datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -240,7 +240,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val datasetTwinGraphQuery = DatasetTwinGraphQuery("MATCH (n) RETURN n")
@@ -252,18 +252,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.twingraphBatchUpdate(
-                          organizationSaved.id!!,
-                          datasetSaved.id!!,
-                          datasetTwinGraphQuery,
-                          resource)
+                          organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery, resource)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.twingraphBatchUpdate(
-                      organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery, resource)
+                      organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery, resource)
                 }
               }
             }
@@ -285,7 +282,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val datasetTwinGraphQuery = DatasetTwinGraphQuery("MATCH (n) RETURN n")
@@ -297,10 +294,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.twingraphBatchUpdate(
-                          organizationSaved.id!!,
-                          datasetSaved.id!!,
-                          datasetTwinGraphQuery,
-                          resource)
+                          organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery, resource)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -314,7 +308,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.twingraphBatchUpdate(
-                      organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery, resource)
+                      organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery, resource)
                 }
               }
             }
@@ -337,7 +331,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                   val organization = makeOrganizationRequestWithRole(role = role)
                   organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-                  datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
                   materializeTwingraph()
 
                   val datasetCompatibility = DatasetCompatibility("")
@@ -348,17 +342,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                     val exception =
                         assertThrows<CsmAccessForbiddenException> {
                           datasetApiService.addOrReplaceDatasetCompatibilityElements(
-                              organizationSaved.id!!,
-                              datasetSaved.id!!,
-                              listOf(datasetCompatibility))
+                              organizationSaved.id, datasetSaved.id!!, listOf(datasetCompatibility))
                         }
                     assertEquals(
-                        "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                        "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                         exception.message)
                   } else {
                     assertDoesNotThrow {
                       datasetApiService.addOrReplaceDatasetCompatibilityElements(
-                          organizationSaved.id!!, datasetSaved.id!!, listOf(datasetCompatibility))
+                          organizationSaved.id, datasetSaved.id!!, listOf(datasetCompatibility))
                     }
                   }
                 }
@@ -381,7 +373,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                   val organization = makeOrganizationRequestWithRole()
                   organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = role)
-                  datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
                   materializeTwingraph()
 
                   val datasetCompatibility = DatasetCompatibility("")
@@ -392,9 +384,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                     val exception =
                         assertThrows<CsmAccessForbiddenException> {
                           datasetApiService.addOrReplaceDatasetCompatibilityElements(
-                              organizationSaved.id!!,
-                              datasetSaved.id!!,
-                              listOf(datasetCompatibility))
+                              organizationSaved.id, datasetSaved.id!!, listOf(datasetCompatibility))
                         }
                     assertEquals(
                         "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
@@ -402,7 +392,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                   } else {
                     assertDoesNotThrow {
                       datasetApiService.addOrReplaceDatasetCompatibilityElements(
-                          organizationSaved.id!!, datasetSaved.id!!, listOf(datasetCompatibility))
+                          organizationSaved.id, datasetSaved.id!!, listOf(datasetCompatibility))
                     }
                   }
                 }
@@ -430,14 +420,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                      datasetApiService.createDataset(organizationSaved.id, dataset)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_CREATE_CHILDREN",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_CREATE_CHILDREN",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  datasetApiService.createDataset(organizationSaved.id, dataset)
                 }
               }
             }
@@ -459,7 +449,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val subDatasetTwinGraphQuery = SubDatasetGraphQuery()
@@ -470,15 +460,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.createSubDataset(
-                          organizationSaved.id!!, datasetSaved.id!!, subDatasetTwinGraphQuery)
+                          organizationSaved.id, datasetSaved.id!!, subDatasetTwinGraphQuery)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.createSubDataset(
-                      organizationSaved.id!!, datasetSaved.id!!, subDatasetTwinGraphQuery)
+                      organizationSaved.id, datasetSaved.id!!, subDatasetTwinGraphQuery)
                 }
               }
             }
@@ -500,7 +490,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val subDatasetTwinGraphQuery = SubDatasetGraphQuery()
@@ -511,7 +501,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.createSubDataset(
-                          organizationSaved.id!!, datasetSaved.id!!, subDatasetTwinGraphQuery)
+                          organizationSaved.id, datasetSaved.id!!, subDatasetTwinGraphQuery)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -525,7 +515,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.createSubDataset(
-                      organizationSaved.id!!, datasetSaved.id!!, subDatasetTwinGraphQuery)
+                      organizationSaved.id, datasetSaved.id!!, subDatasetTwinGraphQuery)
                 }
               }
             }
@@ -547,7 +537,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val graphProperties =
@@ -559,18 +549,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.createTwingraphEntities(
-                          organizationSaved.id!!,
-                          datasetSaved.id!!,
-                          "node",
-                          listOf(graphProperties))
+                          organizationSaved.id, datasetSaved.id!!, "node", listOf(graphProperties))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.createTwingraphEntities(
-                      organizationSaved.id!!, datasetSaved.id!!, "node", listOf(graphProperties))
+                      organizationSaved.id, datasetSaved.id!!, "node", listOf(graphProperties))
                 }
               }
             }
@@ -592,7 +579,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val graphProperties =
@@ -604,10 +591,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.createTwingraphEntities(
-                          organizationSaved.id!!,
-                          datasetSaved.id!!,
-                          "node",
-                          listOf(graphProperties))
+                          organizationSaved.id, datasetSaved.id!!, "node", listOf(graphProperties))
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -621,7 +605,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.createTwingraphEntities(
-                      organizationSaved.id!!, datasetSaved.id!!, "node", listOf(graphProperties))
+                      organizationSaved.id, datasetSaved.id!!, "node", listOf(graphProperties))
                 }
               }
             }
@@ -643,7 +627,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -651,14 +635,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.deleteDataset(organizationSaved.id!!, datasetSaved.id!!)
+                      datasetApiService.deleteDataset(organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.deleteDataset(organizationSaved.id!!, datasetSaved.id!!)
+                  datasetApiService.deleteDataset(organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -680,7 +664,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -688,14 +672,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.deleteDataset(organizationSaved.id!!, datasetSaved.id!!)
+                      datasetApiService.deleteDataset(organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_DELETE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.deleteDataset(organizationSaved.id!!, datasetSaved.id!!)
+                  datasetApiService.deleteDataset(organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -717,7 +701,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -726,15 +710,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.deleteTwingraphEntities(
-                          organizationSaved.id!!, datasetSaved.id!!, "node", listOf(""))
+                          organizationSaved.id, datasetSaved.id!!, "node", listOf(""))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.deleteTwingraphEntities(
-                      organizationSaved.id!!, datasetSaved.id!!, "node", listOf(""))
+                      organizationSaved.id, datasetSaved.id!!, "node", listOf(""))
                 }
               }
             }
@@ -756,7 +740,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -765,7 +749,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.deleteTwingraphEntities(
-                          organizationSaved.id!!, datasetSaved.id!!, "node", listOf(""))
+                          organizationSaved.id, datasetSaved.id!!, "node", listOf(""))
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -779,7 +763,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.deleteTwingraphEntities(
-                      organizationSaved.id!!, datasetSaved.id!!, "node", listOf(""))
+                      organizationSaved.id, datasetSaved.id!!, "node", listOf(""))
                 }
               }
             }
@@ -801,7 +785,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -816,14 +800,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.downloadTwingraph(organizationSaved.id!!, "hash")
+                      datasetApiService.downloadTwingraph(organizationSaved.id, "hash")
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.downloadTwingraph(organizationSaved.id!!, "hash")
+                  datasetApiService.downloadTwingraph(organizationSaved.id, "hash")
                 }
               }
             }
@@ -845,7 +829,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -853,14 +837,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+                      datasetApiService.findAllDatasets(organizationSaved.id, null, null)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+                  datasetApiService.findAllDatasets(organizationSaved.id, null, null)
                 }
               }
             }
@@ -882,7 +866,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -890,14 +874,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+                      datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+                  datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -919,7 +903,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -927,14 +911,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+                      datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+                  datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -956,7 +940,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -965,15 +949,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.getDatasetTwingraphStatus(
-                          organizationSaved.id!!, datasetSaved.id!!)
+                          organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetTwingraphStatus(
-                      organizationSaved.id!!, datasetSaved.id!!)
+                      organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -995,7 +979,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1004,7 +988,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.getDatasetTwingraphStatus(
-                          organizationSaved.id!!, datasetSaved.id!!)
+                          organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1012,7 +996,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetTwingraphStatus(
-                      organizationSaved.id!!, datasetSaved.id!!)
+                      organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -1034,7 +1018,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1043,15 +1027,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.getTwingraphEntities(
-                          organizationSaved.id!!, datasetSaved.id!!, "node", listOf(""))
+                          organizationSaved.id, datasetSaved.id!!, "node", listOf(""))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getTwingraphEntities(
-                      organizationSaved.id!!, datasetSaved.id!!, "node", listOf(""))
+                      organizationSaved.id, datasetSaved.id!!, "node", listOf(""))
                 }
               }
             }
@@ -1073,7 +1057,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1082,7 +1066,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.getTwingraphEntities(
-                          organizationSaved.id!!, datasetSaved.id!!, "node", listOf(""))
+                          organizationSaved.id, datasetSaved.id!!, "node", listOf(""))
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1090,7 +1074,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getTwingraphEntities(
-                      organizationSaved.id!!, datasetSaved.id!!, "node", listOf(""))
+                      organizationSaved.id, datasetSaved.id!!, "node", listOf(""))
                 }
               }
             }
@@ -1113,13 +1097,12 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             organizationSaved = organizationApiService.createOrganization(organization)
             val dataset =
                 makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.Twincache)
-            val datasetParentSaved =
-                datasetApiService.createDataset(organizationSaved.id!!, dataset)
+            val datasetParentSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
             datasetSaved = datasetParentSaved
             materializeTwingraph()
             datasetSaved =
                 datasetApiService.createSubDataset(
-                    organizationSaved.id!!, datasetParentSaved.id!!, SubDatasetGraphQuery())
+                    organizationSaved.id, datasetParentSaved.id!!, SubDatasetGraphQuery())
 
             advanceUntilIdle()
             every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
@@ -1131,14 +1114,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             if (shouldThrow) {
               val exception =
                   assertThrows<CsmAccessForbiddenException> {
-                    datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                    datasetApiService.refreshDataset(organizationSaved.id, datasetSaved.id!!)
                   }
               assertEquals(
-                  "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                  "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                   exception.message)
             } else {
               assertDoesNotThrow {
-                datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                datasetApiService.refreshDataset(organizationSaved.id, datasetSaved.id!!)
               }
             }
           }
@@ -1161,13 +1144,12 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             val organization = makeOrganizationRequestWithRole()
             organizationSaved = organizationApiService.createOrganization(organization)
             val dataset = makeDatasetWithRole(role = role, sourceType = DatasetSourceType.Twincache)
-            val datasetParentSaved =
-                datasetApiService.createDataset(organizationSaved.id!!, dataset)
+            val datasetParentSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
             datasetSaved = datasetParentSaved
             materializeTwingraph()
             datasetSaved =
                 datasetApiService.createSubDataset(
-                    organizationSaved.id!!, datasetParentSaved.id!!, SubDatasetGraphQuery())
+                    organizationSaved.id, datasetParentSaved.id!!, SubDatasetGraphQuery())
 
             advanceUntilIdle()
             every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
@@ -1179,7 +1161,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             if (shouldThrow) {
               val exception =
                   assertThrows<CsmAccessForbiddenException> {
-                    datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                    datasetApiService.refreshDataset(organizationSaved.id, datasetSaved.id!!)
                   }
               if (role == ROLE_NONE) {
                 assertEquals(
@@ -1192,7 +1174,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               }
             } else {
               assertDoesNotThrow {
-                datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                datasetApiService.refreshDataset(organizationSaved.id, datasetSaved.id!!)
               }
             }
           }
@@ -1216,7 +1198,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                   val organization = makeOrganizationRequestWithRole(role = role)
                   organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-                  datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
                   materializeTwingraph()
 
                   every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1225,15 +1207,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                     val exception =
                         assertThrows<CsmAccessForbiddenException> {
                           datasetApiService.removeAllDatasetCompatibilityElements(
-                              organizationSaved.id!!, datasetSaved.id!!)
+                              organizationSaved.id, datasetSaved.id!!)
                         }
                     assertEquals(
-                        "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                        "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                         exception.message)
                   } else {
                     assertDoesNotThrow {
                       datasetApiService.removeAllDatasetCompatibilityElements(
-                          organizationSaved.id!!, datasetSaved.id!!)
+                          organizationSaved.id, datasetSaved.id!!)
                     }
                   }
                 }
@@ -1256,7 +1238,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                   val organization = makeOrganizationRequestWithRole()
                   organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = role)
-                  datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
                   materializeTwingraph()
 
                   every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1265,7 +1247,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                     val exception =
                         assertThrows<CsmAccessForbiddenException> {
                           datasetApiService.removeAllDatasetCompatibilityElements(
-                              organizationSaved.id!!, datasetSaved.id!!)
+                              organizationSaved.id, datasetSaved.id!!)
                         }
                     assertEquals(
                         "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
@@ -1273,7 +1255,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                   } else {
                     assertDoesNotThrow {
                       datasetApiService.removeAllDatasetCompatibilityElements(
-                          organizationSaved.id!!, datasetSaved.id!!)
+                          organizationSaved.id, datasetSaved.id!!)
                     }
                   }
                 }
@@ -1295,7 +1277,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val datasetSearch = DatasetSearch(mutableListOf("dataset"))
@@ -1306,15 +1288,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.searchDatasets(
-                          organizationSaved.id!!, datasetSearch, null, null)
+                          organizationSaved.id, datasetSearch, null, null)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.searchDatasets(
-                      organizationSaved.id!!, datasetSearch, null, null)
+                  datasetApiService.searchDatasets(organizationSaved.id, datasetSearch, null, null)
                 }
               }
             }
@@ -1336,7 +1317,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val datasetTwinGraphQuery = DatasetTwinGraphQuery("MATCH (n) RETURN n")
@@ -1348,15 +1329,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.twingraphBatchQuery(
-                          organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery)
+                          organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.twingraphBatchQuery(
-                      organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery)
+                      organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery)
                 }
               }
             }
@@ -1378,7 +1359,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val datasetTwinGraphQuery = DatasetTwinGraphQuery("MATCH (n) RETURN n")
@@ -1390,7 +1371,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.twingraphBatchQuery(
-                          organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery)
+                          organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1398,7 +1379,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.twingraphBatchQuery(
-                      organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery)
+                      organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery)
                 }
               }
             }
@@ -1420,7 +1401,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
               val datasetTwinGraphQuery = DatasetTwinGraphQuery("MATCH (n) RETURN n")
 
@@ -1430,15 +1411,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.twingraphQuery(
-                          organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery)
+                          organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.twingraphQuery(
-                      organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery)
+                      organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery)
                 }
               }
             }
@@ -1460,7 +1441,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
               val datasetTwinGraphQuery = DatasetTwinGraphQuery("MATCH (n) RETURN n")
 
@@ -1470,7 +1451,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.twingraphQuery(
-                          organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery)
+                          organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1478,7 +1459,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.twingraphQuery(
-                      organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery)
+                      organizationSaved.id, datasetSaved.id!!, datasetTwinGraphQuery)
                 }
               }
             }
@@ -1500,7 +1481,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1509,15 +1490,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.updateDataset(
-                          organizationSaved.id!!, datasetSaved.id!!, dataset)
+                          organizationSaved.id, datasetSaved.id!!, dataset)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.updateDataset(
-                      organizationSaved.id!!, datasetSaved.id!!, dataset)
+                  datasetApiService.updateDataset(organizationSaved.id, datasetSaved.id!!, dataset)
                 }
               }
             }
@@ -1539,7 +1519,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1548,15 +1528,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.updateDataset(
-                          organizationSaved.id!!, datasetSaved.id!!, dataset)
+                          organizationSaved.id, datasetSaved.id!!, dataset)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.updateDataset(
-                      organizationSaved.id!!, datasetSaved.id!!, dataset)
+                  datasetApiService.updateDataset(organizationSaved.id, datasetSaved.id!!, dataset)
                 }
               }
             }
@@ -1578,7 +1557,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1587,15 +1566,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.updateTwingraphEntities(
-                          organizationSaved.id!!, datasetSaved.id!!, "node", listOf())
+                          organizationSaved.id, datasetSaved.id!!, "node", listOf())
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.updateTwingraphEntities(
-                      organizationSaved.id!!, datasetSaved.id!!, "node", listOf())
+                      organizationSaved.id, datasetSaved.id!!, "node", listOf())
                 }
               }
             }
@@ -1617,7 +1596,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1626,7 +1605,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.updateTwingraphEntities(
-                          organizationSaved.id!!, datasetSaved.id!!, "node", listOf())
+                          organizationSaved.id, datasetSaved.id!!, "node", listOf())
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -1640,7 +1619,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.updateTwingraphEntities(
-                      organizationSaved.id!!, datasetSaved.id!!, "node", listOf())
+                      organizationSaved.id, datasetSaved.id!!, "node", listOf())
                 }
               }
             }
@@ -1663,7 +1642,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.File)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               val fileName = this::class.java.getResource("/integrationTest.zip")?.file
               val file = File(fileName!!)
               val resource = ByteArrayResource(file.readBytes())
@@ -1674,15 +1653,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.uploadTwingraph(
-                          organizationSaved.id!!, datasetSaved.id!!, resource)
+                          organizationSaved.id, datasetSaved.id!!, resource)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.uploadTwingraph(
-                      organizationSaved.id!!, datasetSaved.id!!, resource)
+                      organizationSaved.id, datasetSaved.id!!, resource)
                 }
               }
             }
@@ -1704,7 +1683,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role, sourceType = DatasetSourceType.File)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               val fileName = this::class.java.getResource("/integrationTest.zip")?.file
               val file = File(fileName!!)
               val resource = ByteArrayResource(file.readBytes())
@@ -1715,7 +1694,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.uploadTwingraph(
-                          organizationSaved.id!!, datasetSaved.id!!, resource)
+                          organizationSaved.id, datasetSaved.id!!, resource)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -1729,7 +1708,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.uploadTwingraph(
-                      organizationSaved.id!!, datasetSaved.id!!, resource)
+                      organizationSaved.id, datasetSaved.id!!, resource)
                 }
               }
             }
@@ -1751,7 +1730,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val datasetAccessControl = DatasetAccessControl("id", ROLE_USER)
@@ -1762,15 +1741,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.addDatasetAccessControl(
-                          organizationSaved.id!!, datasetSaved.id!!, datasetAccessControl)
+                          organizationSaved.id, datasetSaved.id!!, datasetAccessControl)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.addDatasetAccessControl(
-                      organizationSaved.id!!, datasetSaved.id!!, datasetAccessControl)
+                      organizationSaved.id, datasetSaved.id!!, datasetAccessControl)
                 }
               }
             }
@@ -1792,7 +1771,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               val datasetAccessControl = DatasetAccessControl("id", ROLE_USER)
@@ -1803,7 +1782,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.addDatasetAccessControl(
-                          organizationSaved.id!!, datasetSaved.id!!, datasetAccessControl)
+                          organizationSaved.id, datasetSaved.id!!, datasetAccessControl)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
@@ -1811,7 +1790,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.addDatasetAccessControl(
-                      organizationSaved.id!!, datasetSaved.id!!, datasetAccessControl)
+                      organizationSaved.id, datasetSaved.id!!, datasetAccessControl)
                 }
               }
             }
@@ -1834,7 +1813,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.None)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1842,15 +1821,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.getDatasetAccessControl(
-                          organizationSaved.id!!, datasetSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, datasetSaved.id!!, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetAccessControl(
-                      organizationSaved.id!!, datasetSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, datasetSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -1872,7 +1851,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1881,7 +1860,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.getDatasetAccessControl(
-                          organizationSaved.id!!, datasetSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, datasetSaved.id!!, TEST_USER_MAIL)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
@@ -1889,7 +1868,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetAccessControl(
-                      organizationSaved.id!!, datasetSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, datasetSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -1911,7 +1890,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1920,18 +1899,18 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.updateDatasetAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           datasetSaved.id!!,
                           TEST_USER_MAIL,
                           DatasetRole(ROLE_USER))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.updateDatasetAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       datasetSaved.id!!,
                       TEST_USER_MAIL,
                       DatasetRole(ROLE_USER))
@@ -1956,7 +1935,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1965,7 +1944,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.updateDatasetAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           datasetSaved.id!!,
                           TEST_USER_MAIL,
                           DatasetRole(ROLE_USER))
@@ -1976,7 +1955,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.updateDatasetAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       datasetSaved.id!!,
                       TEST_USER_MAIL,
                       DatasetRole(ROLE_USER))
@@ -2001,7 +1980,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -2010,15 +1989,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.removeDatasetAccessControl(
-                          organizationSaved.id!!, datasetSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, datasetSaved.id!!, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.removeDatasetAccessControl(
-                      organizationSaved.id!!, datasetSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, datasetSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -2040,7 +2019,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -2049,7 +2028,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.removeDatasetAccessControl(
-                          organizationSaved.id!!, datasetSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, datasetSaved.id!!, TEST_USER_MAIL)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
@@ -2057,7 +2036,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.removeDatasetAccessControl(
-                      organizationSaved.id!!, datasetSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, datasetSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -2079,7 +2058,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -2088,15 +2067,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.getDatasetSecurityUsers(
-                          organizationSaved.id!!, datasetSaved.id!!)
+                          organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.getDatasetSecurityUsers(
-                      organizationSaved.id!!, datasetSaved.id!!)
+                  datasetApiService.getDatasetSecurityUsers(organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -2118,7 +2096,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -2127,15 +2105,14 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.getDatasetSecurityUsers(
-                          organizationSaved.id!!, datasetSaved.id!!)
+                          organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.getDatasetSecurityUsers(
-                      organizationSaved.id!!, datasetSaved.id!!)
+                  datasetApiService.getDatasetSecurityUsers(organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -2157,22 +2134,21 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.getDatasetSecurity(
-                          organizationSaved.id!!, datasetSaved.id!!)
+                      datasetApiService.getDatasetSecurity(organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.getDatasetSecurity(organizationSaved.id!!, datasetSaved.id!!)
+                  datasetApiService.getDatasetSecurity(organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -2194,22 +2170,21 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.getDatasetSecurity(
-                          organizationSaved.id!!, datasetSaved.id!!)
+                      datasetApiService.getDatasetSecurity(organizationSaved.id, datasetSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.getDatasetSecurity(organizationSaved.id!!, datasetSaved.id!!)
+                  datasetApiService.getDatasetSecurity(organizationSaved.id, datasetSaved.id!!)
                 }
               }
             }
@@ -2231,7 +2206,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -2239,15 +2214,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.setDatasetDefaultSecurity(
-                          organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
+                          organizationSaved.id, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.setDatasetDefaultSecurity(
-                      organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
+                      organizationSaved.id, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
                 }
               }
             }
@@ -2269,7 +2244,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -2277,7 +2252,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.setDatasetDefaultSecurity(
-                          organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
+                          organizationSaved.id, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
@@ -2285,7 +2260,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.setDatasetDefaultSecurity(
-                      organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
+                      organizationSaved.id, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
                 }
               }
             }
@@ -2360,7 +2335,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   }
 
   fun makeDatasetWithRole(
-      organizationId: String = organizationSaved.id!!,
+      organizationId: String = organizationSaved.id,
       parentId: String = "",
       id: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN,

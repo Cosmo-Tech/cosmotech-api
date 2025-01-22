@@ -115,13 +115,13 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.getOrganization(organization.id!!)
+                      organizationApiService.getOrganization(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
-                assertDoesNotThrow { organizationApiService.getOrganization(organization.id!!) }
+                assertDoesNotThrow { organizationApiService.getOrganization(organization.id) }
               }
             }
           }
@@ -145,13 +145,13 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.deleteOrganization(organization.id!!)
+                      organizationApiService.deleteOrganization(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_DELETE",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_DELETE",
                     exception.message)
               } else {
-                assertDoesNotThrow { organizationApiService.deleteOrganization(organization.id!!) }
+                assertDoesNotThrow { organizationApiService.deleteOrganization(organization.id) }
               }
             }
           }
@@ -176,15 +176,15 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganization(
-                          organization.id!!, UpdateOrganizationRequest("name"))
+                          organization.id, UpdateOrganizationRequest("name"))
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganization(
-                      organization.id!!, UpdateOrganizationRequest("name"))
+                      organization.id, UpdateOrganizationRequest("name"))
                 }
               }
             }
@@ -209,14 +209,14 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.getOrganizationPermissions(organization.id!!, role)
+                      organizationApiService.getOrganizationPermissions(organization.id, role)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else
                   assertDoesNotThrow {
-                    organizationApiService.getOrganizationPermissions(organization.id!!, role)
+                    organizationApiService.getOrganizationPermissions(organization.id, role)
                   }
             }
           }
@@ -240,14 +240,14 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.getOrganizationSecurity(organization.id!!)
+                      organizationApiService.getOrganizationSecurity(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  organizationApiService.getOrganizationSecurity(organization.id!!)
+                  organizationApiService.getOrganizationSecurity(organization.id)
                 }
               }
             }
@@ -273,15 +273,15 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganizationDefaultSecurity(
-                          organization.id!!, OrganizationRole(role))
+                          organization.id, OrganizationRole(role))
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganizationDefaultSecurity(
-                      organization.id!!, OrganizationRole(role))
+                      organization.id, OrganizationRole(role))
                 }
               }
             }
@@ -307,15 +307,15 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.createOrganizationAccessControl(
-                          organization.id!!, OrganizationAccessControl("id", role))
+                          organization.id, OrganizationAccessControl("id", role))
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.createOrganizationAccessControl(
-                      organization.id!!, OrganizationAccessControl("id", role))
+                      organization.id, OrganizationAccessControl("id", role))
                 }
               }
             }
@@ -341,15 +341,15 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.getOrganizationAccessControl(
-                          organization.id!!, TEST_USER_MAIL)
+                          organization.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.getOrganizationAccessControl(
-                      organization.id!!, TEST_USER_MAIL)
+                      organization.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -375,15 +375,15 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.deleteOrganizationAccessControl(
-                          organization.id!!, TEST_USER_MAIL)
+                          organization.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.deleteOrganizationAccessControl(
-                      organization.id!!, TEST_USER_MAIL)
+                      organization.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -409,15 +409,15 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganizationAccessControl(
-                          organization.id!!, TEST_USER_MAIL, OrganizationRole(role))
+                          organization.id, TEST_USER_MAIL, OrganizationRole(role))
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganizationAccessControl(
-                      organization.id!!, TEST_USER_MAIL, OrganizationRole(role))
+                      organization.id, TEST_USER_MAIL, OrganizationRole(role))
                 }
               }
             }
@@ -442,14 +442,14 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.listOrganizationSecurityUsers(organization.id!!)
+                      organizationApiService.listOrganizationSecurityUsers(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  organizationApiService.listOrganizationSecurityUsers(organization.id!!)
+                  organizationApiService.listOrganizationSecurityUsers(organization.id)
                 }
               }
             }

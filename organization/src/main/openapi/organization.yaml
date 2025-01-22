@@ -453,11 +453,11 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
             - $ref: '#/components/schemas/OrganizationSecurity'
-#      required:
-#        - id
-#        - name
-#        - ownerId
-#        - security
+      required:
+        - id
+        - name
+        - ownerId
+        - security
 
     # CRUD Operation Schemas
     OrganizationCreationRequest:
@@ -480,6 +480,8 @@ components:
         name:
           type: string
           description: the Organization name
+      required:
+        - name
 
     # Security Operation Schemas
     OrganizationSecurity:
@@ -499,6 +501,7 @@ components:
       required:
         - default
         - accessControlList
+
     OrganizationAccessControl:
       type: object
       description: Response object for organization access control
@@ -514,6 +517,7 @@ components:
       required:
         - id
         - role
+
     OrganizationRole:
       type: object
       description: the Organization Role
@@ -523,6 +527,7 @@ components:
           description: the Organization Role
       required:
         - role
+
     ComponentRolePermissions:
       type: object
       description: a RBAC by component
@@ -535,6 +540,9 @@ components:
             type: array
             items:
               type: string
+      required:
+        - component
+        - roles
 
   examples:
     NewOrganizationIn:

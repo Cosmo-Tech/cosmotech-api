@@ -3,8 +3,8 @@
 title Cosmo Tech Platform API Schemas Diagram
 
 entity ComponentRolePermissions {
-    component: String
-    roles: Map
+    * component: String
+    * roles: Map
 }
 
 entity Connector {
@@ -161,10 +161,10 @@ entity IoTypesEnum {
 }
 
 entity Organization {
-    id: String
-    name: String
-    ownerId: String
-    security: OrganizationSecurity
+    * id: String
+    * name: String
+    * ownerId: String
+    * security: OrganizationSecurity
 }
 
 entity OrganizationAccessControl {
@@ -481,7 +481,7 @@ entity TwincacheStatusEnum {
 }
 
 entity UpdateOrganizationRequest {
-    name: String
+    * name: String
 }
 
 entity Workspace {
