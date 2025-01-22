@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import redis.clients.jedis.UnifiedJedis
+import redis.clients.jedis.timeseries.DuplicatePolicy
 import redis.clients.jedis.timeseries.TSAlterParams
 import redis.clients.jedis.timeseries.TSCreateParams
 
@@ -58,7 +59,12 @@ class MetricsServiceImpl(
       val metricLabels = getMetricLabels(commonLabels)
       logger.debug(
           "Creating Redis TS: $key with retention: $metricRetention and ${metricLabels.count()} labels")
-      unifiedJedis.tsCreate(key, TSCreateParams().retention(metricRetention).labels(metricLabels))
+      unifiedJedis.tsCreate(
+          key,
+          TSCreateParams()
+              .retention(metricRetention)
+              .labels(metricLabels)
+              .duplicatePolicy(DuplicatePolicy.MAX))
       if (metric.downSampling || csmPlatformProperties.metrics.downSamplingDefaultEnabled) {
         val downSamplingKey = getDownSamplingKey(metric)
         val downSamplingMetricLabels = getDownSamplingMetricLabels(commonLabels)
@@ -69,7 +75,10 @@ class MetricsServiceImpl(
                 "and ${downSamplingMetricLabels.count()} labels")
         unifiedJedis.tsCreate(
             downSamplingKey,
-            TSCreateParams().retention(downSamplingRetention).labels(downSamplingMetricLabels))
+            TSCreateParams()
+                .retention(downSamplingRetention)
+                .labels(downSamplingMetricLabels)
+                .duplicatePolicy(DuplicatePolicy.MAX))
         logger.debug(
             "Creating Redis DownSampling TS rule: from $key to $downSamplingKey, " +
                 "aggregation: ${metric.downSamplingAggregation.value}, bucketDuration: $downSamplingBucketDuration")
@@ -89,7 +98,12 @@ class MetricsServiceImpl(
         logger.debug(
             "Redis TS library cannot get current labels so it is not possible to check if labels changed")
         val metricLabels = getMetricLabels(commonLabels)
-        unifiedJedis.tsAlter(key, TSAlterParams().retention(metricRetention).labels(metricLabels))
+        unifiedJedis.tsAlter(
+            key,
+            TSAlterParams()
+                .retention(metricRetention)
+                .labels(metricLabels)
+                .duplicatePolicy(DuplicatePolicy.MAX))
       } else {}
     }
   }
