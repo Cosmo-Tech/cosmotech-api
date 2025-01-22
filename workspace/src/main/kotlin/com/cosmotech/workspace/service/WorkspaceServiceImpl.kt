@@ -72,7 +72,9 @@ internal class WorkspaceServiceImpl(
 
   override fun findAllWorkspaces(organizationId: String, page: Int?, size: Int?): List<Workspace> {
     val organization = organizationService.getVerifiedOrganization(organizationId)
-    val isAdmin = csmRbac.isAdmin(organization.security.toGenericSecurity(organizationId), getCommonRolesDefinition())
+    val isAdmin =
+        csmRbac.isAdmin(
+            organization.security.toGenericSecurity(organizationId), getCommonRolesDefinition())
     val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
     var result: List<Workspace>
     var pageable = constructPageRequest(page, size, defaultPageSize)
