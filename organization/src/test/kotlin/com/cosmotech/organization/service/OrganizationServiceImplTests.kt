@@ -24,7 +24,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.organization.domain.UpdateOrganizationRequest
+import com.cosmotech.organization.domain.OrganizationUpdateRequest
 import com.cosmotech.organization.repository.OrganizationRepository
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -203,7 +203,7 @@ class OrganizationServiceImplTests {
             rbacTest("Test RBAC update : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
-              organizationApiService.updateOrganization(it.id!!, UpdateOrganizationRequest("toto"))
+              organizationApiService.updateOrganization(it.id!!, OrganizationUpdateRequest("toto"))
             }
           }
 

@@ -25,10 +25,10 @@ import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.ComponentRolePermissions
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationCreationRequest
+import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.organization.domain.UpdateOrganizationRequest
+import com.cosmotech.organization.domain.OrganizationUpdateRequest
 import com.cosmotech.organization.repository.OrganizationRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -77,20 +77,20 @@ class OrganizationServiceImpl(
   }
 
   override fun createOrganization(
-      organizationCreationRequest: OrganizationCreationRequest
+      organizationCreateRequest: OrganizationCreateRequest
   ): Organization {
-    logger.trace("Registering organization: {}", organizationCreationRequest)
+    logger.trace("Registering organization: {}", organizationCreateRequest)
 
-    if (organizationCreationRequest.name.isBlank()) {
+    if (organizationCreateRequest.name.isBlank()) {
       throw IllegalArgumentException("Organization name must not be null or blank")
     }
 
     val createdOrganization =
         Organization(
             id = idGenerator.generate("organization"),
-            name = organizationCreationRequest.name,
+            name = organizationCreateRequest.name,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            security = organizationCreationRequest.security)
+            security = organizationCreateRequest.security)
     createdOrganization.setRbac(csmRbac.initSecurity(createdOrganization.getRbac()))
 
     return organizationRepository.save(createdOrganization)
@@ -104,14 +104,14 @@ class OrganizationServiceImpl(
 
   override fun updateOrganization(
       organizationId: String,
-      updateOrganizationRequest: UpdateOrganizationRequest
+      organizationUpdateRequest: OrganizationUpdateRequest
   ): Organization {
     val existingOrganization = getVerifiedOrganization(organizationId, PERMISSION_WRITE)
     var hasChanged = false
 
-    if (updateOrganizationRequest.name != null &&
-        updateOrganizationRequest.name != existingOrganization.name) {
-      existingOrganization.name = updateOrganizationRequest.name!!
+    if (organizationUpdateRequest.name != null &&
+        organizationUpdateRequest.name != existingOrganization.name) {
+      existingOrganization.name = organizationUpdateRequest.name!!
       hasChanged = true
     }
 

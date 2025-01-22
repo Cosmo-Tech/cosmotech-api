@@ -43,7 +43,7 @@ import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationCreationRequest
+import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
@@ -123,7 +123,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var workspace: Workspace
 
   lateinit var unifiedJedis: UnifiedJedis
-  lateinit var organization: OrganizationCreationRequest
+  lateinit var organization: OrganizationCreateRequest
   lateinit var organizationSaved: Organization
   lateinit var solutionSaved: Solution
   lateinit var workspaceSaved: Workspace
@@ -154,7 +154,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     connectorSaved = connectorApiService.registerConnector(makeConnector())
 
-    organization = makeOrganizationRequestWithRole()
+    organization = makeOrganizationCreateRequest()
     organizationSaved = organizationApiService.createOrganization(organization)
     dataset = makeDatasetWithRole()
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -422,8 +422,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     // Create a dataset that current user should not see because it has been created under another
     // organization
-    val newOrganization =
-        organizationApiService.createOrganization(makeOrganizationRequestWithRole())
+    val newOrganization = organizationApiService.createOrganization(makeOrganizationCreateRequest())
     val datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization =
         datasetApiService.createDataset(
             newOrganization.id!!, makeDatasetWithRole(organizationId = newOrganization.id!!))
@@ -465,8 +464,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     // Create a dataset that current user should not see because it has been created under another
     // organization
-    val newOrganization =
-        organizationApiService.createOrganization(makeOrganizationRequestWithRole())
+    val newOrganization = organizationApiService.createOrganization(makeOrganizationCreateRequest())
     val datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization =
         datasetApiService.createDataset(
             newOrganization.id!!, makeDatasetWithRole(organizationId = newOrganization.id!!))
@@ -770,7 +768,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
-    organizationSaved = organizationApiService.createOrganization(makeOrganizationRequestWithRole())
+    organizationSaved = organizationApiService.createOrganization(makeOrganizationCreateRequest())
     val brokenDataset =
         Dataset(
             name = "dataset",
@@ -790,7 +788,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
-    organizationSaved = organizationApiService.createOrganization(makeOrganizationRequestWithRole())
+    organizationSaved = organizationApiService.createOrganization(makeOrganizationCreateRequest())
     val workingDataset = makeDatasetWithRole("dataset", sourceType = DatasetSourceType.None)
     val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, workingDataset)
 
@@ -872,7 +870,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `status should go back to normal on rollback endpoint call`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    organization = makeOrganizationRequestWithRole("organization")
+    organization = makeOrganizationCreateRequest("organization")
     organizationSaved = organizationApiService.createOrganization(organization)
     dataset = makeDatasetWithRole(sourceType = DatasetSourceType.File)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -914,7 +912,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
             every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
             organizationSaved =
                 organizationApiService.createOrganization(
-                    makeOrganizationRequestWithRole("organization"))
+                    makeOrganizationCreateRequest("organization"))
             val parentDataset =
                 datasetApiService.createDataset(
                     organizationSaved.id!!, makeDatasetWithRole(sourceType = sourceType))
@@ -1095,11 +1093,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         id = "c-AbCdEf123")
   }
 
-  fun makeOrganizationRequestWithRole(
+  fun makeOrganizationCreateRequest(
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_EDITOR
-  ): OrganizationCreationRequest {
-    return OrganizationCreationRequest(
+  ): OrganizationCreateRequest {
+    return OrganizationCreateRequest(
         name = "Organization NameRbac",
         security =
             OrganizationSecurity(

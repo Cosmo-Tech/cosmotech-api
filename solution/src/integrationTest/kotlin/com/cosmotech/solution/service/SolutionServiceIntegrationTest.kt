@@ -17,7 +17,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationCreationRequest
+import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
@@ -64,7 +64,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
-  lateinit var organization: OrganizationCreationRequest
+  lateinit var organization: OrganizationCreateRequest
   lateinit var solution: Solution
 
   lateinit var organizationSaved: Organization
@@ -80,7 +80,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
 
-    organization = makeOrganizationRequest("Organization test")
+    organization = makeOrganizationCreateRequest("Organization test")
     organizationSaved = organizationApiService.createOrganization(organization)
 
     solution = makeSolution(organizationSaved.id!!)
@@ -490,7 +490,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
     organizationSaved =
-        organizationApiService.createOrganization(makeOrganizationRequest("organization"))
+        organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
     val brokenSolution =
         Solution(
             name = "solution",
@@ -509,7 +509,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     organizationSaved =
-        organizationApiService.createOrganization(makeOrganizationRequest("organization"))
+        organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
     val workingSolution = makeSolution()
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, workingSolution)
 
@@ -551,8 +551,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  fun makeOrganizationRequest(id: String = "organization_id"): OrganizationCreationRequest {
-    return OrganizationCreationRequest(
+  fun makeOrganizationCreateRequest(id: String = "organization_id"): OrganizationCreateRequest {
+    return OrganizationCreateRequest(
         name = "Organization Name",
         security =
             OrganizationSecurity(

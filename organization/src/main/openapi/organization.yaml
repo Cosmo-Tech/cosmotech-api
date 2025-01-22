@@ -17,14 +17,14 @@ paths:
       operationId: createOrganization
       tags:
         - organization
-      summary: create a new organization
+      summary: Create a new organization
       requestBody:
         description: the Organization to create
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrganizationCreationRequest'
+              $ref: '#/components/schemas/OrganizationCreateRequest'
             examples:
               NewOrganizationIn:
                 $ref: '#/components/examples/NewOrganizationIn'
@@ -114,7 +114,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateOrganizationRequest'
+              $ref: '#/components/schemas/OrganizationUpdateRequest'
             examples:
               ChangeName:
                 summary: Change Name of Organization
@@ -149,7 +149,7 @@ paths:
       operationId: deleteOrganization
       tags:
         - organization
-      summary: delete an organization
+      summary: Delete an organization
       responses:
         "204":
           description: Request succeeded
@@ -460,7 +460,7 @@ components:
 #        - security
 
     # CRUD Operation Schemas
-    OrganizationCreationRequest:
+    OrganizationCreateRequest:
       type: object
       description: Request object for creating a new organization
       properties:
@@ -473,7 +473,7 @@ components:
       required:
         - name
 
-    UpdateOrganizationRequest:
+    OrganizationUpdateRequest:
       type: object
       description: Request object for updating an organization
       properties:

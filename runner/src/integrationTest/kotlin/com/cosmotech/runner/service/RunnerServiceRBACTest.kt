@@ -35,7 +35,7 @@ import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationCreationRequest
+import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.api.RunnerApiService
 import com.cosmotech.runner.domain.Runner
@@ -139,7 +139,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -204,7 +204,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -266,7 +266,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -331,7 +331,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -395,7 +395,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -458,7 +458,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -527,7 +527,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -590,7 +590,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -655,7 +655,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -720,7 +720,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -785,7 +785,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -850,7 +850,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -911,7 +911,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -975,7 +975,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1042,7 +1042,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -1109,7 +1109,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1175,7 +1175,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1240,7 +1240,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1312,7 +1312,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1395,7 +1395,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -1478,7 +1478,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1561,7 +1561,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1640,7 +1640,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1728,7 +1728,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1794,7 +1794,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -1860,7 +1860,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1926,7 +1926,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -1988,7 +1988,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -2059,7 +2059,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -2124,7 +2124,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -2189,7 +2189,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -2254,7 +2254,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -2315,7 +2315,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -2385,7 +2385,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -2457,7 +2457,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -2529,7 +2529,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -2601,7 +2601,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -2668,7 +2668,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -2744,7 +2744,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -2816,7 +2816,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   val connector = makeConnector()
                   val connectorSaved = connectorApiService.registerConnector(connector)
                   val organization =
-                      makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
                   val organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset =
                       makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -2890,7 +2890,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     val connector = makeConnector()
     val connectorSaved = connectorApiService.registerConnector(connector)
-    val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+    val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
     val organizationSaved = organizationApiService.createOrganization(organization)
     val dataset =
         makeDataset(
@@ -2953,7 +2953,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3025,7 +3025,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3093,7 +3093,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3170,7 +3170,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3238,7 +3238,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -3306,7 +3306,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3374,7 +3374,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3438,7 +3438,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3511,7 +3511,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3580,7 +3580,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -3655,7 +3655,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3724,7 +3724,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3789,7 +3789,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3863,7 +3863,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -3942,7 +3942,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -4021,7 +4021,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -4100,7 +4100,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -4175,7 +4175,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -4259,7 +4259,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -4325,7 +4325,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
@@ -4391,7 +4391,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -4457,7 +4457,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -4519,7 +4519,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationRequestWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
@@ -4631,8 +4631,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     SolutionAccessControl(id = id, role = role))))
   }
 
-  fun makeOrganizationRequestWithRole(id: String, role: String): OrganizationCreationRequest {
-    return OrganizationCreationRequest(
+  fun makeOrganizationCreateRequest(id: String, role: String): OrganizationCreateRequest {
+    return OrganizationCreateRequest(
         name = "Organization Name",
         security =
             OrganizationSecurity(

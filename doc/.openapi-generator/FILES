@@ -31,9 +31,10 @@ Models/GraphProperties.md
 Models/IngestionStatusEnum.md
 Models/Organization.md
 Models/OrganizationAccessControl.md
-Models/OrganizationCreationRequest.md
+Models/OrganizationCreateRequest.md
 Models/OrganizationRole.md
 Models/OrganizationSecurity.md
+Models/OrganizationUpdateRequest.md
 Models/QueryResult.md
 Models/ResourceSizeInfo.md
 Models/Run.md
@@ -68,7 +69,6 @@ Models/SourceInfo.md
 Models/SubDatasetGraphQuery.md
 Models/TwinGraphBatchResult.md
 Models/TwincacheStatusEnum.md
-Models/UpdateOrganizationRequest.md
 Models/Workspace.md
 Models/WorkspaceAccessControl.md
 Models/WorkspaceFile.md
