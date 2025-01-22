@@ -192,7 +192,7 @@ class ContainerFactoryTests {
                 "IDP_BASE_URL" to csmPlatformProperties.identityProvider.serverBaseUrl,
                 "IDP_TENANT_ID" to csmPlatformProperties.identityProvider.identity.tenantId,
                 "CSM_SIMULATION_ID" to CSM_SIMULATION_ID,
-                "CSM_ORGANIZATION_ID" to organization.id!!,
+                "CSM_ORGANIZATION_ID" to organization.id,
                 "CSM_WORKSPACE_ID" to workspace.id!!,
                 "CSM_RUNNER_ID" to runner.id!!,
                 "CSM_RUN_ID" to runId,

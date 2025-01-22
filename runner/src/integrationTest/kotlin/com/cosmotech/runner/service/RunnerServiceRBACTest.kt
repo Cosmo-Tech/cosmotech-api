@@ -142,47 +142,46 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+              runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunners(
-                          organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                          organizationSaved.id, workspaceSaved.id!!, null, null)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunners(
-                      organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                      organizationSaved.id, workspaceSaved.id!!, null, null)
                 }
               }
             }
@@ -207,36 +206,35 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+              runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunners(
-                          organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                          organizationSaved.id, workspaceSaved.id!!, null, null)
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -244,7 +242,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunners(
-                      organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                      organizationSaved.id, workspaceSaved.id!!, null, null)
                 }
               }
             }
@@ -269,39 +267,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+              runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunners(
-                          organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                          organizationSaved.id, workspaceSaved.id!!, null, null)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -309,7 +306,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunners(
-                      organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                      organizationSaved.id, workspaceSaved.id!!, null, null)
                 }
               }
             }
@@ -333,40 +330,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+              runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunners(
-                          organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                          organizationSaved.id, workspaceSaved.id!!, null, null)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -374,7 +369,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunners(
-                      organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                      organizationSaved.id, workspaceSaved.id!!, null, null)
                 }
               }
             }
@@ -398,45 +393,44 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+              runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.createRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runner)
+                          organizationSaved.id, workspaceSaved.id!!, runner)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
                 }
               }
             }
@@ -460,39 +454,37 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+              runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.createRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runner)
+                          organizationSaved.id, workspaceSaved.id!!, runner)
                     }
                 if (role == ROLE_NONE || role == ROLE_VALIDATOR) {
                   assertEquals(
@@ -505,7 +497,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 }
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
                 }
               }
             }
@@ -530,45 +522,44 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+              runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.createRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runner)
+                          organizationSaved.id, workspaceSaved.id!!, runner)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
                 }
               }
             }
@@ -593,35 +584,34 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+              runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.createRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runner)
+                          organizationSaved.id, workspaceSaved.id!!, runner)
                     }
                 if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
                   assertEquals(
@@ -634,7 +624,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 }
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
                 }
               }
             }
@@ -658,47 +648,46 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunner(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -722,40 +711,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -763,7 +750,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunner(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -788,39 +775,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -828,7 +814,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunner(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -853,36 +839,35 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -890,7 +875,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunner(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -914,39 +899,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -954,7 +938,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunner(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -978,49 +962,48 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               every { datasetApiService.deleteDataset(any(), any()) } returns Unit
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.deleteRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunner(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -1044,42 +1027,40 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               every { datasetApiService.deleteDataset(any(), any()) } returns Unit
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.deleteRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1087,7 +1068,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunner(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -1112,41 +1093,40 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               every { datasetApiService.deleteDataset(any(), any()) } returns Unit
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.deleteRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1154,7 +1134,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunner(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -1178,49 +1158,48 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               every { datasetApiService.deleteDataset(any(), any()) } returns Unit
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.deleteRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunner(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -1243,41 +1222,40 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               every { datasetApiService.deleteDataset(any(), any()) } returns Unit
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.deleteRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -1291,7 +1269,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunner(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -1315,43 +1293,42 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunner(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           makeRunnerWithRole(
-                              organizationSaved.id!!,
+                              organizationSaved.id,
                               workspaceSaved.id!!,
                               solutionSaved.id!!,
                               mutableListOf(datasetSaved.id!!),
@@ -1359,16 +1336,16 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                               role = role))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunner(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       makeRunnerWithRole(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           solutionSaved.id!!,
                           mutableListOf(datasetSaved.id!!),
@@ -1397,44 +1374,42 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunner(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           makeRunnerWithRole(
-                              organizationSaved.id!!,
+                              organizationSaved.id,
                               workspaceSaved.id!!,
                               solutionSaved.id!!,
                               mutableListOf(datasetSaved.id!!),
@@ -1447,11 +1422,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunner(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       makeRunnerWithRole(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           solutionSaved.id!!,
                           mutableListOf(datasetSaved.id!!),
@@ -1481,43 +1456,42 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunner(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           makeRunnerWithRole(
-                              organizationSaved.id!!,
+                              organizationSaved.id,
                               workspaceSaved.id!!,
                               solutionSaved.id!!,
                               mutableListOf(datasetSaved.id!!),
@@ -1530,11 +1504,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunner(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       makeRunnerWithRole(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           solutionSaved.id!!,
                           mutableListOf(datasetSaved.id!!),
@@ -1564,40 +1538,39 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunner(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           makeRunnerWithRole(
-                              organizationSaved.id!!,
+                              organizationSaved.id,
                               workspaceSaved.id!!,
                               solutionSaved.id!!,
                               mutableListOf(datasetSaved.id!!),
@@ -1610,11 +1583,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunner(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       makeRunnerWithRole(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           solutionSaved.id!!,
                           mutableListOf(datasetSaved.id!!),
@@ -1643,43 +1616,42 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunner(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           makeRunnerWithRole(
-                              organizationSaved.id!!,
+                              organizationSaved.id,
                               workspaceSaved.id!!,
                               solutionSaved.id!!,
                               mutableListOf(datasetSaved.id!!),
@@ -1698,11 +1670,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunner(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       makeRunnerWithRole(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           solutionSaved.id!!,
                           mutableListOf(datasetSaved.id!!),
@@ -1731,25 +1703,24 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
@@ -1757,22 +1728,22 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = ROLE_ADMIN)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerPermissions(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, role)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, role)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerPermissions(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, role)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, role)
                 }
               }
             }
@@ -1796,26 +1767,24 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
@@ -1823,14 +1792,14 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = ROLE_ADMIN)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerPermissions(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, role)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, role)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1838,7 +1807,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerPermissions(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, role)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, role)
                 }
               }
             }
@@ -1863,25 +1832,24 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
@@ -1889,14 +1857,14 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = ROLE_ADMIN)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerPermissions(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, role)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, role)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1904,7 +1872,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerPermissions(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, role)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, role)
                 }
               }
             }
@@ -1929,22 +1897,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
@@ -1952,14 +1919,14 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = ROLE_ADMIN)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerPermissions(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, role)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, role)
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1967,7 +1934,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerPermissions(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, role)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, role)
                 }
               }
             }
@@ -1991,25 +1958,24 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
@@ -2017,14 +1983,14 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = role)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerPermissions(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, role)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, role)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -2038,7 +2004,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerPermissions(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, role)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, role)
                 }
               }
             }
@@ -2062,47 +2028,46 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurity(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurity(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -2126,40 +2091,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurity(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -2167,7 +2130,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurity(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -2192,39 +2155,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurity(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -2232,7 +2194,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurity(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -2257,36 +2219,35 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurity(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -2294,7 +2255,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurity(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -2318,39 +2279,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurity(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -2364,7 +2324,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurity(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -2388,51 +2348,50 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               materializeTwingraph(datasetSaved)
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.setRunnerDefaultSecurity(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           RunnerRole(ROLE_ADMIN))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.setRunnerDefaultSecurity(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       RunnerRole(ROLE_ADMIN))
@@ -2459,41 +2418,39 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               materializeTwingraph(datasetSaved)
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.setRunnerDefaultSecurity(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           RunnerRole(ROLE_ADMIN))
@@ -2504,7 +2461,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.setRunnerDefaultSecurity(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       RunnerRole(ROLE_ADMIN))
@@ -2532,40 +2489,39 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               materializeTwingraph(datasetSaved)
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.setRunnerDefaultSecurity(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           RunnerRole(ROLE_ADMIN))
@@ -2576,7 +2532,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.setRunnerDefaultSecurity(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       RunnerRole(ROLE_ADMIN))
@@ -2604,36 +2560,35 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.setRunnerDefaultSecurity(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           RunnerRole(ROLE_ADMIN))
@@ -2644,7 +2599,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.setRunnerDefaultSecurity(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       RunnerRole(ROLE_ADMIN))
@@ -2671,39 +2626,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.setRunnerDefaultSecurity(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           RunnerRole(ROLE_ADMIN))
@@ -2720,7 +2674,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.setRunnerDefaultSecurity(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       RunnerRole(ROLE_ADMIN))
@@ -2747,51 +2701,50 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.addRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           RunnerAccessControl("id", ROLE_ADMIN))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.addRunnerAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       RunnerAccessControl("id", ROLE_ADMIN))
@@ -2819,28 +2772,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
                   val organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset =
-                      makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-                  var datasetSaved =
-                      datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                      makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+                  var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
                   datasetSaved =
                       datasetRepository.save(
                           datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
                   every { datasetApiService.createSubDataset(any(), any(), any()) } returns
                       datasetSaved
-                  val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
+                  val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
                   val solutionSaved =
-                      solutionApiService.createSolution(organizationSaved.id!!, solution)
+                      solutionApiService.createSolution(organizationSaved.id, solution)
                   val workspace =
                       makeWorkspaceWithRole(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN)
                   val workspaceSaved =
-                      workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                      workspaceApiService.createWorkspace(organizationSaved.id, workspace)
                   val runner =
                       makeRunnerWithRole(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           solutionSaved.id!!,
                           mutableListOf(datasetSaved.id!!),
@@ -2848,7 +2800,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           role = ROLE_ADMIN)
                   val runnerSaved =
                       runnerApiService.createRunner(
-                          organizationSaved.id!!, workspaceSaved.id!!, runner)
+                          organizationSaved.id, workspaceSaved.id!!, runner)
 
                   assertDoesNotThrow {
                     assertTrue(
@@ -2860,13 +2812,13 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                             .isNullOrEmpty())
 
                     runnerApiService.addRunnerAccessControl(
-                        organizationSaved.id!!,
+                        organizationSaved.id,
                         workspaceSaved.id!!,
                         runnerSaved.id!!,
                         RunnerAccessControl("unknown_user@test.com", role))
 
                     val datasetWithUpgradedACL =
-                        datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+                        datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
                     var datasetRole = role
                     if (role == ROLE_VALIDATOR) {
                       datasetRole = ROLE_USER
@@ -2894,8 +2846,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
     val organizationSaved = organizationApiService.createOrganization(organization)
     val dataset =
         makeDataset(
-            organizationSaved.id!!, connectorSaved, id = "unknown_user@test.com", role = ROLE_NONE)
-    var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+            organizationSaved.id, connectorSaved, id = "unknown_user@test.com", role = ROLE_NONE)
+    var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     datasetSaved =
         datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
     every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
@@ -2906,30 +2858,30 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           datasetAccessControl.id == TEST_USER_MAIL
         })
 
-    val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-    val solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+    val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     val workspace =
         makeWorkspaceWithRole(
-            organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = ROLE_ADMIN)
-    val workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+            organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = ROLE_ADMIN)
+    val workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     val runner =
         makeRunnerWithRole(
-            organizationSaved.id!!,
+            organizationSaved.id,
             workspaceSaved.id!!,
             solutionSaved.id!!,
             mutableListOf(datasetSaved.id!!),
             id = "unknown_user@test.com",
             role = ROLE_ADMIN)
     val runnerSaved =
-        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+        runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
 
     runnerApiService.addRunnerAccessControl(
-        organizationSaved.id!!,
+        organizationSaved.id,
         workspaceSaved.id!!,
         runnerSaved.id!!,
         RunnerAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
     val datasetWithUpgradedACL =
-        datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+        datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
     assertEquals(
         true,
         datasetWithUpgradedACL.security?.accessControlList?.any { datasetAccessControl ->
@@ -2956,40 +2908,39 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.addRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           RunnerAccessControl("id", ROLE_ADMIN))
@@ -3000,7 +2951,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.addRunnerAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       RunnerAccessControl("id", ROLE_ADMIN))
@@ -3028,37 +2979,36 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               materializeTwingraph(datasetSaved)
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.addRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           RunnerAccessControl("id", ROLE_ADMIN))
@@ -3069,7 +3019,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.addRunnerAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       RunnerAccessControl("id", ROLE_ADMIN))
@@ -3096,40 +3046,39 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.addRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           RunnerAccessControl("id", ROLE_ADMIN))
@@ -3146,7 +3095,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.addRunnerAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       RunnerAccessControl("id", ROLE_ADMIN))
@@ -3173,50 +3122,49 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerAccessControl(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -3240,40 +3188,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL)
@@ -3284,7 +3230,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerAccessControl(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -3309,39 +3255,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL)
@@ -3352,7 +3297,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerAccessControl(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -3377,36 +3322,35 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL)
@@ -3417,7 +3361,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerAccessControl(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -3441,39 +3385,38 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL)
@@ -3490,7 +3433,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerAccessControl(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -3514,51 +3457,50 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.removeRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.removeRunnerAccessControl(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -3582,41 +3524,39 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.removeRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL)
@@ -3633,7 +3573,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.removeRunnerAccessControl(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -3658,40 +3598,39 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.removeRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL)
@@ -3702,7 +3641,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.removeRunnerAccessControl(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -3727,37 +3666,36 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.removeRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL)
@@ -3768,7 +3706,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.removeRunnerAccessControl(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -3792,40 +3730,39 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.removeRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL)
@@ -3842,7 +3779,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.removeRunnerAccessControl(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -3866,22 +3803,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
                   listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
@@ -3890,33 +3826,33 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } returns mockk()
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL,
                           RunnerRole(ROLE_VIEWER))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunnerAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       TEST_USER_MAIL,
@@ -3944,23 +3880,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
                   listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
@@ -3969,21 +3903,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } returns mockk()
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL,
@@ -3995,7 +3929,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunnerAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       TEST_USER_MAIL,
@@ -4024,22 +3958,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
                   listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
@@ -4048,21 +3981,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } returns mockk()
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL,
@@ -4074,7 +4007,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunnerAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       TEST_USER_MAIL,
@@ -4103,19 +4036,18 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
                   listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
@@ -4124,21 +4056,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } returns mockk()
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL,
@@ -4150,7 +4082,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunnerAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       TEST_USER_MAIL,
@@ -4178,22 +4110,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
                   listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
@@ -4202,21 +4133,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } returns mockk()
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
                       id = TEST_USER_MAIL,
                       role = role)
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunnerAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           workspaceSaved.id!!,
                           runnerSaved.id!!,
                           TEST_USER_MAIL,
@@ -4234,7 +4165,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunnerAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       runnerSaved.id!!,
                       TEST_USER_MAIL,
@@ -4262,25 +4193,24 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
@@ -4288,22 +4218,22 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = ROLE_ADMIN)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurityUsers(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurityUsers(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -4327,26 +4257,24 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
@@ -4354,14 +4282,14 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = ROLE_ADMIN)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurityUsers(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -4369,7 +4297,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurityUsers(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -4394,25 +4322,24 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
@@ -4420,14 +4347,14 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = ROLE_ADMIN)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurityUsers(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -4435,7 +4362,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurityUsers(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -4460,22 +4387,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
+                      organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
@@ -4483,14 +4409,14 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = ROLE_ADMIN)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurityUsers(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -4498,7 +4424,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurityUsers(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }
@@ -4522,25 +4448,24 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
+              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
-              val solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       workspaceSaved.id!!,
                       solutionSaved.id!!,
                       mutableListOf(datasetSaved.id!!),
@@ -4548,14 +4473,14 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       role = role)
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
-                  runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurityUsers(
-                          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -4569,7 +4494,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurityUsers(
-                      organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
                 }
               }
             }

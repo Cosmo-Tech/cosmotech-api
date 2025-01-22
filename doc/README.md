@@ -42,9 +42,9 @@ All URIs are relative to *http://localhost*
 *DatasetApi* | [**updateDatasetAccessControl**](Apis/DatasetApi.md#updatedatasetaccesscontrol) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset |
 *DatasetApi* | [**updateTwingraphEntities**](Apis/DatasetApi.md#updatetwingraphentities) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Update entities in a graph instance |
 *DatasetApi* | [**uploadTwingraph**](Apis/DatasetApi.md#uploadtwingraph) | **POST** /organizations/{organization_id}/datasets/{dataset_id} | Upload data from zip file to dataset's twingraph |
-| *OrganizationApi* | [**createOrganization**](Apis/OrganizationApi.md#createorganization) | **POST** /organizations | create a new organization |
+| *OrganizationApi* | [**createOrganization**](Apis/OrganizationApi.md#createorganization) | **POST** /organizations | Create a new organization |
 *OrganizationApi* | [**createOrganizationAccessControl**](Apis/OrganizationApi.md#createorganizationaccesscontrol) | **POST** /organizations/{organization_id}/security/access | Add a control access to the Organization |
-*OrganizationApi* | [**deleteOrganization**](Apis/OrganizationApi.md#deleteorganization) | **DELETE** /organizations/{organization_id} | delete an organization |
+*OrganizationApi* | [**deleteOrganization**](Apis/OrganizationApi.md#deleteorganization) | **DELETE** /organizations/{organization_id} | Delete an organization |
 *OrganizationApi* | [**deleteOrganizationAccessControl**](Apis/OrganizationApi.md#deleteorganizationaccesscontrol) | **DELETE** /organizations/{organization_id}/security/access/{identity_id} | Remove the specified access from the given Organization |
 *OrganizationApi* | [**getOrganization**](Apis/OrganizationApi.md#getorganization) | **GET** /organizations/{organization_id} | Get the details of an Organization |
 *OrganizationApi* | [**getOrganizationAccessControl**](Apis/OrganizationApi.md#getorganizationaccesscontrol) | **GET** /organizations/{organization_id}/security/access/{identity_id} | Get a control access for the Organization |
@@ -149,8 +149,10 @@ All URIs are relative to *http://localhost*
  - [IngestionStatusEnum](./Models/IngestionStatusEnum.md)
  - [Organization](./Models/Organization.md)
  - [OrganizationAccessControl](./Models/OrganizationAccessControl.md)
+ - [OrganizationCreateRequest](./Models/OrganizationCreateRequest.md)
  - [OrganizationRole](./Models/OrganizationRole.md)
  - [OrganizationSecurity](./Models/OrganizationSecurity.md)
+ - [OrganizationUpdateRequest](./Models/OrganizationUpdateRequest.md)
  - [QueryResult](./Models/QueryResult.md)
  - [ResourceSizeInfo](./Models/ResourceSizeInfo.md)
  - [Run](./Models/Run.md)

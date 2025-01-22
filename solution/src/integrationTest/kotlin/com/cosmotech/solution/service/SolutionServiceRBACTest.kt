@@ -109,22 +109,21 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.findSolutionById(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                      solutionApiService.findSolutionById(organizationSaved.id, solutionSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  solutionApiService.findSolutionById(organizationSaved.id!!, solutionSaved.id!!)
+                  solutionApiService.findSolutionById(organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -147,22 +146,21 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.findSolutionById(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                      solutionApiService.findSolutionById(organizationSaved.id, solutionSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  solutionApiService.findSolutionById(organizationSaved.id!!, solutionSaved.id!!)
+                  solutionApiService.findSolutionById(organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -184,21 +182,21 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   organizationApiService.createOrganization(
                       makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
               solutionApiService.createSolution(
-                  organizationSaved.id!!,
+                  organizationSaved.id,
                   makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.findAllSolutions(organizationSaved.id!!, null, null)
+                      solutionApiService.findAllSolutions(organizationSaved.id, null, null)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  solutionApiService.findAllSolutions(organizationSaved.id!!, null, null)
+                  solutionApiService.findAllSolutions(organizationSaved.id, null, null)
                 }
               }
             }
@@ -226,15 +224,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.createSolution(organizationSaved.id!!, solution)
+                      solutionApiService.createSolution(organizationSaved.id, solution)
                     }
 
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_CREATE_CHILDREN",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_CREATE_CHILDREN",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+                  solutionApiService.createSolution(organizationSaved.id, solution)
                 }
               }
             }
@@ -256,21 +254,21 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.deleteSolution(organizationSaved.id!!, solutionSaved.id!!)
+                      solutionApiService.deleteSolution(organizationSaved.id, solutionSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  solutionApiService.deleteSolution(organizationSaved.id!!, solutionSaved.id!!)
+                  solutionApiService.deleteSolution(organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -293,14 +291,14 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.deleteSolution(organizationSaved.id!!, solutionSaved.id!!)
+                      solutionApiService.deleteSolution(organizationSaved.id, solutionSaved.id!!)
                     }
 
                 assertEquals(
@@ -308,7 +306,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  solutionApiService.deleteSolution(organizationSaved.id!!, solutionSaved.id!!)
+                  solutionApiService.deleteSolution(organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -330,7 +328,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
 
@@ -340,15 +338,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.updateSolution(
-                          organizationSaved.id!!, solutionSaved.id!!, solution)
+                          organizationSaved.id, solutionSaved.id!!, solution)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.updateSolution(
-                      organizationSaved.id!!, solutionSaved.id!!, solution)
+                      organizationSaved.id, solutionSaved.id!!, solution)
                 }
               }
             }
@@ -370,7 +368,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
 
@@ -380,7 +378,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.updateSolution(
-                          organizationSaved.id!!, solutionSaved.id!!, solution)
+                          organizationSaved.id, solutionSaved.id!!, solution)
                     }
 
                 assertEquals(
@@ -389,7 +387,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.updateSolution(
-                      organizationSaved.id!!, solutionSaved.id!!, solution)
+                      organizationSaved.id, solutionSaved.id!!, solution)
                 }
               }
             }
@@ -411,7 +409,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -419,17 +417,17 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.addSolutionAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           solutionSaved.id!!,
                           SolutionAccessControl("user", ROLE_USER))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addSolutionAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       SolutionAccessControl("user", ROLE_USER))
                 }
@@ -453,7 +451,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -461,7 +459,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.addSolutionAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           solutionSaved.id!!,
                           SolutionAccessControl("user", ROLE_USER))
                     }
@@ -472,7 +470,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addSolutionAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       SolutionAccessControl("user", ROLE_USER))
                 }
@@ -496,7 +494,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -504,15 +502,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.getSolutionAccessControl(
-                          organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, solutionSaved.id!!, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.getSolutionAccessControl(
-                      organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, solutionSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -534,7 +532,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -542,7 +540,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.getSolutionAccessControl(
-                          organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, solutionSaved.id!!, TEST_USER_MAIL)
                     }
 
                 assertEquals(
@@ -551,7 +549,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.getSolutionAccessControl(
-                      organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, solutionSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -573,7 +571,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -581,15 +579,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.getSolutionSecurityUsers(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                          organizationSaved.id, solutionSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.getSolutionSecurityUsers(
-                      organizationSaved.id!!, solutionSaved.id!!)
+                      organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -611,7 +609,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -619,7 +617,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.getSolutionSecurityUsers(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                          organizationSaved.id, solutionSaved.id!!)
                     }
 
                 assertEquals(
@@ -628,7 +626,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.getSolutionSecurityUsers(
-                      organizationSaved.id!!, solutionSaved.id!!)
+                      organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -650,7 +648,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -658,15 +656,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.removeSolutionAccessControl(
-                          organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, solutionSaved.id!!, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.removeSolutionAccessControl(
-                      organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, solutionSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -688,7 +686,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -696,7 +694,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.removeSolutionAccessControl(
-                          organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, solutionSaved.id!!, TEST_USER_MAIL)
                     }
 
                 assertEquals(
@@ -705,7 +703,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.removeSolutionAccessControl(
-                      organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, solutionSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -727,7 +725,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -735,18 +733,18 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.updateSolutionAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           solutionSaved.id!!,
                           TEST_USER_MAIL,
                           SolutionRole(ROLE_USER))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.updateSolutionAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       TEST_USER_MAIL,
                       SolutionRole(ROLE_USER))
@@ -771,7 +769,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -779,7 +777,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.updateSolutionAccessControl(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           solutionSaved.id!!,
                           TEST_USER_MAIL,
                           SolutionRole(ROLE_USER))
@@ -790,7 +788,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.updateSolutionAccessControl(
-                      organizationSaved.id!!,
+                      organizationSaved.id,
                       solutionSaved.id!!,
                       TEST_USER_MAIL,
                       SolutionRole(ROLE_USER))
@@ -815,7 +813,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               val runTemplateParameter = RunTemplateParameter("id")
 
@@ -825,15 +823,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.addOrReplaceParameters(
-                          organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameter))
+                          organizationSaved.id, solutionSaved.id!!, listOf(runTemplateParameter))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addOrReplaceParameters(
-                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameter))
+                      organizationSaved.id, solutionSaved.id!!, listOf(runTemplateParameter))
                 }
               }
             }
@@ -856,7 +854,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               val runTemplateParameter = RunTemplateParameter("id")
 
@@ -866,7 +864,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.addOrReplaceParameters(
-                          organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameter))
+                          organizationSaved.id, solutionSaved.id!!, listOf(runTemplateParameter))
                     }
 
                 assertEquals(
@@ -875,7 +873,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addOrReplaceParameters(
-                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameter))
+                      organizationSaved.id, solutionSaved.id!!, listOf(runTemplateParameter))
                 }
               }
             }
@@ -897,7 +895,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -905,15 +903,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.removeAllSolutionParameters(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                          organizationSaved.id, solutionSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.removeAllSolutionParameters(
-                      organizationSaved.id!!, solutionSaved.id!!)
+                      organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -936,7 +934,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -944,7 +942,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.removeAllSolutionParameters(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                          organizationSaved.id, solutionSaved.id!!)
                     }
 
                 assertEquals(
@@ -953,7 +951,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.removeAllSolutionParameters(
-                      organizationSaved.id!!, solutionSaved.id!!)
+                      organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -975,7 +973,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               val runTemplateParameterGroup = RunTemplateParameterGroup("id")
 
@@ -985,17 +983,17 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.addOrReplaceParameterGroups(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           solutionSaved.id!!,
                           listOf(runTemplateParameterGroup))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addOrReplaceParameterGroups(
-                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameterGroup))
+                      organizationSaved.id, solutionSaved.id!!, listOf(runTemplateParameterGroup))
                 }
               }
             }
@@ -1018,7 +1016,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               val runTemplateParameterGroup = RunTemplateParameterGroup("id")
 
@@ -1028,7 +1026,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.addOrReplaceParameterGroups(
-                          organizationSaved.id!!,
+                          organizationSaved.id,
                           solutionSaved.id!!,
                           listOf(runTemplateParameterGroup))
                     }
@@ -1039,7 +1037,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addOrReplaceParameterGroups(
-                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameterGroup))
+                      organizationSaved.id, solutionSaved.id!!, listOf(runTemplateParameterGroup))
                 }
               }
             }
@@ -1062,8 +1060,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
                   organizationSaved = organizationApiService.createOrganization(organization)
                   val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-                  solutionSaved =
-                      solutionApiService.createSolution(organizationSaved.id!!, solution)
+                  solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
                   every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1071,15 +1068,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                     val exception =
                         assertThrows<CsmAccessForbiddenException> {
                           solutionApiService.removeAllSolutionParameterGroups(
-                              organizationSaved.id!!, solutionSaved.id!!)
+                              organizationSaved.id, solutionSaved.id!!)
                         }
                     assertEquals(
-                        "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                        "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                         exception.message)
                   } else {
                     assertDoesNotThrow {
                       solutionApiService.removeAllSolutionParameterGroups(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                          organizationSaved.id, solutionSaved.id!!)
                     }
                   }
                 }
@@ -1102,7 +1099,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1110,7 +1107,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.removeAllSolutionParameterGroups(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                          organizationSaved.id, solutionSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
@@ -1118,7 +1115,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.removeAllSolutionParameterGroups(
-                      organizationSaved.id!!, solutionSaved.id!!)
+                      organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -1140,7 +1137,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               val runTemplate = RunTemplate("id")
 
@@ -1150,15 +1147,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.addOrReplaceRunTemplates(
-                          organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplate))
+                          organizationSaved.id, solutionSaved.id!!, listOf(runTemplate))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addOrReplaceRunTemplates(
-                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplate))
+                      organizationSaved.id, solutionSaved.id!!, listOf(runTemplate))
                 }
               }
             }
@@ -1181,7 +1178,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               val runTemplate = RunTemplate("id")
 
@@ -1191,7 +1188,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.addOrReplaceRunTemplates(
-                          organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplate))
+                          organizationSaved.id, solutionSaved.id!!, listOf(runTemplate))
                     }
 
                 assertEquals(
@@ -1200,7 +1197,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addOrReplaceRunTemplates(
-                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplate))
+                      organizationSaved.id, solutionSaved.id!!, listOf(runTemplate))
                 }
               }
             }
@@ -1222,7 +1219,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1230,15 +1227,14 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.removeAllRunTemplates(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                          organizationSaved.id, solutionSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  solutionApiService.removeAllRunTemplates(
-                      organizationSaved.id!!, solutionSaved.id!!)
+                  solutionApiService.removeAllRunTemplates(organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -1261,7 +1257,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1269,7 +1265,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.removeAllRunTemplates(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                          organizationSaved.id, solutionSaved.id!!)
                     }
 
                 assertEquals(
@@ -1277,8 +1273,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  solutionApiService.removeAllRunTemplates(
-                      organizationSaved.id!!, solutionSaved.id!!)
+                  solutionApiService.removeAllRunTemplates(organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -1300,7 +1295,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1308,15 +1303,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.deleteSolutionRunTemplate(
-                          organizationSaved.id!!, solutionSaved.id!!, "runTemplate")
+                          organizationSaved.id, solutionSaved.id!!, "runTemplate")
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.deleteSolutionRunTemplate(
-                      organizationSaved.id!!, solutionSaved.id!!, "runTemplate")
+                      organizationSaved.id, solutionSaved.id!!, "runTemplate")
                 }
               }
             }
@@ -1339,7 +1334,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1347,7 +1342,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.deleteSolutionRunTemplate(
-                          organizationSaved.id!!, solutionSaved.id!!, "runTemplate")
+                          organizationSaved.id, solutionSaved.id!!, "runTemplate")
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
@@ -1355,7 +1350,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.deleteSolutionRunTemplate(
-                      organizationSaved.id!!, solutionSaved.id!!, "runTemplate")
+                      organizationSaved.id, solutionSaved.id!!, "runTemplate")
                 }
               }
             }
@@ -1377,7 +1372,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               val runTemplate = RunTemplate("runTemplate", "name")
 
@@ -1387,15 +1382,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.updateSolutionRunTemplate(
-                          organizationSaved.id!!, solutionSaved.id!!, "runTemplate", runTemplate)
+                          organizationSaved.id, solutionSaved.id!!, "runTemplate", runTemplate)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.updateSolutionRunTemplate(
-                      organizationSaved.id!!, solutionSaved.id!!, "runTemplate", runTemplate)
+                      organizationSaved.id, solutionSaved.id!!, "runTemplate", runTemplate)
                 }
               }
             }
@@ -1418,7 +1413,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               val runTemplate = RunTemplate("runTemplate", "name")
 
@@ -1428,7 +1423,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.updateSolutionRunTemplate(
-                          organizationSaved.id!!, solutionSaved.id!!, "runTemplate", runTemplate)
+                          organizationSaved.id, solutionSaved.id!!, "runTemplate", runTemplate)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
@@ -1436,7 +1431,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.updateSolutionRunTemplate(
-                      organizationSaved.id!!, solutionSaved.id!!, "runTemplate", runTemplate)
+                      organizationSaved.id, solutionSaved.id!!, "runTemplate", runTemplate)
                 }
               }
             }
@@ -1458,8 +1453,8 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution =
-                  makeSolutionWithRole(organizationSaved.id!!, TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+                  makeSolutionWithRole(organizationSaved.id, TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1467,14 +1462,14 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.getSolutionSecurity(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                          organizationSaved.id, solutionSaved.id!!)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  solutionApiService.getSolutionSecurity(organizationSaved.id!!, solutionSaved.id!!)
+                  solutionApiService.getSolutionSecurity(organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -1496,9 +1491,8 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
-              val solution =
-                  makeSolutionWithRole(organizationSaved.id!!, TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolutionWithRole(organizationSaved.id, TEST_USER_MAIL, role = role)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1506,7 +1500,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.getSolutionSecurity(
-                          organizationSaved.id!!, solutionSaved.id!!)
+                          organizationSaved.id, solutionSaved.id!!)
                     }
 
                 assertEquals(
@@ -1514,7 +1508,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  solutionApiService.getSolutionSecurity(organizationSaved.id!!, solutionSaved.id!!)
+                  solutionApiService.getSolutionSecurity(organizationSaved.id, solutionSaved.id!!)
                 }
               }
             }
@@ -1536,8 +1530,8 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val solution =
-                  makeSolutionWithRole(organizationSaved.id!!, TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+                  makeSolutionWithRole(organizationSaved.id, TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1545,15 +1539,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.setSolutionDefaultSecurity(
-                          organizationSaved.id!!, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
+                          organizationSaved.id, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.setSolutionDefaultSecurity(
-                      organizationSaved.id!!, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
+                      organizationSaved.id, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
                 }
               }
             }
@@ -1575,9 +1569,8 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
-              val solution =
-                  makeSolutionWithRole(organizationSaved.id!!, TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val solution = makeSolutionWithRole(organizationSaved.id, TEST_USER_MAIL, role = role)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1585,7 +1578,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.setSolutionDefaultSecurity(
-                          organizationSaved.id!!, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
+                          organizationSaved.id, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
                     }
 
                 assertEquals(
@@ -1594,7 +1587,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.setSolutionDefaultSecurity(
-                      organizationSaved.id!!, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
+                      organizationSaved.id, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
                 }
               }
             }
@@ -1616,7 +1609,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   }
 
   fun makeSolutionWithRole(
-      organizationId: String = organizationSaved.id!!,
+      organizationId: String = organizationSaved.id,
       id: String,
       role: String
   ): Solution {

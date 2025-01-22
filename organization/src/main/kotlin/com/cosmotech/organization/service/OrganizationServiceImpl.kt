@@ -85,13 +85,15 @@ class OrganizationServiceImpl(
       throw IllegalArgumentException("Organization name must not be null or blank")
     }
 
+    val organizationId = idGenerator.generate("organization")
+    val security = csmRbac.initSecurity(
+      organizationCreateRequest.security.toGenericSecurity(organizationId)).toResourceSecurity()
     val createdOrganization =
         Organization(
-            id = idGenerator.generate("organization"),
+            id = organizationId,
             name = organizationCreateRequest.name,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            security = organizationCreateRequest.security)
-    createdOrganization.setRbac(csmRbac.initSecurity(createdOrganization.getRbac()))
+            security = security)
 
     return organizationRepository.save(createdOrganization)
   }
@@ -133,10 +135,7 @@ class OrganizationServiceImpl(
 
   override fun getOrganizationSecurity(organizationId: String): OrganizationSecurity {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_READ_SECURITY)
-    val security =
-        organization.security
-            ?: throw CsmResourceNotFoundException("RBAC not defined for ${organization.id}")
-    return security
+    return organization.security
   }
 
   override fun updateOrganizationDefaultSecurity(
@@ -144,10 +143,11 @@ class OrganizationServiceImpl(
       organizationRole: OrganizationRole
   ): OrganizationSecurity {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.setDefault(organization.getRbac(), organizationRole.role)
-    organization.setRbac(rbacSecurity)
+    val rbacSecurity = csmRbac.setDefault(
+      organization.security.toGenericSecurity(organizationId), organizationRole.role)
+    organization.security = rbacSecurity.toResourceSecurity()
     organizationRepository.save(organization)
-    return organization.security!!
+    return organization.security
   }
 
   override fun getOrganizationAccessControl(
@@ -155,7 +155,8 @@ class OrganizationServiceImpl(
       identityId: String
   ): OrganizationAccessControl {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_READ_SECURITY)
-    val rbacAccessControl = csmRbac.getAccessControl(organization.getRbac(), identityId)
+    val rbacAccessControl = csmRbac.getAccessControl(
+      organization.security.toGenericSecurity(organizationId), identityId)
     return OrganizationAccessControl(id = rbacAccessControl.id, role = rbacAccessControl.role)
   }
 
@@ -172,11 +173,13 @@ class OrganizationServiceImpl(
 
     val rbacSecurity =
         csmRbac.setUserRole(
-            organization.getRbac(), organizationAccessControl.id, organizationAccessControl.role)
-    organization.setRbac(rbacSecurity)
+            organization.security.toGenericSecurity(
+              organizationId), organizationAccessControl.id, organizationAccessControl.role)
+    organization.security = rbacSecurity.toResourceSecurity()
     organizationRepository.save(organization)
     val rbacAccessControl =
-        csmRbac.getAccessControl(organization.getRbac(), organizationAccessControl.id)
+        csmRbac.getAccessControl(organization.security.toGenericSecurity(
+          organizationId), organizationAccessControl.id)
     return OrganizationAccessControl(id = rbacAccessControl.id, role = rbacAccessControl.role)
   }
 
@@ -187,27 +190,29 @@ class OrganizationServiceImpl(
   ): OrganizationAccessControl {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_WRITE_SECURITY)
     csmRbac.checkUserExists(
-        organization.getRbac(),
+        organization.security.toGenericSecurity(organizationId),
         identityId,
         "User '$identityId' not found in organization $organizationId")
     val rbacSecurity =
-        csmRbac.setUserRole(organization.getRbac(), identityId, organizationRole.role)
-    organization.setRbac(rbacSecurity)
+        csmRbac.setUserRole(organization.security.toGenericSecurity(
+          organizationId), identityId, organizationRole.role)
+    organization.security = rbacSecurity.toResourceSecurity()
     organizationRepository.save(organization)
-    val rbacAccessControl = csmRbac.getAccessControl(organization.getRbac(), identityId)
+    val rbacAccessControl = csmRbac.getAccessControl(
+      organization.security.toGenericSecurity(organizationId), identityId)
     return OrganizationAccessControl(id = rbacAccessControl.id, role = rbacAccessControl.role)
   }
 
   override fun deleteOrganizationAccessControl(organizationId: String, identityId: String) {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.removeUser(organization.getRbac(), identityId)
-    organization.setRbac(rbacSecurity)
+    val rbacSecurity = csmRbac.removeUser(organization.security.toGenericSecurity(organizationId), identityId)
+    organization.security = rbacSecurity.toResourceSecurity()
     organizationRepository.save(organization)
   }
 
   override fun listOrganizationSecurityUsers(organizationId: String): List<String> {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_READ_SECURITY)
-    return csmRbac.getUsers(organization.getRbac())
+    return csmRbac.getUsers(organization.security.toGenericSecurity(organizationId))
   }
 
   override fun getVerifiedOrganization(
@@ -217,7 +222,7 @@ class OrganizationServiceImpl(
     val organization =
         organizationRepository.findByIdOrNull(organizationId)
             ?: throw CsmResourceNotFoundException("Organization $organizationId does not exist!")
-    csmRbac.verify(organization.getRbac(), requiredPermission)
+    csmRbac.verify(organization.security.toGenericSecurity(organizationId), requiredPermission)
     return organization
   }
 
@@ -226,45 +231,40 @@ class OrganizationServiceImpl(
       requiredPermissions: List<String>
   ): Organization {
     val organization = getVerifiedOrganization(organizationId)
-    requiredPermissions.forEach { csmRbac.verify(organization.getRbac(), it) }
+    requiredPermissions.forEach { csmRbac.verify(organization.security.toGenericSecurity(organizationId), it) }
     return organization
   }
 
   fun updateSecurityVisibility(organization: Organization): Organization {
-    if (csmRbac.check(organization.getRbac(), PERMISSION_READ_SECURITY).not()) {
+    if (csmRbac.check(organization.security.toGenericSecurity(organization.id), PERMISSION_READ_SECURITY).not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
-      val retrievedAC =
-          organization.security!!.accessControlList!!.firstOrNull { it.id == username }
+      val retrievedAC = organization.security.accessControlList.firstOrNull { it.id == username }
       return if (retrievedAC != null) {
         organization.copy(
             security =
                 OrganizationSecurity(
-                    default = organization.security!!.default,
+                    default = organization.security.default,
                     accessControlList = mutableListOf(retrievedAC)))
       } else {
         organization.copy(
             security =
                 OrganizationSecurity(
-                    default = organization.security!!.default, accessControlList = mutableListOf()))
+                    default = organization.security.default, accessControlList = mutableListOf()))
       }
     }
     return organization
   }
 }
 
-fun Organization.getRbac(): RbacSecurity {
-  return RbacSecurity(
-      this.id,
-      this.security?.default ?: ROLE_NONE,
-      this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
-          ?: mutableListOf())
-}
+fun OrganizationSecurity?.toGenericSecurity(organizationId: String) = RbacSecurity(
+      organizationId,
+    this?.default ?: ROLE_NONE,
+      this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList() ?: mutableListOf()
+  )
 
-fun Organization.setRbac(rbacSecurity: RbacSecurity) {
-  this.security =
+fun RbacSecurity.toResourceSecurity() =
       OrganizationSecurity(
-          rbacSecurity.default,
-          rbacSecurity.accessControlList
+          this.default,
+          this.accessControlList
               .map { OrganizationAccessControl(it.id, it.role) }
               .toMutableList())
-}

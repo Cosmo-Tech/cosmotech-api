@@ -88,7 +88,7 @@ class RunnerService(
           "RunnerService's organization needs to be set. use inOrganization to do so.")
     }
 
-    this.workspace = workspaceApiService.findWorkspaceById(this.organization!!.id!!, workspaceId)
+    this.workspace = workspaceApiService.findWorkspaceById(this.organization!!.id, workspaceId)
   }
 
   fun userHasPermissionOnWorkspace(permission: String): RunnerService = apply {
@@ -174,7 +174,7 @@ class RunnerService(
 
   fun getInstance(runnerId: String): RunnerInstance {
     val runner =
-        runnerRepository.findBy(organization!!.id!!, workspace!!.id!!, runnerId).orElseThrow {
+        runnerRepository.findBy(organization!!.id, workspace!!.id!!, runnerId).orElseThrow {
           CsmResourceNotFoundException(
               "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
         }
@@ -185,18 +185,18 @@ class RunnerService(
   fun listInstances(pageRequest: PageRequest): List<Runner> {
     val isPlatformAdmin =
         getCurrentAuthenticatedRoles(this.csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
-    var runners = listOf<Runner>()
+    val runners: List<Runner>
     if (!this.csmPlatformProperties.rbac.enabled || isPlatformAdmin) {
       runners =
           runnerRepository
-              .findByWorkspaceId(organization!!.id!!, workspace!!.id!!, pageRequest)
+              .findByWorkspaceId(organization!!.id, workspace!!.id!!, pageRequest)
               .toList()
     } else {
       val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
       runners =
           runnerRepository
               .findByWorkspaceIdAndSecurity(
-                  organization!!.id!!, workspace!!.id!!, currentUser, pageRequest)
+                  organization!!.id, workspace!!.id!!, currentUser, pageRequest)
               .toList()
     }
     runners.forEach { it.security = updateSecurityVisibility(it).security }
@@ -245,7 +245,7 @@ class RunnerService(
       if (runner.runTemplateId.isNullOrEmpty())
           throw IllegalArgumentException("runner does not have a runTemplateId define")
       if (!solutionApiService.isRunTemplateExist(
-          organization!!.id!!,
+          organization!!.id,
           workspace!!.id!!,
           workspace!!.solution.solutionId!!,
           runner.runTemplateId!!))
@@ -268,9 +268,7 @@ class RunnerService(
       // take newly added datasets and propagate existing ACL on it
       this.runner.datasetList
           ?.filterNot { beforeMutateDatasetList.contains(it) }
-          ?.mapNotNull {
-            datasetApiService.findByOrganizationIdAndDatasetId(organization!!.id!!, it)
-          }
+          ?.mapNotNull { datasetApiService.findByOrganizationIdAndDatasetId(organization!!.id, it) }
           ?.forEach { dataset ->
             this.runner.security?.accessControlList?.forEach { roleDefinition ->
               addUserAccessControlOnDataset(dataset, roleDefinition)
@@ -320,7 +318,7 @@ class RunnerService(
         this.runner.parentId?.let {
           this.runner.rootId =
               runnerRepository
-                  .findBy(organization!!.id!!, workspace!!.id!!, it)
+                  .findBy(organization!!.id, workspace!!.id!!, it)
                   .orElseThrow { IllegalArgumentException("Parent runner not found: ${it}") }
                   .rootId ?: this.runner.parentId
         }
@@ -511,7 +509,7 @@ class RunnerService(
     val newDatasetAcl = dataset.getRbac().accessControlList
     if (newDatasetAcl.none { it.id == roleDefinition.id }) {
       datasetApiService.addOrUpdateAccessControl(
-          organization!!.id!!, dataset, roleDefinition.id, roleDefinition.role)
+          organization!!.id, dataset, roleDefinition.id, roleDefinition.role)
     }
   }
 }
