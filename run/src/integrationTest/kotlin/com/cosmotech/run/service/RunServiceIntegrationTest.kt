@@ -20,7 +20,7 @@ import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationCreationRequest
+import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
@@ -111,7 +111,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
   lateinit var connector: Connector
   lateinit var dataset: Dataset
   lateinit var solution: Solution
-  lateinit var organization: OrganizationCreationRequest
+  lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: Workspace
 
   lateinit var connectorSaved: Connector
@@ -141,7 +141,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     connector = mockConnector("Connector")
     connectorSaved = connectorApiService.registerConnector(connector)
 
-    organization = makeOrganizationRequest("Organization")
+    organization = makeOrganizationCreateRequest("Organization")
     organizationSaved = organizationApiService.createOrganization(organization)
 
     dataset = mockDataset(organizationSaved.id!!, "Dataset", connectorSaved)
@@ -223,8 +223,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                         SolutionAccessControl(id = CONNECTED_READER_USER, role = ROLE_ADMIN))))
   }
 
-  fun makeOrganizationRequest(id: String = "organizationId"): OrganizationCreationRequest {
-    return OrganizationCreationRequest(
+  fun makeOrganizationCreateRequest(id: String = "organizationId"): OrganizationCreateRequest {
+    return OrganizationCreateRequest(
         name = "Organization Name",
         security =
             OrganizationSecurity(

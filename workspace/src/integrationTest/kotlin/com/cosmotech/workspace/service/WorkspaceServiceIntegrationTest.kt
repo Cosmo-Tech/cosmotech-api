@@ -25,7 +25,7 @@ import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationCreationRequest
+import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
@@ -77,7 +77,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
-  lateinit var organization: OrganizationCreationRequest
+  lateinit var organization: OrganizationCreateRequest
   lateinit var solution: Solution
   lateinit var workspace: Workspace
   lateinit var connector: Connector
@@ -102,7 +102,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Connector::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)
 
-    organization = makeOrganizationRequest("Organization test")
+    organization = makeOrganizationCreateRequest("Organization test")
     organizationSaved = organizationApiService.createOrganization(organization)
 
     solution = makeSolution(organizationSaved.id!!)
@@ -333,7 +333,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
     organizationSaved =
-        organizationApiService.createOrganization(makeOrganizationRequest("organization"))
+        organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     val brokenWorkspace =
         Workspace(
@@ -355,7 +355,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     organizationSaved =
-        organizationApiService.createOrganization(makeOrganizationRequest("organization"))
+        organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     val workingWorkspace = makeWorkspace()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workingWorkspace)
@@ -443,7 +443,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   fun `As a viewer, I can only see my information in security property for findWorkspaceById`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     organization =
-        makeOrganizationRequest(
+        makeOrganizationCreateRequest(
             id = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
     organizationSaved = organizationApiService.createOrganization(organization)
     solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
@@ -467,7 +467,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   fun `As a viewer, I can only see my information in security property for findAllWorkspaces`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     organization =
-        makeOrganizationRequest(
+        makeOrganizationCreateRequest(
             id = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
     organizationSaved = organizationApiService.createOrganization(organization)
     solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
@@ -488,12 +488,12 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  fun makeOrganizationRequest(
+  fun makeOrganizationCreateRequest(
       id: String,
       userName: String = CONNECTED_ADMIN_USER,
       role: String = ROLE_ADMIN
-  ): OrganizationCreationRequest {
-    return OrganizationCreationRequest(
+  ): OrganizationCreateRequest {
+    return OrganizationCreateRequest(
         name = "Organization Name",
         security =
             OrganizationSecurity(
