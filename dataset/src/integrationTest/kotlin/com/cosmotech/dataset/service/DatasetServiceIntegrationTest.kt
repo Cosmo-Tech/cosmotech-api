@@ -157,12 +157,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     organization = makeOrganizationCreateRequest()
     organizationSaved = organizationApiService.createOrganization(organization)
     dataset = makeDatasetWithRole()
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     dataset2 = makeDataset()
     solution = makeSolution()
-    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     workspace = makeWorkspace()
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
   }
 
   @AfterEach
@@ -174,36 +174,35 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `test Dataset CRUD`() {
 
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
-    val registeredDataset2 = datasetApiService.createDataset(organizationSaved.id!!, dataset2)
+    val registeredDataset2 = datasetApiService.createDataset(organizationSaved.id, dataset2)
 
     logger.info("Fetch dataset : ${datasetSaved.id}...")
-    retrievedDataset1 = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    retrievedDataset1 = datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
     assertNotNull(retrievedDataset1)
 
     logger.info("Fetch all datasets...")
-    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id, null, null)
     for (item in datasetList) {
       logger.warn(item.id)
     }
     assertTrue { datasetList.size == 2 }
 
     logger.info("Delete Dataset : ${registeredDataset2.id}...")
-    datasetApiService.deleteDataset(organizationSaved.id!!, registeredDataset2.id!!)
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    datasetApiService.deleteDataset(organizationSaved.id, registeredDataset2.id!!)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id, null, null)
     assertTrue { datasetList.size == 1 }
   }
 
   @Test
   fun `test Dataset - findByOrganizationIdAndDatasetId`() {
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
     logger.info("Fetch dataset...")
     val datasetRetrieved =
-        datasetApiService.findByOrganizationIdAndDatasetId(
-            organizationSaved.id!!, datasetSaved.id!!)
+        datasetApiService.findByOrganizationIdAndDatasetId(organizationSaved.id, datasetSaved.id!!)
     assertNotNull(datasetRetrieved)
     assertEquals(datasetSaved, datasetRetrieved)
   }
@@ -211,11 +210,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test Dataset - findByOrganizationIdAndDatasetId wrong dataset id`() {
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
     logger.info("Fetch dataset...")
     val datasetRetrieved =
-        datasetApiService.findByOrganizationIdAndDatasetId(organizationSaved.id!!, "wrong_id")
+        datasetApiService.findByOrganizationIdAndDatasetId(organizationSaved.id, "wrong_id")
     assertNull(datasetRetrieved)
   }
 
@@ -224,18 +223,18 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Register dataset : ${dataset.id}...")
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
     every { getCurrentAccountIdentifier(any()) } returns "test.user.admin@cosmotech.com"
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
     assertNotNull(datasetSaved.id)
-    datasetSaved.id?.let { datasetApiService.deleteDataset(organizationSaved.id!!, it) }
+    datasetSaved.id?.let { datasetApiService.deleteDataset(organizationSaved.id, it) }
 
     logger.info("Fetch dataset : ${datasetSaved.id}...")
     assertThrows<CsmResourceNotFoundException> {
-      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+      datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
     }
   }
 
@@ -244,7 +243,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Register dataset : ${dataset.id}...")
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
     every { getCurrentAccountIdentifier(any()) } returns "test.user.other@cosmotech.com"
@@ -252,7 +251,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
     assertNotNull(datasetSaved.id)
     assertThrows<CsmAccessForbiddenException> {
-      datasetSaved.id?.let { datasetApiService.deleteDataset(organizationSaved.id!!, it) }
+      datasetSaved.id?.let { datasetApiService.deleteDataset(organizationSaved.id, it) }
     }
   }
 
@@ -261,7 +260,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Register dataset : ${dataset.id}...")
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
     every { getCurrentAccountIdentifier(any()) } returns "test.user.admin@cosmotech.com"
@@ -269,13 +268,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
     assertNotNull(datasetSaved.id)
     datasetSaved.ownerId = "new_owner_id"
-    datasetSaved.id?.let {
-      datasetApiService.updateDataset(organizationSaved.id!!, it, datasetSaved)
-    }
+    datasetSaved.id?.let { datasetApiService.updateDataset(organizationSaved.id, it, datasetSaved) }
 
     logger.info("Fetch dataset : ${datasetSaved.id}...")
-    val datasetUpdated =
-        datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    val datasetUpdated = datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
     assertEquals("new_owner_id", datasetUpdated.ownerId)
   }
 
@@ -284,7 +280,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Register dataset : ${dataset.id}...")
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
     every { getCurrentAccountIdentifier(any()) } returns "test.user.admin@cosmotech.com"
@@ -294,7 +290,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetSaved.ownerId = "new_owner_id"
     assertThrows<CsmAccessForbiddenException> {
       datasetSaved.id?.let {
-        datasetApiService.updateDataset(organizationSaved.id!!, it, datasetSaved)
+        datasetApiService.updateDataset(organizationSaved.id, it, datasetSaved)
       }
     }
   }
@@ -306,12 +302,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Search Datasets...")
     val datasetList =
         datasetApiService.searchDatasets(
-            organizationSaved.id!!, DatasetSearch(mutableListOf("data")), null, null)
+            organizationSaved.id, DatasetSearch(mutableListOf("data")), null, null)
     assertTrue { datasetList.size == 2 }
 
     logger.info("Update Dataset : ${datasetSaved.id}...")
     val retrievedDataset1 =
-        datasetApiService.updateDataset(organizationSaved.id!!, datasetSaved.id!!, dataset2)
+        datasetApiService.updateDataset(organizationSaved.id, datasetSaved.id!!, dataset2)
     assertNotEquals(retrievedDataset1, datasetSaved)
   }
 
@@ -319,7 +315,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Add Dataset Compatibility elements...")
     var datasetCompatibilityList =
         datasetApiService.addOrReplaceDatasetCompatibilityElements(
-            organizationSaved.id!!,
+            organizationSaved.id,
             datasetSaved.id!!,
             datasetCompatibility =
                 listOf(
@@ -328,10 +324,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertFalse { datasetCompatibilityList.isEmpty() }
 
     logger.info("Remove all Dataset Compatibility elements from dataset : ${datasetSaved.id!!}...")
-    datasetApiService.removeAllDatasetCompatibilityElements(
-        organizationSaved.id!!, datasetSaved.id!!)
+    datasetApiService.removeAllDatasetCompatibilityElements(organizationSaved.id, datasetSaved.id!!)
     datasetCompatibilityList =
-        datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!).compatibility!!
+        datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!).compatibility!!
     assertTrue { datasetCompatibilityList.isEmpty() }
   }
 
@@ -343,7 +338,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val expectedPageSize = 15
     IntRange(1, numberOfDatasets).forEach {
       datasetApiService.createDataset(
-          organizationSaved.id!!, makeDataset("d-dataset-$it", "dataset-$it"))
+          organizationSaved.id, makeDataset("d-dataset-$it", "dataset-$it"))
     }
     logger.info("Change current user...")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
@@ -351,19 +346,19 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
 
     logger.info("should find all datasets and assert there are $numberOfDatasets")
-    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id, null, null)
     assertEquals(numberOfDatasets, datasetList.size)
 
     logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, null)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id, 0, null)
     assertEquals(defaultPageSize, datasetList.size)
 
     logger.info("should find all datasets and assert there are expected size: $expectedPageSize")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, expectedPageSize)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id, 0, expectedPageSize)
     assertEquals(expectedPageSize, datasetList.size)
 
     logger.info("should find all solutions and assert it returns the second / last page")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 1, expectedPageSize)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id, 1, expectedPageSize)
     assertEquals(numberOfDatasets - expectedPageSize, datasetList.size)
   }
 
@@ -375,26 +370,26 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val expectedSize = 15
     IntRange(1, numberOfDatasets).forEach {
       datasetApiService.createDataset(
-          organizationSaved.id!!,
+          organizationSaved.id,
           makeDatasetWithRole(
               organizationId = "d-dataset-$it",
               parentId = "dataset-$it",
               userName = "ANOTHER_USER"))
     }
     logger.info("should find all datasets and assert there are $numberOfDatasets")
-    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id, null, null)
     assertEquals(0, datasetList.size)
 
     logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, null)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id, 0, null)
     assertEquals(0, datasetList.size)
 
     logger.info("should find all datasets and assert there are expected size: $expectedSize")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, expectedSize)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id, 0, expectedSize)
     assertEquals(0, datasetList.size)
 
     logger.info("should find all solutions and assert it returns the second / last page")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 1, expectedSize)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id, 1, expectedSize)
     assertEquals(0, datasetList.size)
   }
 
@@ -406,9 +401,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val numberOfDatasets = 200
     IntRange(1, numberOfDatasets).forEach {
       datasetApiService.createDataset(
-          organizationSaved.id!!,
+          organizationSaved.id,
           makeDatasetWithRole(
-              organizationId = organizationSaved.id!!, userName = "unknown_user@test.com"))
+              organizationId = organizationSaved.id, userName = "unknown_user@test.com"))
     }
 
     // Explicitly set connected user information
@@ -417,7 +412,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
 
     logger.info("should not find a dataset because of lake of permission")
-    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id, null, null)
     assertEquals(0, datasetList.size)
 
     // Create a dataset that current user should not see because it has been created under another
@@ -425,17 +420,17 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val newOrganization = organizationApiService.createOrganization(makeOrganizationCreateRequest())
     val datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization =
         datasetApiService.createDataset(
-            newOrganization.id!!, makeDatasetWithRole(organizationId = newOrganization.id!!))
+            newOrganization.id, makeDatasetWithRole(organizationId = newOrganization.id))
     assertNotNull(datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization)
     logger.info(
         "should not find a dataset because:" +
             " one was created with no permission assigned " +
             " one was created in another organization")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id, null, null)
     assertEquals(0, datasetList.size)
 
     logger.info("should find only one dataset")
-    datasetList = datasetApiService.findAllDatasets(newOrganization.id!!, null, null)
+    datasetList = datasetApiService.findAllDatasets(newOrganization.id, null, null)
     assertEquals(1, datasetList.size)
     assertEquals(datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization, datasetList[0])
   }
@@ -448,9 +443,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val numberOfDatasets = 20
     IntRange(1, numberOfDatasets).forEach {
       datasetApiService.createDataset(
-          organizationSaved.id!!,
+          organizationSaved.id,
           makeDatasetWithRole(
-              organizationId = organizationSaved.id!!, userName = "unknown_user@test.com"))
+              organizationId = organizationSaved.id, userName = "unknown_user@test.com"))
     }
 
     // Explicitly set connected user information
@@ -459,7 +454,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
 
     logger.info("should find all datasets because of admin permission")
-    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id, null, null)
     assertEquals(numberOfDatasets, datasetList.size)
 
     // Create a dataset that current user should not see because it has been created under another
@@ -467,14 +462,14 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val newOrganization = organizationApiService.createOrganization(makeOrganizationCreateRequest())
     val datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization =
         datasetApiService.createDataset(
-            newOrganization.id!!, makeDatasetWithRole(organizationId = newOrganization.id!!))
+            newOrganization.id, makeDatasetWithRole(organizationId = newOrganization.id))
     assertNotNull(datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization)
     logger.info("should not find the new dataset because it was created in another organization")
-    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id, null, null)
     assertEquals(numberOfDatasets, datasetList.size)
 
     logger.info("should find only one dataset")
-    datasetList = datasetApiService.findAllDatasets(newOrganization.id!!, null, null)
+    datasetList = datasetApiService.findAllDatasets(newOrganization.id, null, null)
     assertEquals(1, datasetList.size)
     assertEquals(datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization, datasetList[0])
   }
@@ -482,21 +477,21 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test find All Datasets with wrong pagination params`() {
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetApiService.createDataset(organizationSaved.id, dataset)
 
     logger.info("Should throw IllegalArgumentException when page and size are zeros")
     assertThrows<IllegalArgumentException> {
-      datasetApiService.findAllDatasets(organizationSaved.id!!, 0, 0)
+      datasetApiService.findAllDatasets(organizationSaved.id, 0, 0)
     }
 
     logger.info("Should throw IllegalArgumentException when page is negative")
     assertThrows<IllegalArgumentException> {
-      datasetApiService.findAllDatasets(organizationSaved.id!!, -1, 10)
+      datasetApiService.findAllDatasets(organizationSaved.id, -1, 10)
     }
 
     logger.info("Should throw IllegalArgumentException when size is negative")
     assertThrows<IllegalArgumentException> {
-      datasetApiService.findAllDatasets(organizationSaved.id!!, 0, -1)
+      datasetApiService.findAllDatasets(organizationSaved.id, 0, -1)
     }
   }
 
@@ -509,14 +504,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val resource = ByteArrayResource(File(file!!).readBytes())
     organizationSaved = organizationApiService.createOrganization(organization)
     dataset = makeDatasetWithRole()
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     datasetApiService.updateDataset(
-        organizationSaved.id!!,
-        datasetSaved.id!!,
-        dataset.copy(sourceType = DatasetSourceType.File))
+        organizationSaved.id, datasetSaved.id!!, dataset.copy(sourceType = DatasetSourceType.File))
 
     val fileUploadValidation =
-        datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+        datasetApiService.uploadTwingraph(organizationSaved.id, datasetSaved.id!!, resource)
     assertEquals(
         FileUploadValidation(
             mutableListOf(
@@ -533,18 +526,18 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     // add timout for while loop
     val timeout = Instant.now()
-    while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!) !=
+    while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!) !=
         IngestionStatusEnum.SUCCESS.value) {
       if (Instant.now().minusSeconds(10).isAfter(timeout)) {
         throw Exception("Timeout while waiting for dataset twingraph to be ready")
       }
       Thread.sleep(500)
     }
-    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
     do {
       Thread.sleep(50L)
       val datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
     } while (datasetStatus == IngestionStatusEnum.PENDING.value)
     assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
     assertEquals(5, countEntities(datasetSaved.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
@@ -557,11 +550,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         )
     val subDataset =
         datasetApiService.createSubDataset(
-            organizationSaved.id!!, datasetSaved.id!!, subDatasetParams)
+            organizationSaved.id, datasetSaved.id!!, subDatasetParams)
     do {
       Thread.sleep(50L)
       val datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, subDataset.id!!)
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, subDataset.id!!)
     } while (datasetStatus == IngestionStatusEnum.PENDING.value)
 
     assertEquals("subDataset", subDataset.name)
@@ -578,12 +571,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     val subDatasetWithQuery =
         datasetApiService.createSubDataset(
-            organizationSaved.id!!, datasetSaved.id!!, subDatasetParamsQuery)
+            organizationSaved.id, datasetSaved.id!!, subDatasetParamsQuery)
     do {
       Thread.sleep(50L)
       val datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(
-              organizationSaved.id!!, subDatasetWithQuery.id!!)
+              organizationSaved.id, subDatasetWithQuery.id!!)
     } while (datasetStatus == IngestionStatusEnum.PENDING.value)
 
     assertEquals("subDatasetWithQuery", subDatasetWithQuery.name)
@@ -603,10 +596,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Create Nodes")
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     val nodeStart =
         datasetApiService.createTwingraphEntities(
-            organizationSaved.id!!,
+            organizationSaved.id,
             datasetSaved.id!!,
             "node",
             listOf(
@@ -625,13 +618,13 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Read Nodes")
     var nodeResult =
         datasetApiService.getTwingraphEntities(
-            organizationSaved.id!!, datasetSaved.id!!, "node", listOf("node_a", "node_b"))
+            organizationSaved.id, datasetSaved.id!!, "node", listOf("node_a", "node_b"))
     assertEquals(nodeStart, nodeResult)
 
     logger.info("Create Relationships")
     val relationshipStart =
         datasetApiService.createTwingraphEntities(
-            organizationSaved.id!!,
+            organizationSaved.id,
             datasetSaved.id!!,
             "relationship",
             listOf(
@@ -646,13 +639,13 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Read Relationships")
     var relationshipResult =
         datasetApiService.getTwingraphEntities(
-            organizationSaved.id!!, datasetSaved.id!!, "relationship", listOf("relationship_a"))
+            organizationSaved.id, datasetSaved.id!!, "relationship", listOf("relationship_a"))
     assertEquals(relationshipStart, relationshipResult)
 
     logger.info("Update Nodes")
     nodeResult =
         datasetApiService.updateTwingraphEntities(
-            organizationSaved.id!!,
+            organizationSaved.id,
             datasetSaved.id!!,
             "node",
             listOf(
@@ -665,7 +658,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Update Relationships")
     relationshipResult =
         datasetApiService.updateTwingraphEntities(
-            organizationSaved.id!!,
+            organizationSaved.id,
             datasetSaved.id!!,
             "relationship",
             listOf(
@@ -679,40 +672,40 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Delete Relationships")
     datasetApiService.deleteTwingraphEntities(
-        organizationSaved.id!!, datasetSaved.id!!, "node", listOf("relationship_a"))
+        organizationSaved.id, datasetSaved.id!!, "node", listOf("relationship_a"))
     assertDoesNotThrow {
       datasetApiService.getTwingraphEntities(
-          organizationSaved.id!!, datasetSaved.id!!, "node", listOf("relationship_a"))
+          organizationSaved.id, datasetSaved.id!!, "node", listOf("relationship_a"))
     }
 
     logger.info("Delete Nodes")
     datasetApiService.deleteTwingraphEntities(
-        organizationSaved.id!!, datasetSaved.id!!, "relationship", listOf("node_a"))
+        organizationSaved.id, datasetSaved.id!!, "relationship", listOf("node_a"))
     assertDoesNotThrow {
       datasetApiService.getTwingraphEntities(
-          organizationSaved.id!!, datasetSaved.id!!, "relationship", listOf("node_a"))
+          organizationSaved.id, datasetSaved.id!!, "relationship", listOf("node_a"))
     }
   }
 
   @Test
   fun `test get security endpoint`() {
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     // should return the current security
     val datasetSecurity =
-        datasetApiService.getDatasetSecurity(organizationSaved.id!!, datasetSaved.id!!)
+        datasetApiService.getDatasetSecurity(organizationSaved.id, datasetSaved.id!!)
     assertEquals(datasetSaved.security, datasetSecurity)
   }
 
   @Test
   fun `test set default security endpoint`() {
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     // should update the default security and assert it worked
     val datasetDefaultSecurity =
         datasetApiService.setDatasetDefaultSecurity(
-            organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
-    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            organizationSaved.id, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
+    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
     assertEquals(datasetSaved.security!!, datasetDefaultSecurity)
   }
 
@@ -720,23 +713,22 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `test uploadTwingraph status`() {
     organizationSaved = organizationApiService.createOrganization(organization)
     dataset.apply { sourceType = DatasetSourceType.File }
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     val file = this::class.java.getResource("/integrationTest.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
 
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    datasetApiService.uploadTwingraph(organizationSaved.id, datasetSaved.id!!, resource)
 
     var datasetStatus: String
     do {
       Thread.sleep(50L)
       datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
     } while (datasetStatus == IngestionStatusEnum.PENDING.value)
 
     assertEquals(IngestionStatusEnum.SUCCESS.value, datasetStatus)
 
-    val modifiedDataset =
-        datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    val modifiedDataset = datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
     assertEquals(IngestionStatusEnum.SUCCESS.value, modifiedDataset.ingestionStatus!!.value)
     assertEquals(TwincacheStatusEnum.FULL.value, modifiedDataset.twincacheStatus!!.value)
   }
@@ -745,23 +737,22 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `test uploadTwingraph fail set dataset status to error`() {
     organizationSaved = organizationApiService.createOrganization(organization)
     dataset.apply { sourceType = DatasetSourceType.File }
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     val file = this::class.java.getResource("/brokenGraph.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
 
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    datasetApiService.uploadTwingraph(organizationSaved.id, datasetSaved.id!!, resource)
 
     var datasetStatus: String
     do {
       Thread.sleep(50L)
       datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
     } while (datasetStatus == IngestionStatusEnum.PENDING.value)
 
     assertEquals(IngestionStatusEnum.ERROR.value, datasetStatus)
 
-    val modifiedDataset =
-        datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    val modifiedDataset = datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
     assertEquals(IngestionStatusEnum.ERROR.value, modifiedDataset.ingestionStatus!!.value)
     assertEquals(TwincacheStatusEnum.EMPTY.value, modifiedDataset.twincacheStatus!!.value)
   }
@@ -782,7 +773,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                             DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                             DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
     assertThrows<IllegalArgumentException> {
-      datasetApiService.createDataset(organizationSaved.id!!, brokenDataset)
+      datasetApiService.createDataset(organizationSaved.id, brokenDataset)
     }
   }
 
@@ -791,11 +782,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
     organizationSaved = organizationApiService.createOrganization(makeOrganizationCreateRequest())
     val workingDataset = makeDatasetWithRole("dataset", sourceType = DatasetSourceType.None)
-    val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, workingDataset)
+    val datasetSaved = datasetApiService.createDataset(organizationSaved.id, workingDataset)
 
     assertThrows<IllegalArgumentException> {
       datasetApiService.addDatasetAccessControl(
-          organizationSaved.id!!,
+          organizationSaved.id,
           datasetSaved.id!!,
           DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
     }
@@ -805,35 +796,35 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `reupload a twingraph in dataset with source type File`() {
     organizationSaved = organizationApiService.createOrganization(organization)
     dataset.apply { sourceType = DatasetSourceType.File }
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
     val fileName = this::class.java.getResource("/integrationTest.zip")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    datasetApiService.uploadTwingraph(organizationSaved.id, datasetSaved.id!!, resource)
     do {
       Thread.sleep(50L)
-    } while (datasetApiService.getDatasetTwingraphStatus(
-        organizationSaved.id!!, datasetSaved.id!!) == IngestionStatusEnum.PENDING.value)
+    } while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!) ==
+        IngestionStatusEnum.PENDING.value)
 
     datasetApiService.createTwingraphEntities(
-        organizationSaved.id!!,
+        organizationSaved.id,
         datasetSaved.id!!,
         "node",
         listOf(GraphProperties(type = "Node", name = "newNode", params = "value:0")))
     val queryResult =
         datasetApiService.twingraphQuery(
-            organizationSaved.id!!, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
+            organizationSaved.id, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
 
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    datasetApiService.uploadTwingraph(organizationSaved.id, datasetSaved.id!!, resource)
     do {
       Thread.sleep(50L)
-    } while (datasetApiService.getDatasetTwingraphStatus(
-        organizationSaved.id!!, datasetSaved.id!!) == IngestionStatusEnum.PENDING.value)
+    } while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!) ==
+        IngestionStatusEnum.PENDING.value)
 
     val secondQueryResult =
         datasetApiService.twingraphQuery(
-            organizationSaved.id!!, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
+            organizationSaved.id, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
 
     assertNotEquals(queryResult.size, secondQueryResult.size)
   }
@@ -841,13 +832,13 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `rollback endpoint call should fail if status is not ERROR`() {
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
     datasetSaved =
         datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.NONE })
     var exception =
         assertThrows<IllegalArgumentException> {
-          datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+          datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
         }
     assertEquals("The dataset hasn't failed and can't be rolled back", exception.message)
 
@@ -855,7 +846,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.PENDING })
     exception =
         assertThrows<IllegalArgumentException> {
-          datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+          datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
         }
     assertEquals("The dataset hasn't failed and can't be rolled back", exception.message)
 
@@ -863,7 +854,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
     exception =
         assertThrows<IllegalArgumentException> {
-          datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+          datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
         }
     assertEquals("The dataset hasn't failed and can't be rolled back", exception.message)
   }
@@ -874,28 +865,28 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     organization = makeOrganizationCreateRequest("organization")
     organizationSaved = organizationApiService.createOrganization(organization)
     dataset = makeDatasetWithRole(sourceType = DatasetSourceType.File)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
     datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.ERROR })
-    datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+    datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
     var datasetStatus =
-        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
     assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
 
     every { datasetApiService.query(any(), any()) } returns mockk()
     val fileName = this::class.java.getResource("/integrationTest.zip")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    datasetApiService.uploadTwingraph(organizationSaved.id, datasetSaved.id!!, resource)
     do {
       Thread.sleep(50L)
       datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
     } while (datasetStatus == IngestionStatusEnum.PENDING.value)
     datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.ERROR })
-    datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+    datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
     datasetStatus =
-        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
     assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
   }
 
@@ -916,10 +907,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                     makeOrganizationCreateRequest("organization"))
             val parentDataset =
                 datasetApiService.createDataset(
-                    organizationSaved.id!!, makeDatasetWithRole(sourceType = sourceType))
+                    organizationSaved.id, makeDatasetWithRole(sourceType = sourceType))
             datasetSaved =
                 datasetApiService.createDataset(
-                    organizationSaved.id!!,
+                    organizationSaved.id,
                     makeDatasetWithRole(parentId = parentDataset.id!!, sourceType = sourceType))
 
             every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
@@ -929,12 +920,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
             if (shouldThrow) {
               val exception =
                   assertThrows<CsmResourceNotFoundException> {
-                    datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                    datasetApiService.refreshDataset(organizationSaved.id, datasetSaved.id!!)
                   }
               assertEquals("Cannot be applied to source type '$sourceType'", exception.message)
             } else {
               assertDoesNotThrow {
-                datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                datasetApiService.refreshDataset(organizationSaved.id, datasetSaved.id!!)
               }
             }
           }
@@ -946,15 +937,15 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNull(
         datasetApiService
-            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .findDatasetById(organizationSaved.id, datasetSaved.id!!)
             .linkedWorkspaceIdList)
 
-    datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+    datasetApiService.linkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
 
     val workspaceIds = listOf(workspaceSaved.id!!)
     checkLinkedWorkspaceId(workspaceIds)
 
-    datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+    datasetApiService.linkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
 
     checkLinkedWorkspaceId(workspaceIds)
   }
@@ -962,14 +953,14 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   private fun checkLinkedWorkspaceId(workspaceIds: List<String>) {
     assertEquals(
         datasetApiService
-            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .findDatasetById(organizationSaved.id, datasetSaved.id!!)
             .linkedWorkspaceIdList!!
             .size,
         workspaceIds.size)
 
     assertEquals(
         datasetApiService
-            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .findDatasetById(organizationSaved.id, datasetSaved.id!!)
             .linkedWorkspaceIdList!!,
         workspaceIds)
   }
@@ -979,17 +970,16 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNull(
         datasetApiService
-            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .findDatasetById(organizationSaved.id, datasetSaved.id!!)
             .linkedWorkspaceIdList)
 
-    datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+    datasetApiService.linkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
 
-    datasetApiService.unlinkWorkspace(
-        organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+    datasetApiService.unlinkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
 
     assertEquals(
         datasetApiService
-            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .findDatasetById(organizationSaved.id, datasetSaved.id!!)
             .linkedWorkspaceIdList!!
             .size,
         0)
@@ -1000,33 +990,32 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNull(
         datasetApiService
-            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .findDatasetById(organizationSaved.id, datasetSaved.id!!)
             .linkedWorkspaceIdList)
 
     assertNull(
         workspaceApiService
-            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .findWorkspaceById(organizationSaved.id, workspaceSaved.id!!)
             .linkedDatasetIdList)
 
-    datasetApiService.unlinkWorkspace(
-        organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+    datasetApiService.unlinkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
 
     assertNull(
         datasetApiService
-            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .findDatasetById(organizationSaved.id, datasetSaved.id!!)
             .linkedWorkspaceIdList)
 
     assertNull(
         workspaceApiService
-            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .findWorkspaceById(organizationSaved.id, workspaceSaved.id!!)
             .linkedDatasetIdList)
   }
 
   @Test
   fun `getConnector return same connector`() {
     val dataset = makeDatasetWithRole()
-    val dataset1 = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-    val dataset2 = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    val dataset1 = datasetApiService.createDataset(organizationSaved.id, dataset)
+    val dataset2 = datasetApiService.createDataset(organizationSaved.id, dataset)
 
     assertEquals(dataset1.connector!!.id, dataset2.connector!!.id)
   }
@@ -1034,9 +1023,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `As viewer, I can only see my information in security property for findDatasetById`() {
     dataset = makeDatasetWithRole(role = ROLE_VIEWER)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
-    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
     assertEquals(
         DatasetSecurity(
             default = ROLE_NONE, mutableListOf(DatasetAccessControl(TEST_USER_MAIL, ROLE_VIEWER))),
@@ -1047,12 +1036,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `As viewer, I can only see my information in security property for findAllDatasets`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    datasetApiService.deleteDataset(organizationSaved.id!!, datasetSaved.id!!)
+    datasetApiService.deleteDataset(organizationSaved.id, datasetSaved.id!!)
     every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
     dataset = makeDatasetWithRole(role = ROLE_VIEWER)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
-    val datasets = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    val datasets = datasetApiService.findAllDatasets(organizationSaved.id, null, null)
     datasets.forEach {
       assertEquals(
           DatasetSecurity(
@@ -1066,14 +1055,14 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `As viewer, I can only see my information in security property for searchDatasets`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    datasetApiService.deleteDataset(organizationSaved.id!!, datasetSaved.id!!)
+    datasetApiService.deleteDataset(organizationSaved.id, datasetSaved.id!!)
     every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
     dataset = makeDatasetWithRole(role = ROLE_VIEWER)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
     val datasets =
         datasetApiService.searchDatasets(
-            organizationSaved.id!!, DatasetSearch(mutableListOf("dataset")), 0, 10)
+            organizationSaved.id, DatasetSearch(mutableListOf("dataset")), 0, 10)
     datasets.forEach {
       assertEquals(
           DatasetSecurity(
@@ -1110,7 +1099,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun makeDataset(
-      organizationId: String = organizationSaved.id!!,
+      organizationId: String = organizationSaved.id,
       parentId: String = "",
       sourceType: DatasetSourceType = DatasetSourceType.Twincache
   ): Dataset {
@@ -1128,7 +1117,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun makeDatasetWithRole(
-      organizationId: String = organizationSaved.id!!,
+      organizationId: String = organizationSaved.id,
       parentId: String = "",
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN,
@@ -1155,7 +1144,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun makeSolution(
-      organizationId: String = organizationSaved.id!!,
+      organizationId: String = organizationSaved.id,
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_EDITOR
   ): Solution {
@@ -1175,7 +1164,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun makeWorkspace(
-      organizationId: String = organizationSaved.id!!,
+      organizationId: String = organizationSaved.id,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
       userName: String = TEST_USER_MAIL,
