@@ -262,9 +262,7 @@ class WorkspaceServiceImplTests {
 
   @Test
   fun `should reject creation request if solution ID is not valid`() {
-
-    val organization = mockOrganization(ORGANIZATION_ID)
-    organization.security = OrganizationSecurity(ROLE_ADMIN, mutableListOf())
+    val organization = mockOrganization()
     every { organizationService.getOrganization(ORGANIZATION_ID) } returns organization
     val workspace =
         Workspace(
@@ -598,7 +596,7 @@ class WorkspaceServiceImplTests {
       shouldThrow: Boolean,
       testLambda: (ctx: WorkspaceTestContext) -> Unit
   ): DynamicTest? {
-    val organization = mockOrganization("o-org-id", CONNECTED_DEFAULT_USER, role)
+    val organization = mockOrganization(username = CONNECTED_DEFAULT_USER, role = role)
     val solution = mockSolution(organization.id!!)
     val workspace =
         mockWorkspace(organization.id!!, solution.id!!, "Workspace", CONNECTED_DEFAULT_USER, role)
@@ -620,21 +618,20 @@ class WorkspaceServiceImplTests {
   )
 
   fun mockOrganization(
-      id: String,
-      roleName: String = CONNECTED_ADMIN_USER,
+      username: String = CONNECTED_DEFAULT_USER,
       role: String = ROLE_ADMIN
   ): Organization {
     return Organization(
-        id = id,
+        id = "organizationId",
         name = "Organization Name",
-        ownerId = "my.account-tester@cosmotech.com",
+        ownerId = "ownerId",
         security =
             OrganizationSecurity(
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(id = roleName, role = role),
-                        OrganizationAccessControl("userLambda", "viewer"))))
+                        OrganizationAccessControl(id = username, role = role),
+                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
   fun mockSolution(organizationId: String): Solution {

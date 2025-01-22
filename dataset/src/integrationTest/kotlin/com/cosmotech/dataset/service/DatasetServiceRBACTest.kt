@@ -45,6 +45,7 @@ import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationCreationRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
@@ -108,7 +109,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   lateinit var retrievedDataset1: Dataset
 
   lateinit var jedis: UnifiedJedis
-  lateinit var organization: Organization
+  lateinit var organization: OrganizationCreationRequest
   lateinit var organizationSaved: Organization
 
   @BeforeAll
@@ -135,7 +136,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
 
     connectorSaved = connectorApiService.registerConnector(makeConnector())
 
-    organization = makeOrganization("Organization")
+    organization = makeOrganizationRequest("Organization")
     dataset = makeDataset("d-dataset-1", "dataset-1")
     dataset2 = makeDataset("d-dataset-2", "dataset-2")
   }
@@ -158,7 +159,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC rollbackRefresh : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -197,7 +198,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC rollbackRefresh : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = ROLE_ADMIN)
+              val organization = makeOrganizationRequestWithRole(role = ROLE_ADMIN)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -236,7 +237,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC twingraphBatchUpdate : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -281,7 +282,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC twingraphBatchUpdate : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -333,7 +334,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 "Test Organization RBAC addOrReplaceDatasetCompatibilityElements : $role") {
                   every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-                  val organization = makeOrganizationWithRole(role = role)
+                  val organization = makeOrganizationRequestWithRole(role = role)
                   organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
                   datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -377,7 +378,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 "Test Dataset RBAC addOrReplaceDatasetCompatibilityElements : $role") {
                   every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-                  val organization = makeOrganizationWithRole()
+                  val organization = makeOrganizationRequestWithRole()
                   organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = role)
                   datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -420,7 +421,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC createDataset : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
 
@@ -455,7 +456,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC createSubDataset : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -496,7 +497,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC createSubDataset : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -543,7 +544,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC createTwingraphEntities : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -588,7 +589,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC createTwingraphEntities : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -639,7 +640,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC deleteDataset : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -676,7 +677,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC deleteDataset : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -713,7 +714,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC deleteTwingraphEntities : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -752,7 +753,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC deleteTwingraphEntities : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -797,7 +798,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC downloadTwingraph : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -841,7 +842,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC findAllDatasets : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -878,7 +879,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC findDatasetById : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -915,7 +916,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC findDatasetById : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -952,7 +953,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC getDatasetTwingraphStatus : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -991,7 +992,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC getDatasetTwingraphStatus : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1030,7 +1031,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC getTwingraphEntities : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1069,7 +1070,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC getTwingraphEntities : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1108,7 +1109,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
           DynamicTest.dynamicTest("Test Organization RBAC refreshDataset : $role") {
             every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-            val organization = makeOrganizationWithRole(role = role)
+            val organization = makeOrganizationRequestWithRole(role = role)
             organizationSaved = organizationApiService.createOrganization(organization)
             val dataset =
                 makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.Twincache)
@@ -1157,7 +1158,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
           DynamicTest.dynamicTest("Test Dataset RBAC refreshDataset : $role") {
             every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-            val organization = makeOrganizationWithRole()
+            val organization = makeOrganizationRequestWithRole()
             organizationSaved = organizationApiService.createOrganization(organization)
             val dataset = makeDatasetWithRole(role = role, sourceType = DatasetSourceType.Twincache)
             val datasetParentSaved =
@@ -1212,7 +1213,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 "Test Organization RBAC removeAllDatasetCompatibilityElements : $role") {
                   every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-                  val organization = makeOrganizationWithRole(role = role)
+                  val organization = makeOrganizationRequestWithRole(role = role)
                   organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
                   datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1252,7 +1253,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 "Test Dataset RBAC removeAllDatasetCompatibilityElements : $role") {
                   every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-                  val organization = makeOrganizationWithRole()
+                  val organization = makeOrganizationRequestWithRole()
                   organizationSaved = organizationApiService.createOrganization(organization)
                   val dataset = makeDatasetWithRole(role = role)
                   datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1291,7 +1292,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC searchDatasets : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole()
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1332,7 +1333,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC twingraphBatchQuery : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1374,7 +1375,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC twingraphBatchQuery : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1416,7 +1417,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC twingraphQuery : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1456,7 +1457,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC twingraphQuery : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1496,7 +1497,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC updateDataset : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1535,7 +1536,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC updateDataset : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1574,7 +1575,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC updateTwingraphEntities : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1613,7 +1614,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC updateTwingraphEntities : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1658,7 +1659,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC uploadTwingraph : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.File)
@@ -1700,7 +1701,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC uploadTwingraph : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role, sourceType = DatasetSourceType.File)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1747,7 +1748,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC addDatasetAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1788,7 +1789,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC addDatasetAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1829,7 +1830,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC getDatasetAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset =
                   makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.None)
@@ -1868,7 +1869,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC getDatasetAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1907,7 +1908,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC updateDatasetAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1952,7 +1953,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC updateDatasetAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -1997,7 +1998,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC removeDatasetAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -2036,7 +2037,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC removeDatasetAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -2075,7 +2076,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC getDatasetSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -2114,7 +2115,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC getDatasetSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -2153,7 +2154,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC getDatasetSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -2190,7 +2191,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC getDatasetSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -2227,7 +2228,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC setDatasetDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
+              val organization = makeOrganizationRequestWithRole(role = role)
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = ROLE_ADMIN)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -2265,7 +2266,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Dataset RBAC setDatasetDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationRequestWithRole()
               organizationSaved = organizationApiService.createOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -2333,10 +2334,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                         DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
-  fun makeOrganization(name: String): Organization {
-    return Organization(
+  fun makeOrganizationRequest(name: String): OrganizationCreationRequest {
+    return OrganizationCreationRequest(
         name = name,
-        ownerId = "my.account-tester@cosmotech.com",
         security =
             OrganizationSecurity(
                 default = ROLE_ADMIN,
@@ -2345,14 +2345,12 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 
-  fun makeOrganizationWithRole(
+  fun makeOrganizationRequestWithRole(
       id: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN
-  ): Organization {
-    return Organization(
-        id = UUID.randomUUID().toString(),
+  ): OrganizationCreationRequest {
+    return OrganizationCreationRequest(
         name = "Organization NameRbac",
-        ownerId = "my.account-tester@cosmotech.com",
         security =
             OrganizationSecurity(
                 default = ROLE_NONE,
