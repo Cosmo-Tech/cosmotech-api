@@ -1125,7 +1125,7 @@ class ContainerFactory(
             }
                 ?: throw IllegalStateException(
                     "Parameter ${parameterValue.parameterId} not found in Solution ${solution.id}")
-        if (parameter.varType == PARAMETERS_DATASET_ID) {
+        if (parameter.varType == PARAMETERS_DATASET_ID && parameterValue.value.isNotBlank()) {
           val datasetIdList = getDatasetIdListFromValue(parameterValue.value)
           datasetIdList.forEachIndexed { index, datasetId ->
             val dataset =
