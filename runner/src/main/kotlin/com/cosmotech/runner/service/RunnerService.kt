@@ -88,7 +88,7 @@ class RunnerService(
           "RunnerService's organization needs to be set. use inOrganization to do so.")
     }
 
-    this.workspace = workspaceApiService.findWorkspaceById(this.organization!!.id, workspaceId)
+    this.workspace = workspaceApiService.getWorkspace(this.organization!!.id, workspaceId)
   }
 
   fun userHasPermissionOnWorkspace(permission: String): RunnerService = apply {

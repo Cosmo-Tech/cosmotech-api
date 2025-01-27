@@ -995,7 +995,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNull(
         workspaceApiService
-            .findWorkspaceById(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
             .linkedDatasetIdList)
 
     datasetApiService.unlinkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
@@ -1007,7 +1007,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNull(
         workspaceApiService
-            .findWorkspaceById(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
             .linkedDatasetIdList)
   }
 

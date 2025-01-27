@@ -149,7 +149,7 @@ class WorkspaceServiceImplTests {
     every { file.filename } returns "my_file.txt"
 
     val workspaceFile =
-        workspaceServiceImpl.uploadWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, null)
+        workspaceServiceImpl.createWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, null)
     assertNotNull(workspaceFile.fileName)
     assertEquals("my_file.txt", workspaceFile.fileName)
     assertTrue(
@@ -170,7 +170,7 @@ class WorkspaceServiceImplTests {
     every { file.filename } returns "my_file.txt"
 
     val workspaceFile =
-        workspaceServiceImpl.uploadWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, "  ")
+        workspaceServiceImpl.createWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, "  ")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my_file.txt", workspaceFile.fileName)
     assertTrue(
@@ -189,7 +189,7 @@ class WorkspaceServiceImplTests {
     every { file.filename } returns "my_file.txt"
 
     val workspaceFile =
-        workspaceServiceImpl.uploadWorkspaceFile(
+        workspaceServiceImpl.createWorkspaceFile(
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my/destination/")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/destination/my_file.txt", workspaceFile.fileName)
@@ -211,7 +211,7 @@ class WorkspaceServiceImplTests {
     every { file.filename } returns "my_file.txt"
 
     val workspaceFile =
-        workspaceServiceImpl.uploadWorkspaceFile(
+        workspaceServiceImpl.createWorkspaceFile(
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my/destination/file")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/destination/file", workspaceFile.fileName)
@@ -232,7 +232,7 @@ class WorkspaceServiceImplTests {
     every { file.filename } returns "my_file.txt"
 
     val workspaceFile =
-        workspaceServiceImpl.uploadWorkspaceFile(
+        workspaceServiceImpl.createWorkspaceFile(
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my//other/destination////////file")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/other/destination/file", workspaceFile.fileName)
@@ -245,7 +245,7 @@ class WorkspaceServiceImplTests {
   @Test
   fun `Calling uploadWorkspaceFile is not allowed when destination contains double-dot`() {
     assertThrows<IllegalArgumentException> {
-      workspaceServiceImpl.uploadWorkspaceFile(
+      workspaceServiceImpl.createWorkspaceFile(
           ORGANIZATION_ID, WORKSPACE_ID, mockk(), false, "my/../other/destination/../../file")
     }
     assertFalse(Files.exists(Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID)))
@@ -254,7 +254,7 @@ class WorkspaceServiceImplTests {
   @Test
   fun `Calling downloadWorkspaceFile is not allowed when filename contains double-dot`() {
     assertThrows<IllegalArgumentException> {
-      workspaceServiceImpl.downloadWorkspaceFile(
+      workspaceServiceImpl.getWorkspaceFile(
           ORGANIZATION_ID, WORKSPACE_ID, "my/../../other/destination/file")
     }
     assertFalse(Files.exists(Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID)))
@@ -354,7 +354,7 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete all workspace files: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
-              workspaceServiceImpl.deleteAllWorkspaceFiles(it.organization.id, it.workspace.id!!)
+              workspaceServiceImpl.deleteWorkspaceFiles(it.organization.id, it.workspace.id!!)
             }
           }
 
@@ -425,7 +425,7 @@ class WorkspaceServiceImplTests {
                   Path.of(blobPersistencePath, it.organization.id, it.workspace.id!!, "name")
               Files.createDirectories(filePath.getParent())
               Files.createFile(filePath)
-              workspaceServiceImpl.downloadWorkspaceFile(
+              workspaceServiceImpl.getWorkspaceFile(
                   it.organization.id, it.workspace.id!!, "name")
             }
           }
@@ -442,7 +442,7 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC upload workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
-              workspaceServiceImpl.uploadWorkspaceFile(
+              workspaceServiceImpl.createWorkspaceFile(
                   it.organization.id, it.workspace.id!!, mockk(relaxed = true), true, "name")
             }
           }
@@ -459,7 +459,7 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC findAllWorkspaceFiles: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
-              workspaceServiceImpl.findAllWorkspaceFiles(it.organization.id, it.workspace.id!!)
+              workspaceServiceImpl.listWorkspaceFiles(it.organization.id, it.workspace.id!!)
             }
           }
 
@@ -492,7 +492,7 @@ class WorkspaceServiceImplTests {
             rbacTest("Test RBAC set workspace default security: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
-              workspaceServiceImpl.setWorkspaceDefaultSecurity(
+              workspaceServiceImpl.updateWorkspaceDefaultSecurity(
                   it.organization.id, it.workspace.id!!, WorkspaceRole(ROLE_NONE))
             }
           }
@@ -527,7 +527,7 @@ class WorkspaceServiceImplTests {
             rbacTest("test RBAC add workspace access control: $role", role, shouldThrow) {
               every { workspaceRepository.save(any()) } returns it.workspace
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
-              workspaceServiceImpl.addWorkspaceAccessControl(
+              workspaceServiceImpl.createWorkspaceAccessControl(
                   it.organization.id,
                   it.workspace.id!!,
                   WorkspaceAccessControl("3$CONNECTED_DEFAULT_USER", ROLE_USER))
@@ -568,7 +568,7 @@ class WorkspaceServiceImplTests {
             rbacTest("test RBAC remove workspace access control: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
-              workspaceServiceImpl.removeWorkspaceAccessControl(
+              workspaceServiceImpl.deleteWorkspaceAccessControl(
                   it.organization.id, it.workspace.id!!, "2$CONNECTED_DEFAULT_USER")
             }
           }
@@ -586,7 +586,7 @@ class WorkspaceServiceImplTests {
             rbacTest("test RBAC get workspace security users: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
-              workspaceServiceImpl.getWorkspaceSecurityUsers(it.organization.id, it.workspace.id!!)
+              workspaceServiceImpl.listWorkspaceSecurityUsers(it.organization.id, it.workspace.id!!)
             }
           }
 

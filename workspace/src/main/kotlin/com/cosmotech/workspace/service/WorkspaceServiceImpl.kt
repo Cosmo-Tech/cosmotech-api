@@ -70,7 +70,7 @@ internal class WorkspaceServiceImpl(
     private val workspaceRepository: WorkspaceRepository
 ) : CsmPhoenixService(), WorkspaceApiServiceInterface {
 
-  override fun findAllWorkspaces(organizationId: String, page: Int?, size: Int?): List<Workspace> {
+  override fun listWorkspaces(organizationId: String, page: Int?, size: Int?): List<Workspace> {
     val organization = organizationService.getVerifiedOrganization(organizationId)
     val isAdmin =
         csmRbac.isAdmin(
@@ -106,7 +106,7 @@ internal class WorkspaceServiceImpl(
     return result
   }
 
-  override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
+  override fun getWorkspace(organizationId: String, workspaceId: String): Workspace {
     return updateSecurityVisibility(getVerifiedWorkspace(organizationId, workspaceId))
   }
 
@@ -126,7 +126,7 @@ internal class WorkspaceServiceImpl(
     return workspaceRepository.save(createdWorkspace)
   }
 
-  override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
+  override fun deleteWorkspaceFiles(organizationId: String, workspaceId: String) {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     deleteAllFilesystemWorkspaceFiles(organizationId, workspace)
   }
@@ -168,7 +168,7 @@ internal class WorkspaceServiceImpl(
 
     try {
       deleteAllFilesystemWorkspaceFiles(organizationId, workspace)
-      workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
+      workspace.linkedDatasetIdList?.forEach { deleteDatasetLink(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
       if (csmPlatformProperties.internalResultServices?.enabled == true) {
@@ -185,7 +185,7 @@ internal class WorkspaceServiceImpl(
     deleteFilesystemWorkspaceFile(organizationId, workspace, fileName)
   }
 
-  override fun downloadWorkspaceFile(
+  override fun getWorkspaceFile(
       organizationId: String,
       workspaceId: String,
       fileName: String
@@ -207,7 +207,7 @@ internal class WorkspaceServiceImpl(
     return PathResource(filePath)
   }
 
-  override fun uploadWorkspaceFile(
+  override fun createWorkspaceFile(
       organizationId: String,
       workspaceId: String,
       file: Resource,
@@ -260,7 +260,7 @@ internal class WorkspaceServiceImpl(
     return WorkspaceFile(fileName = fileRelativeDestinationBuilder.toString())
   }
 
-  override fun findAllWorkspaceFiles(
+  override fun listWorkspaceFiles(
       organizationId: String,
       workspaceId: String
   ): List<WorkspaceFile> {
@@ -278,7 +278,7 @@ internal class WorkspaceServiceImpl(
     val workspaceList = mutableListOf<Workspace>()
 
     do {
-      val workspaces = findAllWorkspaces(organizationId, pageable.pageNumber, pageable.pageSize)
+      val workspaces = listWorkspaces(organizationId, pageable.pageNumber, pageable.pageSize)
       workspaceList.addAll(workspaces)
       pageable = pageable.next()
     } while (workspaces.isNotEmpty())
@@ -306,7 +306,7 @@ internal class WorkspaceServiceImpl(
         .deleteRecursively()
   }
 
-  override fun linkDataset(
+  override fun createDatasetLink(
       organizationId: String,
       workspaceId: String,
       datasetId: String
@@ -327,14 +327,14 @@ internal class WorkspaceServiceImpl(
         addDatasetToWorkspace.datasetId)
   }
 
-  override fun unlinkDataset(
+  override fun deleteDatasetLink(
       organizationId: String,
       workspaceId: String,
       datasetId: String
-  ): Workspace {
+  ) {
     this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     sendRemoveWorkspaceFromDatasetEvent(organizationId, datasetId, workspaceId)
-    return removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId)
+    removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId)
   }
 
   @EventListener(RemoveDatasetFromWorkspace::class)
@@ -402,11 +402,7 @@ internal class WorkspaceServiceImpl(
     }
   }
 
-  override fun getWorkspacePermissions(
-      organizationId: String,
-      workspaceId: String,
-      role: String
-  ): List<String> {
+  override fun listWorkspaceRolePermissions(organizationId: String, workspaceId: String, role: String): List<String> {
     getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
     return getPermissions(role, getCommonRolesDefinition())
   }
@@ -420,7 +416,7 @@ internal class WorkspaceServiceImpl(
         ?: throw CsmResourceNotFoundException("RBAC not defined for ${workspace.id}")
   }
 
-  override fun setWorkspaceDefaultSecurity(
+  override fun updateWorkspaceDefaultSecurity(
       organizationId: String,
       workspaceId: String,
       workspaceRole: WorkspaceRole
@@ -455,7 +451,7 @@ internal class WorkspaceServiceImpl(
     return workspace
   }
 
-  override fun addWorkspaceAccessControl(
+  override fun createWorkspaceAccessControl(
       organizationId: String,
       workspaceId: String,
       workspaceAccessControl: WorkspaceAccessControl
@@ -495,7 +491,7 @@ internal class WorkspaceServiceImpl(
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
-  override fun removeWorkspaceAccessControl(
+  override fun deleteWorkspaceAccessControl(
       organizationId: String,
       workspaceId: String,
       identityId: String
@@ -506,10 +502,7 @@ internal class WorkspaceServiceImpl(
     workspaceRepository.save(workspace)
   }
 
-  override fun getWorkspaceSecurityUsers(
-      organizationId: String,
-      workspaceId: String
-  ): List<String> {
+  override fun listWorkspaceSecurityUsers(organizationId: String, workspaceId: String): List<String> {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(workspace.getRbac())
   }
@@ -519,7 +512,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       datasetId: String
   ): Workspace {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
+    val workspace = getWorkspace(organizationId, workspaceId)
 
     if (workspace.linkedDatasetIdList != null) {
       if (workspace.linkedDatasetIdList!!.contains(datasetId)) {
