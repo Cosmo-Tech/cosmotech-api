@@ -55,7 +55,7 @@ paths:
         "400":
           description: Bad request
     get:
-      operationId: findAllWorkspaces
+      operationId: listWorkspaces
       parameters:
         - name: page
           in: query
@@ -99,7 +99,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: findWorkspaceById
+      operationId: getWorkspace
       tags:
         - workspace
       summary: Get the details of an workspace
@@ -179,7 +179,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: uploadWorkspaceFile
+      operationId: createWorkspaceFile
       tags:
         - workspace
       summary: Upload a file for the Workspace
@@ -246,7 +246,7 @@ paths:
         "400":
           description: Bad request
     get:
-      operationId: findAllWorkspaceFiles
+      operationId: listWorkspaceFiles
       tags:
         - workspace
       summary: List all Workspace files
@@ -265,7 +265,7 @@ paths:
         "404":
           description: the Workspace specified is unknown or you don't have access to it
     delete:
-      operationId: deleteAllWorkspaceFiles
+      operationId: deleteWorkspaceFiles
       tags:
         - workspace
       summary: Delete all Workspace files
@@ -296,7 +296,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: downloadWorkspaceFile
+      operationId: getWorkspaceFile
       tags:
         - workspace
       summary: Download the Workspace File specified
@@ -364,7 +364,7 @@ paths:
           required: true
           schema:
             type: string
-      operationId: linkDataset
+      operationId: createDatasetLink
       tags:
         - workspace
       responses:
@@ -381,22 +381,7 @@ paths:
           description: Bad request
         "404":
           description: the workspace specified is unknown or you don't have access to it
-
-  /organizations/{organization_id}/workspaces/{workspace_id}/unlink:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-    post:
+    delete:
       parameters:
         - name: datasetId
           in: query
@@ -404,19 +389,12 @@ paths:
           required: true
           schema:
             type: string
-      operationId: unlinkDataset
+      operationId: deleteDatasetLink
       tags:
         - workspace
       responses:
         "200":
-          description: the workspace details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workspace'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryWorkspace'
+          description: the request succeeded
         "400":
           description: Bad request
         "404":
@@ -443,7 +421,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getWorkspacePermissions
+      operationId: listWorkspaceRolePermissions
       tags:
         - workspace
       summary: Get the Workspace permission by given role
@@ -507,11 +485,11 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: setWorkspaceDefaultSecurity
+    patch:
+      operationId: updateWorkspaceDefaultSecurity
       tags:
         - workspace
-      summary: Set the Workspace default security
+      summary: Update the Workspace default security
       requestBody:
         description: This change the workspace default security.
           The default security is the role assigned to any person not on the Access Control List.
@@ -559,7 +537,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: addWorkspaceAccessControl
+      operationId: createWorkspaceAccessControl
       tags:
         - workspace
       summary: Add a control access to the Workspace
@@ -658,7 +636,7 @@ paths:
         "404":
           description: The Workspace specified is unknown or you don't have access to it
     delete:
-      operationId: removeWorkspaceAccessControl
+      operationId: deleteWorkspaceAccessControl
       tags:
         - workspace
       summary: Remove the specified access from the given Organization Workspace
@@ -683,7 +661,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getWorkspaceSecurityUsers
+      operationId: listWorkspaceSecurityUsers
       tags:
         - workspace
       summary: Get the Workspace security users list
@@ -1101,4 +1079,3 @@ components:
         - fileName: myData.csv
         - fileName: myData2.csv
         - fileName: myData3.csv
-

@@ -104,7 +104,7 @@ class RunContainerFactory(
       runId: String
   ): StartInfo {
     val organization = organizationService.getOrganization(organizationId)
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    val workspace = workspaceService.getWorkspace(organizationId, workspaceId)
     if (workspace.solution.solutionId == null)
         throw CsmClientException(
             "Can't start a run using workspace ${workspace.id!!}: no solution defined")

@@ -98,26 +98,26 @@ All URIs are relative to *http://localhost*
 *SolutionApi* | [**updateSolution**](Apis/SolutionApi.md#updatesolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution |
 *SolutionApi* | [**updateSolutionAccessControl**](Apis/SolutionApi.md#updatesolutionaccesscontrol) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Update the specified access to User for a Solution |
 *SolutionApi* | [**updateSolutionRunTemplate**](Apis/SolutionApi.md#updatesolutionruntemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update the specified Solution Run Template |
-| *WorkspaceApi* | [**addWorkspaceAccessControl**](Apis/WorkspaceApi.md#addworkspaceaccesscontrol) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | Add a control access to the Workspace |
+| *WorkspaceApi* | [**createDatasetLink**](Apis/WorkspaceApi.md#createdatasetlink) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/link |  |
 *WorkspaceApi* | [**createWorkspace**](Apis/WorkspaceApi.md#createworkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace |
-*WorkspaceApi* | [**deleteAllWorkspaceFiles**](Apis/WorkspaceApi.md#deleteallworkspacefiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files |
+*WorkspaceApi* | [**createWorkspaceAccessControl**](Apis/WorkspaceApi.md#createworkspaceaccesscontrol) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | Add a control access to the Workspace |
+*WorkspaceApi* | [**createWorkspaceFile**](Apis/WorkspaceApi.md#createworkspacefile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace |
+*WorkspaceApi* | [**deleteDatasetLink**](Apis/WorkspaceApi.md#deletedatasetlink) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/link |  |
 *WorkspaceApi* | [**deleteWorkspace**](Apis/WorkspaceApi.md#deleteworkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace |
+*WorkspaceApi* | [**deleteWorkspaceAccessControl**](Apis/WorkspaceApi.md#deleteworkspaceaccesscontrol) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace |
 *WorkspaceApi* | [**deleteWorkspaceFile**](Apis/WorkspaceApi.md#deleteworkspacefile) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files/delete | Delete a workspace file |
-*WorkspaceApi* | [**downloadWorkspaceFile**](Apis/WorkspaceApi.md#downloadworkspacefile) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files/download | Download the Workspace File specified |
-*WorkspaceApi* | [**findAllWorkspaceFiles**](Apis/WorkspaceApi.md#findallworkspacefiles) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files | List all Workspace files |
-*WorkspaceApi* | [**findAllWorkspaces**](Apis/WorkspaceApi.md#findallworkspaces) | **GET** /organizations/{organization_id}/workspaces | List all Workspaces |
-*WorkspaceApi* | [**findWorkspaceById**](Apis/WorkspaceApi.md#findworkspacebyid) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace |
+*WorkspaceApi* | [**deleteWorkspaceFiles**](Apis/WorkspaceApi.md#deleteworkspacefiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files |
+*WorkspaceApi* | [**getWorkspace**](Apis/WorkspaceApi.md#getworkspace) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace |
 *WorkspaceApi* | [**getWorkspaceAccessControl**](Apis/WorkspaceApi.md#getworkspaceaccesscontrol) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Get a control access for the Workspace |
-*WorkspaceApi* | [**getWorkspacePermissions**](Apis/WorkspaceApi.md#getworkspacepermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role} | Get the Workspace permission by given role |
+*WorkspaceApi* | [**getWorkspaceFile**](Apis/WorkspaceApi.md#getworkspacefile) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files/download | Download the Workspace File specified |
 *WorkspaceApi* | [**getWorkspaceSecurity**](Apis/WorkspaceApi.md#getworkspacesecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security | Get the Workspace security information |
-*WorkspaceApi* | [**getWorkspaceSecurityUsers**](Apis/WorkspaceApi.md#getworkspacesecurityusers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/users | Get the Workspace security users list |
-*WorkspaceApi* | [**linkDataset**](Apis/WorkspaceApi.md#linkdataset) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/link |  |
-*WorkspaceApi* | [**removeWorkspaceAccessControl**](Apis/WorkspaceApi.md#removeworkspaceaccesscontrol) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace |
-*WorkspaceApi* | [**setWorkspaceDefaultSecurity**](Apis/WorkspaceApi.md#setworkspacedefaultsecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | Set the Workspace default security |
-*WorkspaceApi* | [**unlinkDataset**](Apis/WorkspaceApi.md#unlinkdataset) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/unlink |  |
+*WorkspaceApi* | [**listWorkspaceFiles**](Apis/WorkspaceApi.md#listworkspacefiles) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files | List all Workspace files |
+*WorkspaceApi* | [**listWorkspaceRolePermissions**](Apis/WorkspaceApi.md#listworkspacerolepermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role} | Get the Workspace permission by given role |
+*WorkspaceApi* | [**listWorkspaceSecurityUsers**](Apis/WorkspaceApi.md#listworkspacesecurityusers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/users | Get the Workspace security users list |
+*WorkspaceApi* | [**listWorkspaces**](Apis/WorkspaceApi.md#listworkspaces) | **GET** /organizations/{organization_id}/workspaces | List all Workspaces |
 *WorkspaceApi* | [**updateWorkspace**](Apis/WorkspaceApi.md#updateworkspace) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id} | Update a workspace |
 *WorkspaceApi* | [**updateWorkspaceAccessControl**](Apis/WorkspaceApi.md#updateworkspaceaccesscontrol) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Update the specified access to User for a Workspace |
-*WorkspaceApi* | [**uploadWorkspaceFile**](Apis/WorkspaceApi.md#uploadworkspacefile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace |
+*WorkspaceApi* | [**updateWorkspaceDefaultSecurity**](Apis/WorkspaceApi.md#updateworkspacedefaultsecurity) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | Update the Workspace default security |
 
 
 <a name="documentation-for-models"></a>
