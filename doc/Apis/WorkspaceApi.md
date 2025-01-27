@@ -4,33 +4,33 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**addWorkspaceAccessControl**](WorkspaceApi.md#addWorkspaceAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | Add a control access to the Workspace |
+| [**createDatasetLink**](WorkspaceApi.md#createDatasetLink) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/link |  |
 | [**createWorkspace**](WorkspaceApi.md#createWorkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace |
-| [**deleteAllWorkspaceFiles**](WorkspaceApi.md#deleteAllWorkspaceFiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files |
+| [**createWorkspaceAccessControl**](WorkspaceApi.md#createWorkspaceAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | Add a control access to the Workspace |
+| [**createWorkspaceFile**](WorkspaceApi.md#createWorkspaceFile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace |
+| [**deleteDatasetLink**](WorkspaceApi.md#deleteDatasetLink) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/link |  |
 | [**deleteWorkspace**](WorkspaceApi.md#deleteWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace |
+| [**deleteWorkspaceAccessControl**](WorkspaceApi.md#deleteWorkspaceAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace |
 | [**deleteWorkspaceFile**](WorkspaceApi.md#deleteWorkspaceFile) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files/delete | Delete a workspace file |
-| [**downloadWorkspaceFile**](WorkspaceApi.md#downloadWorkspaceFile) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files/download | Download the Workspace File specified |
-| [**findAllWorkspaceFiles**](WorkspaceApi.md#findAllWorkspaceFiles) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files | List all Workspace files |
-| [**findAllWorkspaces**](WorkspaceApi.md#findAllWorkspaces) | **GET** /organizations/{organization_id}/workspaces | List all Workspaces |
-| [**findWorkspaceById**](WorkspaceApi.md#findWorkspaceById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace |
+| [**deleteWorkspaceFiles**](WorkspaceApi.md#deleteWorkspaceFiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files |
+| [**getWorkspace**](WorkspaceApi.md#getWorkspace) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace |
 | [**getWorkspaceAccessControl**](WorkspaceApi.md#getWorkspaceAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Get a control access for the Workspace |
-| [**getWorkspacePermissions**](WorkspaceApi.md#getWorkspacePermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role} | Get the Workspace permission by given role |
+| [**getWorkspaceFile**](WorkspaceApi.md#getWorkspaceFile) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files/download | Download the Workspace File specified |
 | [**getWorkspaceSecurity**](WorkspaceApi.md#getWorkspaceSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security | Get the Workspace security information |
-| [**getWorkspaceSecurityUsers**](WorkspaceApi.md#getWorkspaceSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/users | Get the Workspace security users list |
-| [**linkDataset**](WorkspaceApi.md#linkDataset) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/link |  |
-| [**removeWorkspaceAccessControl**](WorkspaceApi.md#removeWorkspaceAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace |
-| [**setWorkspaceDefaultSecurity**](WorkspaceApi.md#setWorkspaceDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | Set the Workspace default security |
-| [**unlinkDataset**](WorkspaceApi.md#unlinkDataset) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/unlink |  |
+| [**listWorkspaceFiles**](WorkspaceApi.md#listWorkspaceFiles) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files | List all Workspace files |
+| [**listWorkspaceRolePermissions**](WorkspaceApi.md#listWorkspaceRolePermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role} | Get the Workspace permission by given role |
+| [**listWorkspaceSecurityUsers**](WorkspaceApi.md#listWorkspaceSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/users | Get the Workspace security users list |
+| [**listWorkspaces**](WorkspaceApi.md#listWorkspaces) | **GET** /organizations/{organization_id}/workspaces | List all Workspaces |
 | [**updateWorkspace**](WorkspaceApi.md#updateWorkspace) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id} | Update a workspace |
 | [**updateWorkspaceAccessControl**](WorkspaceApi.md#updateWorkspaceAccessControl) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Update the specified access to User for a Workspace |
-| [**uploadWorkspaceFile**](WorkspaceApi.md#uploadWorkspaceFile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace |
+| [**updateWorkspaceDefaultSecurity**](WorkspaceApi.md#updateWorkspaceDefaultSecurity) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | Update the Workspace default security |
 
 
-<a name="addWorkspaceAccessControl"></a>
-# **addWorkspaceAccessControl**
-> WorkspaceAccessControl addWorkspaceAccessControl(organization\_id, workspace\_id, WorkspaceAccessControl)
+<a name="createDatasetLink"></a>
+# **createDatasetLink**
+> Workspace createDatasetLink(organization\_id, workspace\_id, datasetId)
 
-Add a control access to the Workspace
+
 
 ### Parameters
 
@@ -38,11 +38,11 @@ Add a control access to the Workspace
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **WorkspaceAccessControl** | [**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)| the new Workspace security access to add. | |
+| **datasetId** | **String**| dataset id to be linked to | [default to null] |
 
 ### Return type
 
-[**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)
+[**Workspace**](../Models/Workspace.md)
 
 ### Authorization
 
@@ -50,7 +50,7 @@ Add a control access to the Workspace
 
 ### HTTP request headers
 
-- **Content-Type**: application/json, application/yaml
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 <a name="createWorkspace"></a>
@@ -79,11 +79,11 @@ Create a new workspace
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
-<a name="deleteAllWorkspaceFiles"></a>
-# **deleteAllWorkspaceFiles**
-> deleteAllWorkspaceFiles(organization\_id, workspace\_id)
+<a name="createWorkspaceAccessControl"></a>
+# **createWorkspaceAccessControl**
+> WorkspaceAccessControl createWorkspaceAccessControl(organization\_id, workspace\_id, WorkspaceAccessControl)
 
-Delete all Workspace files
+Add a control access to the Workspace
 
 ### Parameters
 
@@ -91,6 +91,63 @@ Delete all Workspace files
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **WorkspaceAccessControl** | [**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)| the new Workspace security access to add. | |
+
+### Return type
+
+[**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
+<a name="createWorkspaceFile"></a>
+# **createWorkspaceFile**
+> WorkspaceFile createWorkspaceFile(organization\_id, workspace\_id, file, overwrite, destination)
+
+Upload a file for the Workspace
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **file** | **File**|  | [default to null] |
+| **overwrite** | **Boolean**|  | [optional] [default to false] |
+| **destination** | **String**| Destination path. Must end with a &#39;/&#39; if specifying a folder. Note that paths may or may not start with a &#39;/&#39;, but they are always treated as relative to the Workspace root location.  | [optional] [default to null] |
+
+### Return type
+
+[**WorkspaceFile**](../Models/WorkspaceFile.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: multipart/form-data
+- **Accept**: application/json
+
+<a name="deleteDatasetLink"></a>
+# **deleteDatasetLink**
+> deleteDatasetLink(organization\_id, workspace\_id, datasetId)
+
+
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **datasetId** | **String**| dataset id to be linked to | [default to null] |
 
 ### Return type
 
@@ -117,6 +174,33 @@ Delete a workspace
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="deleteWorkspaceAccessControl"></a>
+# **deleteWorkspaceAccessControl**
+> deleteWorkspaceAccessControl(organization\_id, workspace\_id, identity\_id)
+
+Remove the specified access from the given Organization Workspace
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **identity\_id** | **String**| the User identifier | [default to null] |
 
 ### Return type
 
@@ -158,38 +242,11 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-<a name="downloadWorkspaceFile"></a>
-# **downloadWorkspaceFile**
-> File downloadWorkspaceFile(organization\_id, workspace\_id, file\_name)
+<a name="deleteWorkspaceFiles"></a>
+# **deleteWorkspaceFiles**
+> deleteWorkspaceFiles(organization\_id, workspace\_id)
 
-Download the Workspace File specified
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **file\_name** | **String**| the file name | [default to null] |
-
-### Return type
-
-**File**
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/octet-stream
-
-<a name="findAllWorkspaceFiles"></a>
-# **findAllWorkspaceFiles**
-> List findAllWorkspaceFiles(organization\_id, workspace\_id)
-
-List all Workspace files
+Delete all Workspace files
 
 ### Parameters
 
@@ -200,7 +257,7 @@ List all Workspace files
 
 ### Return type
 
-[**List**](../Models/WorkspaceFile.md)
+null (empty response body)
 
 ### Authorization
 
@@ -209,38 +266,11 @@ List all Workspace files
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
-<a name="findAllWorkspaces"></a>
-# **findAllWorkspaces**
-> List findAllWorkspaces(organization\_id, page, size)
-
-List all Workspaces
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **page** | **Integer**| page number to query (first page is at index 0) | [optional] [default to null] |
-| **size** | **Integer**| amount of result by page | [optional] [default to null] |
-
-### Return type
-
-[**List**](../Models/Workspace.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-<a name="findWorkspaceById"></a>
-# **findWorkspaceById**
-> Workspace findWorkspaceById(organization\_id, workspace\_id)
+<a name="getWorkspace"></a>
+# **getWorkspace**
+> Workspace getWorkspace(organization\_id, workspace\_id)
 
 Get the details of an workspace
 
@@ -291,11 +321,11 @@ Get a control access for the Workspace
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getWorkspacePermissions"></a>
-# **getWorkspacePermissions**
-> List getWorkspacePermissions(organization\_id, workspace\_id, role)
+<a name="getWorkspaceFile"></a>
+# **getWorkspaceFile**
+> File getWorkspaceFile(organization\_id, workspace\_id, file\_name)
 
-Get the Workspace permission by given role
+Download the Workspace File specified
 
 ### Parameters
 
@@ -303,11 +333,11 @@ Get the Workspace permission by given role
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **role** | **String**| the Role | [default to null] |
+| **file\_name** | **String**| the file name | [default to null] |
 
 ### Return type
 
-**List**
+**File**
 
 ### Authorization
 
@@ -316,7 +346,7 @@ Get the Workspace permission by given role
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/octet-stream
 
 <a name="getWorkspaceSecurity"></a>
 # **getWorkspaceSecurity**
@@ -344,9 +374,62 @@ Get the Workspace security information
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getWorkspaceSecurityUsers"></a>
-# **getWorkspaceSecurityUsers**
-> List getWorkspaceSecurityUsers(organization\_id, workspace\_id)
+<a name="listWorkspaceFiles"></a>
+# **listWorkspaceFiles**
+> List listWorkspaceFiles(organization\_id, workspace\_id)
+
+List all Workspace files
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+
+### Return type
+
+[**List**](../Models/WorkspaceFile.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="listWorkspaceRolePermissions"></a>
+# **listWorkspaceRolePermissions**
+> List listWorkspaceRolePermissions(organization\_id, workspace\_id, role)
+
+Get the Workspace permission by given role
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **role** | **String**| the Role | [default to null] |
+
+### Return type
+
+**List**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="listWorkspaceSecurityUsers"></a>
+# **listWorkspaceSecurityUsers**
+> List listWorkspaceSecurityUsers(organization\_id, workspace\_id)
 
 Get the Workspace security users list
 
@@ -370,104 +453,23 @@ Get the Workspace security users list
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="linkDataset"></a>
-# **linkDataset**
-> Workspace linkDataset(organization\_id, workspace\_id, datasetId)
+<a name="listWorkspaces"></a>
+# **listWorkspaces**
+> List listWorkspaces(organization\_id, page, size)
 
-
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **datasetId** | **String**| dataset id to be linked to | [default to null] |
-
-### Return type
-
-[**Workspace**](../Models/Workspace.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-<a name="removeWorkspaceAccessControl"></a>
-# **removeWorkspaceAccessControl**
-> removeWorkspaceAccessControl(organization\_id, workspace\_id, identity\_id)
-
-Remove the specified access from the given Organization Workspace
+List all Workspaces
 
 ### Parameters
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **page** | **Integer**| page number to query (first page is at index 0) | [optional] [default to null] |
+| **size** | **Integer**| amount of result by page | [optional] [default to null] |
 
 ### Return type
 
-null (empty response body)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
-<a name="setWorkspaceDefaultSecurity"></a>
-# **setWorkspaceDefaultSecurity**
-> WorkspaceSecurity setWorkspaceDefaultSecurity(organization\_id, workspace\_id, WorkspaceRole)
-
-Set the Workspace default security
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **WorkspaceRole** | [**WorkspaceRole**](../Models/WorkspaceRole.md)| This change the workspace default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the workspace. | |
-
-### Return type
-
-[**WorkspaceSecurity**](../Models/WorkspaceSecurity.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
-
-<a name="unlinkDataset"></a>
-# **unlinkDataset**
-> Workspace unlinkDataset(organization\_id, workspace\_id, datasetId)
-
-
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **datasetId** | **String**| dataset id to be linked to | [default to null] |
-
-### Return type
-
-[**Workspace**](../Models/Workspace.md)
+[**List**](../Models/Workspace.md)
 
 ### Authorization
 
@@ -533,11 +535,11 @@ Update the specified access to User for a Workspace
 - **Content-Type**: application/json
 - **Accept**: application/json
 
-<a name="uploadWorkspaceFile"></a>
-# **uploadWorkspaceFile**
-> WorkspaceFile uploadWorkspaceFile(organization\_id, workspace\_id, file, overwrite, destination)
+<a name="updateWorkspaceDefaultSecurity"></a>
+# **updateWorkspaceDefaultSecurity**
+> WorkspaceSecurity updateWorkspaceDefaultSecurity(organization\_id, workspace\_id, WorkspaceRole)
 
-Upload a file for the Workspace
+Update the Workspace default security
 
 ### Parameters
 
@@ -545,13 +547,11 @@ Upload a file for the Workspace
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **file** | **File**|  | [default to null] |
-| **overwrite** | **Boolean**|  | [optional] [default to false] |
-| **destination** | **String**| Destination path. Must end with a &#39;/&#39; if specifying a folder. Note that paths may or may not start with a &#39;/&#39;, but they are always treated as relative to the Workspace root location.  | [optional] [default to null] |
+| **WorkspaceRole** | [**WorkspaceRole**](../Models/WorkspaceRole.md)| This change the workspace default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the workspace. | |
 
 ### Return type
 
-[**WorkspaceFile**](../Models/WorkspaceFile.md)
+[**WorkspaceSecurity**](../Models/WorkspaceSecurity.md)
 
 ### Authorization
 
@@ -559,6 +559,6 @@ Upload a file for the Workspace
 
 ### HTTP request headers
 
-- **Content-Type**: multipart/form-data
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 

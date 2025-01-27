@@ -102,7 +102,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   }
 
   @TestFactory
-  fun `test RBAC findAllWorkspaces`() =
+  fun `test RBAC listWorkspaces`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -111,7 +111,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC findAllWorkspaces : $role") {
+            DynamicTest.dynamicTest("Test RBAC listWorkspaces : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
@@ -131,14 +131,14 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.findAllWorkspaces(organizationSaved.id, null, null)
+                      workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.findAllWorkspaces(organizationSaved.id, null, null)
+                  workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
                 }
               }
             }
@@ -236,7 +236,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.findWorkspaceById(
+                      workspaceApiService.getWorkspace(
                           organizationSaved.id, workspaceSaved.id!!)
                     }
                 if (role == ROLE_NONE) {
@@ -250,7 +250,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 }
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.findWorkspaceById(organizationSaved.id, workspaceSaved.id!!)
+                  workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id!!)
                 }
               }
             }
@@ -287,7 +287,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.findWorkspaceById(
+                      workspaceApiService.getWorkspace(
                           organizationSaved.id, workspaceSaved.id!!)
                     }
                 assertEquals(
@@ -295,7 +295,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.findWorkspaceById(organizationSaved.id, workspaceSaved.id!!)
+                  workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id!!)
                 }
               }
             }
@@ -536,7 +536,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.findAllWorkspaceFiles(
+                      workspaceApiService.listWorkspaceFiles(
                           organizationSaved.id, workspaceSaved.id!!)
                     }
                 assertEquals(
@@ -544,7 +544,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.findAllWorkspaceFiles(
+                  workspaceApiService.listWorkspaceFiles(
                       organizationSaved.id, workspaceSaved.id!!)
                 }
               }
@@ -582,7 +582,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.findAllWorkspaceFiles(
+                      workspaceApiService.listWorkspaceFiles(
                           organizationSaved.id, workspaceSaved.id!!)
                     }
                 assertEquals(
@@ -590,7 +590,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.findAllWorkspaceFiles(
+                  workspaceApiService.listWorkspaceFiles(
                       organizationSaved.id, workspaceSaved.id!!)
                 }
               }
@@ -630,7 +630,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.uploadWorkspaceFile(
+                      workspaceApiService.createWorkspaceFile(
                           organizationSaved.id, workspaceSaved.id!!, resource, true, "")
                     }
                 assertEquals(
@@ -638,7 +638,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.uploadWorkspaceFile(
+                  workspaceApiService.createWorkspaceFile(
                       organizationSaved.id, workspaceSaved.id!!, resource, true, "name")
                 }
               }
@@ -678,7 +678,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.uploadWorkspaceFile(
+                      workspaceApiService.createWorkspaceFile(
                           organizationSaved.id, workspaceSaved.id!!, resource, true, "")
                     }
                 assertEquals(
@@ -686,7 +686,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.uploadWorkspaceFile(
+                  workspaceApiService.createWorkspaceFile(
                       organizationSaved.id, workspaceSaved.id!!, resource, true, "name")
                 }
               }
@@ -724,7 +724,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.deleteAllWorkspaceFiles(
+                      workspaceApiService.deleteWorkspaceFiles(
                           organizationSaved.id, workspaceSaved.id!!)
                     }
                 assertEquals(
@@ -732,7 +732,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.deleteAllWorkspaceFiles(
+                  workspaceApiService.deleteWorkspaceFiles(
                       organizationSaved.id, workspaceSaved.id!!)
                 }
               }
@@ -770,7 +770,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.deleteAllWorkspaceFiles(
+                      workspaceApiService.deleteWorkspaceFiles(
                           organizationSaved.id, workspaceSaved.id!!)
                     }
                 assertEquals(
@@ -778,7 +778,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.deleteAllWorkspaceFiles(
+                  workspaceApiService.deleteWorkspaceFiles(
                       organizationSaved.id, workspaceSaved.id!!)
                 }
               }
@@ -816,7 +816,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.downloadWorkspaceFile(
+                      workspaceApiService.getWorkspaceFile(
                           organizationSaved.id, workspaceSaved.id!!, "")
                     }
                 assertEquals(
@@ -832,7 +832,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 Files.createDirectories(filePath.getParent())
                 Files.createFile(filePath)
                 assertDoesNotThrow {
-                  workspaceApiService.downloadWorkspaceFile(
+                  workspaceApiService.getWorkspaceFile(
                       organizationSaved.id, workspaceSaved.id!!, "name")
                 }
               }
@@ -870,7 +870,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.downloadWorkspaceFile(
+                      workspaceApiService.getWorkspaceFile(
                           organizationSaved.id, workspaceSaved.id!!, "")
                     }
                 assertEquals(
@@ -886,7 +886,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 Files.createDirectories(filePath.getParent())
                 Files.createFile(filePath)
                 assertDoesNotThrow {
-                  workspaceApiService.downloadWorkspaceFile(
+                  workspaceApiService.getWorkspaceFile(
                       organizationSaved.id, workspaceSaved.id!!, "name")
                 }
               }
@@ -986,7 +986,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Organization RBAC getWorkspacePermissions`() =
+  fun `test Organization RBAC listWorkspaceRolePermissions`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -995,7 +995,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Organization RBAC getWorkspacePermissions : $role") {
+            DynamicTest.dynamicTest("Test Organization RBAC listWorkspaceRolePermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
@@ -1016,7 +1016,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.getWorkspacePermissions(
+                      workspaceApiService.listWorkspaceRolePermissions(
                           organizationSaved.id, workspaceSaved.id!!, ROLE_USER)
                     }
                 assertEquals(
@@ -1024,7 +1024,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.getWorkspacePermissions(
+                  workspaceApiService.listWorkspaceRolePermissions(
                       organizationSaved.id, workspaceSaved.id!!, ROLE_USER)
                 }
               }
@@ -1032,7 +1032,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Workspace RBAC getWorkspacePermissions`() =
+  fun `test Workspace RBAC listWorkspaceRolePermissions`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
@@ -1041,7 +1041,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Workspace RBAC getWorkspacePermissions : $role") {
+            DynamicTest.dynamicTest("Test Workspace RBAC listWorkspaceRolePermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
@@ -1062,7 +1062,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.getWorkspacePermissions(
+                      workspaceApiService.listWorkspaceRolePermissions(
                           organizationSaved.id, workspaceSaved.id!!, ROLE_USER)
                     }
                 assertEquals(
@@ -1070,7 +1070,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.getWorkspacePermissions(
+                  workspaceApiService.listWorkspaceRolePermissions(
                       organizationSaved.id, workspaceSaved.id!!, ROLE_USER)
                 }
               }
@@ -1200,7 +1200,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.setWorkspaceDefaultSecurity(
+                      workspaceApiService.updateWorkspaceDefaultSecurity(
                           organizationSaved.id, workspaceSaved.id!!, WorkspaceRole(ROLE_USER))
                     }
                 assertEquals(
@@ -1208,7 +1208,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.setWorkspaceDefaultSecurity(
+                  workspaceApiService.updateWorkspaceDefaultSecurity(
                       organizationSaved.id, workspaceSaved.id!!, WorkspaceRole(ROLE_USER))
                 }
               }
@@ -1246,7 +1246,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.setWorkspaceDefaultSecurity(
+                      workspaceApiService.updateWorkspaceDefaultSecurity(
                           organizationSaved.id, workspaceSaved.id!!, WorkspaceRole(ROLE_USER))
                     }
                 assertEquals(
@@ -1254,7 +1254,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.setWorkspaceDefaultSecurity(
+                  workspaceApiService.updateWorkspaceDefaultSecurity(
                       organizationSaved.id, workspaceSaved.id!!, WorkspaceRole(ROLE_USER))
                 }
               }
@@ -1292,7 +1292,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.addWorkspaceAccessControl(
+                      workspaceApiService.createWorkspaceAccessControl(
                           organizationSaved.id,
                           workspaceSaved.id!!,
                           WorkspaceAccessControl("id", ROLE_USER))
@@ -1302,7 +1302,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.addWorkspaceAccessControl(
+                  workspaceApiService.createWorkspaceAccessControl(
                       organizationSaved.id,
                       workspaceSaved.id!!,
                       WorkspaceAccessControl("id", ROLE_USER))
@@ -1342,7 +1342,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.addWorkspaceAccessControl(
+                      workspaceApiService.createWorkspaceAccessControl(
                           organizationSaved.id,
                           workspaceSaved.id!!,
                           WorkspaceAccessControl("id", ROLE_USER))
@@ -1352,7 +1352,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.addWorkspaceAccessControl(
+                  workspaceApiService.createWorkspaceAccessControl(
                       organizationSaved.id,
                       workspaceSaved.id!!,
                       WorkspaceAccessControl("id", ROLE_USER))
@@ -1484,7 +1484,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.removeWorkspaceAccessControl(
+                      workspaceApiService.deleteWorkspaceAccessControl(
                           organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
                     }
                 assertEquals(
@@ -1492,7 +1492,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.removeWorkspaceAccessControl(
+                  workspaceApiService.deleteWorkspaceAccessControl(
                       organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
                 }
               }
@@ -1530,7 +1530,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.removeWorkspaceAccessControl(
+                      workspaceApiService.deleteWorkspaceAccessControl(
                           organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
                     }
                 assertEquals(
@@ -1538,7 +1538,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.removeWorkspaceAccessControl(
+                  workspaceApiService.deleteWorkspaceAccessControl(
                       organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
                 }
               }
@@ -1650,7 +1650,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Organization RBAC getWorkspaceSecurityUsers`() =
+  fun `test Organization RBAC listWorkspaceSecurityUsers`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -1659,7 +1659,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Organization RBAC getWorkspaceSecurityUsers : $role") {
+            DynamicTest.dynamicTest("Test Organization RBAC listWorkspaceSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
@@ -1680,7 +1680,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.getWorkspaceSecurityUsers(
+                      workspaceApiService.listWorkspaceSecurityUsers(
                           organizationSaved.id, workspaceSaved.id!!)
                     }
                 assertEquals(
@@ -1688,7 +1688,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.getWorkspaceSecurityUsers(
+                  workspaceApiService.listWorkspaceSecurityUsers(
                       organizationSaved.id, workspaceSaved.id!!)
                 }
               }
@@ -1696,7 +1696,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Workspace RBAC getWorkspaceSecurityUsers`() =
+  fun `test Workspace RBAC listWorkspaceSecurityUsers`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
@@ -1705,7 +1705,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Workspace RBAC getWorkspaceSecurityUsers : $role") {
+            DynamicTest.dynamicTest("Test Workspace RBAC listWorkspaceSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
@@ -1726,7 +1726,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.getWorkspaceSecurityUsers(
+                      workspaceApiService.listWorkspaceSecurityUsers(
                           organizationSaved.id, workspaceSaved.id!!)
                     }
                 assertEquals(
@@ -1734,7 +1734,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.getWorkspaceSecurityUsers(
+                  workspaceApiService.listWorkspaceSecurityUsers(
                       organizationSaved.id, workspaceSaved.id!!)
                 }
               }
