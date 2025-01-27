@@ -659,7 +659,7 @@ class WorkspaceServiceImplTests {
       security = SolutionSecurity(ROLE_ADMIN, mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN)))
     )
   }
-  
+
   private fun mockWorkspaceCreateRequest(
     solutionId: String,
     workspaceName: String,

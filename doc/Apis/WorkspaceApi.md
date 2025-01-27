@@ -118,8 +118,8 @@ Upload a file for the Workspace
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **file** | **File**| The file to upload | [default to null] |
-| **overwrite** | **Boolean**| Whether to overwrite an existing file | [optional] [default to false] |
+| **file** | **File**|  | [default to null] |
+| **overwrite** | **Boolean**|  | [optional] [default to false] |
 | **destination** | **String**| Destination path. Must end with a &#39;/&#39; if specifying a folder. Note that paths may or may not start with a &#39;/&#39;, but they are always treated as relative to the Workspace root location.  | [optional] [default to null] |
 
 ### Return type
