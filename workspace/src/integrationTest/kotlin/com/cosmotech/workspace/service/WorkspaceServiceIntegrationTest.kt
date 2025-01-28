@@ -129,7 +129,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val workspace2 = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace 2")
     workspaceApiService.createWorkspace(organizationSaved.id, workspace2)
     val workspaceRetrieved =
-        workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+        workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
     assertEquals(workspaceSaved, workspaceRetrieved)
 
     logger.info("should find all workspaces and assert there are 2")
@@ -141,8 +141,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val updatedWorkspace =
         workspaceApiService.updateWorkspace(
             organizationSaved.id,
-            workspaceSaved.id!!,
-            WorkspaceUpdateRequest( name = "Workspace 1 updated"))
+          workspaceSaved.id,
+            WorkspaceUpdateRequest(key = "key", name = "Workspace 1 updated"))
     assertEquals("Workspace 1 updated", updatedWorkspace.name)
     assertEquals(workspaceSaved.organizationId, updatedWorkspace.organizationId)
 
@@ -169,7 +169,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should not retrieve a workspace")
     assertThrows<CsmAccessForbiddenException> {
-      workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+      workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
     }
 
     logger.info("should not find all workspaces")
@@ -181,14 +181,14 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.updateWorkspace(
           organizationSaved.id,
-          workspaceSaved.id!!,
-          WorkspaceUpdateRequest(name = "Workspace 1 updated")
+        workspaceSaved.id,
+          WorkspaceUpdateRequest(key = "key", name = "Workspace 1 updated")
       )
     }
 
     logger.info("should not delete a workspace")
     assertThrows<CsmAccessForbiddenException> {
-      workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id!!)
+      workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id)
     }
   }
 
@@ -242,14 +242,14 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should get default security with role NONE")
     val workspaceSecurity =
-        workspaceApiService.getWorkspaceSecurity(organizationSaved.id, workspaceSaved.id!!)
+        workspaceApiService.getWorkspaceSecurity(organizationSaved.id, workspaceSaved.id)
     assertEquals(ROLE_NONE, workspaceSecurity.default)
 
     logger.info("should set default security with role VIEWER")
     val workspaceRole = WorkspaceRole(ROLE_VIEWER)
     val workspaceSecurityRegistered =
         workspaceApiService.updateWorkspaceDefaultSecurity(
-            organizationSaved.id, workspaceSaved.id!!, workspaceRole)
+            organizationSaved.id, workspaceSaved.id, workspaceRole)
     assertEquals(workspaceRole.role, workspaceSecurityRegistered.default)
   }
 
@@ -267,33 +267,33 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val workspaceAccessControl = WorkspaceAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     var workspaceAccessControlRegistered =
         workspaceApiService.createWorkspaceAccessControl(
-            organizationSaved.id, workspaceSaved.id!!, workspaceAccessControl)
+            organizationSaved.id, workspaceSaved.id, workspaceAccessControl)
     assertEquals(workspaceAccessControl, workspaceAccessControlRegistered)
 
     logger.info("should get the access control")
     workspaceAccessControlRegistered =
         workspaceApiService.getWorkspaceAccessControl(
-            organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+            organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
     assertEquals(workspaceAccessControl, workspaceAccessControlRegistered)
 
     logger.info("should update the access control")
     workspaceAccessControlRegistered =
         workspaceApiService.updateWorkspaceAccessControl(
-            organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL, WorkspaceRole(ROLE_EDITOR))
+            organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL, WorkspaceRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, workspaceAccessControlRegistered.role)
 
     logger.info("should get the list of users and assert there are 3")
     val userList =
-        workspaceApiService.listWorkspaceSecurityUsers(organizationSaved.id, workspaceSaved.id!!)
+        workspaceApiService.listWorkspaceSecurityUsers(organizationSaved.id, workspaceSaved.id)
     assertEquals(3, userList.size)
 
     logger.info("should remove the access control")
     workspaceApiService.deleteWorkspaceAccessControl(
-        organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+        organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
     assertThrows<CsmResourceNotFoundException> {
       workspaceAccessControlRegistered =
           workspaceApiService.getWorkspaceAccessControl(
-              organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+              organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
     }
   }
 
@@ -306,30 +306,30 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val workspaceAccessControl = WorkspaceAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.createWorkspaceAccessControl(
-          organizationSaved.id, workspaceSaved.id!!, workspaceAccessControl)
+          organizationSaved.id, workspaceSaved.id, workspaceAccessControl)
     }
 
     logger.info("should throw CsmAccessForbiddenException when getting the access control")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.getWorkspaceAccessControl(
-          organizationSaved.id, workspaceSaved.id!!, "userLambda")
+          organizationSaved.id, workspaceSaved.id, "userLambda")
     }
 
     logger.info("should throw CsmAccessForbiddenException when updating the access control")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.updateWorkspaceAccessControl(
-          organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL, WorkspaceRole(ROLE_VIEWER))
+          organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL, WorkspaceRole(ROLE_VIEWER))
     }
 
     logger.info("should throw CsmAccessForbiddenException when getting the list of users")
     assertThrows<CsmAccessForbiddenException> {
-      workspaceApiService.listWorkspaceSecurityUsers(organizationSaved.id, workspaceSaved.id!!)
+      workspaceApiService.listWorkspaceSecurityUsers(organizationSaved.id, workspaceSaved.id)
     }
 
     logger.info("should throw CsmAccessForbiddenException when removing the access control")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.deleteWorkspaceAccessControl(
-          organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+          organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
     }
   }
 
@@ -366,7 +366,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertThrows<IllegalArgumentException> {
       workspaceApiService.createWorkspaceAccessControl(
           organizationSaved.id,
-          workspaceSaved.id!!,
+        workspaceSaved.id,
           WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
     }
   }
@@ -376,15 +376,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNull(
         workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
 
-    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id!!, datasetSaved.id!!)
+    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
 
     val datasetIds = listOf(datasetSaved.id!!)
     checkLinkedDatasetId(datasetIds)
 
-    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id!!, datasetSaved.id!!)
+    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
 
     checkLinkedDatasetId(datasetIds)
   }
@@ -392,14 +392,14 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   private fun checkLinkedDatasetId(datasetIds: List<String>) {
     assertEquals(
         workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList!!
             .size,
         datasetIds.size)
 
     assertEquals(
         workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList!!,
         datasetIds)
   }
@@ -409,16 +409,16 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNull(
         workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
 
-    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id!!, datasetSaved.id!!)
+    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
 
-    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id!!, datasetSaved.id!!)
+    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
 
     assertEquals(
         workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList!!
             .size,
         0)
@@ -429,14 +429,14 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNull(
         workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
 
-    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id!!, datasetSaved.id!!)
+    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
 
     assertNull(
         workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
   }
 
@@ -455,13 +455,13 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     workspaceSaved =
-        workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+        workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
     assertEquals(
         WorkspaceSecurity(
             default = ROLE_NONE,
             mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
         workspaceSaved.security)
-    assertEquals(1, workspaceSaved.security!!.accessControlList.size)
+    assertEquals(1, workspaceSaved.security.accessControlList.size)
   }
 
   @Test
@@ -485,7 +485,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               default = ROLE_NONE,
               mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
           it.security)
-      assertEquals(1, it.security!!.accessControlList.size)
+      assertEquals(1, it.security.accessControlList.size)
     }
   }
 

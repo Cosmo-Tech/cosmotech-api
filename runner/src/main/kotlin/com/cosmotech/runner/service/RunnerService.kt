@@ -97,7 +97,7 @@ class RunnerService(
           "RunnerService's workspace needs to be set. Use inWorkspace to do so.")
     }
 
-    csmRbac.verify(workspace!!.security.toGenericSecurity(workspace!!.id!!), permission)
+    csmRbac.verify(workspace!!.security.toGenericSecurity(workspace!!.id), permission)
   }
 
   fun deleteInstance(runnerInstance: RunnerInstance) {
@@ -174,7 +174,7 @@ class RunnerService(
 
   fun getInstance(runnerId: String): RunnerInstance {
     val runner =
-        runnerRepository.findBy(organization!!.id, workspace!!.id!!, runnerId).orElseThrow {
+        runnerRepository.findBy(organization!!.id, workspace!!.id, runnerId).orElseThrow {
           CsmResourceNotFoundException(
               "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
         }
@@ -189,14 +189,14 @@ class RunnerService(
     if (!this.csmPlatformProperties.rbac.enabled || isPlatformAdmin) {
       runners =
           runnerRepository
-              .findByWorkspaceId(organization!!.id, workspace!!.id!!, pageRequest)
+              .findByWorkspaceId(organization!!.id, workspace!!.id, pageRequest)
               .toList()
     } else {
       val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
       runners =
           runnerRepository
               .findByWorkspaceIdAndSecurity(
-                  organization!!.id, workspace!!.id!!, currentUser, pageRequest)
+                  organization!!.id, workspace!!.id, currentUser, pageRequest)
               .toList()
     }
     runners.forEach { it.security = updateSecurityVisibility(it).security }
@@ -246,8 +246,8 @@ class RunnerService(
           throw IllegalArgumentException("runner does not have a runTemplateId define")
       if (!solutionApiService.isRunTemplateExist(
           organization!!.id,
-          workspace!!.id!!,
-          workspace!!.solution.solutionId!!,
+          workspace!!.id,
+          workspace!!.solution.solutionId,
           runner.runTemplateId!!))
           throw IllegalArgumentException("Run Template not found: ${runner.runTemplateId}")
 
@@ -318,7 +318,7 @@ class RunnerService(
         this.runner.parentId?.let {
           this.runner.rootId =
               runnerRepository
-                  .findBy(organization!!.id, workspace!!.id!!, it)
+                  .findBy(organization!!.id, workspace!!.id, it)
                   .orElseThrow { IllegalArgumentException("Parent runner not found: ${it}") }
                   .rootId ?: this.runner.parentId
         }

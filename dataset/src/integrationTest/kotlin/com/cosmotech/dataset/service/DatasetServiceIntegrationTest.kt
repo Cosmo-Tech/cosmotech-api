@@ -941,12 +941,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
             .findDatasetById(organizationSaved.id, datasetSaved.id!!)
             .linkedWorkspaceIdList)
 
-    datasetApiService.linkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
+    datasetApiService.linkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id)
 
-    val workspaceIds = listOf(workspaceSaved.id!!)
+    val workspaceIds = listOf(workspaceSaved.id)
     checkLinkedWorkspaceId(workspaceIds)
 
-    datasetApiService.linkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
+    datasetApiService.linkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id)
 
     checkLinkedWorkspaceId(workspaceIds)
   }
@@ -974,9 +974,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
             .findDatasetById(organizationSaved.id, datasetSaved.id!!)
             .linkedWorkspaceIdList)
 
-    datasetApiService.linkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
+    datasetApiService.linkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id)
 
-    datasetApiService.unlinkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
+    datasetApiService.unlinkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id)
 
     assertEquals(
         datasetApiService
@@ -996,10 +996,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNull(
         workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
 
-    datasetApiService.unlinkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id!!)
+    datasetApiService.unlinkWorkspace(organizationSaved.id, datasetSaved.id!!, workspaceSaved.id)
 
     assertNull(
         datasetApiService
@@ -1008,7 +1008,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     assertNull(
         workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+            .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
   }
 
