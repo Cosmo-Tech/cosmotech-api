@@ -55,7 +55,7 @@ All URIs are relative to *http://localhost*
 
 <a name="createWorkspace"></a>
 # **createWorkspace**
-> Workspace createWorkspace(organization\_id, Workspace)
+> Workspace createWorkspace(organization\_id, WorkspaceCreateRequest)
 
 Create a new workspace
 
@@ -64,7 +64,7 @@ Create a new workspace
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **Workspace** | [**Workspace**](../Models/Workspace.md)| the Workspace to create | |
+| **WorkspaceCreateRequest** | [**WorkspaceCreateRequest**](../Models/WorkspaceCreateRequest.md)| the Workspace to create | |
 
 ### Return type
 
@@ -118,8 +118,8 @@ Upload a file for the Workspace
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **file** | **File**|  | [default to null] |
-| **overwrite** | **Boolean**|  | [optional] [default to false] |
+| **file** | **File**| The file to upload | [default to null] |
+| **overwrite** | **Boolean**| Whether to overwrite an existing file | [optional] [default to false] |
 | **destination** | **String**| Destination path. Must end with a &#39;/&#39; if specifying a folder. Note that paths may or may not start with a &#39;/&#39;, but they are always treated as relative to the Workspace root location.  | [optional] [default to null] |
 
 ### Return type
@@ -482,7 +482,7 @@ List all Workspaces
 
 <a name="updateWorkspace"></a>
 # **updateWorkspace**
-> Workspace updateWorkspace(organization\_id, workspace\_id, Workspace)
+> Workspace updateWorkspace(organization\_id, workspace\_id, WorkspaceUpdateRequest)
 
 Update a workspace
 
@@ -492,7 +492,7 @@ Update a workspace
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **Workspace** | [**Workspace**](../Models/Workspace.md)| The new Workspace details. This endpoint can&#39;t be used to update security | |
+| **WorkspaceUpdateRequest** | [**WorkspaceUpdateRequest**](../Models/WorkspaceUpdateRequest.md)| The new Workspace details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
 
