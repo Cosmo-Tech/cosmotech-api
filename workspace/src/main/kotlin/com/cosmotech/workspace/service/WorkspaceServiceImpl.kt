@@ -117,7 +117,7 @@ internal class WorkspaceServiceImpl(
     organizationService.getVerifiedOrganization(
         organizationId, listOf(PERMISSION_READ, PERMISSION_CREATE_CHILDREN))
     // Validate Solution ID
-    workspaceCreateRequest.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+    workspaceCreateRequest.solution.solutionId.let { solutionService.findSolutionById(organizationId, it) }
 
 
     val workspaceId = idGenerator.generate("workspace")
@@ -149,8 +149,8 @@ internal class WorkspaceServiceImpl(
     val existingWorkspace = this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
     val updatedWorkspace = Workspace(
-      key = workspaceUpdateRequest.key ?: "",
-      name = workspaceUpdateRequest.name ?: "",
+      key = workspaceUpdateRequest.key,
+      name = workspaceUpdateRequest.name,
       solution = workspaceUpdateRequest.solution ?: existingWorkspace.solution,
       id = existingWorkspace.id,
       organizationId = organizationId,
@@ -174,9 +174,9 @@ internal class WorkspaceServiceImpl(
                 updatedWorkspace, excludedFields = arrayOf("ownerId", "security", "solution"))
             .isNotEmpty()
 
-    if (updatedWorkspace.solution.solutionId != null) {
+    if (updatedWorkspace.solution.solutionId != existingWorkspace.solution.solutionId) {
       // Validate solution ID
-      updatedWorkspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+      updatedWorkspace.solution.solutionId.let { solutionService.findSolutionById(organizationId, it) }
       existingWorkspace.solution = updatedWorkspace.solution
       hasChanged = true
     }
@@ -321,7 +321,7 @@ internal class WorkspaceServiceImpl(
     workspaces.forEach {
       workspaceRepository.delete(it)
       if (csmPlatformProperties.internalResultServices?.enabled == true) {
-        this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id!!))
+        this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id))
       }
     }
     File(
@@ -415,14 +415,14 @@ internal class WorkspaceServiceImpl(
         workspace.name,
         fileName)
     Files.deleteIfExists(
-        getWorkspaceFilePath(csmPlatformProperties, organizationId, workspace.id!!, fileName))
+        getWorkspaceFilePath(csmPlatformProperties, organizationId, workspace.id, fileName))
   }
 
   private fun deleteAllFilesystemWorkspaceFiles(organizationId: String, workspace: Workspace) {
     GlobalScope.launch(SecurityCoroutineContext()) {
       // TODO Consider using a smaller coroutine scope
       logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
-      File(getWorkspaceFilesDir(csmPlatformProperties, organizationId, workspace.id!!).toString())
+      File(getWorkspaceFilesDir(csmPlatformProperties, organizationId, workspace.id).toString())
           .deleteRecursively()
     }
   }
@@ -438,7 +438,6 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceSecurity {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
     return workspace.security
-        ?: throw CsmResourceNotFoundException("RBAC not defined for ${workspace.id}")
   }
 
   override fun updateWorkspaceDefaultSecurity(
@@ -450,7 +449,7 @@ internal class WorkspaceServiceImpl(
     val rbacSecurity = csmRbac.setDefault(workspace.security.toGenericSecurity(workspaceId), workspaceRole.role)
     workspace.security = rbacSecurity.toResourceSecurity()
     workspaceRepository.save(workspace)
-    return workspace.security as WorkspaceSecurity
+    return workspace.security
   }
 
   override fun getWorkspaceAccessControl(
@@ -579,24 +578,24 @@ internal class WorkspaceServiceImpl(
       data: DeleteHistoricalDataOrganization
   ) {
     this.eventPublisher.publishEvent(
-        DeleteHistoricalDataWorkspace(this, organizationId, it.id!!, data.deleteUnknown))
+        DeleteHistoricalDataWorkspace(this, organizationId, it.id, data.deleteUnknown))
   }
 
   fun updateSecurityVisibility(workspace: Workspace): Workspace {
-    if (csmRbac.check(workspace.security.toGenericSecurity(workspace.id!!), PERMISSION_READ_SECURITY).not()) {
+    if (csmRbac.check(workspace.security.toGenericSecurity(workspace.id), PERMISSION_READ_SECURITY).not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
-      val retrievedAC = workspace.security!!.accessControlList.firstOrNull { it.id == username }
+      val retrievedAC = workspace.security.accessControlList.firstOrNull { it.id == username }
       if (retrievedAC != null) {
         return workspace.copy(
             security =
                 WorkspaceSecurity(
-                    default = workspace.security!!.default,
+                    default = workspace.security.default,
                     accessControlList = mutableListOf(retrievedAC)))
       } else {
         return workspace.copy(
             security =
                 WorkspaceSecurity(
-                    default = workspace.security!!.default, accessControlList = mutableListOf()))
+                    default = workspace.security.default, accessControlList = mutableListOf()))
       }
     }
     return workspace

@@ -5,6 +5,7 @@ package com.cosmotech.run
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -22,6 +23,7 @@ import com.cosmotech.solution.domain.RunTemplateOrchestrator
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -169,7 +171,7 @@ class ContainerFactoryTests {
         "amqp://" +
             "${csmPlatformProperties.internalResultServices?.eventBus?.host}:" +
             "${csmPlatformProperties.internalResultServices?.eventBus?.port}/" +
-            workspace.id!!
+                workspace.id
 
     return RunContainer(
         name = CONTAINER_CSM_ORC,
@@ -193,7 +195,7 @@ class ContainerFactoryTests {
                 "IDP_TENANT_ID" to csmPlatformProperties.identityProvider.identity.tenantId,
                 "CSM_SIMULATION_ID" to CSM_SIMULATION_ID,
                 "CSM_ORGANIZATION_ID" to organization.id,
-                "CSM_WORKSPACE_ID" to workspace.id!!,
+                "CSM_WORKSPACE_ID" to workspace.id,
                 "CSM_RUNNER_ID" to runner.id!!,
                 "CSM_RUN_ID" to runId,
                 "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
@@ -255,6 +257,8 @@ class ContainerFactoryTests {
     return Workspace(
         id = "Workspaceid",
         key = "Test",
+      organizationId = "organizationId",
+      ownerId = "ownerId",
         name = "Test Workspace",
         description = "Test Workspace Description",
         version = "1.0.0",
@@ -266,6 +270,7 @@ class ContainerFactoryTests {
         sendScenarioRunToEventHub = sendToScenarioRun,
         dedicatedEventHubAuthenticationStrategy = sasAuthentication,
         dedicatedEventHubSasKeyName = sasName,
+      security = WorkspaceSecurity(default = ROLE_ADMIN, accessControlList = mutableListOf())
     )
   }
 
