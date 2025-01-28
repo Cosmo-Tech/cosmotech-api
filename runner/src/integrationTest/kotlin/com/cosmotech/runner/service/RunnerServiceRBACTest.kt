@@ -51,6 +51,7 @@ import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
@@ -151,7 +152,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -215,7 +216,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -276,7 +277,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -339,7 +340,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -401,7 +402,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -462,7 +463,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -530,7 +531,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -592,7 +593,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -656,7 +657,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -719,7 +720,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -783,7 +784,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -847,7 +848,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -907,7 +908,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -972,7 +973,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1037,7 +1038,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1103,7 +1104,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1168,7 +1169,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1232,7 +1233,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1301,7 +1302,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1382,7 +1383,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1464,7 +1465,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1546,7 +1547,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -1624,7 +1625,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1711,7 +1712,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1775,7 +1776,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1840,7 +1841,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -1905,7 +1906,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -1966,7 +1967,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2036,7 +2037,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2099,7 +2100,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2163,7 +2164,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2227,7 +2228,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -2287,7 +2288,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2357,7 +2358,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2427,7 +2428,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2498,7 +2499,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2568,7 +2569,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -2634,7 +2635,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2710,7 +2711,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2783,7 +2784,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   val solutionSaved =
                       solutionApiService.createSolution(organizationSaved.id, solution)
                   val workspace =
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -2861,7 +2862,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
     val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
     val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     val workspace =
-        makeWorkspaceWithRole(
+        makeWorkspaceCreateRequest(
             organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = ROLE_ADMIN)
     val workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     val runner =
@@ -2917,7 +2918,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -2988,7 +2989,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -3055,7 +3056,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3130,7 +3131,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3196,7 +3197,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3263,7 +3264,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3330,7 +3331,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -3393,7 +3394,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3466,7 +3467,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3533,7 +3534,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3607,7 +3608,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3675,7 +3676,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -3739,7 +3740,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3811,7 +3812,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3888,7 +3889,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -3966,7 +3967,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -4044,7 +4045,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -4118,7 +4119,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -4201,7 +4202,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -4265,7 +4266,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -4330,7 +4331,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -4395,7 +4396,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id, solutionSaved.id!!, id = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -4456,7 +4457,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -4510,17 +4511,14 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
     return datasetRepository.save(dataset)
   }
 
-  private fun makeConnector(): Connector {
-    return Connector(
+  private fun makeConnector() = Connector(
         key = UUID.randomUUID().toString(),
         name = "Connector",
         repository = "/repository",
         version = "1.0",
         ioTypes = listOf(IoTypesEnum.read))
-  }
 
-  fun makeDataset(organizationId: String, connector: Connector, id: String, role: String): Dataset {
-    return Dataset(
+  fun makeDataset(organizationId: String, connector: Connector, id: String, role: String) = Dataset(
         name = "Dataset",
         organizationId = organizationId,
         ownerId = "ownerId",
@@ -4538,10 +4536,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     mutableListOf(
                         DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         DatasetAccessControl(id = id, role = role))))
-  }
 
-  fun makeSolution(organizationId: String, id: String, role: String): Solution {
-    return Solution(
+  fun makeSolution(organizationId: String, id: String, role: String) = Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
         name = "My solution",
@@ -4554,10 +4550,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 mutableListOf(
                     SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                     SolutionAccessControl(id = id, role = role))))
-  }
 
-  fun makeOrganizationCreateRequest(id: String, role: String): OrganizationCreateRequest {
-    return OrganizationCreateRequest(
+  fun makeOrganizationCreateRequest(id: String, role: String) =
+    OrganizationCreateRequest(
         name = "Organization Name",
         security =
             OrganizationSecurity(
@@ -4566,30 +4561,25 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         OrganizationAccessControl(id = id, role = role))))
-  }
 
-  fun makeWorkspaceWithRole(
+  fun makeWorkspaceCreateRequest(
       organizationId: String,
       solutionId: String,
       id: String,
       role: String
-  ): Workspace {
-    return Workspace(
+  ) = WorkspaceCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "Workspace",
         solution =
             WorkspaceSolution(
                 solutionId = solutionId,
             ),
-        organizationId = organizationId,
-        ownerId = "ownerId",
         security =
             WorkspaceSecurity(
                 default = ROLE_NONE,
                 mutableListOf(
                     WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                     WorkspaceAccessControl(id = id, role = role))))
-  }
 
   fun makeRunnerWithRole(
       organizationId: String,
@@ -4599,8 +4589,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
       id: String,
       role: String,
       validationStatus: RunnerValidationStatus = RunnerValidationStatus.Draft
-  ): Runner {
-    return Runner(
+  ) = Runner(
         id = UUID.randomUUID().toString(),
         name = "Runner",
         organizationId = organizationId,
@@ -4618,4 +4607,3 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                     RunnerAccessControl(id, role))))
   }
-}

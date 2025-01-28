@@ -43,6 +43,7 @@ import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
@@ -112,7 +113,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
   lateinit var dataset: Dataset
   lateinit var solution: Solution
   lateinit var organization: OrganizationCreateRequest
-  lateinit var workspace: Workspace
+  lateinit var workspace: WorkspaceCreateRequest
 
   lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
@@ -150,7 +151,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     solution = mockSolution(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-    workspace = mockWorkspace(organizationSaved.id, solutionSaved.id!!, "Workspace")
+    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     runnerSaved =
@@ -223,8 +224,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                         SolutionAccessControl(id = CONNECTED_READER_USER, role = ROLE_ADMIN))))
   }
 
-  fun makeOrganizationCreateRequest(id: String = "organizationId"): OrganizationCreateRequest {
-    return OrganizationCreateRequest(
+  fun makeOrganizationCreateRequest(id: String = "organizationId") =
+    OrganizationCreateRequest(
         name = "Organization Name",
         security =
             OrganizationSecurity(
@@ -233,26 +234,21 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
-  }
 
-  fun mockWorkspace(
+  fun makeWorkspaceCreateRequest(
       organizationId: String = organizationSaved.id,
       solutionId: String = solutionSaved.id!!,
       name: String = "workspace"
-  ): Workspace {
-    return Workspace(
+  ) = WorkspaceCreateRequest(
         key = UUID.randomUUID().toString(),
         name = name,
         solution =
             WorkspaceSolution(
                 solutionId = solutionId,
             ),
-        organizationId = organizationId,
-        ownerId = "ownerId",
         security =
             WorkspaceSecurity(
                 ROLE_NONE, mutableListOf(WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
-  }
 
   fun mockRunner(
       organizationId: String = organizationSaved.id,
@@ -261,8 +257,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
       runTemplateId: String = solutionSaved.runTemplates[0].id,
       name: String = "runner",
       datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
-  ): Runner {
-    return Runner(
+  ) = Runner(
         id = "RunnerId",
         name = name,
         organizationId = organizationId,
@@ -274,7 +269,6 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
         security =
             RunnerSecurity(
                 ROLE_NONE, mutableListOf(RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
-  }
 
   fun mockStartRun(
       organizationId: String,
