@@ -511,6 +511,24 @@ entity WorkspaceAccessControl {
     * role: String
 }
 
+entity WorkspaceCreateRequest {
+    * key: String
+    * name: String
+    description: String
+    version: String
+    tags: List<String>
+    * solution: WorkspaceSolution
+    webApp: WorkspaceWebApp
+    sendInputToDataWarehouse: Boolean
+    useDedicatedEventHubNamespace: Boolean
+    dedicatedEventHubSasKeyName: String
+    dedicatedEventHubAuthenticationStrategy: String
+    sendScenarioRunToEventHub: Boolean
+    sendScenarioMetadataToEventHub: Boolean
+    datasetCopy: Boolean
+    security: WorkspaceSecurity
+}
+
 entity WorkspaceFile {
     fileName: String
 }
@@ -530,6 +548,22 @@ entity WorkspaceSolution {
     defaultRunTemplateDataset: Map
 }
 
+entity WorkspaceUpdateRequest {
+    key: String
+    name: String
+    description: String
+    tags: List<String>
+    solution: WorkspaceSolution
+    webApp: WorkspaceWebApp
+    sendInputToDataWarehouse: Boolean
+    useDedicatedEventHubNamespace: Boolean
+    dedicatedEventHubSasKeyName: String
+    dedicatedEventHubAuthenticationStrategy: String
+    sendScenarioRunToEventHub: Boolean
+    sendScenarioMetadataToEventHub: Boolean
+    datasetCopy: Boolean
+}
+
 entity WorkspaceWebApp {
     * url: String
     iframes: Map
@@ -545,6 +579,9 @@ ContainerResourceSizing -- ContainerResourceSizeInfo : limits
 SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
 RunLogs -- "0..*" RunLogsEntry : logs
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
+WorkspaceCreateRequest -- WorkspaceSolution : solution
+WorkspaceCreateRequest -- WorkspaceWebApp : webApp
+WorkspaceCreateRequest -- WorkspaceSecurity : security
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 RunContainer -- ContainerResourceSizing : runSizing
 OrganizationCreateRequest -- OrganizationSecurity : security
@@ -560,6 +597,8 @@ RunTemplate -- RunTemplateResourceSizing : runSizing
 RunTemplate -- DeleteHistoricalData : deleteHistoricalData
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
 RunStatusNode -- RunResourceRequested : resourcesDuration
+WorkspaceUpdateRequest -- WorkspaceSolution : solution
+WorkspaceUpdateRequest -- WorkspaceWebApp : webApp
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates

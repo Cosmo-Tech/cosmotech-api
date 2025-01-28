@@ -40,7 +40,7 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
-import com.cosmotech.workspace.service.getRbac
+import com.cosmotech.workspace.service.toGenericSecurity
 import java.time.Instant
 import kotlin.collections.mutableListOf
 import org.springframework.context.annotation.Scope
@@ -97,7 +97,7 @@ class RunnerService(
           "RunnerService's workspace needs to be set. Use inWorkspace to do so.")
     }
 
-    csmRbac.verify(workspace!!.getRbac(), permission)
+    csmRbac.verify(workspace!!.security.toGenericSecurity(workspace!!.id!!), permission)
   }
 
   fun deleteInstance(runnerInstance: RunnerInstance) {

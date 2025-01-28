@@ -71,10 +71,12 @@ Models/TwinGraphBatchResult.md
 Models/TwincacheStatusEnum.md
 Models/Workspace.md
 Models/WorkspaceAccessControl.md
+Models/WorkspaceCreateRequest.md
 Models/WorkspaceFile.md
 Models/WorkspaceRole.md
 Models/WorkspaceSecurity.md
 Models/WorkspaceSolution.md
+Models/WorkspaceUpdateRequest.md
 Models/WorkspaceWebApp.md
 Models/ioTypesEnum.md
 Models/sendRunData_request.md

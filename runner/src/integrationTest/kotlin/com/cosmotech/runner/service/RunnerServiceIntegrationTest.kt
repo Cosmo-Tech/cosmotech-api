@@ -45,6 +45,7 @@ import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
@@ -108,7 +109,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var dataset: Dataset
   lateinit var solution: Solution
   lateinit var organization: OrganizationCreateRequest
-  lateinit var workspace: Workspace
+  lateinit var workspace: WorkspaceCreateRequest
   lateinit var runner: Runner
   lateinit var parentRunner: Runner
 
@@ -169,7 +170,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     solution = makeSolution(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-    workspace = makeWorkspace(organizationSaved.id, solutionSaved.id!!, "Workspace")
+    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     parentRunner =
@@ -787,7 +788,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     organizationSaved =
         organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspace())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
     val brokenRunner =
         Runner(
             name = "runner",
@@ -808,7 +809,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     organizationSaved =
         organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspace())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
     val workingRunner = makeRunner()
     runnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, workingRunner)
@@ -838,7 +839,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     organizationSaved =
         organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspace())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
     val workingRunner = makeRunner()
     runnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, workingRunner)
@@ -867,11 +868,10 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `on Runner delete linked datasets should not be deleted`() {
     workspace =
-        Workspace(
+        WorkspaceCreateRequest(
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id!!),
-            id = "id",
             datasetCopy = false)
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     runner = makeRunner(datasetList = mutableListOf(datasetSaved.id!!))
@@ -889,11 +889,10 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `users added to runner RBAC should have the corresponding role set in dataset`() {
     workspace =
-        Workspace(
+        WorkspaceCreateRequest(
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id!!),
-            id = "id",
             datasetCopy = true)
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     runner = makeRunner(datasetList = mutableListOf(datasetSaved.id!!))
@@ -1040,7 +1039,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
     materializeTwingraph()
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-    workspace = makeWorkspace()
+    workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     runner = makeRunner(userName = defaultName, role = ROLE_VIEWER)
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id!!, runner)
@@ -1127,8 +1126,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun makeOrganizationCreateRequest(
       userName: String = defaultName,
       role: String = ROLE_ADMIN
-  ): OrganizationCreateRequest {
-    return OrganizationCreateRequest(
+  ) = OrganizationCreateRequest(
         name = "Organization Name",
         security =
             OrganizationSecurity(
@@ -1138,31 +1136,26 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                         OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
                         OrganizationAccessControl(id = userName, role = role))))
-  }
 
-  fun makeWorkspace(
+  fun makeWorkspaceCreateRequest(
       organizationId: String = organizationSaved.id,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
       userName: String = defaultName,
       role: String = ROLE_ADMIN
-  ): Workspace {
-    return Workspace(
+  ) = WorkspaceCreateRequest(
         key = UUID.randomUUID().toString(),
         name = name,
         solution =
             WorkspaceSolution(
                 solutionId = solutionId,
             ),
-        organizationId = organizationId,
-        ownerId = "ownerId",
         security =
             WorkspaceSecurity(
                 default = ROLE_NONE,
                 mutableListOf(
                     WorkspaceAccessControl(id = userName, role = role),
                     WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
-  }
 
   fun makeRunner(
       organizationId: String = organizationSaved.id,

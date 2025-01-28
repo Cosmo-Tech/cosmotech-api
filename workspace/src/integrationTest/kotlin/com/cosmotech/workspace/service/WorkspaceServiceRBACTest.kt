@@ -32,9 +32,11 @@ import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
@@ -121,7 +123,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id, makeSolution(organizationSaved.id))
               workspaceApiService.createWorkspace(
                   organizationSaved.id,
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -164,7 +166,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id, makeSolution(organizationSaved.id))
               workspaceApiService.createWorkspace(
                   organizationSaved.id,
-                  makeWorkspaceWithRole(
+                  makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id!!,
                       id = TEST_USER_MAIL,
@@ -176,7 +178,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.createWorkspace(
                           organizationSaved.id,
-                          makeWorkspaceWithRole(
+                          makeWorkspaceCreateRequest(
                               organizationSaved.id,
                               solutionSaved.id!!,
                               id = TEST_USER_MAIL,
@@ -195,7 +197,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 assertDoesNotThrow {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -226,7 +228,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -277,7 +279,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -322,7 +324,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -366,7 +368,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -410,7 +412,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -423,11 +425,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.updateWorkspace(
                           organizationSaved.id,
                           workspaceSaved.id!!,
-                          makeWorkspaceWithRole(
-                              organizationSaved.id,
-                              solutionSaved.id!!,
-                              id = TEST_USER_MAIL,
-                              role = role))
+                        WorkspaceUpdateRequest("new name"))
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -437,11 +435,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                   workspaceApiService.updateWorkspace(
                       organizationSaved.id,
                       workspaceSaved.id!!,
-                      makeWorkspaceWithRole(
-                          organizationSaved.id,
-                          solutionSaved.id!!,
-                          id = TEST_USER_MAIL,
-                          role = role))
+                    WorkspaceUpdateRequest("new name")
+                  )
                 }
               }
             }
@@ -468,7 +463,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -481,11 +476,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.updateWorkspace(
                           organizationSaved.id,
                           workspaceSaved.id!!,
-                          makeWorkspaceWithRole(
-                              organizationSaved.id,
-                              solutionSaved.id!!,
-                              id = TEST_USER_MAIL,
-                              role = role))
+                        WorkspaceUpdateRequest("new name")
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE",
@@ -495,11 +487,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                   workspaceApiService.updateWorkspace(
                       organizationSaved.id,
                       workspaceSaved.id!!,
-                      makeWorkspaceWithRole(
-                          organizationSaved.id,
-                          solutionSaved.id!!,
-                          id = TEST_USER_MAIL,
-                          role = role))
+                    WorkspaceUpdateRequest("new name"))
                 }
               }
             }
@@ -526,7 +514,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -572,7 +560,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -618,7 +606,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -666,7 +654,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -714,7 +702,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -760,7 +748,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -806,7 +794,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -860,7 +848,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -914,7 +902,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -960,7 +948,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1006,7 +994,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1052,7 +1040,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1098,7 +1086,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1144,7 +1132,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1190,7 +1178,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1236,7 +1224,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1282,7 +1270,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1332,7 +1320,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1382,7 +1370,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1428,7 +1416,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1474,7 +1462,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1520,7 +1508,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1566,7 +1554,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1618,7 +1606,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1670,7 +1658,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1716,7 +1704,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
-                      makeWorkspaceWithRole(
+                      makeWorkspaceCreateRequest(
                           organizationSaved.id,
                           solutionSaved.id!!,
                           id = TEST_USER_MAIL,
@@ -1741,8 +1729,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
-  fun makeOrganizationCreateRequest(id: String, role: String): OrganizationCreateRequest {
-    return OrganizationCreateRequest(
+  fun makeOrganizationCreateRequest(id: String, role: String) = OrganizationCreateRequest(
         name = "Organization",
         security =
             OrganizationSecurity(
@@ -1751,10 +1738,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     mutableListOf(
                         OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                         OrganizationAccessControl(id = id, role = role))))
-  }
 
-  fun makeSolution(organizationId: String): Solution {
-    return Solution(
+  fun makeSolution(organizationId: String) = Solution(
         id = UUID.randomUUID().toString(),
         key = UUID.randomUUID().toString(),
         name = "Solution",
@@ -1766,24 +1751,19 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 mutableListOf(
                     SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                     SolutionAccessControl(id = TEST_USER_MAIL, role = ROLE_ADMIN))))
-  }
 
-  fun makeWorkspaceWithRole(
+  fun makeWorkspaceCreateRequest(
       organizationId: String,
       solutionId: String,
       id: String,
       role: String
-  ): Workspace {
-    return Workspace(
+  ) = WorkspaceCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "Workspace",
         solution =
             WorkspaceSolution(
                 solutionId = solutionId,
             ),
-        id = UUID.randomUUID().toString(),
-        organizationId = organizationId,
-        ownerId = "ownerId",
         security =
             WorkspaceSecurity(
                 default = ROLE_NONE,
@@ -1791,5 +1771,4 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     mutableListOf(
                         WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                         WorkspaceAccessControl(id = id, role = role))))
-  }
 }

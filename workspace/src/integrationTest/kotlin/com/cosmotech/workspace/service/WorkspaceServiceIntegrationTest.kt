@@ -34,9 +34,11 @@ import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -79,7 +81,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   lateinit var organization: OrganizationCreateRequest
   lateinit var solution: Solution
-  lateinit var workspace: Workspace
+  lateinit var workspace: WorkspaceCreateRequest
   lateinit var connector: Connector
   lateinit var dataset: Dataset
 
@@ -108,7 +110,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     solution = makeSolution(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-    workspace = makeWorkspace(organizationSaved.id, solutionSaved.id!!, "Workspace")
+    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     connector = makeConnector("Connector")
@@ -124,7 +126,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
     logger.info("should create a second new workspace")
-    val workspace2 = makeWorkspace(organizationSaved.id, solutionSaved.id!!, "Workspace 2")
+    val workspace2 = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace 2")
     workspaceApiService.createWorkspace(organizationSaved.id, workspace2)
     val workspaceRetrieved =
         workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id!!)
@@ -140,7 +142,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
         workspaceApiService.updateWorkspace(
             organizationSaved.id,
             workspaceSaved.id!!,
-            workspaceSaved.copy(name = "Workspace 1 updated", organizationId = null))
+            WorkspaceUpdateRequest( name = "Workspace 1 updated"))
     assertEquals("Workspace 1 updated", updatedWorkspace.name)
     assertEquals(workspaceSaved.organizationId, updatedWorkspace.organizationId)
 
@@ -160,7 +162,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns "userLambda"
 
     logger.info("should not create a new workspace")
-    val workspace2 = makeWorkspace(organizationSaved.id, solutionSaved.id!!, "Workspace 2")
+    val workspace2 = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace 2")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.createWorkspace(organizationSaved.id, workspace2)
     }
@@ -180,7 +182,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       workspaceApiService.updateWorkspace(
           organizationSaved.id,
           workspaceSaved.id!!,
-          workspaceSaved.copy(name = "Workspace 1 updated"))
+          WorkspaceUpdateRequest(name = "Workspace 1 updated")
+      )
     }
 
     logger.info("should not delete a workspace")
@@ -196,7 +199,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
     val expectedSize = 15
     IntRange(1, workspaceNumber - 1).forEach {
-      val workspace = makeWorkspace(organizationSaved.id, solutionSaved.id!!, "w-workspace-$it")
+      val workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "w-workspace-$it")
       workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     }
     logger.info("should find all workspaces and assert there are $workspaceNumber")
@@ -336,7 +339,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
         organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
     val brokenWorkspace =
-        Workspace(
+        WorkspaceCreateRequest(
             name = "workspace",
             key = "key",
             solution = WorkspaceSolution(solutionSaved.id!!),
@@ -357,7 +360,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     organizationSaved =
         organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
-    val workingWorkspace = makeWorkspace()
+    val workingWorkspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workingWorkspace)
 
     assertThrows<IllegalArgumentException> {
@@ -448,7 +451,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     dataset = makeDataset()
     datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-    workspace = makeWorkspace()
+    workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     workspaceSaved =
@@ -472,7 +475,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     dataset = makeDataset()
     datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-    workspace = makeWorkspace()
+    workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     var workspaces = workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
@@ -490,8 +493,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       id: String,
       userName: String = CONNECTED_ADMIN_USER,
       role: String = ROLE_ADMIN
-  ): OrganizationCreateRequest {
-    return OrganizationCreateRequest(
+  ) = OrganizationCreateRequest(
         name = "Organization Name",
         security =
             OrganizationSecurity(
@@ -500,14 +502,12 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         OrganizationAccessControl(id = userName, role = role),
                         OrganizationAccessControl("userLambda", "viewer"))))
-  }
 
   fun makeSolution(
       organizationId: String = organizationSaved.id,
       userName: String = CONNECTED_DEFAULT_USER,
       role: String = ROLE_USER
-  ): Solution {
-    return Solution(
+  ) = Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
         name = "My solution",
@@ -520,25 +520,20 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         SolutionAccessControl(id = userName, role = role))))
-  }
 
-  fun makeWorkspace(
+  fun makeWorkspaceCreateRequest(
       organizationId: String = organizationSaved.id,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
       userName: String = CONNECTED_ADMIN_USER,
       role: String = ROLE_ADMIN
-  ): Workspace {
-    return Workspace(
+  ) = WorkspaceCreateRequest(
         key = UUID.randomUUID().toString(),
         name = name,
         solution =
             WorkspaceSolution(
                 solutionId = solutionId,
             ),
-        id = UUID.randomUUID().toString(),
-        organizationId = organizationId,
-        ownerId = "ownerId",
         security =
             WorkspaceSecurity(
                 default = ROLE_NONE,
@@ -546,16 +541,13 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         WorkspaceAccessControl(id = userName, role = role),
                         WorkspaceAccessControl(CONNECTED_DEFAULT_USER, "viewer"))))
-  }
 
-  private fun makeConnector(name: String = "name"): Connector {
-    return Connector(
+  private fun makeConnector(name: String = "name") = Connector(
         key = UUID.randomUUID().toString(),
         name = name,
         repository = "/repository",
         version = "1.0",
         ioTypes = listOf(IoTypesEnum.read))
-  }
 
   fun makeDataset(
       organizationId: String = organizationSaved.id,
@@ -563,8 +555,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       connector: Connector = connectorSaved,
       userName: String = CONNECTED_DEFAULT_USER,
       role: String = ROLE_ADMIN
-  ): Dataset {
-    return Dataset(
+  ) = Dataset(
         name = name,
         organizationId = organizationId,
         ownerId = "ownerId",
@@ -581,5 +572,4 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         DatasetAccessControl(id = userName, role = role),
                         DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
-  }
 }

@@ -37,9 +37,12 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
+import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.cosmotech.workspace.repository.WorkspaceRepository
 import com.cosmotech.workspace.utils.getWorkspaceFilePath
 import com.cosmotech.workspace.utils.getWorkspaceFilesDir
@@ -110,18 +113,25 @@ internal class WorkspaceServiceImpl(
     return updateSecurityVisibility(getVerifiedWorkspace(organizationId, workspaceId))
   }
 
-  override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
+  override fun createWorkspace(organizationId: String, workspaceCreateRequest: WorkspaceCreateRequest): Workspace {
     organizationService.getVerifiedOrganization(
         organizationId, listOf(PERMISSION_READ, PERMISSION_CREATE_CHILDREN))
     // Validate Solution ID
-    workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+    workspaceCreateRequest.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
 
+
+    val workspaceId = idGenerator.generate("workspace")
+    val security = csmRbac.initSecurity(
+      workspaceCreateRequest.security.toGenericSecurity(workspaceId)).toResourceSecurity()
     val createdWorkspace =
-        workspace.copy(
-            id = idGenerator.generate("workspace"),
+      Workspace(
+            id = workspaceId,
             organizationId = organizationId,
-            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
-    createdWorkspace.setRbac(csmRbac.initSecurity(workspace.getRbac()))
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+            key = workspaceCreateRequest.key,
+            name = workspaceCreateRequest.name,
+            solution = workspaceCreateRequest.solution,
+            security = security)
 
     return workspaceRepository.save(createdWorkspace)
   }
@@ -132,30 +142,45 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun updateWorkspace(
-      organizationId: String,
-      workspaceId: String,
-      workspace: Workspace
+    organizationId: String,
+    workspaceId: String,
+    workspaceUpdateRequest: WorkspaceUpdateRequest
   ): Workspace {
     val existingWorkspace = this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
+    val updatedWorkspace = Workspace(
+      key = workspaceUpdateRequest.key ?: "",
+      name = workspaceUpdateRequest.name ?: "",
+      solution = workspaceUpdateRequest.solution ?: existingWorkspace.solution,
+      id = existingWorkspace.id,
+      organizationId = organizationId,
+      description = workspaceUpdateRequest.description ?: "",
+      tags = workspaceUpdateRequest.tags,
+      ownerId = existingWorkspace.ownerId,
+      webApp = workspaceUpdateRequest.webApp,
+      sendInputToDataWarehouse = workspaceUpdateRequest.sendInputToDataWarehouse,
+      useDedicatedEventHubNamespace = workspaceUpdateRequest.useDedicatedEventHubNamespace,
+      dedicatedEventHubSasKeyName = workspaceUpdateRequest.dedicatedEventHubSasKeyName,
+      dedicatedEventHubAuthenticationStrategy = workspaceUpdateRequest.dedicatedEventHubAuthenticationStrategy,
+      sendScenarioRunToEventHub = workspaceUpdateRequest.sendScenarioRunToEventHub,
+      sendScenarioMetadataToEventHub = workspaceUpdateRequest.sendScenarioMetadataToEventHub,
+      datasetCopy = workspaceUpdateRequest.datasetCopy,
+      security = existingWorkspace.security
+    )
+
     var hasChanged =
         existingWorkspace
             .compareToAndMutateIfNeeded(
-                workspace, excludedFields = arrayOf("ownerId", "security", "solution"))
+                updatedWorkspace, excludedFields = arrayOf("ownerId", "security", "solution"))
             .isNotEmpty()
 
-    if (workspace.solution.solutionId != null) {
+    if (updatedWorkspace.solution.solutionId != null) {
       // Validate solution ID
-      workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
-      existingWorkspace.solution = workspace.solution
+      updatedWorkspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+      existingWorkspace.solution = updatedWorkspace.solution
       hasChanged = true
     }
 
-    if (workspace.security != existingWorkspace.security) {
-      logger.warn(
-          "Security modification has not been applied to workspace $workspaceId," +
-              " please refer to the appropriate security endpoints to perform this maneuver")
-    }
     return if (hasChanged) {
       workspaceRepository.save(existingWorkspace)
     } else {
@@ -422,8 +447,8 @@ internal class WorkspaceServiceImpl(
       workspaceRole: WorkspaceRole
   ): WorkspaceSecurity {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.setDefault(workspace.getRbac(), workspaceRole.role)
-    workspace.setRbac(rbacSecurity)
+    val rbacSecurity = csmRbac.setDefault(workspace.security.toGenericSecurity(workspaceId), workspaceRole.role)
+    workspace.security = rbacSecurity.toResourceSecurity()
     workspaceRepository.save(workspace)
     return workspace.security as WorkspaceSecurity
   }
@@ -434,7 +459,7 @@ internal class WorkspaceServiceImpl(
       identityId: String
   ): WorkspaceAccessControl {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
-    val rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), identityId)
+    val rbacAccessControl = csmRbac.getAccessControl(workspace.security.toGenericSecurity(workspaceId), identityId)
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
@@ -447,7 +472,7 @@ internal class WorkspaceServiceImpl(
     val workspace =
         workspaceRepository.findByIdOrNull(workspaceId)
             ?: throw CsmResourceNotFoundException("Workspace $workspaceId does not exist!")
-    csmRbac.verify(workspace.getRbac(), requiredPermission)
+    csmRbac.verify(workspace.security.toGenericSecurity(workspaceId), requiredPermission)
     return workspace
   }
 
@@ -458,7 +483,7 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceAccessControl {
     val organization = organizationService.getVerifiedOrganization(organizationId)
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
-    val users = csmRbac.getUsers(workspace.getRbac())
+    val users = csmRbac.getUsers(workspace.security.toGenericSecurity(workspaceId))
     if (users.contains(workspaceAccessControl.id)) {
       throw IllegalArgumentException("User is already in this Workspace security")
     }
@@ -466,12 +491,13 @@ internal class WorkspaceServiceImpl(
     val rbacSecurity =
         csmRbac.addUserRole(
             organization.security.toGenericSecurity(organizationId),
-            workspace.getRbac(),
+            workspace.security.toGenericSecurity(workspaceId),
             workspaceAccessControl.id,
             workspaceAccessControl.role)
-    workspace.setRbac(rbacSecurity)
+    workspace.security = rbacSecurity.toResourceSecurity()
     workspaceRepository.save(workspace)
-    val rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), workspaceAccessControl.id)
+    val rbacAccessControl = csmRbac.getAccessControl(
+      workspace.security.toGenericSecurity(workspaceId), workspaceAccessControl.id)
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
@@ -483,11 +509,14 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceAccessControl {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
     csmRbac.checkUserExists(
-        workspace.getRbac(), identityId, "User '$identityId' not found in workspace $workspaceId")
-    val rbacSecurity = csmRbac.setUserRole(workspace.getRbac(), identityId, workspaceRole.role)
-    workspace.setRbac(rbacSecurity)
+        workspace.security.toGenericSecurity(workspaceId),
+      identityId,
+      "User '$identityId' not found in workspace $workspaceId")
+    val rbacSecurity =
+      csmRbac.setUserRole(workspace.security.toGenericSecurity(workspaceId), identityId, workspaceRole.role)
+    workspace.security = rbacSecurity.toResourceSecurity()
     workspaceRepository.save(workspace)
-    val rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), identityId)
+    val rbacAccessControl = csmRbac.getAccessControl(workspace.security.toGenericSecurity(workspaceId), identityId)
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
@@ -497,14 +526,14 @@ internal class WorkspaceServiceImpl(
       identityId: String
   ) {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.removeUser(workspace.getRbac(), identityId)
-    workspace.setRbac(rbacSecurity)
+    val rbacSecurity = csmRbac.removeUser(workspace.security.toGenericSecurity(workspaceId), identityId)
+    workspace.security = rbacSecurity.toResourceSecurity()
     workspaceRepository.save(workspace)
   }
 
   override fun listWorkspaceSecurityUsers(organizationId: String, workspaceId: String): List<String> {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
-    return csmRbac.getUsers(workspace.getRbac())
+    return csmRbac.getUsers(workspace.security.toGenericSecurity(workspaceId))
   }
 
   private fun addDatasetToLinkedDatasetIdList(
@@ -554,7 +583,7 @@ internal class WorkspaceServiceImpl(
   }
 
   fun updateSecurityVisibility(workspace: Workspace): Workspace {
-    if (csmRbac.check(workspace.getRbac(), PERMISSION_READ_SECURITY).not()) {
+    if (csmRbac.check(workspace.security.toGenericSecurity(workspace.id!!), PERMISSION_READ_SECURITY).not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = workspace.security!!.accessControlList.firstOrNull { it.id == username }
       if (retrievedAC != null) {
@@ -574,19 +603,15 @@ internal class WorkspaceServiceImpl(
   }
 }
 
-fun Workspace.getRbac(): RbacSecurity {
-  return RbacSecurity(
-      this.id,
-      this.security?.default ?: ROLE_NONE,
-      this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
-          ?: mutableListOf())
-}
+fun WorkspaceSecurity?.toGenericSecurity(workspaceId: String) = RbacSecurity(
+  workspaceId,
+  this?.default ?: ROLE_NONE,
+  this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList() ?: mutableListOf()
+)
 
-fun Workspace.setRbac(rbacSecurity: RbacSecurity) {
-  this.security =
-      WorkspaceSecurity(
-          rbacSecurity.default,
-          rbacSecurity.accessControlList
-              .map { WorkspaceAccessControl(it.id, it.role) }
-              .toMutableList())
-}
+fun RbacSecurity.toResourceSecurity() =
+  WorkspaceSecurity(
+    this.default,
+    this.accessControlList
+      .map { WorkspaceAccessControl(it.id, it.role) }
+      .toMutableList())

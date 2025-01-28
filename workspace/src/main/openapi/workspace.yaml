@@ -31,7 +31,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Workspace'
+              $ref: '#/components/schemas/WorkspaceCreateRequest'
             examples:
               Workspace:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
@@ -126,7 +126,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Workspace'
+              $ref: '#/components/schemas/WorkspaceUpdateRequest'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryWorkspaceUpdate'
@@ -189,24 +189,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type: object
-              properties:
-                overwrite:
-                  type: boolean
-                  default: false
-                destination:
-                  # PROD-7601 : Allow clients to specify where the file should be uploaded
-                  type: string
-                  description: |
-                    Destination path. Must end with a '/' if specifying a folder.
-                    Note that paths may or may not start with a '/', but they are always treated
-                    as relative to the Workspace root location.
-                  example: "path/to/a/directory/"
-                file:
-                  type: string
-                  format: binary
-              required:
-                - file
+              $ref: '#/components/schemas/WorkspaceFileUpload'
             examples:
               use_file_name_as_is:
                 summary: Use the file name as is as destination
@@ -431,13 +414,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                example:
-                  - "read"
-                  - "read_security"
-                  - "create_children"
+                $ref: '#/components/schemas/WorkspacePermissionsList'
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security:
     parameters:
@@ -671,12 +648,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                example:
-                  - alice@mycompany.com
-                  - bob@mycompany.com
+                $ref: '#/components/schemas/WorkspaceUsersList'
         "404":
           description: the Workspace or the User specified is unknown or you don't have access to them
 
@@ -691,6 +663,154 @@ components:
           tokenUrl: "https://example.com/token"
           scopes: {}
   schemas:
+    # List Response Schemas
+    WorkspacePermissionsList:
+      type: array
+      description: List of permissions for a workspace role
+      items:
+        type: string
+      example:
+        - "read"
+        - "read_security"
+        - "create_children"
+
+    WorkspaceUsersList:
+      type: array
+      description: List of users with access to the workspace
+      items:
+        type: string
+      example:
+        - alice@mycompany.com
+        - bob@mycompany.com
+
+    # File Operation Schemas
+    WorkspaceFileUpload:
+      type: object
+      description: Request object for uploading a file to a workspace
+      properties:
+        overwrite:
+          type: boolean
+          default: false
+          description: Whether to overwrite an existing file
+        destination:
+          type: string
+          description: |
+            Destination path. Must end with a '/' if specifying a folder.
+            Note that paths may or may not start with a '/', but they are always treated
+            as relative to the Workspace root location.
+          example: "path/to/a/directory/"
+        file:
+          type: string
+          format: binary
+          description: The file to upload
+      required:
+        - file
+
+    # CRUD Operation Schemas
+    WorkspaceCreateRequest:
+      type: object
+      description: Request object for creating a new workspace
+      properties:
+        key:
+          type: string
+          description: technical key for resource name convention and version grouping. Must be unique
+        name:
+          type: string
+          description: Workspace name. This name is display in the sample webApp
+          example: "FranceOffice"
+        description:
+          type: string
+          description: the Workspace description
+        version:
+          type: string
+          description: the Workspace version MAJOR.MINOR.PATCH.
+          example: "1.0.0"
+        tags:
+          type: array
+          description: the list of tags
+          items:
+            type: string
+        solution:
+          $ref: '#/components/schemas/WorkspaceSolution'
+        webApp:
+          $ref: '#/components/schemas/WorkspaceWebApp'
+        sendInputToDataWarehouse:
+          type: boolean
+          description: default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to the ScenarioRun
+        useDedicatedEventHubNamespace:
+          type: boolean
+          default: false
+          description: Set this property to true to use a dedicated Azure Event Hub Namespace for this Workspace.
+        dedicatedEventHubSasKeyName:
+          type: string
+          description: the Dedicated Event Hub SAS key name, default to RootManageSharedAccessKey
+        dedicatedEventHubAuthenticationStrategy:
+          type: string
+          description: the Event Hub authentication strategy
+        sendScenarioRunToEventHub:
+          type: boolean
+          default: true
+          description: default setting for all Scenarios and Run Templates
+        sendScenarioMetadataToEventHub:
+          type: boolean
+          default: false
+          description: Set this property to false to not send scenario metada
+        datasetCopy:
+          type: boolean
+          default: true
+          description: Activate the copy of dataset on scenario creation
+        security:
+          $ref: '#/components/schemas/WorkspaceSecurity'
+      required:
+        - key
+        - name
+        - solution
+
+    WorkspaceUpdateRequest:
+      type: object
+      description: Request object for updating a workspace
+      properties:
+        key:
+          type: string
+          description: technical key for resource name convention and version grouping. Must be unique
+        name:
+          type: string
+          description: Workspace name
+        description:
+          type: string
+          description: the Workspace description
+        tags:
+          type: array
+          description: the list of tags
+          items:
+            type: string
+        solution:
+          $ref: '#/components/schemas/WorkspaceSolution'
+        webApp:
+          $ref: '#/components/schemas/WorkspaceWebApp'
+        sendInputToDataWarehouse:
+          type: boolean
+          description: default setting for all Scenarios and Run Templates
+        useDedicatedEventHubNamespace:
+          type: boolean
+          description: Set this property to true to use a dedicated Azure Event Hub Namespace
+        dedicatedEventHubSasKeyName:
+          type: string
+          description: the Dedicated Event Hub SAS key name
+        dedicatedEventHubAuthenticationStrategy:
+          type: string
+          description: the Event Hub authentication strategy
+        sendScenarioRunToEventHub:
+          type: boolean
+          description: default setting for all Scenarios and Run Templates
+        sendScenarioMetadataToEventHub:
+          type: boolean
+          description: Set this property to false to not send scenario metada
+        datasetCopy:
+          type: boolean
+          description: Activate the copy of dataset on scenario creation
+
+    # Base Workspace object that includes all information
     Workspace:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"

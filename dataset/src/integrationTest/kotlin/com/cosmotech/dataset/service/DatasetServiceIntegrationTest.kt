@@ -52,6 +52,7 @@ import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
@@ -120,7 +121,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var datasetSaved: Dataset
   lateinit var retrievedDataset1: Dataset
   lateinit var solution: Solution
-  lateinit var workspace: Workspace
+  lateinit var workspace: WorkspaceCreateRequest
 
   lateinit var unifiedJedis: UnifiedJedis
   lateinit var organization: OrganizationCreateRequest
@@ -161,7 +162,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     dataset2 = makeDataset()
     solution = makeSolution()
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-    workspace = makeWorkspace()
+    workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
   }
 
@@ -1073,21 +1074,18 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  fun makeConnector(): Connector {
-    return Connector(
+  fun makeConnector() = Connector(
         key = "connector",
         name = "connector-1",
         repository = "repo",
         version = "1.0.0",
         ioTypes = listOf(),
         id = "c-AbCdEf123")
-  }
 
   fun makeOrganizationCreateRequest(
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_EDITOR
-  ): OrganizationCreateRequest {
-    return OrganizationCreateRequest(
+  ) = OrganizationCreateRequest(
         name = "Organization NameRbac",
         security =
             OrganizationSecurity(
@@ -1096,14 +1094,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         OrganizationAccessControl(id = userName, role = role))))
-  }
 
   fun makeDataset(
       organizationId: String = organizationSaved.id,
       parentId: String = "",
       sourceType: DatasetSourceType = DatasetSourceType.Twincache
-  ): Dataset {
-    return Dataset(
+  ) = Dataset(
         id = UUID.randomUUID().toString(),
         name = "My datasetRbac",
         organizationId = organizationId,
@@ -1114,7 +1110,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         source = SourceInfo("location", "name", "path"),
         tags = mutableListOf("dataset"),
         sourceType = sourceType)
-  }
 
   fun makeDatasetWithRole(
       organizationId: String = organizationSaved.id,
@@ -1122,8 +1117,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN,
       sourceType: DatasetSourceType = DatasetSourceType.Twincache
-  ): Dataset {
-    return Dataset(
+  ) = Dataset(
         id = UUID.randomUUID().toString(),
         name = "My datasetRbac",
         organizationId = organizationId,
@@ -1141,14 +1135,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         DatasetAccessControl(id = userName, role = role))))
-  }
 
   fun makeSolution(
       organizationId: String = organizationSaved.id,
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_EDITOR
-  ): Solution {
-    return Solution(
+  ) = Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
         name = "My solution",
@@ -1161,25 +1153,20 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         SolutionAccessControl(id = userName, role = role))))
-  }
 
-  fun makeWorkspace(
+  fun makeWorkspaceCreateRequest(
       organizationId: String = organizationSaved.id,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN
-  ): Workspace {
-    return Workspace(
+  ) = WorkspaceCreateRequest(
         key = UUID.randomUUID().toString(),
         name = name,
         solution =
             WorkspaceSolution(
                 solutionId = solutionId,
             ),
-        id = UUID.randomUUID().toString(),
-        organizationId = organizationId,
-        ownerId = "ownerId",
         security =
             WorkspaceSecurity(
                 default = ROLE_NONE,
@@ -1187,5 +1174,4 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         WorkspaceAccessControl(id = userName, role = role),
                         WorkspaceAccessControl(CONNECTED_ADMIN_USER, "admin"))))
-  }
 }

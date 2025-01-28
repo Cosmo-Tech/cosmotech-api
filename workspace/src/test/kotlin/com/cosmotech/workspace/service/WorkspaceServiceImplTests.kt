@@ -31,9 +31,11 @@ import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.cosmotech.workspace.repository.WorkspaceRepository
 import io.mockk.MockKAnnotations
 import io.mockk.confirmVerified
@@ -264,11 +266,8 @@ class WorkspaceServiceImplTests {
   fun `should reject creation request if solution ID is not valid`() {
     val organization = mockOrganization()
     every { organizationService.getOrganization(ORGANIZATION_ID) } returns organization
-    val workspace =
-        Workspace(
-            key = "my-workspace-key",
-            name = "my workspace name",
-            solution = WorkspaceSolution(solutionId = "SOL-my-solution-id"))
+    val workspace =mockWorkspaceCreateRequest(
+      solutionId = "SOL-my-solution-id", workspaceName = "my workspace name", roleName = "", role = "" )
     workspace.security = WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
     every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
@@ -295,10 +294,11 @@ class WorkspaceServiceImplTests {
       workspaceServiceImpl.updateWorkspace(
           ORGANIZATION_ID,
           WORKSPACE_ID,
-          Workspace(
+          WorkspaceUpdateRequest(
               key = "my-workspace-key-renamed",
               name = "my workspace name (renamed)",
-              solution = WorkspaceSolution(solutionId = "SOL-my-new-solution-id")))
+              solution = WorkspaceSolution(solutionId = "SOL-my-new-solution-id"))
+      )
     }
 
     verify(exactly = 0) { workspaceRepository.save(ofType(Workspace::class)) }
@@ -338,7 +338,9 @@ class WorkspaceServiceImplTests {
               }
               every { workspaceRepository.save(any()) } returns it.workspace
               every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              workspaceServiceImpl.createWorkspace(it.organization.id, it.workspace)
+              workspaceServiceImpl.createWorkspace(
+                it.organization.id, mockWorkspaceCreateRequest(
+                  solutionId = it.solution.id!!, workspaceName = "workspace"))
             }
           }
 
@@ -373,7 +375,7 @@ class WorkspaceServiceImplTests {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.updateWorkspace(
-                  it.organization.id, it.workspace.id!!, it.workspace)
+                  it.organization.id, it.workspace.id!!, WorkspaceUpdateRequest("new name"))
             }
           }
 
@@ -642,6 +644,23 @@ class WorkspaceServiceImplTests {
         organizationId = organizationId,
         ownerId = "ownerId")
   }
+  
+  private fun mockWorkspaceCreateRequest(
+    solutionId: String,
+    workspaceName: String,
+    roleName: String = CONNECTED_ADMIN_USER,
+    role: String = ROLE_ADMIN
+  ) = WorkspaceCreateRequest(
+    key = UUID.randomUUID().toString(),
+    name = workspaceName,
+    solution = WorkspaceSolution(
+      solutionId = solutionId),
+    security = WorkspaceSecurity(
+      default = ROLE_NONE,
+      accessControlList =
+      mutableListOf(
+        WorkspaceAccessControl(id = roleName, role = role),
+        WorkspaceAccessControl("2$roleName", "viewer"))))
 
   private fun mockWorkspace(
       organizationId: String,
