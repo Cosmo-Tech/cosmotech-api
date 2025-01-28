@@ -485,15 +485,15 @@ entity TwincacheStatusEnum {
 }
 
 entity Workspace {
-    id: String
-    organizationId: String
+    * id: String
+    * organizationId: String
     * key: String
     * name: String
     description: String
     linkedDatasetIdList: List<String>
     version: String
     tags: List<String>
-    ownerId: String
+    * ownerId: String
     * solution: WorkspaceSolution
     webApp: WorkspaceWebApp
     sendInputToDataWarehouse: Boolean
@@ -503,7 +503,7 @@ entity Workspace {
     sendScenarioRunToEventHub: Boolean
     sendScenarioMetadataToEventHub: Boolean
     datasetCopy: Boolean
-    security: WorkspaceSecurity
+    * security: WorkspaceSecurity
 }
 
 entity WorkspaceAccessControl {
@@ -530,7 +530,7 @@ entity WorkspaceCreateRequest {
 }
 
 entity WorkspaceFile {
-    fileName: String
+    * fileName: String
 }
 
 entity WorkspaceRole {
@@ -543,14 +543,14 @@ entity WorkspaceSecurity {
 }
 
 entity WorkspaceSolution {
-    solutionId: String
+    * solutionId: String
     runTemplateFilter: List<String>
     defaultRunTemplateDataset: Map
 }
 
 entity WorkspaceUpdateRequest {
-    key: String
-    name: String
+    * key: String
+    * name: String
     description: String
     tags: List<String>
     solution: WorkspaceSolution

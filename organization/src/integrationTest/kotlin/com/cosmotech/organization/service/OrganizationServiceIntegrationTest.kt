@@ -1056,7 +1056,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
               default = ROLE_NONE,
               mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
           organizationSaved.security)
-      assertEquals(1, organizationSaved.security.accessControlList!!.size)
+      assertEquals(1, organizationSaved.security.accessControlList.size)
     }
 
     @Test
@@ -1071,7 +1071,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_VIEWER))),
             it.security)
-        assertEquals(1, it.security.accessControlList!!.size)
+        assertEquals(1, it.security.accessControlList.size)
       }
     }
   }

@@ -239,7 +239,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspace(
-                          organizationSaved.id, workspaceSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id
+                      )
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -247,12 +248,12 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 }
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+                  workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
                 }
               }
             }
@@ -290,14 +291,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspace(
-                          organizationSaved.id, workspaceSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id
+                      )
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id!!)
+                  workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
                 }
               }
             }
@@ -334,14 +336,14 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id!!)
+                      workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id)
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id!!)
+                  workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id)
                 }
               }
             }
@@ -378,14 +380,14 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id!!)
+                      workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_DELETE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id!!)
+                  workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id)
                 }
               }
             }
@@ -424,8 +426,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.updateWorkspace(
                           organizationSaved.id,
-                          workspaceSaved.id!!,
-                        WorkspaceUpdateRequest("new name"))
+                        workspaceSaved.id,
+                        WorkspaceUpdateRequest(key = "key", "new name"))
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -434,8 +436,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspace(
                       organizationSaved.id,
-                      workspaceSaved.id!!,
-                    WorkspaceUpdateRequest("new name")
+                    workspaceSaved.id,
+                    WorkspaceUpdateRequest("key","new name")
                   )
                 }
               }
@@ -475,19 +477,19 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.updateWorkspace(
                           organizationSaved.id,
-                          workspaceSaved.id!!,
-                        WorkspaceUpdateRequest("new name")
+                        workspaceSaved.id,
+                        WorkspaceUpdateRequest("key", "new name")
                       )
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspace(
                       organizationSaved.id,
-                      workspaceSaved.id!!,
-                    WorkspaceUpdateRequest("new name"))
+                    workspaceSaved.id,
+                    WorkspaceUpdateRequest("key", "new name"))
                 }
               }
             }
@@ -525,7 +527,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceFiles(
-                          organizationSaved.id, workspaceSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -533,7 +536,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceFiles(
-                      organizationSaved.id, workspaceSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id
+                  )
                 }
               }
             }
@@ -571,15 +575,17 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceFiles(
-                          organizationSaved.id, workspaceSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id
+                      )
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceFiles(
-                      organizationSaved.id, workspaceSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id
+                  )
                 }
               }
             }
@@ -619,7 +625,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.createWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id!!, resource, true, "")
+                          organizationSaved.id, workspaceSaved.id, resource, true, "")
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -627,7 +633,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.createWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id!!, resource, true, "name")
+                      organizationSaved.id, workspaceSaved.id, resource, true, "name")
                 }
               }
             }
@@ -667,15 +673,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.createWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id!!, resource, true, "")
+                          organizationSaved.id, workspaceSaved.id, resource, true, "")
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.createWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id!!, resource, true, "name")
+                      organizationSaved.id, workspaceSaved.id, resource, true, "name")
                 }
               }
             }
@@ -713,7 +719,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceFiles(
-                          organizationSaved.id, workspaceSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -721,7 +728,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceFiles(
-                      organizationSaved.id, workspaceSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id
+                  )
                 }
               }
             }
@@ -759,15 +767,17 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceFiles(
-                          organizationSaved.id, workspaceSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id
+                      )
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceFiles(
-                      organizationSaved.id, workspaceSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id
+                  )
                 }
               }
             }
@@ -805,7 +815,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id!!, "")
+                          organizationSaved.id, workspaceSaved.id, "")
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -815,13 +825,13 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     Path.of(
                         csmPlatformProperties.blobPersistence.path,
                         organizationSaved.id,
-                        workspaceSaved.id!!,
+                      workspaceSaved.id,
                         "name")
                 Files.createDirectories(filePath.getParent())
                 Files.createFile(filePath)
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id!!, "name")
+                      organizationSaved.id, workspaceSaved.id, "name")
                 }
               }
             }
@@ -859,23 +869,23 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id!!, "")
+                          organizationSaved.id, workspaceSaved.id, "")
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 val filePath =
                     Path.of(
                         csmPlatformProperties.blobPersistence.path,
                         organizationSaved.id,
-                        workspaceSaved.id!!,
+                      workspaceSaved.id,
                         "name")
                 Files.createDirectories(filePath.getParent())
                 Files.createFile(filePath)
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id!!, "name")
+                      organizationSaved.id, workspaceSaved.id, "name")
                 }
               }
             }
@@ -913,7 +923,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id!!, "")
+                          organizationSaved.id, workspaceSaved.id, "")
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -921,7 +931,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id!!, "")
+                      organizationSaved.id, workspaceSaved.id, "")
                 }
               }
             }
@@ -959,15 +969,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id!!, "")
+                          organizationSaved.id, workspaceSaved.id, "")
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id!!, "")
+                      organizationSaved.id, workspaceSaved.id, "")
                 }
               }
             }
@@ -1005,7 +1015,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceRolePermissions(
-                          organizationSaved.id, workspaceSaved.id!!, ROLE_USER)
+                          organizationSaved.id, workspaceSaved.id, ROLE_USER)
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1013,7 +1023,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceRolePermissions(
-                      organizationSaved.id, workspaceSaved.id!!, ROLE_USER)
+                      organizationSaved.id, workspaceSaved.id, ROLE_USER)
                 }
               }
             }
@@ -1051,15 +1061,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceRolePermissions(
-                          organizationSaved.id, workspaceSaved.id!!, ROLE_USER)
+                          organizationSaved.id, workspaceSaved.id, ROLE_USER)
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceRolePermissions(
-                      organizationSaved.id, workspaceSaved.id!!, ROLE_USER)
+                      organizationSaved.id, workspaceSaved.id, ROLE_USER)
                 }
               }
             }
@@ -1097,7 +1107,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceSecurity(
-                          organizationSaved.id, workspaceSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1105,7 +1116,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceSecurity(
-                      organizationSaved.id, workspaceSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id
+                  )
                 }
               }
             }
@@ -1143,15 +1155,17 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceSecurity(
-                          organizationSaved.id, workspaceSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id
+                      )
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceSecurity(
-                      organizationSaved.id, workspaceSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id
+                  )
                 }
               }
             }
@@ -1189,7 +1203,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.updateWorkspaceDefaultSecurity(
-                          organizationSaved.id, workspaceSaved.id!!, WorkspaceRole(ROLE_USER))
+                          organizationSaved.id, workspaceSaved.id, WorkspaceRole(ROLE_USER))
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1197,7 +1211,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspaceDefaultSecurity(
-                      organizationSaved.id, workspaceSaved.id!!, WorkspaceRole(ROLE_USER))
+                      organizationSaved.id, workspaceSaved.id, WorkspaceRole(ROLE_USER))
                 }
               }
             }
@@ -1235,15 +1249,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.updateWorkspaceDefaultSecurity(
-                          organizationSaved.id, workspaceSaved.id!!, WorkspaceRole(ROLE_USER))
+                          organizationSaved.id, workspaceSaved.id, WorkspaceRole(ROLE_USER))
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspaceDefaultSecurity(
-                      organizationSaved.id, workspaceSaved.id!!, WorkspaceRole(ROLE_USER))
+                      organizationSaved.id, workspaceSaved.id, WorkspaceRole(ROLE_USER))
                 }
               }
             }
@@ -1282,7 +1296,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.createWorkspaceAccessControl(
                           organizationSaved.id,
-                          workspaceSaved.id!!,
+                        workspaceSaved.id,
                           WorkspaceAccessControl("id", ROLE_USER))
                     }
                 assertEquals(
@@ -1292,7 +1306,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 assertDoesNotThrow {
                   workspaceApiService.createWorkspaceAccessControl(
                       organizationSaved.id,
-                      workspaceSaved.id!!,
+                    workspaceSaved.id,
                       WorkspaceAccessControl("id", ROLE_USER))
                 }
               }
@@ -1332,17 +1346,17 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.createWorkspaceAccessControl(
                           organizationSaved.id,
-                          workspaceSaved.id!!,
+                        workspaceSaved.id,
                           WorkspaceAccessControl("id", ROLE_USER))
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.createWorkspaceAccessControl(
                       organizationSaved.id,
-                      workspaceSaved.id!!,
+                    workspaceSaved.id,
                       WorkspaceAccessControl("id", ROLE_USER))
                 }
               }
@@ -1381,7 +1395,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceAccessControl(
-                          organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1389,7 +1403,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceAccessControl(
-                      organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -1427,15 +1441,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceAccessControl(
-                          organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceAccessControl(
-                      organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -1473,7 +1487,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceAccessControl(
-                          organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1481,7 +1495,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceAccessControl(
-                      organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -1519,15 +1533,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceAccessControl(
-                          organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+                          organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceAccessControl(
-                      organizationSaved.id, workspaceSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -1566,7 +1580,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.updateWorkspaceAccessControl(
                           organizationSaved.id,
-                          workspaceSaved.id!!,
+                        workspaceSaved.id,
                           TEST_USER_MAIL,
                           WorkspaceRole(ROLE_ADMIN))
                     }
@@ -1577,7 +1591,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspaceAccessControl(
                       organizationSaved.id,
-                      workspaceSaved.id!!,
+                    workspaceSaved.id,
                       TEST_USER_MAIL,
                       WorkspaceRole(ROLE_ADMIN))
                 }
@@ -1618,18 +1632,18 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.updateWorkspaceAccessControl(
                           organizationSaved.id,
-                          workspaceSaved.id!!,
+                        workspaceSaved.id,
                           TEST_USER_MAIL,
                           WorkspaceRole(ROLE_ADMIN))
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspaceAccessControl(
                       organizationSaved.id,
-                      workspaceSaved.id!!,
+                    workspaceSaved.id,
                       TEST_USER_MAIL,
                       WorkspaceRole(ROLE_ADMIN))
                 }
@@ -1669,7 +1683,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceSecurityUsers(
-                          organizationSaved.id, workspaceSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1677,7 +1692,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceSecurityUsers(
-                      organizationSaved.id, workspaceSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id
+                  )
                 }
               }
             }
@@ -1715,15 +1731,17 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceSecurityUsers(
-                          organizationSaved.id, workspaceSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id
+                      )
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceSecurityUsers(
-                      organizationSaved.id, workspaceSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id
+                  )
                 }
               }
             }

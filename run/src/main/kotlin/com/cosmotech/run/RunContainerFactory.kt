@@ -105,11 +105,8 @@ class RunContainerFactory(
   ): StartInfo {
     val organization = organizationService.getOrganization(organizationId)
     val workspace = workspaceService.getWorkspace(organizationId, workspaceId)
-    if (workspace.solution.solutionId == null)
-        throw CsmClientException(
-            "Can't start a run using workspace ${workspace.id!!}: no solution defined")
     val solution =
-        solutionService.findSolutionById(organizationId, workspace.solution.solutionId ?: "")
+        solutionService.findSolutionById(organizationId, workspace.solution.solutionId)
 
     val solutionRepository =
         solution.repository
@@ -193,7 +190,7 @@ class RunContainerFactory(
             csmPlatformProperties,
             csmSimulationId,
             organization.id,
-            workspace.id!!,
+          workspace.id,
             runner.id!!,
             runId)
 
@@ -232,7 +229,7 @@ class RunContainerFactory(
                 CSM_JOB_ID_LABEL_KEY to runId,
                 WORKFLOW_TYPE_LABEL to workflowType,
                 ORGANIZATION_ID_LABEL to organization.id,
-                WORKSPACE_ID_LABEL to workspace.id!!,
+                WORKSPACE_ID_LABEL to workspace.id,
                 RUNNER_ID_LABEL to runner.id!!,
             ))
   }
@@ -317,7 +314,7 @@ class RunContainerFactory(
       val internalServiceInfo = csmPlatformProperties.internalResultServices!!
       val eventHubUri =
           "amqp://" +
-              "${internalServiceInfo.eventBus.host}:${internalServiceInfo.eventBus.port}/${workspace.id!!}"
+              "${internalServiceInfo.eventBus.host}:${internalServiceInfo.eventBus.port}/${workspace.id}"
       envVars.putAll(
           mapOf(
               CSM_AMQPCONSUMER_USER_ENV_VAR to internalServiceInfo.eventBus.sender.username,

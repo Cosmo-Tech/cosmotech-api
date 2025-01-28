@@ -157,14 +157,14 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     runnerSaved =
         mockRunner(
             organizationSaved.id,
-            workspaceSaved.id!!,
+          workspaceSaved.id,
             solutionSaved.id!!,
             solutionSaved.runTemplates[0].id,
             "Runner",
             mutableListOf(datasetSaved.id!!))
 
     every { workflowService.launchRun(any(), any(), any(), any()) } returns
-        mockWorkflowRun(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!)
+        mockWorkflowRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
     every { datasetApiService.findDatasetById(any(), any()) } returns
         datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS }
     every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
@@ -251,12 +251,12 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                 ROLE_NONE, mutableListOf(WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
 
   fun mockRunner(
-      organizationId: String = organizationSaved.id,
-      workspaceId: String = workspaceSaved.id!!,
-      solutionId: String = solutionSaved.id!!,
-      runTemplateId: String = solutionSaved.runTemplates[0].id,
-      name: String = "runner",
-      datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
+    organizationId: String = organizationSaved.id,
+    workspaceId: String = workspaceSaved.id,
+    solutionId: String = solutionSaved.id!!,
+    runTemplateId: String = solutionSaved.runTemplates[0].id,
+    name: String = "runner",
+    datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
   ) = Runner(
         id = "RunnerId",
         name = name,
@@ -300,41 +300,41 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
 
     runSavedId =
         mockStartRun(
-            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id!!)
     assertNotEquals("", runSavedId)
 
     logger.info("should find 1 Run")
     var runs =
         runApiService.listRuns(
-            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, null, null)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, null, null)
     assertEquals(1, runs.size)
 
     logger.info("should find Run by id")
     val foundRun =
         runApiService.getRun(
-            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId)
     assertEquals(runSavedId, foundRun.id)
     assertEquals(organizationSaved.id, foundRun.organizationId)
-    assertEquals(workspaceSaved.id!!, foundRun.workspaceId)
+    assertEquals(workspaceSaved.id, foundRun.workspaceId)
     assertEquals(runnerSaved.id!!, foundRun.runnerId)
 
     logger.info("should create second Run")
     val runSaved2id =
         mockStartRun(
-            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id!!)
 
     logger.info("should find all Runs by Runner id and assert size is 2")
     runs =
         runApiService.listRuns(
-            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, null, null)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, null, null)
     assertEquals(2, runs.size)
 
     logger.info("should delete second Run and assert size is 1")
     runApiService.deleteRun(
-        organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSaved2id)
+        organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSaved2id)
     runs =
         runApiService.listRuns(
-            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, null, null)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, null, null)
     assertEquals(1, runs.size)
   }
 
@@ -345,30 +345,30 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     val expectedSize = 15
 
     IntRange(1, numberOfRuns).forEach {
-      mockStartRun(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
+      mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id!!)
     }
 
     logger.info("should find all Runs and assert there are $numberOfRuns")
     var runs =
         runApiService.listRuns(
-            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, null, numberOfRuns * 2)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, null, numberOfRuns * 2)
     assertEquals(numberOfRuns, runs.size)
 
     logger.info("should find all Runs and assert it equals defaultPageSize: $defaultPageSize")
     runs =
-        runApiService.listRuns(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, 0, null)
+        runApiService.listRuns(organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, 0, null)
     assertEquals(defaultPageSize, runs.size)
 
     logger.info("should find all Runs and assert there are expected size: $expectedSize")
     runs =
         runApiService.listRuns(
-            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, 0, expectedSize)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, 0, expectedSize)
     assertEquals(expectedSize, runs.size)
 
     logger.info("should find all Runs and assert it returns the second / last page")
     runs =
         runApiService.listRuns(
-            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, 1, expectedSize)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, 1, expectedSize)
     assertEquals(numberOfRuns - expectedSize, runs.size)
   }
 
@@ -376,17 +376,17 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
   fun `test find All Runs with wrong pagination params`() {
     logger.info("Should throw IllegalArgumentException when page and size are zeros")
     assertThrows<IllegalArgumentException> {
-      runApiService.listRuns(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, 0, 0)
+      runApiService.listRuns(organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, 0, 0)
     }
 
     logger.info("Should throw IllegalArgumentException when page is negative")
     assertThrows<IllegalArgumentException> {
-      runApiService.listRuns(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, -1, 10)
+      runApiService.listRuns(organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, -1, 10)
     }
 
     logger.info("Should throw IllegalArgumentException when size is negative")
     assertThrows<IllegalArgumentException> {
-      runApiService.listRuns(organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, 0, -1)
+      runApiService.listRuns(organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, 0, -1)
     }
   }
 
@@ -399,7 +399,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     fun setUp() {
       runSavedId =
           mockStartRun(
-              organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
+              organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id!!)
       assertTrue(adminRunStorageTemplate.existDB(runSavedId))
 
       val internalResultServices = csmPlatformProperties.internalResultServices!!
@@ -416,7 +416,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     @Test
     fun `test deleteRun should remove the database`() {
       runApiService.deleteRun(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId)
       assertFalse(adminRunStorageTemplate.existDB(runSavedId))
     }
 
@@ -431,7 +431,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
       val requestBody = SendRunDataRequest(id = tableName, data = data)
       val runDataResult =
           runApiService.sendRunData(
-              organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+              organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody)
 
       assertEquals(tableName.toDataTableName(false), runDataResult.tableName)
 
@@ -454,7 +454,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
               mapOf("param3" to JSONObject(mapOf("param4" to "value4"))))
       val requestBody = SendRunDataRequest(id = tableName, data = data)
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody)
 
       assertTrue(readerRunStorageTemplate.existTable(tableName.toDataTableName(false)))
 
@@ -468,7 +468,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
       val data2 = listOf(mapOf("param1" to "value1"), mapOf("param2" to 2))
       val requestBody2 = SendRunDataRequest(id = tableName2, data = data2)
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody2)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody2)
 
       assertTrue(readerRunStorageTemplate.existTable(tableName2.toDataTableName(false)))
 
@@ -487,11 +487,11 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
       val requestBody = SendRunDataRequest(id = tableName, data = data)
       val requestBody2 = SendRunDataRequest(id = tableName, data = data2)
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody)
 
       assertFailsWith(SQLException::class, "Schema should have been rejected") {
         runApiService.sendRunData(
-            organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody2)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody2)
       }
     }
 
@@ -503,10 +503,10 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
       val requestBody = SendRunDataRequest(id = tableName, data = data)
       val requestBody2 = SendRunDataRequest(id = tableName, data = data2)
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody)
 
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody2)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody2)
 
       val rows =
           readerRunStorageTemplate.queryForList(
@@ -527,7 +527,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
           IllegalArgumentException::class, "sendRunData must fail if data is an empty list") {
             runApiService.sendRunData(
                 organizationSaved.id,
-                workspaceSaved.id!!,
+              workspaceSaved.id,
                 runnerSaved.id!!,
                 runSavedId,
                 requestBody)
@@ -544,11 +544,11 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
       val customDataId = "CustomData"
       val requestBody = SendRunDataRequest(id = customDataId, data = data)
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody)
       val queryResult =
           runApiService.queryRunData(
               organizationSaved.id,
-              workspaceSaved.id!!,
+            workspaceSaved.id,
               runnerSaved.id!!,
               runSavedId,
               RunDataQuery("SELECT * FROM ${customDataId.toDataTableName(false)}"))
@@ -570,12 +570,12 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
       val customDataId = "CustomData"
       val requestBody = SendRunDataRequest(id = customDataId, data = data)
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody)
       val exception =
           assertThrows<PSQLException> {
             runApiService.queryRunData(
                 organizationSaved.id,
-                workspaceSaved.id!!,
+              workspaceSaved.id,
                 runnerSaved.id!!,
                 runSavedId,
                 RunDataQuery("SELECT * FROM ${customDataId.toDataTableName(false)}2"))
@@ -595,12 +595,12 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
       val customDataId = "CustomData"
       val requestBody = SendRunDataRequest(id = customDataId, data = data)
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody)
       var e =
           assertThrows<PSQLException> {
             runApiService.queryRunData(
                 organizationSaved.id,
-                workspaceSaved.id!!,
+              workspaceSaved.id,
                 runnerSaved.id!!,
                 runSavedId,
                 RunDataQuery("DROP TABLE ${customDataId.toDataTableName(false)}"))
@@ -611,7 +611,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
           assertThrows<PSQLException> {
             runApiService.queryRunData(
                 organizationSaved.id,
-                workspaceSaved.id!!,
+              workspaceSaved.id,
                 runnerSaved.id!!,
                 runSavedId,
                 RunDataQuery(
@@ -629,17 +629,17 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
               mapOf("param3" to mapOf("param4" to "value4")))
       var requestBody = SendRunDataRequest(id = "table1", data = data)
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody)
       requestBody = SendRunDataRequest(id = "table2", data = data)
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody)
       requestBody = SendRunDataRequest(id = "table3", data = data)
       runApiService.sendRunData(
-          organizationSaved.id, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runSavedId, requestBody)
       val queryResult =
           runApiService.queryRunData(
               organizationSaved.id,
-              workspaceSaved.id!!,
+            workspaceSaved.id,
               runnerSaved.id!!,
               runSavedId,
               RunDataQuery(
