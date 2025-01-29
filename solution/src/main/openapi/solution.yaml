@@ -53,19 +53,23 @@ paths:
                 Brewery:
                   $ref: '#/components/examples/Brewery'
         "400":
-          description: Bad request
+          description: Bad request - Invalid request content or parameters
+        "401":
+          description: Authorization failed - incorrect or missing credentials
+        "403":
+          description: Forbidden - insufficient permissions to create solutions
     get:
       operationId: findAllSolutions
       parameters:
         - name: page
           in: query
-          description: page number to query (first page is at index 0)
+          description: Page number to query (zero-based indexing)
           required: false
           schema:
             type: integer
         - name: size
           in: query
-          description: amount of result by page
+          description: Number of records per page
           required: false
           schema:
             type: integer
@@ -74,7 +78,7 @@ paths:
       summary: List all Solutions
       responses:
         "200":
-          description: the solution details
+          description: List of solutions successfully retrieved
           content:
             application/json:
               schema:
@@ -84,6 +88,10 @@ paths:
               examples:
                 Two:
                   $ref: '#/components/examples/OneSolution'
+        "401":
+          description: Authorization failed - incorrect or missing credentials
+        "403":
+          description: Forbidden - insufficient permissions to list solutions
 
   /organizations/{organization_id}/solutions/{solution_id}:
     parameters:
@@ -106,7 +114,7 @@ paths:
       summary: Get the details of a solution
       responses:
         "200":
-          description: the Solution details
+          description: Solution details successfully retrieved
           content:
             application/json:
               schema:
@@ -115,7 +123,7 @@ paths:
                 Brewery:
                   $ref: '#/components/examples/Brewery'
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
     patch:
       operationId: updateSolution
       tags:
@@ -140,7 +148,7 @@ paths:
                 $ref: '#/components/examples/BreweryUpdate'
       responses:
         "200":
-          description: the solution details
+          description: Solution successfully updated
           content:
             application/json:
               schema:
@@ -149,9 +157,9 @@ paths:
                 BreweryUpdated:
                   $ref: '#/components/examples/BreweryUpdated'
         "400":
-          description: Bad request
+          description: Bad request - Invalid update parameters
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
     delete:
       operationId: deleteSolution
       tags:
@@ -159,9 +167,9 @@ paths:
       summary: Delete a solution
       responses:
         "204":
-          description: Request succeeded
+          description: Solution successfully deleted
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/parameters:
     parameters:
@@ -183,7 +191,7 @@ paths:
         - solution
       summary: Add Parameters. Any item with the same ID will be overwritten
       requestBody:
-        description: the Parameters
+        description: the Parameters to add or update
         required: true
         content:
           application/json:
@@ -193,7 +201,7 @@ paths:
                 $ref: "#/components/schemas/RunTemplateParameter"
       responses:
         "201":
-          description: the Parameters
+          description: Parameters successfully added/updated
           content:
             application/json:
               schema:
@@ -201,9 +209,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/RunTemplateParameter'
         "400":
-          description: Bad request
+          description: Bad request - Invalid parameters
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
     delete:
       operationId: removeAllSolutionParameters
       tags:
@@ -211,9 +219,9 @@ paths:
       summary: Remove all Parameters from the Solution specified
       responses:
         "204":
-          description: the operation succeeded
+          description: Parameters successfully removed
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/parameterGroups:
     parameters:
@@ -235,7 +243,7 @@ paths:
         - solution
       summary: Add Parameter Groups. Any item with the same ID will be overwritten
       requestBody:
-        description: the Parameter Groups
+        description: the Parameter Groups to add or update
         required: true
         content:
           application/json:
@@ -245,7 +253,7 @@ paths:
                 $ref: "#/components/schemas/RunTemplateParameterGroup"
       responses:
         "201":
-          description: the Parameter Groups
+          description: Parameter Groups successfully added/updated
           content:
             application/json:
               schema:
@@ -253,9 +261,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/RunTemplateParameterGroup'
         "400":
-          description: Bad request
+          description: Bad request - Invalid parameter groups
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
     delete:
       operationId: removeAllSolutionParameterGroups
       tags:
@@ -263,9 +271,9 @@ paths:
       summary: Remove all Parameter Groups from the Solution specified
       responses:
         "204":
-          description: the operation succeeded
+          description: Parameter Groups successfully removed
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/runTemplates:
     parameters:
@@ -287,7 +295,7 @@ paths:
         - solution
       summary: Add Run Templates. Any item with the same ID will be overwritten
       requestBody:
-        description: the Run Templates
+        description: the Run Templates to add or update
         required: true
         content:
           application/json:
@@ -297,7 +305,7 @@ paths:
                 $ref: "#/components/schemas/RunTemplate"
       responses:
         "201":
-          description: the Parameters
+          description: Run Templates successfully added/updated
           content:
             application/json:
               schema:
@@ -305,9 +313,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/RunTemplate'
         "400":
-          description: Bad request
+          description: Bad request - Invalid run templates
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
     delete:
       operationId: removeAllRunTemplates
       tags:
@@ -315,9 +323,9 @@ paths:
       summary: Remove all Run Templates from the Solution specified
       responses:
         "204":
-          description: the operation succeeded
+          description: Run Templates successfully removed
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}:
     parameters:
@@ -339,14 +347,13 @@ paths:
         required: true
         schema:
           type: string
-
     patch:
       operationId: updateSolutionRunTemplate
       tags:
         - solution
       summary: Update the specified Solution Run Template
       requestBody:
-        description: the Run Templates
+        description: the Run Template updates
         required: true
         content:
           application/json:
@@ -357,7 +364,7 @@ paths:
               $ref: "#/components/schemas/RunTemplate"
       responses:
         "200":
-          description: the Parameters
+          description: Run Template successfully updated
           content:
             application/json:
               schema:
@@ -365,10 +372,9 @@ paths:
                 items:
                   $ref: '#/components/schemas/RunTemplate'
         "400":
-          description: Bad request
+          description: Bad request - Invalid run template updates
         "404":
-          description: the Solution or Run Template specified is unknown or you don't have access to it
-
+          description: Solution or Run Template not found or insufficient access rights
     delete:
       operationId: deleteSolutionRunTemplate
       tags:
@@ -376,9 +382,9 @@ paths:
       summary: Remove the specified Solution Run Template
       responses:
         "204":
-          description: the operation succeeded
+          description: Run Template successfully removed
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/security:
     parameters:
@@ -401,13 +407,14 @@ paths:
       summary: Get the Solution security information
       responses:
         "200":
-          description: The Solution security
+          description: Solution security information successfully retrieved
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SolutionSecurity'
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
+
   /organizations/{organization_id}/solutions/{solution_id}/security/default:
     parameters:
       - name: organization_id
@@ -428,7 +435,7 @@ paths:
         - solution
       summary: Set the Solution default security
       requestBody:
-        description: This change the solution default security.
+        description: This changes the solution default security.
           The default security is the role assigned to any person not on the Access Control List.
           If the default security is None, then nobody outside of the ACL can access the solution.
         required: true
@@ -448,13 +455,14 @@ paths:
                 $ref: '#/components/examples/BrewerySolutionRole'
       responses:
         "201":
-          description: The Solution default visibility
+          description: Solution default security successfully set
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SolutionSecurity'
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
+
   /organizations/{organization_id}/solutions/{solution_id}/security/users:
     parameters:
       - name: organization_id
@@ -476,7 +484,7 @@ paths:
       summary: Get the Solution security users list
       responses:
         "200":
-          description: The Solution security users list
+          description: Solution security users list successfully retrieved
           content:
             application/json:
               schema:
@@ -487,7 +495,8 @@ paths:
                   - alice@mycompany.com
                   - bob@mycompany.com
         "404":
-          description: the Solution or the User specified is unknown or you don't have access to them
+          description: Solution not found or insufficient access rights
+
   /organizations/{organization_id}/solutions/{solution_id}/security/access:
     parameters:
       - name: organization_id
@@ -508,7 +517,7 @@ paths:
         - solution
       summary: Add a control access to the Solution
       requestBody:
-        description: the new Solution security access to add.
+        description: the new Solution security access to add
         required: true
         content:
           application/json:
@@ -526,7 +535,7 @@ paths:
                 $ref: '#/components/examples/BrewerySolutionAccessControl'
       responses:
         "201":
-          description: The Solution access
+          description: Solution access control successfully added
           content:
             application/json:
               schema:
@@ -535,7 +544,7 @@ paths:
                 SolutionAccessControl:
                   $ref: '#/components/examples/BrewerySolutionAccessControl'
         "404":
-          description: the Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}:
     parameters:
@@ -564,7 +573,7 @@ paths:
       summary: Get a control access for the Solution
       responses:
         "200":
-          description: The Solution access
+          description: Solution access control successfully retrieved
           content:
             application/json:
               schema:
@@ -573,7 +582,7 @@ paths:
                 SolutionAccessControl:
                   $ref: '#/components/examples/BrewerySolutionAccessControl'
         "404":
-          description: The Solution or user specified is unknown or you don't have access to it
+          description: Solution or user not found or insufficient access rights
     patch:
       operationId: updateSolutionAccessControl
       tags:
@@ -591,7 +600,7 @@ paths:
                 $ref: '#/components/examples/BrewerySolutionRole'
       responses:
         "200":
-          description: The Solution access
+          description: Solution access control successfully updated
           content:
             application/json:
               schema:
@@ -600,7 +609,7 @@ paths:
                 SolutionAccessControl:
                   $ref: '#/components/examples/BrewerySolutionAccessControl'
         "404":
-          description: The Solution specified is unknown or you don't have access to it
+          description: Solution not found or insufficient access rights
     delete:
       operationId: removeSolutionAccessControl
       tags:
@@ -608,9 +617,9 @@ paths:
       summary: Remove the specified access from the given Organization Solution
       responses:
         "204":
-          description: Request succeeded
+          description: Solution access control successfully removed
         "404":
-          description: The Solution or the user specified is unknown or you don't have access to them
+          description: Solution or user not found or insufficient access rights
 
 components:
   securitySchemes:
@@ -633,24 +642,30 @@ components:
           x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
           description: the Solution version unique identifier
+          example: "sol-123456"
         organizationId:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: string
           readOnly: true
           description: the Organization unique identifier
+          example: "org-123456"
         key:
           type: string
           description: the Solution key which group Solution versions
+          example: "brewery-solution"
         name:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Solution name
+          example: "Brewery Solution"
         description:
           type: string
           description: the Solution description
+          example: "A solution for brewery management and optimization"
         repository:
           type: string
           description: the registry repository containing the image
+          example: "cosmotech/brewery_solution"
         alwaysPull:
           type: boolean
           description: set to true if the runtemplate wants to always pull the image
@@ -658,24 +673,30 @@ components:
         csmSimulator:
           type: string
           description: the main Cosmo Tech simulator name used in standard Run Template
+          example: "brewery_simulator"
         version:
           type: string
           description: the Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
+          example: "1.0.0"
         ownerId:
           type: string
           readOnly: true
           description: the User id which own this Solution
+          example: "user-123456"
         sdkVersion:
           type: string
           description: the MAJOR.MINOR version used to build this solution
+          example: "2.4"
         url:
           type: string
           description: an optional URL link to solution page
+          example: "https://github.com/Cosmo-Tech/brewery-solution"
         tags:
           type: array
           description: the list of tags
           items:
             type: string
+          example: ["brewery", "optimization"]
         parameters:
           type: array
           description: the list of Run Template Parameters
@@ -697,12 +718,14 @@ components:
           allOf:
             - $ref: '#/components/schemas/SolutionSecurity'
       required:
+        - id
+        - key
+        - ownerId
+        - name
+        - repository
+        - version
         - runTemplates
-  #         - key
-  #         - name
-  #         - repository
-  #         - version
-  #         - runTemplates
+
     SolutionSecurity:
       type: object
       description: the Solution security information
@@ -711,6 +734,7 @@ components:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the role by default
+          example: "none"
         accessControlList:
           type: array
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
@@ -720,6 +744,7 @@ components:
       required:
         - default
         - accessControlList
+
     SolutionAccessControl:
       type: object
       description: a Solution access control item
@@ -728,12 +753,15 @@ components:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the identity id
+          example: "user@company.com"
         role:
           type: string
           description: a role
+          example: "editor"
       required:
         - id
         - role
+
     SolutionRole:
       type: object
       description: the Solution Role
@@ -741,8 +769,10 @@ components:
         role:
           type: string
           description: the Solution Role
+          example: "editor"
       required:
         - role
+
     RunTemplate:
       type: object
       description: a Solution Run Template
@@ -750,6 +780,7 @@ components:
         id:
           type: string
           description: the Solution Run Template id
+          example: "template-123"
         name:
           type: string
           description: the Run Template name
@@ -848,7 +879,7 @@ components:
           $ref: "#/components/schemas/DeleteHistoricalData"
       required:
         - id
-#         - name
+
     DeleteHistoricalData:
       type: object
       description: Configuration of scenario runs deletion automatic mecanism
@@ -874,10 +905,12 @@ components:
       enum:
         - argoWorkflow
         - csmOrc
+
     RunTemplateStepSource:
       type: string
       description: the source local, cloud or git repository
       enum: ["cloud","git","local","platform"]
+
     RunTemplateResourceSizing:
       type: object
       description: a description object for resource requests and limits (default same configuration as basic sizing)
@@ -889,6 +922,7 @@ components:
       required:
         - requests
         - limits
+
     ResourceSizeInfo:
       type: object
       description: define cpus and memory needs
@@ -902,6 +936,7 @@ components:
       required:
         - cpu
         - memory
+
     RunTemplateParameterGroup:
       type: object
       description: a Parameter Group for a Run Template
@@ -929,8 +964,9 @@ components:
             description: a Run Template Parameter id
       required:
         - id
-#         - labels
-#         - parameters
+        - labels
+        - parameters
+
     RunTemplateParameter:
       type: object
       description: a Run Template Parameter
@@ -961,8 +997,9 @@ components:
           additionalProperties: true
       required:
         - id
-#         - labels
-#         - varType
+        - labels
+        - varType
+
     TranslatedLabels:
       type: object
       description: a translated label with key as ISO 639-1 code
@@ -1017,11 +1054,13 @@ components:
               role: "editor"
             - id: "john.doe@cosmotech.com"
               role: "viewer"
+
     BreweryUpdate:
       summary: Brewery Solution update
       description: Brewery Solution update example
       value:
         name: Brewery Solution 2021
+
     BreweryUpdated:
       summary: Brewery Solution
       description: Brewery Solution example
@@ -1060,6 +1099,7 @@ components:
             computeSize: highcpu
             parameterGroups:
               - consumers
+
     BrewerySolutionAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a solution.
