@@ -1,8 +1,9 @@
 openapi: 3.0.3
 
 info:
-  title: ""
-  version: ""
+  title: "Cosmo Tech Solution Manager API"
+  description: "Cosmo Tech Solution Manager API"
+  version: "1.0.0"
 
 security:
   - oAuth2AuthCode: []
@@ -24,14 +25,14 @@ paths:
       operationId: createSolution
       tags:
         - solution
-      summary: Register a new solution
+      summary: Create a new solution
       requestBody:
         description: the Solution to create
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Solution'
+              $ref: '#/components/schemas/SolutionCreateRequest'
             examples:
               Brewery:
                 $ref: '#/components/examples/Brewery'
@@ -44,7 +45,7 @@ paths:
                 $ref: '#/components/examples/Brewery'
       responses:
         "201":
-          description: the solution details
+          description: Solution successfully created
           content:
             application/json:
               schema:
@@ -59,7 +60,7 @@ paths:
         "403":
           description: Forbidden - insufficient permissions to create solutions
     get:
-      operationId: findAllSolutions
+      operationId: listSolutions
       parameters:
         - name: page
           in: query
@@ -108,7 +109,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: findSolutionById
+      operationId: getSolution
       tags:
         - solution
       summary: Get the details of a solution
@@ -135,7 +136,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Solution'
+              $ref: '#/components/schemas/SolutionUpdateRequest'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryUpdate'
@@ -185,13 +186,13 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: addOrReplaceParameters
+    patch:
+      operationId: updateSolutionParameters
       tags:
         - solution
-      summary: Add Parameters. Any item with the same ID will be overwritten
+      summary: Update solution parameters
       requestBody:
-        description: the Parameters to add or update
+        description: Parameters to update
         required: true
         content:
           application/json:
@@ -201,7 +202,7 @@ paths:
                 $ref: "#/components/schemas/RunTemplateParameter"
       responses:
         "201":
-          description: Parameters successfully added/updated
+          description: Parameters successfully updated
           content:
             application/json:
               schema:
@@ -213,13 +214,13 @@ paths:
         "404":
           description: Solution not found or insufficient access rights
     delete:
-      operationId: removeAllSolutionParameters
+      operationId: deleteSolutionParameters
       tags:
         - solution
-      summary: Remove all Parameters from the Solution specified
+      summary: Delete all parameters from the solution
       responses:
         "204":
-          description: Parameters successfully removed
+          description: Parameters successfully deleted
         "404":
           description: Solution not found or insufficient access rights
 
@@ -237,13 +238,13 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: addOrReplaceParameterGroups
+    patch:
+      operationId: updateSolutionParameterGroups
       tags:
         - solution
-      summary: Add Parameter Groups. Any item with the same ID will be overwritten
+      summary: Update solution parameter groups
       requestBody:
-        description: the Parameter Groups to add or update
+        description: Parameter groups to update
         required: true
         content:
           application/json:
@@ -253,7 +254,7 @@ paths:
                 $ref: "#/components/schemas/RunTemplateParameterGroup"
       responses:
         "201":
-          description: Parameter Groups successfully added/updated
+          description: Parameter groups successfully updated
           content:
             application/json:
               schema:
@@ -265,13 +266,13 @@ paths:
         "404":
           description: Solution not found or insufficient access rights
     delete:
-      operationId: removeAllSolutionParameterGroups
+      operationId: deleteSolutionParameterGroups
       tags:
         - solution
-      summary: Remove all Parameter Groups from the Solution specified
+      summary: Delete all parameter groups from the solution
       responses:
         "204":
-          description: Parameter Groups successfully removed
+          description: Parameter groups successfully deleted
         "404":
           description: Solution not found or insufficient access rights
 
@@ -289,13 +290,13 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: addOrReplaceRunTemplates
+    patch:
+      operationId: updateSolutionRunTemplates
       tags:
         - solution
-      summary: Add Run Templates. Any item with the same ID will be overwritten
+      summary: Update solution run templates
       requestBody:
-        description: the Run Templates to add or update
+        description: Run templates to update
         required: true
         content:
           application/json:
@@ -305,7 +306,7 @@ paths:
                 $ref: "#/components/schemas/RunTemplate"
       responses:
         "201":
-          description: Run Templates successfully added/updated
+          description: Run templates successfully updated
           content:
             application/json:
               schema:
@@ -317,13 +318,13 @@ paths:
         "404":
           description: Solution not found or insufficient access rights
     delete:
-      operationId: removeAllRunTemplates
+      operationId: deleteSolutionRunTemplates
       tags:
         - solution
-      summary: Remove all Run Templates from the Solution specified
+      summary: Delete all run templates from the solution
       responses:
         "204":
-          description: Run Templates successfully removed
+          description: Run templates successfully deleted
         "404":
           description: Solution not found or insufficient access rights
 
@@ -351,9 +352,9 @@ paths:
       operationId: updateSolutionRunTemplate
       tags:
         - solution
-      summary: Update the specified Solution Run Template
+      summary: Update a specific run template
       requestBody:
-        description: the Run Template updates
+        description: Run template updates
         required: true
         content:
           application/json:
@@ -364,7 +365,7 @@ paths:
               $ref: "#/components/schemas/RunTemplate"
       responses:
         "200":
-          description: Run Template successfully updated
+          description: Run template successfully updated
           content:
             application/json:
               schema:
@@ -374,17 +375,17 @@ paths:
         "400":
           description: Bad request - Invalid run template updates
         "404":
-          description: Solution or Run Template not found or insufficient access rights
+          description: Solution or run template not found or insufficient access rights
     delete:
       operationId: deleteSolutionRunTemplate
       tags:
         - solution
-      summary: Remove the specified Solution Run Template
+      summary: Delete a specific run template
       responses:
         "204":
-          description: Run Template successfully removed
+          description: Run template successfully deleted
         "404":
-          description: Solution not found or insufficient access rights
+          description: Solution or run template not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/security:
     parameters:
@@ -404,7 +405,7 @@ paths:
       operationId: getSolutionSecurity
       tags:
         - solution
-      summary: Get the Solution security information
+      summary: Get solution security information
       responses:
         "200":
           description: Solution security information successfully retrieved
@@ -429,11 +430,11 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: setSolutionDefaultSecurity
+    patch:
+      operationId: updateSolutionDefaultSecurity
       tags:
         - solution
-      summary: Set the Solution default security
+      summary: Update solution default security
       requestBody:
         description: This changes the solution default security.
           The default security is the role assigned to any person not on the Access Control List.
@@ -454,8 +455,8 @@ paths:
               BrewerySolutionRole:
                 $ref: '#/components/examples/BrewerySolutionRole'
       responses:
-        "201":
-          description: Solution default security successfully set
+        "200":
+          description: Solution default security successfully updated
           content:
             application/json:
               schema:
@@ -478,10 +479,10 @@ paths:
         schema:
           type: string
     get:
-      operationId: getSolutionSecurityUsers
+      operationId: listSolutionSecurityUsers
       tags:
         - solution
-      summary: Get the Solution security users list
+      summary: List solution security users
       responses:
         "200":
           description: Solution security users list successfully retrieved
@@ -512,12 +513,12 @@ paths:
         schema:
           type: string
     post:
-      operationId: addSolutionAccessControl
+      operationId: createSolutionAccessControl
       tags:
         - solution
-      summary: Add a control access to the Solution
+      summary: Create solution access control
       requestBody:
-        description: the new Solution security access to add
+        description: Access control to create
         required: true
         content:
           application/json:
@@ -535,7 +536,7 @@ paths:
                 $ref: '#/components/examples/BrewerySolutionAccessControl'
       responses:
         "201":
-          description: Solution access control successfully added
+          description: Solution access control successfully created
           content:
             application/json:
               schema:
@@ -570,7 +571,7 @@ paths:
       operationId: getSolutionAccessControl
       tags:
         - solution
-      summary: Get a control access for the Solution
+      summary: Get solution access control
       responses:
         "200":
           description: Solution access control successfully retrieved
@@ -587,9 +588,9 @@ paths:
       operationId: updateSolutionAccessControl
       tags:
         - solution
-      summary: Update the specified access to User for a Solution
+      summary: Update solution access control
       requestBody:
-        description: The new Solution Access Control
+        description: Access control updates
         required: true
         content:
           application/json:
@@ -611,13 +612,13 @@ paths:
         "404":
           description: Solution not found or insufficient access rights
     delete:
-      operationId: removeSolutionAccessControl
+      operationId: deleteSolutionAccessControl
       tags:
         - solution
-      summary: Remove the specified access from the given Organization Solution
+      summary: Delete solution access control
       responses:
         "204":
-          description: Solution access control successfully removed
+          description: Solution access control successfully deleted
         "404":
           description: Solution or user not found or insufficient access rights
 
@@ -632,85 +633,85 @@ components:
           tokenUrl: "https://example.com/token"
           scopes: {}
   schemas:
+    # Base Solution object
     Solution:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
-      description: a version of a Solution
+      description: A version of a Solution
       properties:
         id:
           type: string
           x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
-          description: the Solution version unique identifier
+          description: The Solution version unique identifier
           example: "sol-123456"
         organizationId:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: string
           readOnly: true
-          description: the Organization unique identifier
-          example: "org-123456"
+          description: The Organization unique identifier
+          example: "o-123456"
         key:
           type: string
-          description: the Solution key which group Solution versions
+          description: The Solution key which groups Solution versions
           example: "brewery-solution"
         name:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
-          description: the Solution name
+          description: The Solution name
           example: "Brewery Solution"
         description:
           type: string
-          description: the Solution description
+          description: The Solution description
           example: "A solution for brewery management and optimization"
         repository:
           type: string
-          description: the registry repository containing the image
+          description: The registry repository containing the image
           example: "cosmotech/brewery_solution"
         alwaysPull:
           type: boolean
-          description: set to true if the runtemplate wants to always pull the image
+          description: Set to true if the runtemplate wants to always pull the image
           default: false
         csmSimulator:
           type: string
-          description: the main Cosmo Tech simulator name used in standard Run Template
+          description: The main Cosmo Tech simulator name used in standard Run Template
           example: "brewery_simulator"
         version:
           type: string
-          description: the Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
+          description: The Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
           example: "1.0.0"
         ownerId:
           type: string
           readOnly: true
-          description: the User id which own this Solution
-          example: "user-123456"
+          description: The User id which owns this Solution
         sdkVersion:
           type: string
-          description: the MAJOR.MINOR version used to build this solution
+          description: The MAJOR.MINOR version used to build this solution
           example: "2.4"
         url:
           type: string
-          description: an optional URL link to solution page
+          description: An optional URL link to solution page
           example: "https://github.com/Cosmo-Tech/brewery-solution"
         tags:
           type: array
-          description: the list of tags
+          description: The list of tags
           items:
             type: string
           example: ["brewery", "optimization"]
         parameters:
           type: array
-          description: the list of Run Template Parameters
+          description: The list of Run Template Parameters
           items:
             $ref: '#/components/schemas/RunTemplateParameter'
         parameterGroups:
           type: array
-          description: the list of parameters groups for the Run Templates
+          description: The list of parameters groups for the Run Templates
           items:
             $ref: '#/components/schemas/RunTemplateParameterGroup'
         runTemplates:
           type: array
           default: []
-          description: list of Run Template
+          description: List of Run Templates
           items:
             $ref: '#/components/schemas/RunTemplate'
         security:
@@ -719,26 +720,125 @@ components:
             - $ref: '#/components/schemas/SolutionSecurity'
       required:
         - id
-        - key
         - ownerId
         - name
-        - repository
-        - version
         - runTemplates
 
+    # Request Objects
+    SolutionCreateRequest:
+      type: object
+      description: Request object for creating a new solution
+      properties:
+        key:
+          type: string
+          description: The Solution key which groups Solution versions
+          example: "brewery-solution"
+        name:
+          type: string
+          description: The Solution name
+          example: "Brewery Solution"
+        description:
+          type: string
+          description: The Solution description
+          example: "A solution for brewery management and optimization"
+        repository:
+          type: string
+          description: The registry repository containing the image
+          example: "cosmotech/brewery_solution"
+        version:
+          type: string
+          description: The Solution version MAJOR.MINOR.PATCH
+          example: "1.0.0"
+        tags:
+          type: array
+          description: The list of tags
+          items:
+            type: string
+          example: ["brewery", "optimization"]
+        security:
+          $ref: '#/components/schemas/SolutionSecurity'
+      required:
+        - key
+        - name
+
+    SolutionUpdateRequest:
+      type: object
+      description: Request object for updating a solution
+      properties:
+        key:
+          type: string
+          description: The Solution key which groups Solution versions
+          example: "brewery-solution"
+        name:
+          type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+          description: The Solution name
+          example: "Brewery Solution"
+        description:
+          type: string
+          description: The Solution description
+          example: "A solution for brewery management and optimization"
+        repository:
+          type: string
+          description: The registry repository containing the image
+          example: "cosmotech/brewery_solution"
+        alwaysPull:
+          type: boolean
+          description: Set to true if the runtemplate wants to always pull the image
+          default: false
+        csmSimulator:
+          type: string
+          description: The main Cosmo Tech simulator name used in standard Run Template
+          example: "brewery_simulator"
+        version:
+          type: string
+          description: The Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
+          example: "1.0.0"
+        sdkVersion:
+          type: string
+          description: The MAJOR.MINOR version used to build this solution
+          example: "2.4"
+        url:
+          type: string
+          description: An optional URL link to solution page
+          example: "https://github.com/Cosmo-Tech/brewery-solution"
+        tags:
+          type: array
+          description: The list of tags
+          items:
+            type: string
+          example: [ "brewery", "optimization" ]
+        parameters:
+          type: array
+          description: The list of Run Template Parameters
+          items:
+            $ref: '#/components/schemas/RunTemplateParameter'
+        parameterGroups:
+          type: array
+          description: The list of parameters groups for the Run Templates
+          items:
+            $ref: '#/components/schemas/RunTemplateParameterGroup'
+        runTemplates:
+          type: array
+          default: [ ]
+          description: List of Run Templates
+          items:
+            $ref: '#/components/schemas/RunTemplate'
+
+    # Security Objects
     SolutionSecurity:
       type: object
-      description: the Solution security information
+      description: The Solution security information
       properties:
         default:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the role by default
+          description: The role by default
           example: "none"
         accessControlList:
           type: array
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the list which can access this Solution with detailed access control information
+          description: The list which can access this Solution with detailed access control information
           items:
             $ref: '#/components/schemas/SolutionAccessControl'
       required:
@@ -747,16 +847,16 @@ components:
 
     SolutionAccessControl:
       type: object
-      description: a Solution access control item
+      description: A Solution access control item
       properties:
         id:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the identity id
+          description: The identity id
           example: "user@company.com"
         role:
           type: string
-          description: a role
+          description: The assigned role
           example: "editor"
       required:
         - id
@@ -764,82 +864,83 @@ components:
 
     SolutionRole:
       type: object
-      description: the Solution Role
+      description: The Solution Role
       properties:
         role:
           type: string
-          description: the Solution Role
+          description: The Solution Role
           example: "editor"
       required:
         - role
 
+    # Run Template Objects
     RunTemplate:
       type: object
-      description: a Solution Run Template
+      description: A Solution Run Template
       properties:
         id:
           type: string
-          description: the Solution Run Template id
+          description: The Solution Run Template id
           example: "template-123"
         name:
           type: string
-          description: the Run Template name
+          description: The Run Template name
           deprecated: true
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         description:
           type: string
-          description: the Run Template description
+          description: The Run Template description
         csmSimulation:
           type: string
-          description: the Cosmo Tech simulation name. This information is send to the Engine. Mandatory information if no Engine is defined
+          description: The Cosmo Tech simulation name
         tags:
           type: array
-          description: the list of Run Template tags
+          description: The list of Run Template tags
           items:
             type: string
         computeSize:
           type: string
-          description: the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic
+          description: The compute size needed for this Run Template
         runSizing:
-          description: definition of resources needed for the scenario run
+          description: Definition of resources needed for the scenario run
           $ref: "#/components/schemas/RunTemplateResourceSizing"
         noDataIngestionState:
           type: boolean
-          description: set to true if the run template does not want to check data ingestion state (no probes or not control plane)
+          description: Set to true if the run template does not want to check data ingestion state
         fetchDatasets:
           type: boolean
-          description: whether or not the fetch dataset step is done
+          description: Whether or not the fetch dataset step is done
         scenarioDataDownloadTransform:
           type: boolean
-          description: whether or not the scenario data download transform step step is done
+          description: Whether or not the scenario data download transform step is done
         fetchScenarioParameters:
           type: boolean
-          description: whether or not the fetch parameters step is done
+          description: Whether or not the fetch parameters step is done
         applyParameters:
           type: boolean
-          description: whether or not the apply parameter step is done
+          description: Whether or not the apply parameter step is done
         validateData:
           type: boolean
-          description: whether or not the validate step is done
+          description: Whether or not the validate step is done
         sendDatasetsToDataWarehouse:
           type: boolean
-          description: whether or not the Datasets values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting
+          description: Whether or not the Datasets values are sent to the DataWarehouse
         sendInputParametersToDataWarehouse:
           type: boolean
-          description: whether or not the input parameters values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting
+          description: Whether or not the input parameters values are sent to the DataWarehouse
         preRun:
           type: boolean
-          description: whether or not the pre-run step is done
+          description: Whether or not the pre-run step is done
         run:
           type: boolean
-          description: whether or not the run step is done
+          description: Whether or not the run step is done
         postRun:
           type: boolean
-          description: whether or not the post-run step is done
+          description: Whether or not the post-run step is done
         parametersJson:
           type: boolean
-          description: whether or not to store the scenario parameters in json instead of csv
+          description: Whether or not to store the scenario parameters in json instead of csv
         parametersHandlerSource:
           $ref: "#/components/schemas/RunTemplateStepSource"
         datasetValidatorSource:
@@ -854,27 +955,27 @@ components:
           $ref: "#/components/schemas/RunTemplateStepSource"
         parameterGroups:
           type: array
-          description: the ordered list of parameters groups for the Run Template
+          description: The ordered list of parameters groups for the Run Template
           items:
             type: string
-            description: a Run Template Group Parameter id
+            description: A Run Template Group Parameter id
         stackSteps:
           type: boolean
-          description: whether or not to stack adjacent scenario run steps in one container run which will chain steps
+          description: Whether or not to stack adjacent scenario run steps
         gitRepositoryUrl:
           type: string
-          description: an optional URL to the git repository
+          description: An optional URL to the git repository
         gitBranchName:
           type: string
-          description: an optional git branch name
+          description: An optional git branch name
         runTemplateSourceDir:
           type: string
-          description: an optional directory where to find the run template source
+          description: An optional directory where to find the run template source
         orchestratorType:
           $ref: "#/components/schemas/RunTemplateOrchestrator"
         executionTimeout:
           type: integer
-          description: an optional duration in seconds in which a workflow is allowed to run
+          description: An optional duration in seconds in which a workflow is allowed to run
         deleteHistoricalData:
           $ref: "#/components/schemas/DeleteHistoricalData"
       required:
@@ -882,7 +983,7 @@ components:
 
     DeleteHistoricalData:
       type: object
-      description: Configuration of scenario runs deletion automatic mecanism
+      description: Configuration of scenario runs deletion automatic mechanism
       properties:
         enable:
           type: boolean
@@ -890,30 +991,30 @@ components:
           default: true
         pollFrequency:
           type: integer
-          description: define the polling frequency of scenario run status (in millis)
+          description: Define the polling frequency of scenario run status (in millis)
           default: 10000
         timeOut:
           type: integer
-          description: define the polling timeout
+          description: Define the polling timeout
           default: 28800
       required:
         - enable
 
     RunTemplateOrchestrator:
       type: string
-      description: the Orchestrator to use for the Run Template
+      description: The Orchestrator to use for the Run Template
       enum:
         - argoWorkflow
         - csmOrc
 
     RunTemplateStepSource:
       type: string
-      description: the source local, cloud or git repository
+      description: The source local, cloud or git repository
       enum: ["cloud","git","local","platform"]
 
     RunTemplateResourceSizing:
       type: object
-      description: a description object for resource requests and limits (default same configuration as basic sizing)
+      description: A description object for resource requests and limits
       properties:
         requests:
           $ref: '#/components/schemas/ResourceSizeInfo'
@@ -925,7 +1026,7 @@ components:
 
     ResourceSizeInfo:
       type: object
-      description: define cpus and memory needs
+      description: Define CPUs and memory needs
       properties:
         cpu:
           type: string
@@ -939,7 +1040,7 @@ components:
 
     RunTemplateParameterGroup:
       type: object
-      description: a Parameter Group for a Run Template
+      description: A Parameter Group for a Run Template
       properties:
         id:
           type: string
@@ -948,20 +1049,20 @@ components:
           $ref: '#/components/schemas/TranslatedLabels'
         isTable:
           type: boolean
-          description: does the group define a table
+          description: Does the group define a table
         options:
           type: object
-          description: freeform options
+          description: Freeform options
           additionalProperties: true
         parentId:
           type: string
-          description: the Run Template Group parent Id
+          description: The Run Template Group parent Id
         parameters:
           type: array
-          description: an ordered list of Run Template Parameters
+          description: An ordered list of Run Template Parameters
           items:
             type: string
-            description: a Run Template Parameter id
+            description: A Run Template Parameter id
       required:
         - id
         - labels
@@ -969,7 +1070,7 @@ components:
 
     RunTemplateParameter:
       type: object
-      description: a Run Template Parameter
+      description: A Run Template Parameter
       properties:
         id:
           type: string
@@ -981,24 +1082,24 @@ components:
           description: the variable type for the parameter. Basic types or special type %DATASETID%
         defaultValue:
           type: string
-          description: the default value for this parameter
+          description: The default value for this parameter
         minValue:
           type: string
-          description: the minimum value for this parameter
+          description: The minimum value for this parameter
         maxValue:
           type: string
-          description: the maximum value for this parameter
+          description: The maximum value for this parameter
         regexValidation:
           type: string
-          description: a regex to validate the value
+          description: A regex to validate the value
         options:
           type: object
-          description: freeform options
+          description: Freeform options
           additionalProperties: true
       required:
         - id
-        - labels
-        - varType
+#         - labels
+#         - varType
 
     TranslatedLabels:
       type: object
