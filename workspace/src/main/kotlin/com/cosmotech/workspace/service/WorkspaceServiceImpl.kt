@@ -28,6 +28,7 @@ import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -116,22 +117,28 @@ internal class WorkspaceServiceImpl(
   override fun createWorkspace(organizationId: String, workspaceCreateRequest: WorkspaceCreateRequest): Workspace {
     organizationService.getVerifiedOrganization(
         organizationId, listOf(PERMISSION_READ, PERMISSION_CREATE_CHILDREN))
-    // Validate Solution ID
-    workspaceCreateRequest.solution.solutionId.let { solutionService.findSolutionById(organizationId, it) }
 
+    // Validate Solution ID 
+    workspaceCreateRequest.solution.solutionId.let { solutionService.findSolutionById(organizationId, it) }
 
     val workspaceId = idGenerator.generate("workspace")
     val security = csmRbac.initSecurity(
       workspaceCreateRequest.security.toGenericSecurity(workspaceId)).toResourceSecurity()
     val createdWorkspace =
       Workspace(
-            id = workspaceId,
-            organizationId = organizationId,
-            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            key = workspaceCreateRequest.key,
-            name = workspaceCreateRequest.name,
-            solution = workspaceCreateRequest.solution,
-            security = security)
+        id = workspaceId,
+        organizationId = organizationId,
+        ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+        key = workspaceCreateRequest.key,
+        name = workspaceCreateRequest.name,
+        solution = workspaceCreateRequest.solution,
+        security = security,
+        version = workspaceCreateRequest.version,
+        tags = workspaceCreateRequest.tags,
+        description = workspaceCreateRequest.description,
+        webApp = workspaceCreateRequest.webApp,
+        datasetCopy = workspaceCreateRequest.datasetCopy,
+        )
 
     return workspaceRepository.save(createdWorkspace)
   }
@@ -148,23 +155,18 @@ internal class WorkspaceServiceImpl(
   ): Workspace {
     val existingWorkspace = this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
+
     val updatedWorkspace = Workspace(
-      key = workspaceUpdateRequest.key,
-      name = workspaceUpdateRequest.name,
+      key = workspaceUpdateRequest.key ?: existingWorkspace.key,
+      name = workspaceUpdateRequest.name ?: existingWorkspace.name,
       solution = workspaceUpdateRequest.solution ?: existingWorkspace.solution,
       id = existingWorkspace.id,
       organizationId = organizationId,
-      description = workspaceUpdateRequest.description ?: "",
-      tags = workspaceUpdateRequest.tags,
+      description = workspaceUpdateRequest.description ?: existingWorkspace.description,
+      tags = workspaceUpdateRequest.tags ?: existingWorkspace.tags,
       ownerId = existingWorkspace.ownerId,
-      webApp = workspaceUpdateRequest.webApp,
-      sendInputToDataWarehouse = workspaceUpdateRequest.sendInputToDataWarehouse,
-      useDedicatedEventHubNamespace = workspaceUpdateRequest.useDedicatedEventHubNamespace,
-      dedicatedEventHubSasKeyName = workspaceUpdateRequest.dedicatedEventHubSasKeyName,
-      dedicatedEventHubAuthenticationStrategy = workspaceUpdateRequest.dedicatedEventHubAuthenticationStrategy,
-      sendScenarioRunToEventHub = workspaceUpdateRequest.sendScenarioRunToEventHub,
-      sendScenarioMetadataToEventHub = workspaceUpdateRequest.sendScenarioMetadataToEventHub,
-      datasetCopy = workspaceUpdateRequest.datasetCopy,
+      webApp = workspaceUpdateRequest.webApp ?: existingWorkspace.webApp,
+      datasetCopy = workspaceUpdateRequest.datasetCopy ?: existingWorkspace.datasetCopy,
       security = existingWorkspace.security
     )
 

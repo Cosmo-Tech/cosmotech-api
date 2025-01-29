@@ -496,12 +496,6 @@ entity Workspace {
     * ownerId: String
     * solution: WorkspaceSolution
     webApp: WorkspaceWebApp
-    sendInputToDataWarehouse: Boolean
-    useDedicatedEventHubNamespace: Boolean
-    dedicatedEventHubSasKeyName: String
-    dedicatedEventHubAuthenticationStrategy: String
-    sendScenarioRunToEventHub: Boolean
-    sendScenarioMetadataToEventHub: Boolean
     datasetCopy: Boolean
     * security: WorkspaceSecurity
 }
@@ -519,12 +513,6 @@ entity WorkspaceCreateRequest {
     tags: List<String>
     * solution: WorkspaceSolution
     webApp: WorkspaceWebApp
-    sendInputToDataWarehouse: Boolean
-    useDedicatedEventHubNamespace: Boolean
-    dedicatedEventHubSasKeyName: String
-    dedicatedEventHubAuthenticationStrategy: String
-    sendScenarioRunToEventHub: Boolean
-    sendScenarioMetadataToEventHub: Boolean
     datasetCopy: Boolean
     security: WorkspaceSecurity
 }
@@ -549,18 +537,12 @@ entity WorkspaceSolution {
 }
 
 entity WorkspaceUpdateRequest {
-    * key: String
-    * name: String
+    key: String
+    name: String
     description: String
     tags: List<String>
     solution: WorkspaceSolution
     webApp: WorkspaceWebApp
-    sendInputToDataWarehouse: Boolean
-    useDedicatedEventHubNamespace: Boolean
-    dedicatedEventHubSasKeyName: String
-    dedicatedEventHubAuthenticationStrategy: String
-    sendScenarioRunToEventHub: Boolean
-    sendScenarioMetadataToEventHub: Boolean
     datasetCopy: Boolean
 }
 

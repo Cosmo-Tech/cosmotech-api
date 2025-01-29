@@ -715,31 +715,6 @@ components:
           $ref: '#/components/schemas/WorkspaceSolution'
         webApp:
           $ref: '#/components/schemas/WorkspaceWebApp'
-        sendInputToDataWarehouse:
-          type: boolean
-          description: default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to the ScenarioRun
-        useDedicatedEventHubNamespace:
-          type: boolean
-          default: false
-          description: Set this property to true to use a dedicated Azure Event Hub Namespace for this Workspace.
-            The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
-            This Namespace must also contain two Event Hubs named \'probesmeasures\' and \'scenariorun\'.
-        dedicatedEventHubSasKeyName:
-          type: string
-          description: the Dedicated Event Hub SAS key name, default to RootManageSharedAccessKey. Ask you DevOps Team to add the associated value to your Workspace Secret
-        dedicatedEventHubAuthenticationStrategy:
-          type: string
-          description: the Event Hub authentication strategy, SHARED_ACCESS_POLICY or TENANT_CLIENT_CREDENTIALS. Default to the one defined for the tenant.
-        sendScenarioRunToEventHub:
-          type: boolean
-          default : true
-          description: default setting for all Scenarios and Run Templates to set whether or not the ScenarioRun is send to the Event Hub
-        sendScenarioMetadataToEventHub:
-          type: boolean
-          default: false
-          description: Set this property to false to not send scenario metada to Azure Event Hub Namespace for this Workspace.
-            The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
-            This Namespace must also contain two Event Hubs named \'scenariometadata\' and \'scenariorunmetadata\'.
         datasetCopy:
           type: boolean
           default: true
@@ -786,27 +761,6 @@ components:
           $ref: '#/components/schemas/WorkspaceSolution'
         webApp:
           $ref: '#/components/schemas/WorkspaceWebApp'
-        sendInputToDataWarehouse:
-          type: boolean
-          description: default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to the ScenarioRun
-        useDedicatedEventHubNamespace:
-          type: boolean
-          default: false
-          description: Set this property to true to use a dedicated Azure Event Hub Namespace for this Workspace.
-        dedicatedEventHubSasKeyName:
-          type: string
-          description: the Dedicated Event Hub SAS key name, default to RootManageSharedAccessKey
-        dedicatedEventHubAuthenticationStrategy:
-          type: string
-          description: the Event Hub authentication strategy
-        sendScenarioRunToEventHub:
-          type: boolean
-          default: true
-          description: default setting for all Scenarios and Run Templates
-        sendScenarioMetadataToEventHub:
-          type: boolean
-          default: false
-          description: Set this property to false to not send scenario metada
         datasetCopy:
           type: boolean
           default: true
@@ -840,30 +794,9 @@ components:
           $ref: '#/components/schemas/WorkspaceSolution'
         webApp:
           $ref: '#/components/schemas/WorkspaceWebApp'
-        sendInputToDataWarehouse:
-          type: boolean
-          description: default setting for all Scenarios and Run Templates
-        useDedicatedEventHubNamespace:
-          type: boolean
-          description: Set this property to true to use a dedicated Azure Event Hub Namespace
-        dedicatedEventHubSasKeyName:
-          type: string
-          description: the Dedicated Event Hub SAS key name
-        dedicatedEventHubAuthenticationStrategy:
-          type: string
-          description: the Event Hub authentication strategy
-        sendScenarioRunToEventHub:
-          type: boolean
-          description: default setting for all Scenarios and Run Templates
-        sendScenarioMetadataToEventHub:
-          type: boolean
-          description: Set this property to false to not send scenario metadata
         datasetCopy:
           type: boolean
           description: Activate the copy of dataset on scenario creation
-      required:
-        - key
-        - name
 
     # File Operation Schemas
     WorkspaceFileUpload:
@@ -1009,12 +942,6 @@ components:
             - "run1"
           defaultRunTemplateDataset:
             run1: "data1"
-        sendInputToDataWarehouse: false
-        useDedicatedEventHubNamespace: false
-        dedicatedEventHubSasKeyName: "RootManageSharedAccessKey"
-        dedicatedEventHubAuthenticationStrategy: "SHARED_ACCESS_POLICY"
-        sendScenarioRunToEventHub: true
-        sendScenarioMetadataToEventHub: false
         datasetCopy: true
         security:
           default: "viewer"
@@ -1039,12 +966,6 @@ components:
             - "run1"
           defaultRunTemplateDataset:
             run1: "data1"
-        sendInputToDataWarehouse: false
-        useDedicatedEventHubNamespace: false
-        dedicatedEventHubSasKeyName: "RootManageSharedAccessKey"
-        dedicatedEventHubAuthenticationStrategy: "SHARED_ACCESS_POLICY"
-        sendScenarioRunToEventHub: true
-        sendScenarioMetadataToEventHub: false
         datasetCopy: true
         security:
           default: "viewer"
@@ -1088,12 +1009,6 @@ components:
               - "run1"
             defaultRunTemplateDataset:
               run1: "data1"
-          sendInputToDataWarehouse: false
-          useDedicatedEventHubNamespace: false
-          dedicatedEventHubSasKeyName: "RootManageSharedAccessKey"
-          dedicatedEventHubAuthenticationStrategy: "SHARED_ACCESS_POLICY"
-          sendScenarioRunToEventHub: true
-          sendScenarioMetadataToEventHub: false
           datasetCopy: true
           security:
             default: "viewer"
@@ -1112,12 +1027,6 @@ components:
               - "runA"
             defaultRunTemplateDataset:
               runA: "data1"
-          sendInputToDataWarehouse: false
-          useDedicatedEventHubNamespace: false
-          dedicatedEventHubSasKeyName: "RootManageSharedAccessKey"
-          dedicatedEventHubAuthenticationStrategy: "SHARED_ACCESS_POLICY"
-          sendScenarioRunToEventHub: true
-          sendScenarioMetadataToEventHub: false
           datasetCopy: true
           security:
             default: "viewer"
@@ -1145,12 +1054,6 @@ components:
             - "run1"
           defaultRunTemplateDataset:
             run1: "data1"
-        sendInputToDataWarehouse: false
-        useDedicatedEventHubNamespace: false
-        dedicatedEventHubSasKeyName: "RootManageSharedAccessKey"
-        dedicatedEventHubAuthenticationStrategy: "SHARED_ACCESS_POLICY"
-        sendScenarioRunToEventHub: true
-        sendScenarioMetadataToEventHub: false
         datasetCopy: true
         security:
           default: "viewer"
