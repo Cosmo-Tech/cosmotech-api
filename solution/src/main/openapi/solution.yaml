@@ -420,7 +420,7 @@ paths:
       summary: Delete a specific run template
       responses:
         "204":
-          description: Run Template successfully deleted
+          description: Run template successfully deleted
         "404":
           description: Solution or Run Template not found or insufficient access rights
 
@@ -735,7 +735,6 @@ components:
           readOnly: true
           minLength: 1
           description: The User id which owns this Solution
-          example: "user-123456"
         sdkVersion:
           type: string
           description: The MAJOR.MINOR version used to build this solution
