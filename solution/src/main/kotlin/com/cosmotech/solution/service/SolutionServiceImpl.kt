@@ -265,7 +265,7 @@ class SolutionServiceImpl(
       parameterGroups = existingSolution.parameterGroups,
       security = existingSolution.security
     )
-    
+
     val hasChanged =
         existingSolution
             .compareToAndMutateIfNeeded(
