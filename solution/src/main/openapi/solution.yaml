@@ -53,7 +53,11 @@ paths:
                 Brewery:
                   $ref: '#/components/examples/Brewery'
         "400":
-          description: Bad request
+          description: Bad request - Invalid request content or parameters
+        "401":
+          description: Authorization failed - incorrect or missing credentials
+        "403":
+          description: Forbidden - insufficient permissions to create solutions
     get:
       operationId: listSolutions
       parameters:
@@ -84,6 +88,10 @@ paths:
               examples:
                 Two:
                   $ref: '#/components/examples/OneSolution'
+        "401":
+          description: Authorization failed - incorrect or missing credentials
+        "403":
+          description: Forbidden - insufficient permissions to list solutions
 
   /organizations/{organization_id}/solutions/{solution_id}:
     parameters:
@@ -404,7 +412,7 @@ paths:
         "400":
           description: Bad request - Invalid run template updates
         "404":
-          description: Solution or run template not found or insufficient access rights
+          description: Solution or Run Template not found or insufficient access rights
     delete:
       operationId: deleteSolutionRunTemplate
       tags:
@@ -412,9 +420,9 @@ paths:
       summary: Delete a specific run template
       responses:
         "204":
-          description: Run template successfully deleted
+          description: Run Template successfully deleted
         "404":
-          description: Solution or run template not found or insufficient access rights
+          description: Solution or Run Template not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/security:
     parameters:
@@ -727,6 +735,7 @@ components:
           readOnly: true
           minLength: 1
           description: The User id which owns this Solution
+          example: "user-123456"
         sdkVersion:
           type: string
           description: The MAJOR.MINOR version used to build this solution
