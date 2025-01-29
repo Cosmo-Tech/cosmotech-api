@@ -249,10 +249,6 @@ class ContainerFactoryTests {
   }
 
   private fun getWorkspace(
-      dedicatedEventHubNamespace: Boolean? = null,
-      sendToScenarioRun: Boolean? = true,
-      sasAuthentication: String? = null,
-      sasName: String? = null
   ): Workspace {
     return Workspace(
         id = "Workspaceid",
@@ -266,10 +262,6 @@ class ContainerFactoryTests {
             WorkspaceSolution(
                 solutionId = "1",
             ),
-        useDedicatedEventHubNamespace = dedicatedEventHubNamespace,
-        sendScenarioRunToEventHub = sendToScenarioRun,
-        dedicatedEventHubAuthenticationStrategy = sasAuthentication,
-        dedicatedEventHubSasKeyName = sasName,
       security = WorkspaceSecurity(default = ROLE_ADMIN, accessControlList = mutableListOf())
     )
   }

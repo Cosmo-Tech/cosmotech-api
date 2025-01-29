@@ -39,6 +39,7 @@ import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
+import com.cosmotech.workspace.domain.WorkspaceWebApp
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -487,6 +488,148 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
           it.security)
       assertEquals(1, it.security.accessControlList.size)
     }
+  }
+
+  @Test
+  fun `assert createWorkspace take all infos in considerations`(){
+    val workspaceToCreate = Workspace(
+      id = "id",
+      organizationId = organizationSaved.id,
+      key = "key",
+      name = "name",
+      ownerId = "ownerId",
+      solution = WorkspaceSolution(solutionSaved.id!!),
+      description = "description",
+      linkedDatasetIdList = null,
+      version = "1.0.0",
+      tags = mutableListOf("tag1", "tag2"),
+      webApp = WorkspaceWebApp(url = "url"),
+      datasetCopy = true,
+      security = WorkspaceSecurity(
+        default = ROLE_NONE,
+        accessControlList = mutableListOf(WorkspaceAccessControl("id", ROLE_ADMIN))),
+      )
+      val workspaceCreateRequest = WorkspaceCreateRequest(
+        key = workspaceToCreate.key,
+        name = workspaceToCreate.name,
+        solution = workspaceToCreate.solution,
+        description = workspaceToCreate.description,
+        version = workspaceToCreate.version,
+        tags = workspaceToCreate.tags,
+        webApp = workspaceToCreate.webApp,
+        datasetCopy = workspaceToCreate.datasetCopy,
+        security = workspaceToCreate.security
+      )
+
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspaceCreateRequest)
+
+    workspaceToCreate.id = workspaceSaved.id
+    workspaceToCreate.ownerId = workspaceSaved.ownerId
+    assertEquals(workspaceToCreate, workspaceSaved)
+  }
+
+  @Test
+  fun `assert updateWorkspace take all infos in considerations`() {
+    var workspaceToCreate = Workspace(
+      id = "id",
+      organizationId = organizationSaved.id,
+      key = "key",
+      name = "name",
+      ownerId = "ownerId",
+      solution = WorkspaceSolution(solutionSaved.id!!),
+      description = "description",
+      linkedDatasetIdList = null,
+      version = "1.0.0",
+      tags = mutableListOf("tag1", "tag2"),
+      webApp = WorkspaceWebApp(url = "url"),
+      datasetCopy = true,
+      security = WorkspaceSecurity(
+        default = ROLE_ADMIN,
+        accessControlList = mutableListOf(WorkspaceAccessControl("id", ROLE_ADMIN))),
+    )
+    val workspaceCreateRequest = WorkspaceCreateRequest(
+      key = workspaceToCreate.key,
+      name = workspaceToCreate.name,
+      solution = workspaceToCreate.solution,
+      description = workspaceToCreate.description,
+      version = workspaceToCreate.version,
+      tags = workspaceToCreate.tags,
+      webApp = workspaceToCreate.webApp,
+      datasetCopy = workspaceToCreate.datasetCopy,
+      security = workspaceToCreate.security
+    )
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspaceCreateRequest)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+    val workspaceUpdateRequest = WorkspaceUpdateRequest(
+      key = "new key",
+      name = "new name",
+      solution = WorkspaceSolution(solutionSaved.id!!),
+      description = "new description",
+      tags = mutableListOf("newTag1", "newTag2"),
+      webApp = WorkspaceWebApp(url = "new url"),
+      datasetCopy = false,
+    )
+    workspaceToCreate = workspaceToCreate.copy(
+      id = workspaceSaved.id,
+      key = workspaceUpdateRequest.key!!,
+      name = workspaceUpdateRequest.name!!,
+      ownerId = workspaceSaved.ownerId,
+      solution = workspaceUpdateRequest.solution!!,
+      description = workspaceUpdateRequest.description,
+      tags = workspaceUpdateRequest.tags,
+      webApp = workspaceUpdateRequest.webApp,
+      datasetCopy = workspaceUpdateRequest.datasetCopy
+    )
+
+    workspaceSaved = workspaceApiService.updateWorkspace(organizationSaved.id, workspaceSaved.id, workspaceUpdateRequest)
+
+    assertEquals(workspaceToCreate, workspaceSaved)
+  }
+
+  @Test
+  fun `test updateWorkspace apply only specified changes`() {
+    val workspace = makeWorkspaceCreateRequest()
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+      workspaceSaved = workspaceApiService.updateWorkspace(
+        organizationSaved.id,
+        workspaceSaved.id,
+        WorkspaceUpdateRequest(
+          key = "new_key"
+        )
+      )
+    assertEquals("new_key", workspaceSaved.key)
+    assertEquals(workspace.name, workspaceSaved.name)
+    assertEquals(workspace.solution, workspaceSaved.solution)
+    assertEquals(workspace.security, workspaceSaved.security)
+  }
+
+  @Test
+  fun `test createWorkspace and updateWorkspace with only required parameters`() {
+    logger.info("should create workspace with only required parameters")
+    val minimalRequest = WorkspaceCreateRequest(
+      key = "minimal-key",
+      name = "Minimal Workspace",
+      solution = WorkspaceSolution(solutionSaved.id!!)
+    )
+    val createdWorkspace = workspaceApiService.createWorkspace(organizationSaved.id, minimalRequest)
+    assertEquals("minimal-key", createdWorkspace.key)
+    assertEquals("Minimal Workspace", createdWorkspace.name)
+    assertEquals(solutionSaved.id, createdWorkspace.solution.solutionId)
+    assertNull(createdWorkspace.description)
+    assertNull(createdWorkspace.webApp)
+
+    logger.info("should update workspace with only required parameters")
+    val updatedWorkspace = workspaceApiService.updateWorkspace(
+      organizationSaved.id,
+      createdWorkspace.id,
+      WorkspaceUpdateRequest(key = "updated-key", name = "Updated Workspace")
+    )
+    assertEquals("updated-key", updatedWorkspace.key)
+    assertEquals("Updated Workspace", updatedWorkspace.name)
+    assertEquals(createdWorkspace.solution, updatedWorkspace.solution)
+    assertEquals(createdWorkspace.description, updatedWorkspace.description)
+    assertEquals(createdWorkspace.webApp, updatedWorkspace.webApp)
   }
 
   fun makeOrganizationCreateRequest(
