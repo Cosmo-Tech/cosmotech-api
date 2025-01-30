@@ -22,6 +22,12 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // implementations/configurations in a 'buildSrc' included build.
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
+buildscript {
+    configurations.all {
+        resolutionStrategy.force("com.samskivert:jmustache:1.15")
+    }
+}
+
 plugins {
   val kotlinVersion = "1.9.23"
   kotlin("jvm") version kotlinVersion
