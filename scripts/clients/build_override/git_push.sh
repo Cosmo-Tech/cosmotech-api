@@ -65,7 +65,7 @@ rm -rf "${WORKING_DIR:?}/*"
 # Adds the files in the local repository
 GENERATED_SOURCES_DIR=$(realpath "${CURRENT_SCRIPT_DIR}/..")
 echo "Copy everything from ${GENERATED_SOURCES_DIR} to ${WORKING_DIR}..."
-cp -r "${GENERATED_SOURCES_DIR}"/* "${WORKING_DIR:?}"/
+cp -r "${GENERATED_SOURCES_DIR}"/. "${WORKING_DIR:?}"/
 
 pushd "${WORKING_DIR}" || exit 1
 
