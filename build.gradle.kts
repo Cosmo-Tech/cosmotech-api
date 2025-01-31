@@ -24,6 +24,9 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 buildscript {
     configurations.all {
+      // Due to bug OpenAPITools/openapi-generator#20375 when we use another
+      // plugin that also depends on jmustache the newer version ends up being
+      // used and it breaks the generation of the python client.
         resolutionStrategy.force("com.samskivert:jmustache:1.15")
     }
 }
