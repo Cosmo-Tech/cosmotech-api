@@ -4,126 +4,44 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**addOrReplaceParameterGroups**](SolutionApi.md#addOrReplaceParameterGroups) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Add Parameter Groups. Any item with the same ID will be overwritten |
-| [**addOrReplaceParameters**](SolutionApi.md#addOrReplaceParameters) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameters | Add Parameters. Any item with the same ID will be overwritten |
-| [**addOrReplaceRunTemplates**](SolutionApi.md#addOrReplaceRunTemplates) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Add Run Templates. Any item with the same ID will be overwritten |
-| [**addSolutionAccessControl**](SolutionApi.md#addSolutionAccessControl) | **POST** /organizations/{organization_id}/solutions/{solution_id}/security/access | Add a control access to the Solution |
-| [**createSolution**](SolutionApi.md#createSolution) | **POST** /organizations/{organization_id}/solutions | Register a new solution |
+| [**createSolution**](SolutionApi.md#createSolution) | **POST** /organizations/{organization_id}/solutions | Create a new solution |
+| [**createSolutionAccessControl**](SolutionApi.md#createSolutionAccessControl) | **POST** /organizations/{organization_id}/solutions/{solution_id}/security/access | Create solution access control |
 | [**deleteSolution**](SolutionApi.md#deleteSolution) | **DELETE** /organizations/{organization_id}/solutions/{solution_id} | Delete a solution |
-| [**deleteSolutionRunTemplate**](SolutionApi.md#deleteSolutionRunTemplate) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Remove the specified Solution Run Template |
-| [**findAllSolutions**](SolutionApi.md#findAllSolutions) | **GET** /organizations/{organization_id}/solutions | List all Solutions |
-| [**findSolutionById**](SolutionApi.md#findSolutionById) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution |
-| [**getSolutionAccessControl**](SolutionApi.md#getSolutionAccessControl) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Get a control access for the Solution |
-| [**getSolutionSecurity**](SolutionApi.md#getSolutionSecurity) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security | Get the Solution security information |
-| [**getSolutionSecurityUsers**](SolutionApi.md#getSolutionSecurityUsers) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/users | Get the Solution security users list |
-| [**removeAllRunTemplates**](SolutionApi.md#removeAllRunTemplates) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Remove all Run Templates from the Solution specified |
-| [**removeAllSolutionParameterGroups**](SolutionApi.md#removeAllSolutionParameterGroups) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Remove all Parameter Groups from the Solution specified |
-| [**removeAllSolutionParameters**](SolutionApi.md#removeAllSolutionParameters) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameters | Remove all Parameters from the Solution specified |
-| [**removeSolutionAccessControl**](SolutionApi.md#removeSolutionAccessControl) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Remove the specified access from the given Organization Solution |
-| [**setSolutionDefaultSecurity**](SolutionApi.md#setSolutionDefaultSecurity) | **POST** /organizations/{organization_id}/solutions/{solution_id}/security/default | Set the Solution default security |
+| [**deleteSolutionAccessControl**](SolutionApi.md#deleteSolutionAccessControl) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Delete solution access control |
+| [**deleteSolutionParameterGroups**](SolutionApi.md#deleteSolutionParameterGroups) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Delete all parameter groups from the solution |
+| [**deleteSolutionParameters**](SolutionApi.md#deleteSolutionParameters) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameters | Delete all parameters from the solution |
+| [**deleteSolutionRunTemplate**](SolutionApi.md#deleteSolutionRunTemplate) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Delete a specific run template |
+| [**deleteSolutionRunTemplates**](SolutionApi.md#deleteSolutionRunTemplates) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Delete all run templates from the solution |
+| [**getSolution**](SolutionApi.md#getSolution) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution |
+| [**getSolutionAccessControl**](SolutionApi.md#getSolutionAccessControl) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Get solution access control |
+| [**getSolutionSecurity**](SolutionApi.md#getSolutionSecurity) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security | Get solution security information |
+| [**listSolutionSecurityUsers**](SolutionApi.md#listSolutionSecurityUsers) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/users | List solution security users |
+| [**listSolutions**](SolutionApi.md#listSolutions) | **GET** /organizations/{organization_id}/solutions | List all Solutions |
 | [**updateSolution**](SolutionApi.md#updateSolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution |
-| [**updateSolutionAccessControl**](SolutionApi.md#updateSolutionAccessControl) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Update the specified access to User for a Solution |
-| [**updateSolutionRunTemplate**](SolutionApi.md#updateSolutionRunTemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update the specified Solution Run Template |
+| [**updateSolutionAccessControl**](SolutionApi.md#updateSolutionAccessControl) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Update solution access control |
+| [**updateSolutionDefaultSecurity**](SolutionApi.md#updateSolutionDefaultSecurity) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/security/default | Update solution default security |
+| [**updateSolutionParameterGroups**](SolutionApi.md#updateSolutionParameterGroups) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Update solution parameter groups |
+| [**updateSolutionParameters**](SolutionApi.md#updateSolutionParameters) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameters | Update solution parameters |
+| [**updateSolutionRunTemplate**](SolutionApi.md#updateSolutionRunTemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update a specific run template |
+| [**updateSolutionRunTemplates**](SolutionApi.md#updateSolutionRunTemplates) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Update solution run templates |
 
 
-<a name="addOrReplaceParameterGroups"></a>
-# **addOrReplaceParameterGroups**
-> List addOrReplaceParameterGroups(organization\_id, solution\_id, RunTemplateParameterGroup)
+<a name="createSolution"></a>
+# **createSolution**
+> Solution createSolution(organization\_id, SolutionCreateRequest)
 
-Add Parameter Groups. Any item with the same ID will be overwritten
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **RunTemplateParameterGroup** | [**List**](../Models/RunTemplateParameterGroup.md)| the Parameter Groups | |
-
-### Return type
-
-[**List**](../Models/RunTemplateParameterGroup.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-<a name="addOrReplaceParameters"></a>
-# **addOrReplaceParameters**
-> List addOrReplaceParameters(organization\_id, solution\_id, RunTemplateParameter)
-
-Add Parameters. Any item with the same ID will be overwritten
+Create a new solution
 
 ### Parameters
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **RunTemplateParameter** | [**List**](../Models/RunTemplateParameter.md)| the Parameters | |
+| **SolutionCreateRequest** | [**SolutionCreateRequest**](../Models/SolutionCreateRequest.md)| the Solution to create | |
 
 ### Return type
 
-[**List**](../Models/RunTemplateParameter.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-<a name="addOrReplaceRunTemplates"></a>
-# **addOrReplaceRunTemplates**
-> List addOrReplaceRunTemplates(organization\_id, solution\_id, RunTemplate)
-
-Add Run Templates. Any item with the same ID will be overwritten
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **RunTemplate** | [**List**](../Models/RunTemplate.md)| the Run Templates | |
-
-### Return type
-
-[**List**](../Models/RunTemplate.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-<a name="addSolutionAccessControl"></a>
-# **addSolutionAccessControl**
-> SolutionAccessControl addSolutionAccessControl(organization\_id, solution\_id, SolutionAccessControl)
-
-Add a control access to the Solution
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **SolutionAccessControl** | [**SolutionAccessControl**](../Models/SolutionAccessControl.md)| the new Solution security access to add. | |
-
-### Return type
-
-[**SolutionAccessControl**](../Models/SolutionAccessControl.md)
+[**Solution**](../Models/Solution.md)
 
 ### Authorization
 
@@ -134,22 +52,23 @@ Add a control access to the Solution
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
-<a name="createSolution"></a>
-# **createSolution**
-> Solution createSolution(organization\_id, Solution)
+<a name="createSolutionAccessControl"></a>
+# **createSolutionAccessControl**
+> SolutionAccessControl createSolutionAccessControl(organization\_id, solution\_id, SolutionAccessControl)
 
-Register a new solution
+Create solution access control
 
 ### Parameters
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **Solution** | [**Solution**](../Models/Solution.md)| the Solution to create | |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **SolutionAccessControl** | [**SolutionAccessControl**](../Models/SolutionAccessControl.md)| Access control to create | |
 
 ### Return type
 
-[**Solution**](../Models/Solution.md)
+[**SolutionAccessControl**](../Models/SolutionAccessControl.md)
 
 ### Authorization
 
@@ -186,11 +105,90 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
+<a name="deleteSolutionAccessControl"></a>
+# **deleteSolutionAccessControl**
+> deleteSolutionAccessControl(organization\_id, solution\_id, identity\_id)
+
+Delete solution access control
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **identity\_id** | **String**| the User identifier | [default to null] |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="deleteSolutionParameterGroups"></a>
+# **deleteSolutionParameterGroups**
+> deleteSolutionParameterGroups(organization\_id, solution\_id)
+
+Delete all parameter groups from the solution
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="deleteSolutionParameters"></a>
+# **deleteSolutionParameters**
+> deleteSolutionParameters(organization\_id, solution\_id)
+
+Delete all parameters from the solution
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
 <a name="deleteSolutionRunTemplate"></a>
 # **deleteSolutionRunTemplate**
 > deleteSolutionRunTemplate(organization\_id, solution\_id, run\_template\_id)
 
-Remove the specified Solution Run Template
+Delete a specific run template
 
 ### Parameters
 
@@ -213,23 +211,22 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-<a name="findAllSolutions"></a>
-# **findAllSolutions**
-> List findAllSolutions(organization\_id, page, size)
+<a name="deleteSolutionRunTemplates"></a>
+# **deleteSolutionRunTemplates**
+> deleteSolutionRunTemplates(organization\_id, solution\_id)
 
-List all Solutions
+Delete all run templates from the solution
 
 ### Parameters
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **page** | **Integer**| page number to query (first page is at index 0) | [optional] [default to null] |
-| **size** | **Integer**| amount of result by page | [optional] [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
 
 ### Return type
 
-[**List**](../Models/Solution.md)
+null (empty response body)
 
 ### Authorization
 
@@ -238,11 +235,11 @@ List all Solutions
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
-<a name="findSolutionById"></a>
-# **findSolutionById**
-> Solution findSolutionById(organization\_id, solution\_id)
+<a name="getSolution"></a>
+# **getSolution**
+> Solution getSolution(organization\_id, solution\_id)
 
 Get the details of a solution
 
@@ -270,7 +267,7 @@ Get the details of a solution
 # **getSolutionAccessControl**
 > SolutionAccessControl getSolutionAccessControl(organization\_id, solution\_id, identity\_id)
 
-Get a control access for the Solution
+Get solution access control
 
 ### Parameters
 
@@ -297,7 +294,7 @@ Get a control access for the Solution
 # **getSolutionSecurity**
 > SolutionSecurity getSolutionSecurity(organization\_id, solution\_id)
 
-Get the Solution security information
+Get solution security information
 
 ### Parameters
 
@@ -319,11 +316,11 @@ Get the Solution security information
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getSolutionSecurityUsers"></a>
-# **getSolutionSecurityUsers**
-> List getSolutionSecurityUsers(organization\_id, solution\_id)
+<a name="listSolutionSecurityUsers"></a>
+# **listSolutionSecurityUsers**
+> List listSolutionSecurityUsers(organization\_id, solution\_id)
 
-Get the Solution security users list
+List solution security users
 
 ### Parameters
 
@@ -345,22 +342,23 @@ Get the Solution security users list
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="removeAllRunTemplates"></a>
-# **removeAllRunTemplates**
-> removeAllRunTemplates(organization\_id, solution\_id)
+<a name="listSolutions"></a>
+# **listSolutions**
+> List listSolutions(organization\_id, page, size)
 
-Remove all Run Templates from the Solution specified
+List all Solutions
 
 ### Parameters
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **page** | **Integer**| Page number to query (zero-based indexing) | [optional] [default to null] |
+| **size** | **Integer**| Number of records per page | [optional] [default to null] |
 
 ### Return type
 
-null (empty response body)
+[**List**](../Models/Solution.md)
 
 ### Authorization
 
@@ -369,117 +367,11 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
-
-<a name="removeAllSolutionParameterGroups"></a>
-# **removeAllSolutionParameterGroups**
-> removeAllSolutionParameterGroups(organization\_id, solution\_id)
-
-Remove all Parameter Groups from the Solution specified
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
-<a name="removeAllSolutionParameters"></a>
-# **removeAllSolutionParameters**
-> removeAllSolutionParameters(organization\_id, solution\_id)
-
-Remove all Parameters from the Solution specified
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
-<a name="removeSolutionAccessControl"></a>
-# **removeSolutionAccessControl**
-> removeSolutionAccessControl(organization\_id, solution\_id, identity\_id)
-
-Remove the specified access from the given Organization Solution
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
-<a name="setSolutionDefaultSecurity"></a>
-# **setSolutionDefaultSecurity**
-> SolutionSecurity setSolutionDefaultSecurity(organization\_id, solution\_id, SolutionRole)
-
-Set the Solution default security
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **SolutionRole** | [**SolutionRole**](../Models/SolutionRole.md)| This change the solution default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the solution. | |
-
-### Return type
-
-[**SolutionSecurity**](../Models/SolutionSecurity.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="updateSolution"></a>
 # **updateSolution**
-> Solution updateSolution(organization\_id, solution\_id, Solution)
+> Solution updateSolution(organization\_id, solution\_id, SolutionUpdateRequest)
 
 Update a solution
 
@@ -489,7 +381,7 @@ Update a solution
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **Solution** | [**Solution**](../Models/Solution.md)| the new Solution details. This endpoint can&#39;t be used to update security | |
+| **SolutionUpdateRequest** | [**SolutionUpdateRequest**](../Models/SolutionUpdateRequest.md)| the new Solution details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
 
@@ -508,7 +400,7 @@ Update a solution
 # **updateSolutionAccessControl**
 > SolutionAccessControl updateSolutionAccessControl(organization\_id, solution\_id, identity\_id, SolutionRole)
 
-Update the specified access to User for a Solution
+Update solution access control
 
 ### Parameters
 
@@ -517,7 +409,7 @@ Update the specified access to User for a Solution
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **solution\_id** | **String**| the Solution identifier | [default to null] |
 | **identity\_id** | **String**| the User identifier | [default to null] |
-| **SolutionRole** | [**SolutionRole**](../Models/SolutionRole.md)| The new Solution Access Control | |
+| **SolutionRole** | [**SolutionRole**](../Models/SolutionRole.md)| Access control updates | |
 
 ### Return type
 
@@ -532,11 +424,92 @@ Update the specified access to User for a Solution
 - **Content-Type**: application/json
 - **Accept**: application/json
 
+<a name="updateSolutionDefaultSecurity"></a>
+# **updateSolutionDefaultSecurity**
+> SolutionSecurity updateSolutionDefaultSecurity(organization\_id, solution\_id, SolutionRole)
+
+Update solution default security
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **SolutionRole** | [**SolutionRole**](../Models/SolutionRole.md)| This changes the solution default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the solution. | |
+
+### Return type
+
+[**SolutionSecurity**](../Models/SolutionSecurity.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
+<a name="updateSolutionParameterGroups"></a>
+# **updateSolutionParameterGroups**
+> List updateSolutionParameterGroups(organization\_id, solution\_id, RunTemplateParameterGroup)
+
+Update solution parameter groups
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **RunTemplateParameterGroup** | [**List**](../Models/RunTemplateParameterGroup.md)| Parameter groups to update | |
+
+### Return type
+
+[**List**](../Models/RunTemplateParameterGroup.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="updateSolutionParameters"></a>
+# **updateSolutionParameters**
+> List updateSolutionParameters(organization\_id, solution\_id, RunTemplateParameter)
+
+Update solution parameters
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **RunTemplateParameter** | [**List**](../Models/RunTemplateParameter.md)| Parameters to update | |
+
+### Return type
+
+[**List**](../Models/RunTemplateParameter.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
 <a name="updateSolutionRunTemplate"></a>
 # **updateSolutionRunTemplate**
 > List updateSolutionRunTemplate(organization\_id, solution\_id, run\_template\_id, RunTemplate)
 
-Update the specified Solution Run Template
+Update a specific run template
 
 ### Parameters
 
@@ -545,7 +518,7 @@ Update the specified Solution Run Template
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **solution\_id** | **String**| the Solution identifier | [default to null] |
 | **run\_template\_id** | **String**| the Run Template identifier | [default to null] |
-| **RunTemplate** | [**RunTemplate**](../Models/RunTemplate.md)| the Run Templates | |
+| **RunTemplate** | [**RunTemplate**](../Models/RunTemplate.md)| Run template updates | |
 
 ### Return type
 
@@ -558,5 +531,32 @@ Update the specified Solution Run Template
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
+<a name="updateSolutionRunTemplates"></a>
+# **updateSolutionRunTemplates**
+> List updateSolutionRunTemplates(organization\_id, solution\_id, RunTemplate)
+
+Update solution run templates
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **RunTemplate** | [**List**](../Models/RunTemplate.md)| Run templates to update | |
+
+### Return type
+
+[**List**](../Models/RunTemplate.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 

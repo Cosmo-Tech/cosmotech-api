@@ -48,6 +48,7 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionCreateRequest
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
@@ -120,7 +121,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var dataset2: Dataset
   lateinit var datasetSaved: Dataset
   lateinit var retrievedDataset1: Dataset
-  lateinit var solution: Solution
+  lateinit var solution: SolutionCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
 
   lateinit var unifiedJedis: UnifiedJedis
@@ -1140,12 +1141,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       organizationId: String = organizationSaved.id,
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_EDITOR
-  ) = Solution(
-        id = "solutionId",
+  ) = SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "My solution",
-        organizationId = organizationId,
-        ownerId = "ownerId",
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
@@ -1156,7 +1154,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   fun makeWorkspaceCreateRequest(
       organizationId: String = organizationSaved.id,
-      solutionId: String = solutionSaved.id!!,
+      solutionId: String = solutionSaved.id,
       name: String = "name",
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN

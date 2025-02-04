@@ -118,8 +118,8 @@ internal class WorkspaceServiceImpl(
     organizationService.getVerifiedOrganization(
         organizationId, listOf(PERMISSION_READ, PERMISSION_CREATE_CHILDREN))
 
-    // Validate Solution ID 
-    workspaceCreateRequest.solution.solutionId.let { solutionService.findSolutionById(organizationId, it) }
+    // Validate Solution ID
+    workspaceCreateRequest.solution.solutionId.let { solutionService.getSolution(organizationId, it) }
 
     val workspaceId = idGenerator.generate("workspace")
     val security = csmRbac.initSecurity(
@@ -178,7 +178,7 @@ internal class WorkspaceServiceImpl(
 
     if (updatedWorkspace.solution.solutionId != existingWorkspace.solution.solutionId) {
       // Validate solution ID
-      updatedWorkspace.solution.solutionId.let { solutionService.findSolutionById(organizationId, it) }
+      updatedWorkspace.solution.solutionId.let { solutionService.getSolution(organizationId, it) }
       existingWorkspace.solution = updatedWorkspace.solution
       hasChanged = true
     }
