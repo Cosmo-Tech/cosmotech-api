@@ -380,7 +380,8 @@ Update a solution
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **page** | **Integer**| Page number to query (zero-based indexing) | [optional] [default to null] |
+| **size** | **Integer**| Number of records per page | [optional] [default to null] |
 | **SolutionUpdateRequest** | [**SolutionUpdateRequest**](../Models/SolutionUpdateRequest.md)| the new Solution details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
@@ -437,6 +438,7 @@ Update solution default security
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **solution\_id** | **String**| the Solution identifier | [default to null] |
 | **SolutionRole** | [**SolutionRole**](../Models/SolutionRole.md)| This changes the solution default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the solution. | |
+| **SolutionRole** | [**SolutionRole**](../Models/SolutionRole.md)| Access control updates | |
 
 ### Return type
 
@@ -502,7 +504,7 @@ Update solution parameters
 
 ### HTTP request headers
 
-- **Content-Type**: application/json, application/yaml
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 <a name="updateSolutionRunTemplate"></a>
@@ -558,5 +560,32 @@ Update solution run templates
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
+<a name="updateSolutionRunTemplates"></a>
+# **updateSolutionRunTemplates**
+> List updateSolutionRunTemplates(organization\_id, solution\_id, RunTemplate)
+
+Update solution run templates
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **RunTemplate** | [**List**](../Models/RunTemplate.md)| Run templates to update | |
+
+### Return type
+
+[**List**](../Models/RunTemplate.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
