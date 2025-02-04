@@ -1,25 +1,22 @@
-# Solution
+# SolutionCreateRequest
 ## Properties
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-| **id** | **String** | The Solution version unique identifier | [default to null] |
-| **organizationId** | **String** | The Organization unique identifier | [optional] [default to null] |
-| **key** | **String** | The Solution key which groups Solution versions | [optional] [default to null] |
+| **key** | **String** | The Solution key which groups Solution versions | [default to null] |
 | **name** | **String** | The Solution name | [default to null] |
 | **description** | **String** | The Solution description | [optional] [default to null] |
 | **repository** | **String** | The registry repository containing the image | [optional] [default to null] |
+| **version** | **String** | The Solution version MAJOR.MINOR.PATCH | [optional] [default to null] |
 | **alwaysPull** | **Boolean** | Set to true if the runtemplate wants to always pull the image | [optional] [default to false] |
 | **csmSimulator** | **String** | The main Cosmo Tech simulator name used in standard Run Template | [optional] [default to null] |
-| **version** | **String** | The Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag | [optional] [default to null] |
-| **ownerId** | **String** | The User id which owns this Solution | [default to null] |
-| **sdkVersion** | **String** | The MAJOR.MINOR version used to build this solution | [optional] [default to null] |
-| **url** | **String** | An optional URL link to solution page | [optional] [default to null] |
 | **tags** | **List** | The list of tags | [optional] [default to null] |
 | **parameters** | [**List**](RunTemplateParameter.md) | The list of Run Template Parameters | [optional] [default to null] |
 | **parameterGroups** | [**List**](RunTemplateParameterGroup.md) | The list of parameters groups for the Run Templates | [optional] [default to null] |
-| **runTemplates** | [**List**](RunTemplate.md) | List of Run Templates | [default to []] |
-| **security** | [**SolutionSecurity**](SolutionSecurity.md) |  | [default to null] |
+| **runTemplates** | [**List**](RunTemplate.md) | List of Run Templates | [optional] [default to []] |
+| **sdkVersion** | **String** | The MAJOR.MINOR version used to build this solution | [optional] [default to null] |
+| **url** | **String** | An optional URL link to solution page | [optional] [default to null] |
+| **security** | [**SolutionSecurity**](SolutionSecurity.md) |  | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
