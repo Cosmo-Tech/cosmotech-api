@@ -107,7 +107,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   lateinit var connector: Connector
   lateinit var dataset: Dataset
-  lateinit var solution: Solution
+  lateinit var solution: SolutionCreateRequest
   lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
   lateinit var runner: Runner
@@ -170,14 +170,14 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     solution = makeSolution(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace")
+    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     parentRunner =
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             "RunnerParent",
             mutableListOf(datasetSaved.id!!),
             parametersValues = mutableListOf(runTemplateParameterValue1))
@@ -189,7 +189,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             name = "Runner",
             parentId = parentRunnerSaved.id!!,
             datasetList = mutableListOf(datasetSaved.id!!),
@@ -212,7 +212,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             "NewRunner",
             mutableListOf(datasetSaved.id!!),
             parametersValues =
@@ -241,7 +241,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             "NewRunner",
             mutableListOf(datasetSaved.id!!),
             parametersValues = mutableListOf(creationParameterValue))
@@ -281,7 +281,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             "NewRunner",
             mutableListOf(datasetSaved.id!!))
     val newRunnerSaved =
@@ -332,7 +332,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
           makeRunner(
               organizationSaved.id,
             workspaceSaved.id,
-              solutionSaved.id!!,
+            solutionSaved.id,
               "Runner$it",
               mutableListOf(datasetSaved.id!!))
       runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -383,7 +383,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
         )
     val grandParentRunner =
         runnerApiService.createRunner(
@@ -392,7 +392,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             parentId = grandParentRunner.id)
     val parentRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, parentCreation)
@@ -400,7 +400,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             parentId = parentRunner.id)
     val childRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, childCreation)
@@ -434,7 +434,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
         )
     val grandParentRunner =
         runnerApiService.createRunner(
@@ -443,7 +443,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             parentId = grandParentRunner.id)
     val parentRunner1 =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, parentCreation)
@@ -453,7 +453,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             parentId = parentRunner1.id)
     val childRunner1 =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, childCreation)
@@ -871,7 +871,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         WorkspaceCreateRequest(
             key = "key",
             name = "workspace",
-            solution = WorkspaceSolution(solutionSaved.id!!),
+            solution = WorkspaceSolution(solutionSaved.id),
             datasetCopy = false)
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     runner = makeRunner(datasetList = mutableListOf(datasetSaved.id!!))
@@ -892,7 +892,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         WorkspaceCreateRequest(
             key = "key",
             name = "workspace",
-            solution = WorkspaceSolution(solutionSaved.id!!),
+            solution = WorkspaceSolution(solutionSaved.id),
             datasetCopy = true)
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     runner = makeRunner(datasetList = mutableListOf(datasetSaved.id!!))
@@ -917,7 +917,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             name = "Runner_With_unknown_runtemplate_id",
             parentId = "unknown_parent_id",
             runTemplateId = "unknown_runtemplate_id",
@@ -941,7 +941,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             name = "Runner_With_unknown_parent",
             parentId = parentId,
             datasetList = mutableListOf(datasetSaved.id!!),
@@ -1089,13 +1089,10 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                         DatasetAccessControl(defaultName, ROLE_USER))))
   }
 
-  fun makeSolution(organizationId: String = organizationSaved.id): Solution {
-    return Solution(
-        id = "solutionId",
+  fun makeSolution(organizationId: String = organizationSaved.id): SolutionCreateRequest {
+    return SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "My solution",
-        organizationId = organizationId,
-        ownerId = "ownerId",
         parameterGroups =
             mutableListOf(
                 RunTemplateParameterGroup(
@@ -1138,11 +1135,11 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                         OrganizationAccessControl(id = userName, role = role))))
 
   fun makeWorkspaceCreateRequest(
-      organizationId: String = organizationSaved.id,
-      solutionId: String = solutionSaved.id!!,
-      name: String = "name",
-      userName: String = defaultName,
-      role: String = ROLE_ADMIN
+    organizationId: String = organizationSaved.id,
+    solutionId: String = solutionSaved.id,
+    name: String = "name",
+    userName: String = defaultName,
+    role: String = ROLE_ADMIN
   ) = WorkspaceCreateRequest(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -1160,7 +1157,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun makeRunner(
     organizationId: String = organizationSaved.id,
     workspaceId: String = workspaceSaved.id,
-    solutionId: String = solutionSaved.id!!,
+    solutionId: String = solutionSaved.id,
     name: String = "name",
     datasetList: MutableList<String>? = mutableListOf(),
     parentId: String? = null,

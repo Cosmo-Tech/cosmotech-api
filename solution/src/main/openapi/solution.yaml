@@ -723,6 +723,7 @@ components:
         - ownerId
         - name
         - runTemplates
+        - security
 
     # Request Objects
     SolutionCreateRequest:
@@ -749,12 +750,44 @@ components:
           type: string
           description: The Solution version MAJOR.MINOR.PATCH
           example: "1.0.0"
+        alwaysPull:
+          type: boolean
+          description: Set to true if the runtemplate wants to always pull the image
+          default: false
+        csmSimulator:
+          type: string
+          description: The main Cosmo Tech simulator name used in standard Run Template
+          example: "brewery_simulator"
         tags:
           type: array
           description: The list of tags
           items:
             type: string
           example: ["brewery", "optimization"]
+        parameters:
+          type: array
+          description: The list of Run Template Parameters
+          items:
+            $ref: '#/components/schemas/RunTemplateParameter'
+        parameterGroups:
+          type: array
+          description: The list of parameters groups for the Run Templates
+          items:
+            $ref: '#/components/schemas/RunTemplateParameterGroup'
+        runTemplates:
+          type: array
+          default: []
+          description: List of Run Templates
+          items:
+            $ref: '#/components/schemas/RunTemplate'
+        sdkVersion:
+          type: string
+          description: The MAJOR.MINOR version used to build this solution
+          example: "2.4"
+        url:
+          type: string
+          description: An optional URL link to solution page
+          example: "https://github.com/Cosmo-Tech/brewery-solution"
         security:
           $ref: '#/components/schemas/SolutionSecurity'
       required:
@@ -818,12 +851,6 @@ components:
           description: The list of parameters groups for the Run Templates
           items:
             $ref: '#/components/schemas/RunTemplateParameterGroup'
-        runTemplates:
-          type: array
-          default: [ ]
-          description: List of Run Templates
-          items:
-            $ref: '#/components/schemas/RunTemplate'
 
     # Security Objects
     SolutionSecurity:
@@ -1065,8 +1092,8 @@ components:
             description: A Run Template Parameter id
       required:
         - id
-        - labels
-        - parameters
+#         - labels
+#         - parametersy
 
     RunTemplateParameter:
       type: object

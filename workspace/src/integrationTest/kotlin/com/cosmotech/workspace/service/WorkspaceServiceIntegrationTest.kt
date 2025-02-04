@@ -30,6 +30,7 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionCreateRequest
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
@@ -80,7 +81,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var organization: OrganizationCreateRequest
-  lateinit var solution: Solution
+  lateinit var solution: SolutionCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
   lateinit var connector: Connector
   lateinit var dataset: Dataset
@@ -110,7 +111,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     solution = makeSolution(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace")
+    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     connector = makeConnector("Connector")
@@ -126,7 +127,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
     logger.info("should create a second new workspace")
-    val workspace2 = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace 2")
+    val workspace2 = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace 2")
     workspaceApiService.createWorkspace(organizationSaved.id, workspace2)
     val workspaceRetrieved =
         workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
@@ -162,7 +163,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns "userLambda"
 
     logger.info("should not create a new workspace")
-    val workspace2 = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace 2")
+    val workspace2 = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace 2")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.createWorkspace(organizationSaved.id, workspace2)
     }
@@ -199,7 +200,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
     val expectedSize = 15
     IntRange(1, workspaceNumber - 1).forEach {
-      val workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "w-workspace-$it")
+      val workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "w-workspace-$it")
       workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     }
     logger.info("should find all workspaces and assert there are $workspaceNumber")
@@ -342,7 +343,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
         WorkspaceCreateRequest(
             name = "workspace",
             key = "key",
-            solution = WorkspaceSolution(solutionSaved.id!!),
+            solution = WorkspaceSolution(solutionSaved.id),
             security =
                 WorkspaceSecurity(
                     default = ROLE_NONE,
@@ -507,12 +508,9 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       organizationId: String = organizationSaved.id,
       userName: String = CONNECTED_DEFAULT_USER,
       role: String = ROLE_USER
-  ) = Solution(
-        id = "solutionId",
+  ) = SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "My solution",
-        organizationId = organizationId,
-        ownerId = "ownerId",
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
@@ -522,11 +520,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                         SolutionAccessControl(id = userName, role = role))))
 
   fun makeWorkspaceCreateRequest(
-      organizationId: String = organizationSaved.id,
-      solutionId: String = solutionSaved.id!!,
-      name: String = "name",
-      userName: String = CONNECTED_ADMIN_USER,
-      role: String = ROLE_ADMIN
+    organizationId: String = organizationSaved.id,
+    solutionId: String = solutionSaved.id,
+    name: String = "name",
+    userName: String = CONNECTED_ADMIN_USER,
+    role: String = ROLE_ADMIN
   ) = WorkspaceCreateRequest(
         key = UUID.randomUUID().toString(),
         name = name,

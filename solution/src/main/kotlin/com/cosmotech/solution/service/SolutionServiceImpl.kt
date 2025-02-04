@@ -200,15 +200,23 @@ class SolutionServiceImpl(
       solutionCreateRequest.security.toGenericSecurity(solutionId)).toResourceSecurity()
     val createdSolution =
       Solution(
-            id = solutionId,
+        id = solutionId,
         key = solutionCreateRequest.key,
         name = solutionCreateRequest.name,
         ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
         description = solutionCreateRequest.description,
         repository = solutionCreateRequest.repository,
-        version = solutionCreateRequest.repository,
+        version = solutionCreateRequest.version,
         tags = solutionCreateRequest.tags,
-            organizationId = organizationId,
+        organizationId = organizationId,
+        runTemplates = solutionCreateRequest.runTemplates!!,
+        parameters = solutionCreateRequest.parameters,
+        parameterGroups = solutionCreateRequest.parameterGroups,
+        url = solutionCreateRequest.url,
+        csmSimulator = solutionCreateRequest.csmSimulator,
+        alwaysPull = solutionCreateRequest.alwaysPull,
+        sdkVersion = solutionCreateRequest.sdkVersion,
+        security = security
       )
     return solutionRepository.save(createdSolution)
   }
@@ -243,7 +251,7 @@ class SolutionServiceImpl(
 
     val updatedSolution = Solution(
       id = solutionId,
-      name = solutionUpdateRequest.name!!,
+      name = solutionUpdateRequest.name ?: existingSolution.name,
       ownerId = existingSolution.ownerId,
       description = solutionUpdateRequest.description,
       tags = solutionUpdateRequest.tags,
@@ -252,38 +260,18 @@ class SolutionServiceImpl(
       version = solutionUpdateRequest.version,
       url = solutionUpdateRequest.url,
       csmSimulator = solutionUpdateRequest.csmSimulator,
-      runTemplates = solutionUpdateRequest.runTemplates!!,
       alwaysPull = solutionUpdateRequest.alwaysPull,
       parameters = solutionUpdateRequest.parameters,
       sdkVersion = solutionUpdateRequest.sdkVersion,
-      parameterGroups = solutionUpdateRequest.parameterGroups
+      parameterGroups = solutionUpdateRequest.parameterGroups,
+      security = existingSolution.security
     )
     
     var hasChanged =
         existingSolution
             .compareToAndMutateIfNeeded(
-                solution, excludedFields = arrayOf("ownerId", "runTemplates"))
+              updatedSolution, excludedFields = arrayOf("ownerId", "runTemplates"))
             .isNotEmpty()
-
-    if (solution.ownerId != null && solution.changed(existingSolution) { ownerId }) {
-      // Allow to change the ownerId as well, but only the owner can transfer the ownership
-      val isPlatformAdmin =
-          getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
-      if (existingSolution.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
-          !isPlatformAdmin) {
-        // TODO Only the owner or an admin should be able to perform this operation
-        throw CsmAccessForbiddenException(
-            "You are not allowed to change the ownership of this Resource")
-      }
-      existingSolution.ownerId = solution.ownerId
-      hasChanged = true
-    }
-
-    if (solution.security != existingSolution.security) {
-      logger.warn(
-          "Security modification has not been applied to solution $solutionId," +
-              " please refer to the appropriate security endpoints to perform this maneuver")
-    }
 
     return if (hasChanged) {
       solutionRepository.save(existingSolution)
@@ -324,7 +312,6 @@ class SolutionServiceImpl(
   override fun getSolutionSecurity(organizationId: String, solutionId: String): SolutionSecurity {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ_SECURITY)
     return solution.security
-        ?: throw CsmResourceNotFoundException("RBAC not defined for ${solution.id}")
   }
 
   override fun updateSolutionDefaultSecurity(
@@ -336,7 +323,7 @@ class SolutionServiceImpl(
     val rbacSecurity = csmRbac.setDefault(solution.security.toGenericSecurity(solutionId), solutionRole.role)
     solution.security = rbacSecurity.toResourceSecurity()
     solutionRepository.save(solution)
-    return solution.security as SolutionSecurity
+    return solution.security
   }
 
   override fun createSolutionAccessControl(
@@ -423,18 +410,18 @@ class SolutionServiceImpl(
   fun updateSecurityVisibility(solution: Solution): Solution {
     if (csmRbac.check(solution.security.toGenericSecurity(solution.id), PERMISSION_READ_SECURITY).not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
-      val retrievedAC = solution.security!!.accessControlList.firstOrNull { it.id == username }
+      val retrievedAC = solution.security.accessControlList.firstOrNull { it.id == username }
       if (retrievedAC != null) {
         return solution.copy(
             security =
                 SolutionSecurity(
-                    default = solution.security!!.default,
+                    default = solution.security.default,
                     accessControlList = mutableListOf(retrievedAC)))
       } else {
         return solution.copy(
             security =
                 SolutionSecurity(
-                    default = solution.security!!.default, accessControlList = mutableListOf()))
+                    default = solution.security.default, accessControlList = mutableListOf()))
       }
     }
     return solution

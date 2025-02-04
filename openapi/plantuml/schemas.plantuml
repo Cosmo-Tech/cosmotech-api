@@ -428,28 +428,45 @@ entity SendRunDataRequest {
 }
 
 entity Solution {
-    id: String
+    * id: String
     organizationId: String
     key: String
-    name: String
+    * name: String
     description: String
     repository: String
     alwaysPull: Boolean
     csmSimulator: String
     version: String
-    ownerId: String
+    * ownerId: String
     sdkVersion: String
     url: String
     tags: List<String>
     parameters: List<RunTemplateParameter>
     parameterGroups: List<RunTemplateParameterGroup>
     * runTemplates: List<RunTemplate>
-    security: SolutionSecurity
+    * security: SolutionSecurity
 }
 
 entity SolutionAccessControl {
     * id: String
     * role: String
+}
+
+entity SolutionCreateRequest {
+    * key: String
+    * name: String
+    description: String
+    repository: String
+    version: String
+    alwaysPull: Boolean
+    csmSimulator: String
+    tags: List<String>
+    parameters: List<RunTemplateParameter>
+    parameterGroups: List<RunTemplateParameterGroup>
+    runTemplates: List<RunTemplate>
+    sdkVersion: String
+    url: String
+    security: SolutionSecurity
 }
 
 entity SolutionRole {
@@ -459,6 +476,21 @@ entity SolutionRole {
 entity SolutionSecurity {
     * default: String
     * accessControlList: List<SolutionAccessControl>
+}
+
+entity SolutionUpdateRequest {
+    key: String
+    name: String
+    description: String
+    repository: String
+    alwaysPull: Boolean
+    csmSimulator: String
+    version: String
+    sdkVersion: String
+    url: String
+    tags: List<String>
+    parameters: List<RunTemplateParameter>
+    parameterGroups: List<RunTemplateParameterGroup>
 }
 
 entity SourceInfo {
@@ -584,6 +616,12 @@ WorkspaceCreateRequest -- WorkspaceWebApp : webApp
 WorkspaceCreateRequest -- WorkspaceSecurity : security
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 RunContainer -- ContainerResourceSizing : runSizing
+SolutionCreateRequest -- "0..*" RunTemplateParameter : parameters
+SolutionCreateRequest -- "0..*" RunTemplateParameterGroup : parameterGroups
+SolutionCreateRequest -- "0..*" RunTemplate : runTemplates
+SolutionCreateRequest -- SolutionSecurity : security
+SolutionUpdateRequest -- "0..*" RunTemplateParameter : parameters
+SolutionUpdateRequest -- "0..*" RunTemplateParameterGroup : parameterGroups
 OrganizationCreateRequest -- OrganizationSecurity : security
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing

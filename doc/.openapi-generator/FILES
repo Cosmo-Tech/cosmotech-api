@@ -63,8 +63,10 @@ Models/RunnerSecurity.md
 Models/RunnerValidationStatus.md
 Models/Solution.md
 Models/SolutionAccessControl.md
+Models/SolutionCreateRequest.md
 Models/SolutionRole.md
 Models/SolutionSecurity.md
+Models/SolutionUpdateRequest.md
 Models/SourceInfo.md
 Models/SubDatasetGraphQuery.md
 Models/TwinGraphBatchResult.md

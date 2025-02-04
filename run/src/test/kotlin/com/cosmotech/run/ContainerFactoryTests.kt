@@ -21,6 +21,8 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateOrchestrator
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSecurity
@@ -242,9 +244,11 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
+      ownerId = "ownerId",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplate()),
+      security = SolutionSecurity(ROLE_ADMIN, mutableListOf()),
     )
   }
 
