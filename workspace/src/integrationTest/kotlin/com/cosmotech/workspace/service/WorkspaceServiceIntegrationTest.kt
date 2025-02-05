@@ -28,6 +28,9 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionCreateRequest
@@ -511,6 +514,12 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   ) = SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "My solution",
+    runTemplates = mutableListOf(RunTemplate("template")),
+    parameters = mutableListOf(RunTemplateParameter("parameter")),
+    csmSimulator = "simulator",
+    parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+    repository = "repository",
+    version = "1.0.0",
         security =
             SolutionSecurity(
                 default = ROLE_NONE,

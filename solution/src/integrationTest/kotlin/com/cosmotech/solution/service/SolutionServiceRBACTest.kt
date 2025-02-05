@@ -1638,6 +1638,11 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
         key = UUID.randomUUID().toString(),
         name = "My solution",
         runTemplates = mutableListOf(RunTemplate("runTemplate")),
+    csmSimulator = "simulator",
+    version = "1.0.0",
+     repository = "repository",
+    parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+    parameters = mutableListOf(RunTemplateParameter("parameter")),
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
