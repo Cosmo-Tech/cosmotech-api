@@ -29,6 +29,7 @@ import com.cosmotech.solution.domain.SolutionCreateRequest
 import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.solution.domain.SolutionUpdateRequest
+import com.cosmotech.solution.repository.SolutionRepository
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension

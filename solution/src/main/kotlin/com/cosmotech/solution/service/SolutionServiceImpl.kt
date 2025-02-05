@@ -209,7 +209,7 @@ class SolutionServiceImpl(
         version = solutionCreateRequest.version,
         tags = solutionCreateRequest.tags,
         organizationId = organizationId,
-        runTemplates = solutionCreateRequest.runTemplates!!,
+        runTemplates = solutionCreateRequest.runTemplates,
         parameters = solutionCreateRequest.parameters!!,
         parameterGroups = solutionCreateRequest.parameterGroups!!,
         url = solutionCreateRequest.url,
@@ -260,9 +260,9 @@ class SolutionServiceImpl(
       url = solutionUpdateRequest.url ?: existingSolution.url,
       csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
       alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
-      parameters = existingSolution.parameters,
+      parameters = existingSolution.parameters ?: existingSolution.parameters,
       sdkVersion = solutionUpdateRequest.sdkVersion ?: existingSolution.sdkVersion,
-      parameterGroups = existingSolution.parameterGroups,
+      parameterGroups = existingSolution.parameterGroups ?: existingSolution.parameterGroups,
       security = existingSolution.security
     )
 
