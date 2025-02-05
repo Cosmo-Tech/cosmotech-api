@@ -37,6 +37,8 @@ import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionCreateRequest
@@ -212,6 +214,11 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                     id = UUID.randomUUID().toString(),
                     name = "RunTemplate1",
                     description = "RunTemplate1 description")),
+    parameters = mutableListOf(RunTemplateParameter("parameter")),
+    csmSimulator = "simulator",
+    version = "1.0.0",
+    repository = "repository",
+    parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
         security =
             SolutionSecurity(
                 default = ROLE_NONE,

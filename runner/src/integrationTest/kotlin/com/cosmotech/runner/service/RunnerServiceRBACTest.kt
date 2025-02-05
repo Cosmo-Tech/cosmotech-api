@@ -45,6 +45,8 @@ import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionCreateRequest
@@ -4542,7 +4544,12 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
         key = UUID.randomUUID().toString(),
         name = "My solution",
         runTemplates = mutableListOf(RunTemplate("runTemplateId")),
-        security =
+    parameters = mutableListOf(RunTemplateParameter("parameter")),
+    repository = "repository",
+    csmSimulator = "simulator",
+    version = "1.0.0",
+    parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+    security =
             SolutionSecurity(
                 default = ROLE_NONE,
                 mutableListOf(

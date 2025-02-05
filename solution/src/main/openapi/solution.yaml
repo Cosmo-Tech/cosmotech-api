@@ -720,8 +720,15 @@ components:
             - $ref: '#/components/schemas/SolutionSecurity'
       required:
         - id
-        - ownerId
+        - organizationId
+        - key
         - name
+        - repository
+        - csmSimulator
+        - version
+        - ownerId
+        - parameters
+        - parameterGroups
         - runTemplates
         - security
 
@@ -793,6 +800,12 @@ components:
       required:
         - key
         - name
+        - repository
+        - version
+        - csmSimulator
+        - parameters
+        - parameterGroups
+        - runTemplates
 
     SolutionUpdateRequest:
       type: object

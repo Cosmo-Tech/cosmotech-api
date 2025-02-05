@@ -143,7 +143,7 @@ class SolutionServiceImpl(
     }
 
     val runTemplateParameterGroupMap =
-        existingSolution.parameterGroups?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+        existingSolution.parameterGroups.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
     runTemplateParameterGroupMap.putAll(
         runTemplateParameterGroup.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameterGroups = runTemplateParameterGroupMap.values.toMutableList()
@@ -164,7 +164,7 @@ class SolutionServiceImpl(
     }
 
     val runTemplateParameterMap =
-        existingSolution.parameters?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+        existingSolution.parameters.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
     runTemplateParameterMap.putAll(
         runTemplateParameter.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameters = runTemplateParameterMap.values.toMutableList()
@@ -209,7 +209,7 @@ class SolutionServiceImpl(
         version = solutionCreateRequest.version,
         tags = solutionCreateRequest.tags,
         organizationId = organizationId,
-        runTemplates = solutionCreateRequest.runTemplates!!,
+        runTemplates = solutionCreateRequest.runTemplates,
         parameters = solutionCreateRequest.parameters,
         parameterGroups = solutionCreateRequest.parameterGroups,
         url = solutionCreateRequest.url,
@@ -252,22 +252,23 @@ class SolutionServiceImpl(
     val updatedSolution = Solution(
       id = solutionId,
       name = solutionUpdateRequest.name ?: existingSolution.name,
+      organizationId = existingSolution.organizationId,
       ownerId = existingSolution.ownerId,
       description = solutionUpdateRequest.description,
       tags = solutionUpdateRequest.tags,
-      repository = solutionUpdateRequest.repository,
-      key = solutionUpdateRequest.key,
-      version = solutionUpdateRequest.version,
+      repository = solutionUpdateRequest.repository ?: existingSolution.repository,
+      key = solutionUpdateRequest.key ?: existingSolution.key,
+      version = solutionUpdateRequest.version ?: existingSolution.version,
       url = solutionUpdateRequest.url,
-      csmSimulator = solutionUpdateRequest.csmSimulator,
+      csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
       alwaysPull = solutionUpdateRequest.alwaysPull,
-      parameters = solutionUpdateRequest.parameters,
+      parameters = solutionUpdateRequest.parameters ?: existingSolution.parameters,
       sdkVersion = solutionUpdateRequest.sdkVersion,
-      parameterGroups = solutionUpdateRequest.parameterGroups,
+      parameterGroups = solutionUpdateRequest.parameterGroups ?: existingSolution.parameterGroups,
       security = existingSolution.security
     )
     
-    var hasChanged =
+    val hasChanged =
         existingSolution
             .compareToAndMutateIfNeeded(
               updatedSolution, excludedFields = arrayOf("ownerId", "runTemplates"))

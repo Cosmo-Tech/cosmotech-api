@@ -6,14 +6,14 @@
 | **key** | **String** | The Solution key which groups Solution versions | [default to null] |
 | **name** | **String** | The Solution name | [default to null] |
 | **description** | **String** | The Solution description | [optional] [default to null] |
-| **repository** | **String** | The registry repository containing the image | [optional] [default to null] |
-| **version** | **String** | The Solution version MAJOR.MINOR.PATCH | [optional] [default to null] |
+| **repository** | **String** | The registry repository containing the image | [default to null] |
+| **version** | **String** | The Solution version MAJOR.MINOR.PATCH | [default to null] |
 | **alwaysPull** | **Boolean** | Set to true if the runtemplate wants to always pull the image | [optional] [default to false] |
-| **csmSimulator** | **String** | The main Cosmo Tech simulator name used in standard Run Template | [optional] [default to null] |
+| **csmSimulator** | **String** | The main Cosmo Tech simulator name used in standard Run Template | [default to null] |
 | **tags** | **List** | The list of tags | [optional] [default to null] |
-| **parameters** | [**List**](RunTemplateParameter.md) | The list of Run Template Parameters | [optional] [default to null] |
-| **parameterGroups** | [**List**](RunTemplateParameterGroup.md) | The list of parameters groups for the Run Templates | [optional] [default to null] |
-| **runTemplates** | [**List**](RunTemplate.md) | List of Run Templates | [optional] [default to []] |
+| **parameters** | [**List**](RunTemplateParameter.md) | The list of Run Template Parameters | [default to null] |
+| **parameterGroups** | [**List**](RunTemplateParameterGroup.md) | The list of parameters groups for the Run Templates | [default to null] |
+| **runTemplates** | [**List**](RunTemplate.md) | List of Run Templates | [default to []] |
 | **sdkVersion** | **String** | The MAJOR.MINOR version used to build this solution | [optional] [default to null] |
 | **url** | **String** | An optional URL link to solution page | [optional] [default to null] |
 | **security** | [**SolutionSecurity**](SolutionSecurity.md) |  | [optional] [default to null] |

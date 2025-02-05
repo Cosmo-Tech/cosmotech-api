@@ -110,11 +110,9 @@ class RunContainerFactory(
 
     val solutionRepository =
         solution.repository
-            ?: throw CsmClientException(
-                "Can't start a run using solution ${solution.id}: solution repository is not defined")
 
     if (csmPlatformProperties.containerRegistry.checkSolutionImage) {
-      containerRegistryService.checkSolutionImage(solutionRepository, solution.version ?: "latest")
+      containerRegistryService.checkSolutionImage(solutionRepository, solution.version)
     }
 
     val runner = runnerApiService.getRunner(organizationId, workspaceId, runnerId)
@@ -179,8 +177,6 @@ class RunContainerFactory(
 
     val solutionRepository =
         solution.repository
-            ?: throw CsmClientException(
-                "Can't start a run using solution ${solution.id}: solution repository is not defined")
     val imageName =
         getImageName(
             csmPlatformProperties.containerRegistry.host, solutionRepository, solution.version)
