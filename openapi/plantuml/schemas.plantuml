@@ -429,20 +429,20 @@ entity SendRunDataRequest {
 
 entity Solution {
     * id: String
-    organizationId: String
-    key: String
+    * organizationId: String
+    * key: String
     * name: String
     description: String
-    repository: String
+    * repository: String
     alwaysPull: Boolean
-    csmSimulator: String
-    version: String
+    * csmSimulator: String
+    * version: String
     * ownerId: String
     sdkVersion: String
     url: String
     tags: List<String>
-    parameters: List<RunTemplateParameter>
-    parameterGroups: List<RunTemplateParameterGroup>
+    * parameters: List<RunTemplateParameter>
+    * parameterGroups: List<RunTemplateParameterGroup>
     * runTemplates: List<RunTemplate>
     * security: SolutionSecurity
 }
@@ -456,14 +456,14 @@ entity SolutionCreateRequest {
     * key: String
     * name: String
     description: String
-    repository: String
-    version: String
+    * repository: String
+    * version: String
     alwaysPull: Boolean
-    csmSimulator: String
+    * csmSimulator: String
     tags: List<String>
-    parameters: List<RunTemplateParameter>
-    parameterGroups: List<RunTemplateParameterGroup>
-    runTemplates: List<RunTemplate>
+    * parameters: List<RunTemplateParameter>
+    * parameterGroups: List<RunTemplateParameterGroup>
+    * runTemplates: List<RunTemplate>
     sdkVersion: String
     url: String
     security: SolutionSecurity

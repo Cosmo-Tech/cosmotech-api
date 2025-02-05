@@ -46,6 +46,9 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionCreateRequest
@@ -1144,6 +1147,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   ) = SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "My solution",
+    runTemplates = mutableListOf(RunTemplate("template")),
+    csmSimulator = "simulator",
+    repository = "repository",
+    parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+    parameters = mutableListOf(RunTemplateParameter("parameter")),
+    version = "1.0.0",
         security =
             SolutionSecurity(
                 default = ROLE_NONE,

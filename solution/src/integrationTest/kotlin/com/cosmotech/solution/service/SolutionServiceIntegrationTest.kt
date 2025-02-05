@@ -29,6 +29,7 @@ import com.cosmotech.solution.domain.SolutionCreateRequest
 import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.solution.domain.SolutionUpdateRequest
+import com.cosmotech.solution.repository.SolutionRepository
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -92,14 +93,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test verify updateRunTemplate works as intended`() {
     val solution =
-        SolutionCreateRequest(
-            key = "key",
-            name = "name",
-            runTemplates = mutableListOf(RunTemplate(id = "one"), RunTemplate(id = "two")),
-            security =
-                SolutionSecurity(
-                    ROLE_NONE,
-                    mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+      makeSolution(runTemplates = mutableListOf(RunTemplate(id = "one"), RunTemplate(id = "two")))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
     val endTemplates =
@@ -118,6 +112,11 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             name = "name",
             runTemplates =
                 mutableListOf(RunTemplate(id = "one", name = "name_one"), RunTemplate(id = "two")),
+          version = "1.0.0",
+          repository = "repository",
+          csmSimulator = "simulator",
+          parameters = mutableListOf(RunTemplateParameter("parameter")),
+          parameterGroups = mutableListOf(),
           security = SolutionSecurity(ROLE_ADMIN, mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN)))
         )
     // Assert that no runTemplate were deleted
@@ -232,12 +231,12 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val parameterGroup1 = RunTemplateParameterGroup(id = "parameterGroupId1")
     val parameterGroup2 = RunTemplateParameterGroup(id = "parameterGroupId2")
     solutionApiService.updateSolutionParameterGroups(
-        solutionSaved.organizationId!!,
+      solutionSaved.organizationId,
       solutionSaved.id,
         listOf(parameterGroup1, parameterGroup2))
     val foundSolution =
-        solutionApiService.getSolution(solutionSaved.organizationId!!, solutionSaved.id)
-    assertTrue(foundSolution.parameterGroups!!.size == 2)
+        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
+    assertTrue(foundSolution.parameterGroups.size == 2)
 
     logger.info(
         "should replace the parameter groups and assert that the list contains only 1 element")
@@ -245,19 +244,19 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         RunTemplateParameterGroup(
             id = "parameterGroupId1", labels = mutableMapOf("pkey" to "value"))
     solutionApiService.updateSolutionParameterGroups(
-        solutionSaved.organizationId!!, solutionSaved.id, listOf(parameterGroup3))
+      solutionSaved.organizationId, solutionSaved.id, listOf(parameterGroup3))
     val foundSolutionAfterReplace =
-        solutionApiService.getSolution(solutionSaved.organizationId!!, solutionSaved.id)
-    assertTrue(foundSolutionAfterReplace.parameterGroups!!.size == 2)
-    assertTrue(foundSolutionAfterReplace.parameterGroups!!.first().labels!!.containsKey("pkey"))
+        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
+    assertTrue(foundSolutionAfterReplace.parameterGroups.size == 2)
+    assertTrue(foundSolutionAfterReplace.parameterGroups.first().labels!!.containsKey("pkey"))
 
     logger.info("should remove all parameter groups and assert that the list is empty")
     solutionApiService.deleteSolutionParameterGroups(
-        solutionSaved.organizationId!!, solutionSaved.id
+      solutionSaved.organizationId, solutionSaved.id
     )
     val foundSolutionAfterRemove =
-        solutionApiService.getSolution(solutionSaved.organizationId!!, solutionSaved.id)
-    assertTrue(foundSolutionAfterRemove.parameterGroups!!.isEmpty())
+        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
+    assertTrue(foundSolutionAfterRemove.parameterGroups.isEmpty())
   }
 
   @Test
@@ -268,28 +267,28 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val parameter1 = RunTemplateParameter(id = "parameterId1")
     val parameter2 = RunTemplateParameter(id = "parameterId2")
     solutionApiService.updateSolutionParameters(
-        solutionSaved.organizationId!!, solutionSaved.id, listOf(parameter1, parameter2))
+      solutionSaved.organizationId, solutionSaved.id, listOf(parameter1, parameter2))
     val foundSolution =
-        solutionApiService.getSolution(solutionSaved.organizationId!!, solutionSaved.id)
-    assertTrue(foundSolution.parameters!!.size == 2)
+        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
+    assertTrue(foundSolution.parameters.size == 2)
 
     logger.info("should replace the parameters and assert that the list contains only 1 element")
     val parameter3 =
         RunTemplateParameter(id = "parameterId1", labels = mutableMapOf("pkey" to "value"))
     solutionApiService.updateSolutionParameters(
-        solutionSaved.organizationId!!, solutionSaved.id, listOf(parameter3))
+      solutionSaved.organizationId, solutionSaved.id, listOf(parameter3))
     val foundSolutionAfterReplace =
-        solutionApiService.getSolution(solutionSaved.organizationId!!, solutionSaved.id)
-    assertTrue(foundSolutionAfterReplace.parameters!!.size == 2)
-    assertTrue(foundSolutionAfterReplace.parameters!!.first().labels!!.containsKey("pkey"))
+        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
+    assertTrue(foundSolutionAfterReplace.parameters.size == 2)
+    assertTrue(foundSolutionAfterReplace.parameters.first().labels!!.containsKey("pkey"))
 
     logger.info("should remove all parameters and assert that the list is empty")
     solutionApiService.deleteSolutionParameters(
-        solutionSaved.organizationId!!, solutionSaved.id
+      solutionSaved.organizationId, solutionSaved.id
     )
     val foundSolutionAfterRemove =
-        solutionApiService.getSolution(solutionSaved.organizationId!!, solutionSaved.id)
-    assertTrue(foundSolutionAfterRemove.parameters!!.isEmpty())
+        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
+    assertTrue(foundSolutionAfterRemove.parameters.isEmpty())
   }
 
   @Test
@@ -300,9 +299,9 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val runTemplate1 = RunTemplate(id = "runTemplateId1")
     val runTemplate2 = RunTemplate(id = "runTemplateId2")
     solutionApiService.updateSolutionRunTemplates(
-        solutionSaved.organizationId!!, solutionSaved.id, listOf(runTemplate1, runTemplate2))
+      solutionSaved.organizationId, solutionSaved.id, listOf(runTemplate1, runTemplate2))
     val foundSolution =
-        solutionApiService.getSolution(solutionSaved.organizationId!!, solutionSaved.id)
+        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
     assertEquals(2, foundSolution.runTemplates.size)
 
     logger.info(
@@ -310,9 +309,9 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val labels: MutableMap<String, String>? = mutableMapOf("fr" to "runTemplateName")
     val runTemplate3 = RunTemplate(id = "runTemplateId1", labels = labels)
     solutionApiService.updateSolutionRunTemplates(
-        solutionSaved.organizationId!!, solutionSaved.id, listOf(runTemplate3))
+      solutionSaved.organizationId, solutionSaved.id, listOf(runTemplate3))
     val foundSolutionAfterReplace =
-        solutionApiService.getSolution(solutionSaved.organizationId!!, solutionSaved.id)
+        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
     assertEquals(2, foundSolutionAfterReplace.runTemplates.size)
     assertEquals(
         "runTemplateName", foundSolutionAfterReplace.runTemplates.first().labels?.get("fr"))
@@ -321,16 +320,16 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     labels?.set("fr", "runTemplateNameNew")
     val runTemplate4 = RunTemplate(id = "runTemplateId1", labels = labels)
     solutionApiService.updateSolutionRunTemplate(
-        solutionSaved.organizationId!!, solutionSaved.id, runTemplate4.id, runTemplate4)
+      solutionSaved.organizationId, solutionSaved.id, runTemplate4.id, runTemplate4)
     val foundSolutionAfterUpdate =
-        solutionApiService.getSolution(solutionSaved.organizationId!!, solutionSaved.id)
+        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
     assertEquals(
         "runTemplateNameNew", foundSolutionAfterUpdate.runTemplates.first().labels?.get("fr"))
 
     logger.info("should remove all run templates and assert that the list is empty")
-    solutionApiService.deleteSolutionRunTemplates(solutionSaved.organizationId!!, solutionSaved.id)
+    solutionApiService.deleteSolutionRunTemplates(solutionSaved.organizationId, solutionSaved.id)
     val foundSolutionAfterRemove =
-        solutionApiService.getSolution(solutionSaved.organizationId!!, solutionSaved.id)
+        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
     assertTrue(foundSolutionAfterRemove.runTemplates.isEmpty())
   }
 
@@ -442,15 +441,21 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
     val brokenSolution =
         SolutionCreateRequest(
-            name = "solution",
+          name = "solution",
           key = "key",
-            security =
-                SolutionSecurity(
-                    default = ROLE_NONE,
-                    accessControlList =
-                        mutableListOf(
-                            SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                            SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
+          repository = "repository",
+          runTemplates = mutableListOf(RunTemplate("templates")),
+          csmSimulator = "simulator",
+          parameters = mutableListOf(RunTemplateParameter("parameter")),
+          parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+          version = "1.0.0",
+          security =
+              SolutionSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                          SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
     assertThrows<IllegalArgumentException> {
       solutionApiService.createSolution(organizationSaved.id, brokenSolution)
     }
@@ -525,7 +530,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         accessControlList = mutableListOf(SolutionAccessControl("id", ROLE_ADMIN)))
     )
     val solutionCreateRequest = SolutionCreateRequest(
-      key = solutionToCreate.key!!,
+      key = solutionToCreate.key,
       name = solutionToCreate.name,
       description = solutionToCreate.description,
       version = solutionToCreate.version,
@@ -572,7 +577,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         accessControlList = mutableListOf(SolutionAccessControl("id", ROLE_ADMIN)))
     )
     val solutionCreateRequest = SolutionCreateRequest(
-      key = solutionToCreate.key!!,
+      key = solutionToCreate.key,
       name = solutionToCreate.name,
       description = solutionToCreate.description,
       version = solutionToCreate.version,
@@ -581,6 +586,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
       runTemplates = solutionToCreate.runTemplates,
       parameterGroups = solutionToCreate.parameterGroups,
       parameters = solutionToCreate.parameters,
+      csmSimulator = solutionToCreate.csmSimulator,
       security = solutionToCreate.security,
     )
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solutionCreateRequest)
@@ -606,14 +612,14 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
       ownerId = solutionSaved.ownerId,
       description = solutionUpdateRequest.description,
       tags = solutionUpdateRequest.tags,
-      parameterGroups = solutionUpdateRequest.parameterGroups,
+      parameterGroups = solutionUpdateRequest.parameterGroups!!,
       alwaysPull = solutionUpdateRequest.alwaysPull,
       sdkVersion = solutionUpdateRequest.sdkVersion,
-      csmSimulator = solutionUpdateRequest.csmSimulator,
+      csmSimulator = solutionUpdateRequest.csmSimulator!!,
       url = solutionUpdateRequest.url,
-      repository = solutionUpdateRequest.repository,
-      parameters = solutionUpdateRequest.parameters,
-      version = solutionUpdateRequest.version,
+      repository = solutionUpdateRequest.repository!!,
+      parameters = solutionUpdateRequest.parameters!!,
+      version = solutionUpdateRequest.version!!,
     )
 
     solutionSaved = solutionApiService.updateSolution(organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
@@ -634,15 +640,24 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun makeSolution(
-      organizationId: String = organizationSaved.id,
-      runTemplates: MutableList<RunTemplate> = mutableListOf(),
-      userName: String = CONNECTED_READER_USER,
-      role: String = ROLE_VIEWER
-  ): SolutionCreateRequest {
-    return SolutionCreateRequest(
+    organizationId: String = organizationSaved.id,
+    runTemplates: MutableList<RunTemplate> = mutableListOf(),
+    version: String = "1.0.0",
+    repository: String = "repository",
+    csmSimulator: String = "simulator",
+    parameter: MutableList<RunTemplateParameter> = mutableListOf(),
+    parameterGroup: MutableList<RunTemplateParameterGroup> = mutableListOf(),
+    userName: String = CONNECTED_READER_USER,
+    role: String = ROLE_VIEWER
+  ) = SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "My solution",
         runTemplates = runTemplates,
+        version = version,
+        repository = repository,
+        csmSimulator = csmSimulator,
+        parameters = parameter,
+        parameterGroups = parameterGroup,
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
@@ -651,4 +666,3 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                         SolutionAccessControl(id = userName, role = role),
                         SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
-}

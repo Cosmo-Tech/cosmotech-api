@@ -28,6 +28,9 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.toGenericSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionSecurity
@@ -642,11 +645,17 @@ class WorkspaceServiceImplTests {
 
   fun mockSolution(organizationId: String): Solution {
     return Solution(
-        id = "solutionId",
-        key = UUID.randomUUID().toString(),
-        name = "My solution",
-        organizationId = organizationId,
-        ownerId = "ownerId",
+      id = "solutionId",
+      key = UUID.randomUUID().toString(),
+      name = "My solution",
+      organizationId = organizationId,
+      ownerId = "ownerId",
+      version = "1.0.0",
+      repository = "repository",
+      csmSimulator = "simulator",
+      parameters = mutableListOf(RunTemplateParameter("parameter")),
+      parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+      runTemplates = mutableListOf(RunTemplate("template")),
       security = SolutionSecurity(ROLE_ADMIN, mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN)))
     )
   }

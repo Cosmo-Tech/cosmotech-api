@@ -1111,6 +1111,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             mutableListOf(
                 RunTemplate(
                     id = "runTemplateId", parameterGroups = mutableListOf("testParameterGroups"))),
+      csmSimulator = "simulator",
+      repository = "repository",
+      version = "1.0.0",
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
