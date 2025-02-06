@@ -39,7 +39,7 @@ csm:
       storage:
         base-uri: "changeme"
         resource-uri: "changeme"
-        connection-string: "DefaultEndpointsProtocol=https;AccountName=${spring.cloud.azure.storage.blob.account-name};AccountKey=${azure.storage.account-key};EndpointSuffix=core.windows.net"
+        connection-string: "DefaultEndpointsProtocol=https;AccountName=${spring.cloud.azure.storage.blob.account-name};AccountKey=${spring.cloud.azure.storage.blob.account-key};EndpointSuffix=core.windows.net"
       containerRegistries:
         core: ghcr.io
         solutions: ""
