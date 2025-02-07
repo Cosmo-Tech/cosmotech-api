@@ -155,7 +155,7 @@ class DatasetServiceImpl(
               val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
               datasetRepository.findByOrganizationId(organizationId, currentUser, it).toList()
             } else {
-              datasetRepository.findByOrganizationIdNoSecurity(organizationId, it).toList()
+              datasetRepository.findByOrganizationId(organizationId, it).toList()
             }
           }
     } else {
@@ -164,7 +164,7 @@ class DatasetServiceImpl(
             val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
             datasetRepository.findByOrganizationId(organizationId, currentUser, pageable).toList()
           } else {
-            datasetRepository.findByOrganizationIdNoSecurity(organizationId, pageable).toList()
+            datasetRepository.findByOrganizationId(organizationId, pageable).toList()
           }
     }
     result.forEach { it.security = updateSecurityVisibility(it).security }
@@ -1142,7 +1142,7 @@ class DatasetServiceImpl(
     do {
       val datasetList =
           datasetRepository
-              .findByOrganizationIdNoSecurity(organizationUnregistered.organizationId, pageable)
+              .findByOrganizationId(organizationUnregistered.organizationId, pageable)
               .toList()
       datasetRepository.deleteAll(datasetList)
       pageable = pageable.next()

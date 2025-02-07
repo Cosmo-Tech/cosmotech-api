@@ -367,6 +367,32 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test find All Datasets as Platform Admin with returned datasetID lists`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    val numberOfDatasets = 500
+    val datasetIdListCreated = mutableListOf<String>()
+    IntRange(1, numberOfDatasets).forEach {
+      datasetIdListCreated.add(
+          datasetApiService
+              .createDataset(
+                  organizationSaved.id!!, makeDatasetWithRole("d-dataset-$it", "dataset-$it"))
+              .id!!)
+    }
+    logger.info("Change current user...")
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+
+    logger.info("should find all datasets and assert there are $numberOfDatasets")
+    val datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    assertEquals(numberOfDatasets, datasetList.size)
+
+    val datasetIdListRetrieved = datasetList.map { it.id }
+    assertTrue(datasetIdListCreated.containsAll(datasetIdListRetrieved))
+    assertTrue(datasetIdListRetrieved.containsAll(datasetIdListCreated))
+  }
+
+  @Test
   fun `test find All Datasets as Organization User`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
     val numberOfDatasets = 20

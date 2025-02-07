@@ -104,8 +104,7 @@ class DatasetServiceImplTests {
   @Test
   fun `findAllDatasets should return empty list when no dataset exists`() {
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
-    every { datasetRepository.findByOrganizationIdNoSecurity(any(), any<PageRequest>()) } returns
-        Page.empty()
+    every { datasetRepository.findByOrganizationId(any(), any<PageRequest>()) } returns Page.empty()
 
     val result = datasetService.findAllDatasets(ORGANIZATION_ID, null, null)
     assertEquals(emptyList(), result)
