@@ -27,8 +27,8 @@ interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
       pageRequest: PageRequest
   ): Page<Dataset>
 
-  @Query("(@organizationId:{\$organizationId})")
-  fun findByOrganizationIdNoSecurity(
+  @Query("@organizationId:{\$organizationId}")
+  fun findByOrganizationId(
       @Sanitize @Param("organizationId") organizationId: String,
       pageRequest: PageRequest
   ): Page<Dataset>
