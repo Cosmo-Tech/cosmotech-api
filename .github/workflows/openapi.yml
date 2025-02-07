@@ -79,7 +79,7 @@ jobs:
           arguments: mergeOpenApiFiles
 
       - name: Archive openapi.yaml
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: openapi
           path: openapi/openapi.yaml
@@ -104,7 +104,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download openapi artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: openapi
       - name: Validate merged OpenAPI definition
@@ -127,7 +127,7 @@ jobs:
         run: echo "::set-output name=gitRefName::${GITHUB_REF#refs/*/}"
 
       - name: Download openapi artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: openapi
 
