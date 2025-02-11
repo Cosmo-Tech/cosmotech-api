@@ -502,7 +502,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       key = "key",
       name = "name",
       ownerId = "ownerId",
-      solution = WorkspaceSolution(solutionSaved.id!!),
+      solution = WorkspaceSolution(solutionSaved.id),
       description = "description",
       linkedDatasetIdList = null,
       version = "1.0.0",
@@ -540,7 +540,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       key = "key",
       name = "name",
       ownerId = "ownerId",
-      solution = WorkspaceSolution(solutionSaved.id!!),
+      solution = WorkspaceSolution(solutionSaved.id),
       description = "description",
       linkedDatasetIdList = null,
       version = "1.0.0",
@@ -567,7 +567,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val workspaceUpdateRequest = WorkspaceUpdateRequest(
       key = "new key",
       name = "new name",
-      solution = WorkspaceSolution(solutionSaved.id!!),
+      solution = WorkspaceSolution(solutionSaved.id),
       description = "new description",
       tags = mutableListOf("newTag1", "newTag2"),
       webApp = WorkspaceWebApp(url = "new url"),
@@ -614,7 +614,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val minimalRequest = WorkspaceCreateRequest(
       key = "minimal-key",
       name = "Minimal Workspace",
-      solution = WorkspaceSolution(solutionSaved.id!!)
+      solution = WorkspaceSolution(solutionSaved.id)
     )
     val createdWorkspace = workspaceApiService.createWorkspace(organizationSaved.id, minimalRequest)
     assertEquals("minimal-key", createdWorkspace.key)

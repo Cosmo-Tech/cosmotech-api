@@ -21,7 +21,6 @@ import com.cosmotech.runner.api.RunnerApiService
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateOrchestrator
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
@@ -54,7 +53,6 @@ private const val PARAMETERS_RUNNER_VAR = "CSM_RUNNER_ID"
 private const val PARAMETERS_RUN_VAR = "CSM_RUN_ID"
 
 private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
-private const val CONTAINER_MODE_VAR = "CSM_CONTAINER_MODE"
 private const val CONTAINER_ORCHESTRATOR_LEGACY_VAR = "CSM_ENTRYPOINT_LEGACY"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
 private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
@@ -84,7 +82,6 @@ private val LABEL_SIZING =
         NODE_LABEL_HIGH_MEMORY to HIGH_MEMORY_SIZING,
     )
 
-private val CSM_ORC_ORCHESTRATOR_VALUE = RunTemplateOrchestrator.csmOrc.value
 
 @Component
 class RunContainerFactory(
@@ -175,11 +172,9 @@ class RunContainerFactory(
     val runTemplateId =
         runner.runTemplateId ?: throw IllegalStateException("Runner runTemplateId cannot be null")
 
-    val solutionRepository =
-        solution.repository
     val imageName =
         getImageName(
-            csmPlatformProperties.containerRegistry.host, solutionRepository, solution.version)
+            csmPlatformProperties.containerRegistry.host, solution.repository, solution.version)
 
     val envVars =
         getCommonEnvVars(
@@ -191,7 +186,6 @@ class RunContainerFactory(
             runId)
 
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
-    envVars[CONTAINER_MODE_VAR] = CSM_ORC_ORCHESTRATOR_VALUE
     envVars[CONTAINER_ORCHESTRATOR_LEGACY_VAR] = "false"
 
     envVars.putAll(getEventBusEnvVars(workspace))

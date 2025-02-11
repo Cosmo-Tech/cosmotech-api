@@ -12,17 +12,6 @@
 | **computeSize** | **String** | The compute size needed for this Run Template | [optional] [default to null] |
 | **runSizing** | [**RunTemplateResourceSizing**](RunTemplateResourceSizing.md) |  | [optional] [default to null] |
 | **noDataIngestionState** | **Boolean** | Set to true if the run template does not want to check data ingestion state | [optional] [default to null] |
-| **fetchDatasets** | **Boolean** | Whether or not the fetch dataset step is done | [optional] [default to null] |
-| **scenarioDataDownloadTransform** | **Boolean** | Whether or not the scenario data download transform step is done | [optional] [default to null] |
-| **fetchScenarioParameters** | **Boolean** | Whether or not the fetch parameters step is done | [optional] [default to null] |
-| **applyParameters** | **Boolean** | Whether or not the apply parameter step is done | [optional] [default to null] |
-| **validateData** | **Boolean** | Whether or not the validate step is done | [optional] [default to null] |
-| **sendDatasetsToDataWarehouse** | **Boolean** | Whether or not the Datasets values are sent to the DataWarehouse | [optional] [default to null] |
-| **sendInputParametersToDataWarehouse** | **Boolean** | Whether or not the input parameters values are sent to the DataWarehouse | [optional] [default to null] |
-| **preRun** | **Boolean** | Whether or not the pre-run step is done | [optional] [default to null] |
-| **run** | **Boolean** | Whether or not the run step is done | [optional] [default to null] |
-| **postRun** | **Boolean** | Whether or not the post-run step is done | [optional] [default to null] |
-| **parametersJson** | **Boolean** | Whether or not to store the scenario parameters in json instead of csv | [optional] [default to null] |
 | **parametersHandlerSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null] |
 | **datasetValidatorSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null] |
 | **preRunSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null] |
@@ -34,9 +23,7 @@
 | **gitRepositoryUrl** | **String** | An optional URL to the git repository | [optional] [default to null] |
 | **gitBranchName** | **String** | An optional git branch name | [optional] [default to null] |
 | **runTemplateSourceDir** | **String** | An optional directory where to find the run template source | [optional] [default to null] |
-| **orchestratorType** | [**RunTemplateOrchestrator**](RunTemplateOrchestrator.md) |  | [optional] [default to null] |
 | **executionTimeout** | **Integer** | An optional duration in seconds in which a workflow is allowed to run | [optional] [default to null] |
-| **deleteHistoricalData** | [**DeleteHistoricalData**](DeleteHistoricalData.md) |  | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

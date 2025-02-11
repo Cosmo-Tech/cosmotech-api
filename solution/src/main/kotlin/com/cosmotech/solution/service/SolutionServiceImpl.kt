@@ -143,7 +143,7 @@ class SolutionServiceImpl(
     }
 
     val runTemplateParameterGroupMap =
-        existingSolution.parameterGroups.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+        existingSolution.parameterGroups.associateBy { it.id }.toMutableMap()
     runTemplateParameterGroupMap.putAll(
         runTemplateParameterGroup.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameterGroups = runTemplateParameterGroupMap.values.toMutableList()
@@ -164,7 +164,7 @@ class SolutionServiceImpl(
     }
 
     val runTemplateParameterMap =
-        existingSolution.parameters.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+        existingSolution.parameters.associateBy { it.id }.toMutableMap()
     runTemplateParameterMap.putAll(
         runTemplateParameter.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameters = runTemplateParameterMap.values.toMutableList()
@@ -209,9 +209,9 @@ class SolutionServiceImpl(
         version = solutionCreateRequest.version,
         tags = solutionCreateRequest.tags,
         organizationId = organizationId,
-        runTemplates = solutionCreateRequest.runTemplates,
-        parameters = solutionCreateRequest.parameters,
-        parameterGroups = solutionCreateRequest.parameterGroups,
+        runTemplates = solutionCreateRequest.runTemplates!!,
+        parameters = solutionCreateRequest.parameters!!,
+        parameterGroups = solutionCreateRequest.parameterGroups!!,
         url = solutionCreateRequest.url,
         csmSimulator = solutionCreateRequest.csmSimulator,
         alwaysPull = solutionCreateRequest.alwaysPull,
@@ -247,23 +247,21 @@ class SolutionServiceImpl(
   ): Solution {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
-    // solutionId update is allowed but must be done with care. Maybe limit to minor update?
-
     val updatedSolution = Solution(
       id = solutionId,
       name = solutionUpdateRequest.name ?: existingSolution.name,
       organizationId = existingSolution.organizationId,
       ownerId = existingSolution.ownerId,
-      description = solutionUpdateRequest.description,
-      tags = solutionUpdateRequest.tags,
+      description = solutionUpdateRequest.description ?: existingSolution.description,
+      tags = solutionUpdateRequest.tags ?: existingSolution.tags,
       repository = solutionUpdateRequest.repository ?: existingSolution.repository,
       key = solutionUpdateRequest.key ?: existingSolution.key,
       version = solutionUpdateRequest.version ?: existingSolution.version,
-      url = solutionUpdateRequest.url,
+      url = solutionUpdateRequest.url ?: existingSolution.url,
       csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
-      alwaysPull = solutionUpdateRequest.alwaysPull,
+      alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
       parameters = solutionUpdateRequest.parameters ?: existingSolution.parameters,
-      sdkVersion = solutionUpdateRequest.sdkVersion,
+      sdkVersion = solutionUpdateRequest.sdkVersion ?: existingSolution.sdkVersion,
       parameterGroups = solutionUpdateRequest.parameterGroups ?: existingSolution.parameterGroups,
       security = existingSolution.security
     )

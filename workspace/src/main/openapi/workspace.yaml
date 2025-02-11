@@ -751,7 +751,7 @@ components:
           maxLength: 50
         name:
           type: string
-          description: Workspace name. This name is display in the sample webApp
+          description: Workspace name. This name is displayed in the sample webApp
           example: "FranceOffice"
           minLength: 1
           maxLength: 50

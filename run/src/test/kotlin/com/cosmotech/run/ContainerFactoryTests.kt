@@ -19,7 +19,6 @@ import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateOrchestrator
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
@@ -203,7 +202,6 @@ class ContainerFactoryTests {
                 "CSM_RUNNER_ID" to runner.id!!,
                 "CSM_RUN_ID" to runId,
                 "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
-                "CSM_CONTAINER_MODE" to RunTemplateOrchestrator.csmOrc.value,
                 "CSM_ENTRYPOINT_LEGACY" to "false",
                 "CSM_PROBES_MEASURES_TOPIC" to eventHubUri,
                 "CSM_SIMULATION" to runTemplate.csmSimulation!!,
@@ -237,7 +235,6 @@ class ContainerFactoryTests {
         name = "Test Run",
         csmSimulation = "TestSimulation",
         computeSize = "highcpupool",
-        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 

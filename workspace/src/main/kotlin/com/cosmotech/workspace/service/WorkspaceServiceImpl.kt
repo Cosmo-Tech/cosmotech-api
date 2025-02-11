@@ -5,8 +5,6 @@ package com.cosmotech.workspace.service
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.AddDatasetToWorkspace
 import com.cosmotech.api.events.AddWorkspaceToDataset
-import com.cosmotech.api.events.DeleteHistoricalDataOrganization
-import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.RemoveDatasetFromWorkspace
 import com.cosmotech.api.events.RemoveWorkspaceFromDataset
@@ -298,21 +296,6 @@ internal class WorkspaceServiceImpl(
     return getWorkspaceFiles(organizationId, workspaceId)
   }
 
-  @EventListener(DeleteHistoricalDataOrganization::class)
-  fun deleteHistoricalDataWorkspace(data: DeleteHistoricalDataOrganization) {
-    val organizationId = data.organizationId
-    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
-    val workspaceList = mutableListOf<Workspace>()
-
-    do {
-      val workspaces = listWorkspaces(organizationId, pageable.pageNumber, pageable.pageSize)
-      workspaceList.addAll(workspaces)
-      pageable = pageable.next()
-    } while (workspaces.isNotEmpty())
-
-    workspaceList.forEach { sendDeleteHistoricalDataWorkspaceEvent(organizationId, it, data) }
-  }
-
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
@@ -572,15 +555,6 @@ internal class WorkspaceServiceImpl(
   ) {
     this.eventPublisher.publishEvent(
         AddWorkspaceToDataset(this, organizationId, datasetId, workspaceId))
-  }
-
-  private fun sendDeleteHistoricalDataWorkspaceEvent(
-      organizationId: String,
-      it: Workspace,
-      data: DeleteHistoricalDataOrganization
-  ) {
-    this.eventPublisher.publishEvent(
-        DeleteHistoricalDataWorkspace(this, organizationId, it.id, data.deleteUnknown))
   }
 
   fun updateSecurityVisibility(workspace: Workspace): Workspace {
