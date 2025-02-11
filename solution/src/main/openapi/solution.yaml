@@ -38,8 +38,7 @@ paths:
                 $ref: '#/components/examples/Brewery'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/SolutionCreateRequest'
             examples:
               ADTConnector:
                 $ref: '#/components/examples/Brewery'
@@ -142,8 +141,7 @@ paths:
                 $ref: '#/components/examples/BreweryUpdate'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/SolutionUpdateRequest'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryUpdate'
@@ -200,6 +198,29 @@ paths:
               type: array
               items:
                 $ref: "#/components/schemas/RunTemplateParameter"
+            examples:
+              Parameters:
+                value:
+                  - id: "param1"
+                    labels:
+                      en: "Parameter 1"
+                      fr: "Paramètre 1"
+                    varType: "string"
+                    defaultValue: "default"
+          application/yaml:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/RunTemplateParameter"
+            examples:
+              Parameters:
+                value:
+                  - id: "param1"
+                    labels:
+                      en: "Parameter 1"
+                      fr: "Paramètre 1"
+                    varType: "string"
+                    defaultValue: "default"
       responses:
         "201":
           description: Parameters successfully updated
@@ -252,6 +273,29 @@ paths:
               type: array
               items:
                 $ref: "#/components/schemas/RunTemplateParameterGroup"
+            examples:
+              ParameterGroups:
+                value:
+                  - id: "group1"
+                    labels:
+                      en: "Group 1"
+                      fr: "Groupe 1"
+                    parameters:
+                      - "param1"
+          application/yaml:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/RunTemplateParameterGroup"
+            examples:
+              ParameterGroups:
+                value:
+                  - id: "group1"
+                    labels:
+                      en: "Group 1"
+                      fr: "Groupe 1"
+                    parameters:
+                      - "param1"
       responses:
         "201":
           description: Parameter groups successfully updated
@@ -304,6 +348,35 @@ paths:
               type: array
               items:
                 $ref: "#/components/schemas/RunTemplate"
+            examples:
+              RunTemplates:
+                value:
+                  - id: "template1"
+                    name: "Template 1"
+                    description: "Example template"
+                    csmSimulation: "ExampleSimulation"
+                    tags:
+                      - "example"
+                    computeSize: "small"
+                    parameterGroups:
+                      - "group1"
+          application/yaml:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/RunTemplate"
+            examples:
+              RunTemplates:
+                value:
+                  - id: "template1"
+                    name: "Template 1"
+                    description: "Example template"
+                    csmSimulation: "ExampleSimulation"
+                    tags:
+                      - "example"
+                    computeSize: "small"
+                    parameterGroups:
+                      - "group1"
       responses:
         "201":
           description: Run templates successfully updated
@@ -360,9 +433,39 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RunTemplate"
+            examples:
+              RunTemplate:
+                value:
+                  id: "template1"
+                  name: "Template 1"
+                  description: "Example template"
+                  csmSimulation: "ExampleSimulation"
+                  tags:
+                    - "example"
+                  computeSize: "small"
+                  parameterGroups:
+                    - "group1"
+                  deleteHistoricalData:
+                    enable: true
+                    pollFrequency: 10000
           application/yaml:
             schema:
               $ref: "#/components/schemas/RunTemplate"
+            examples:
+              RunTemplate:
+                value:
+                  id: "template1"
+                  name: "Template 1"
+                  description: "Example template"
+                  csmSimulation: "ExampleSimulation"
+                  tags:
+                    - "example"
+                  computeSize: "small"
+                  parameterGroups:
+                    - "group1"
+                  deleteHistoricalData:
+                    enable: true
+                    pollFrequency: 10000
       responses:
         "200":
           description: Run template successfully updated
@@ -449,8 +552,7 @@ paths:
                 $ref: '#/components/examples/BrewerySolutionRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/SolutionAccessControl'
             examples:
               BrewerySolutionRole:
                 $ref: '#/components/examples/BrewerySolutionRole'
@@ -529,8 +631,7 @@ paths:
                 $ref: '#/components/examples/BrewerySolutionAccessControl'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/SolutionAccessControl'
             examples:
               SolutionAccess:
                 $ref: '#/components/examples/BrewerySolutionAccessControl'
@@ -594,6 +695,12 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/SolutionRole'
+            examples:
+              BrewerySolutionRole:
+                $ref: '#/components/examples/BrewerySolutionRole'
+          application/yaml:
             schema:
               $ref: '#/components/schemas/SolutionRole'
             examples:
