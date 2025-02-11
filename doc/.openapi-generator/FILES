@@ -24,7 +24,6 @@ Models/DatasetTwinGraphHash.md
 Models/DatasetTwinGraphInfo.md
 Models/DatasetTwinGraphQuery.md
 Models/Dataset_connector.md
-Models/DeleteHistoricalData.md
 Models/FileUploadMetadata.md
 Models/FileUploadValidation.md
 Models/GraphProperties.md
@@ -48,7 +47,6 @@ Models/RunState.md
 Models/RunStatus.md
 Models/RunStatusNode.md
 Models/RunTemplate.md
-Models/RunTemplateOrchestrator.md
 Models/RunTemplateParameter.md
 Models/RunTemplateParameterGroup.md
 Models/RunTemplateParameterValue.md

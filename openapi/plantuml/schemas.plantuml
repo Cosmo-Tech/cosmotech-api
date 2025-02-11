@@ -130,12 +130,6 @@ entity DatasetTwinGraphQuery {
     * query: String
 }
 
-entity DeleteHistoricalData {
-    * enable: Boolean
-    pollFrequency: Integer
-    timeOut: Integer
-}
-
 entity FileUploadMetadata {
     name: String
     size: Integer
@@ -304,17 +298,6 @@ entity RunTemplate {
     computeSize: String
     runSizing: RunTemplateResourceSizing
     noDataIngestionState: Boolean
-    fetchDatasets: Boolean
-    scenarioDataDownloadTransform: Boolean
-    fetchScenarioParameters: Boolean
-    applyParameters: Boolean
-    validateData: Boolean
-    sendDatasetsToDataWarehouse: Boolean
-    sendInputParametersToDataWarehouse: Boolean
-    preRun: Boolean
-    run: Boolean
-    postRun: Boolean
-    parametersJson: Boolean
     parametersHandlerSource: RunTemplateStepSource
     datasetValidatorSource: RunTemplateStepSource
     preRunSource: RunTemplateStepSource
@@ -326,12 +309,7 @@ entity RunTemplate {
     gitRepositoryUrl: String
     gitBranchName: String
     runTemplateSourceDir: String
-    orchestratorType: RunTemplateOrchestrator
     executionTimeout: Integer
-    deleteHistoricalData: DeleteHistoricalData
-}
-
-entity RunTemplateOrchestrator {
 }
 
 entity RunTemplateParameter {
@@ -461,9 +439,9 @@ entity SolutionCreateRequest {
     alwaysPull: Boolean
     * csmSimulator: String
     tags: List<String>
-    * parameters: List<RunTemplateParameter>
-    * parameterGroups: List<RunTemplateParameterGroup>
-    * runTemplates: List<RunTemplate>
+    parameters: List<RunTemplateParameter>
+    parameterGroups: List<RunTemplateParameterGroup>
+    runTemplates: List<RunTemplate>
     sdkVersion: String
     url: String
     security: SolutionSecurity
@@ -569,8 +547,8 @@ entity WorkspaceSolution {
 }
 
 entity WorkspaceUpdateRequest {
-    * key: String
-    * name: String
+    key: String
+    name: String
     description: String
     tags: List<String>
     solution: WorkspaceSolution
@@ -614,7 +592,6 @@ RunStatus -- "0..*" RunStatusNode : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : edges
 RunTemplate -- RunTemplateResourceSizing : runSizing
-RunTemplate -- DeleteHistoricalData : deleteHistoricalData
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
 RunStatusNode -- RunResourceRequested : resourcesDuration
 WorkspaceUpdateRequest -- WorkspaceSolution : solution
