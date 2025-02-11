@@ -37,7 +37,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Runner'
+              $ref: '#/components/schemas/RunnerCreateRequest'
             examples:
               MasterRunner:
                 $ref: '#/components/examples/BreweryRunnerIn'
@@ -143,7 +143,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Runner'
+              $ref: '#/components/schemas/RunnerUpdateRequest'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryRunnerUpdate'
@@ -575,10 +575,11 @@ components:
           tokenUrl: "https://example.com/token"
           scopes: {}
   schemas:
+    # Base Runner object that includes all information
     Runner:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
-      description: a Runner with base information
+      description: a Runner with complete information
       properties:
         id:
           type: string
@@ -674,6 +675,84 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
             - $ref: '#/components/schemas/RunnerSecurity'
+      required:
+        - name
+        - security
+
+    # CRUD Operation Schemas
+    RunnerCreateRequest:
+      type: object
+      description: Request object for creating a new runner
+      properties:
+        name:
+          type: string
+          description: the Runner name
+        description:
+          type: string
+          description: the Runner description
+        tags:
+          type: array
+          description: the list of tags
+          items:
+            type: string
+        parentId:
+          type: string
+          description: the Runner parent id
+        runTemplateId:
+          type: string
+          description: the Solution Run Template Id associated with this Runner
+        datasetList:
+          type: array
+          description: the list of Dataset Id associated to this Runner Run Template
+          items:
+            type: string
+        runSizing:
+          description: definition of resources needed for the runner run
+          $ref: "#/components/schemas/RunnerResourceSizing"
+        parametersValues:
+          type: array
+          description: the list of Solution Run Template parameters values
+          items:
+            $ref: '#/components/schemas/RunnerRunTemplateParameterValue'
+        security:
+          $ref: '#/components/schemas/RunnerSecurity'
+      required:
+        - name
+        - security
+
+    RunnerUpdateRequest:
+      type: object
+      description: Request object for updating a runner
+      properties:
+        name:
+          type: string
+          description: the Runner name
+        description:
+          type: string
+          description: the Runner description
+        tags:
+          type: array
+          description: the list of tags
+          items:
+            type: string
+        runTemplateId:
+          type: string
+          description: the Solution Run Template Id associated with this Runner
+        datasetList:
+          type: array
+          description: the list of Dataset Id associated to this Runner Run Template
+          items:
+            type: string
+        runSizing:
+          description: definition of resources needed for the runner run
+          $ref: "#/components/schemas/RunnerResourceSizing"
+        parametersValues:
+          type: array
+          description: the list of Solution Run Template parameters values
+          items:
+            $ref: '#/components/schemas/RunnerRunTemplateParameterValue'
+      required:
+        - name
     RunnerSecurity:
       type: object
       description: the Runner security information
