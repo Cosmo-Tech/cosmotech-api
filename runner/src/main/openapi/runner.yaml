@@ -206,7 +206,7 @@ paths:
       summary: Start a run with runner parameters
       responses:
         "202":
-          description: the newly created Run info
+          description: the newly created Run infosolution
           content:
             application/json:
               schema:
@@ -272,7 +272,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getRunnerPermissions
+      operationId: listRunnerPermissions
       tags:
         - runner
       summary: Get the Runner permission by given role
@@ -349,7 +349,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: setRunnerDefaultSecurity
+      operationId: updateRunnerDefaultSecurity
       tags:
         - runner
       summary: Set the Runner default security
@@ -408,7 +408,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: addRunnerAccessControl
+      operationId: createRunnerAccessControl
       tags:
         - runner
       summary: Add a control access to the Runner
@@ -513,7 +513,7 @@ paths:
         "404":
           description: The Organization specified is unknown or you don't have access to it
     delete:
-      operationId: removeRunnerAccessControl
+      operationId: deleteRunnerAccessControl
       tags:
         - runner
       summary: Remove the specified access from the given Organization Runner
@@ -544,7 +544,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getRunnerSecurityUsers
+      operationId: listRunnerSecurityUsers
       tags:
         - runner
       summary: Get the Runner security users list
