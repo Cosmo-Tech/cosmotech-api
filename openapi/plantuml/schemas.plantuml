@@ -569,8 +569,8 @@ entity WorkspaceSolution {
 }
 
 entity WorkspaceUpdateRequest {
-    * key: String
-    * name: String
+    key: String
+    name: String
     description: String
     tags: List<String>
     solution: WorkspaceSolution

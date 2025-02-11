@@ -3,8 +3,8 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-| **key** | **String** | The Solution key which groups Solution versions | [default to null] |
-| **name** | **String** | The Solution name | [default to null] |
+| **key** | **String** | technical key for resource name convention and version grouping. Must be unique | [default to null] |
+| **name** | **String** | Solution name. This name is displayed in the sample webApp | [default to null] |
 | **description** | **String** | The Solution description | [optional] [default to null] |
 | **repository** | **String** | The registry repository containing the image | [default to null] |
 | **version** | **String** | The Solution version MAJOR.MINOR.PATCH | [default to null] |

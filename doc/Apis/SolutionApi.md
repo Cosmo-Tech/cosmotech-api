@@ -421,7 +421,7 @@ Update solution access control
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="updateSolutionDefaultSecurity"></a>
@@ -475,7 +475,7 @@ Update solution parameter groups
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="updateSolutionParameters"></a>
@@ -502,7 +502,7 @@ Update solution parameters
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="updateSolutionRunTemplate"></a>
@@ -557,6 +557,6 @@ Update solution run templates
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 

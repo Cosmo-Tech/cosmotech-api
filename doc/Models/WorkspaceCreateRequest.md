@@ -4,7 +4,7 @@
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 | **key** | **String** | technical key for resource name convention and version grouping. Must be unique | [default to null] |
-| **name** | **String** | Workspace name. This name is display in the sample webApp | [default to null] |
+| **name** | **String** | Workspace name. This name is displayed in the sample webApp | [default to null] |
 | **description** | **String** | the Workspace description | [optional] [default to null] |
 | **version** | **String** | the Workspace version MAJOR.MINOR.PATCH. | [optional] [default to null] |
 | **tags** | **List** | the list of tags | [optional] [default to null] |

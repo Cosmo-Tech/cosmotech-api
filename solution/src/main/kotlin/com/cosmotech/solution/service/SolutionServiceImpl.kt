@@ -143,7 +143,7 @@ class SolutionServiceImpl(
     }
 
     val runTemplateParameterGroupMap =
-        existingSolution.parameterGroups.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+        existingSolution.parameterGroups.associateBy { it.id }.toMutableMap()
     runTemplateParameterGroupMap.putAll(
         runTemplateParameterGroup.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameterGroups = runTemplateParameterGroupMap.values.toMutableList()
@@ -164,7 +164,7 @@ class SolutionServiceImpl(
     }
 
     val runTemplateParameterMap =
-        existingSolution.parameters.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+        existingSolution.parameters.associateBy { it.id }.toMutableMap()
     runTemplateParameterMap.putAll(
         runTemplateParameter.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameters = runTemplateParameterMap.values.toMutableList()
