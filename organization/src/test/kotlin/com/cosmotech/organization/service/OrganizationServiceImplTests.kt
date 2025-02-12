@@ -81,7 +81,7 @@ class OrganizationServiceImplTests {
     val rbacSecurity =
         RbacSecurity(
             organization.id,
-            organization.security.default!!,
+            organization.security.default,
             mutableListOf(RbacAccessControl("ID", ROLE_VIEWER)))
     val rbacAccessControl = RbacAccessControl(USER_ID, ROLE_ADMIN)
     every { organizationRepository.findByIdOrNull(any()) } returns organization
@@ -91,9 +91,9 @@ class OrganizationServiceImplTests {
 
     assertEquals(organization.security.default, rbacSecurity.default)
     assertEquals(
-        organization.security.accessControlList!![0].id, rbacSecurity.accessControlList[0].id)
+        organization.security.accessControlList[0].id, rbacSecurity.accessControlList[0].id)
     assertEquals(
-        organization.security.accessControlList!![0].role, rbacSecurity.accessControlList[0].role)
+        organization.security.accessControlList[0].role, rbacSecurity.accessControlList[0].role)
 
     every { organizationRepository.save(any()) } returns organization
     every { csmRbac.getAccessControl(any(), any()) } returns rbacAccessControl
