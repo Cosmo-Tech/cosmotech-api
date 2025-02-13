@@ -111,8 +111,9 @@ class OrganizationServiceImpl(
     val existingOrganization = getVerifiedOrganization(organizationId, PERMISSION_WRITE)
     var hasChanged = false
 
-    if (organizationUpdateRequest.name != existingOrganization.name) {
-      existingOrganization.name = organizationUpdateRequest.name
+    if (!organizationUpdateRequest.name.isNullOrEmpty()
+      && organizationUpdateRequest.name != existingOrganization.name) {
+      existingOrganization.name = organizationUpdateRequest.name!!
       hasChanged = true
     }
 
