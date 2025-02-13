@@ -67,8 +67,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
 import org.springframework.data.repository.findByIdOrNull
 
-const val ORGANIZATION_ID = "O-AbCdEf123"
-const val WORKSPACE_ID = "W-BcDeFg123"
+const val ORGANIZATION_ID = "o-AbCdEf1234"
+const val WORKSPACE_ID = "w-BcDeFg1234"
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
 
