@@ -14,6 +14,7 @@ import com.cosmotech.run.service.WORKFLOW_TYPE_RUN
 import com.cosmotech.run.workflow.WorkflowContextData
 import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.domain.Runner
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -32,6 +33,10 @@ private const val TS_RUNNING_WORKFLOW_NAME = "running"
 private const val TS_RUN_WORKFLOW_NAME = "run"
 
 @Service
+@ConditionalOnProperty(
+    name = ["csm.platform.metrics.enabled"],
+    havingValue = "true",
+    matchIfMissing = false)
 internal class RunMetrics(
     private val workflowService: WorkflowService,
     private val eventPublisher: CsmEventPublisher,

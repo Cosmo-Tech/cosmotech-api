@@ -8,7 +8,7 @@ spring:
       host: "localhost"
       username: "default"
       # Leave it as blank as there's no auth with test container
-      password:
+      password: "test"
       client-type: jedis
 
 csm:
@@ -64,6 +64,10 @@ csm:
           - text/x-yaml
           - application/json
     authorization:
+      mail-jwt-claim: "email"
+      roles-jwt-claim: "userRoles"
+      principal-jwt-claim: "sub"
+      application-id-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"
       # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
       # Use CsmPlatformProperties instead !
