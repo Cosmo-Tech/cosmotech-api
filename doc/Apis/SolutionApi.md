@@ -504,7 +504,7 @@ Update solution parameters
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="updateSolutionRunTemplate"></a>
@@ -586,6 +586,6 @@ Update solution run templates
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
