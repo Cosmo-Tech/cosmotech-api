@@ -8,8 +8,10 @@ spring:
       host: "localhost"
       username: "default"
       # Leave it as blank as there's no auth with test container
-      password: "test"
+      password:
       client-type: jedis
+  main:
+    banner-mode: "off"
 
 csm:
   platform:
