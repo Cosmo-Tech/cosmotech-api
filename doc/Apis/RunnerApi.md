@@ -4,50 +4,22 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**addRunnerAccessControl**](RunnerApi.md#addRunnerAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access | Add a control access to the Runner |
 | [**createRunner**](RunnerApi.md#createRunner) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners | Create a new Runner |
+| [**createRunnerAccessControl**](RunnerApi.md#createRunnerAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access | Add a control access to the Runner |
 | [**deleteRunner**](RunnerApi.md#deleteRunner) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Delete a runner |
+| [**deleteRunnerAccessControl**](RunnerApi.md#deleteRunnerAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Remove the specified access from the given Organization Runner |
 | [**getRunner**](RunnerApi.md#getRunner) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Get the details of an runner |
 | [**getRunnerAccessControl**](RunnerApi.md#getRunnerAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Get a control access for the Runner |
-| [**getRunnerPermissions**](RunnerApi.md#getRunnerPermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/permissions/{role} | Get the Runner permission by given role |
 | [**getRunnerSecurity**](RunnerApi.md#getRunnerSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security | Get the Runner security information |
-| [**getRunnerSecurityUsers**](RunnerApi.md#getRunnerSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/users | Get the Runner security users list |
+| [**listRunnerPermissions**](RunnerApi.md#listRunnerPermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/permissions/{role} | Get the Runner permission by given role |
+| [**listRunnerSecurityUsers**](RunnerApi.md#listRunnerSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/users | Get the Runner security users list |
 | [**listRunners**](RunnerApi.md#listRunners) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners | List all Runners |
-| [**removeRunnerAccessControl**](RunnerApi.md#removeRunnerAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Remove the specified access from the given Organization Runner |
-| [**setRunnerDefaultSecurity**](RunnerApi.md#setRunnerDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/default | Set the Runner default security |
 | [**startRun**](RunnerApi.md#startRun) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/start | Start a run with runner parameters |
 | [**stopRun**](RunnerApi.md#stopRun) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/stop | Stop the last run |
 | [**updateRunner**](RunnerApi.md#updateRunner) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Update a runner |
 | [**updateRunnerAccessControl**](RunnerApi.md#updateRunnerAccessControl) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Update the specified access to User for a Runner |
+| [**updateRunnerDefaultSecurity**](RunnerApi.md#updateRunnerDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/default | Set the Runner default security |
 
-
-<a name="addRunnerAccessControl"></a>
-# **addRunnerAccessControl**
-> RunnerAccessControl addRunnerAccessControl(organization\_id, workspace\_id, runner\_id, RunnerAccessControl)
-
-Add a control access to the Runner
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **runner\_id** | **String**| the Runner identifier | [default to null] |
-| **RunnerAccessControl** | [**RunnerAccessControl**](../Models/RunnerAccessControl.md)| the new Runner security access to add. | |
-
-### Return type
-
-[**RunnerAccessControl**](../Models/RunnerAccessControl.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
 
 <a name="createRunner"></a>
 # **createRunner**
@@ -76,6 +48,34 @@ Create a new Runner
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
+<a name="createRunnerAccessControl"></a>
+# **createRunnerAccessControl**
+> RunnerAccessControl createRunnerAccessControl(organization\_id, workspace\_id, runner\_id, RunnerAccessControl)
+
+Add a control access to the Runner
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+| **RunnerAccessControl** | [**RunnerAccessControl**](../Models/RunnerAccessControl.md)| the new Runner security access to add. | |
+
+### Return type
+
+[**RunnerAccessControl**](../Models/RunnerAccessControl.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
 <a name="deleteRunner"></a>
 # **deleteRunner**
 > deleteRunner(organization\_id, workspace\_id, runner\_id)
@@ -89,6 +89,34 @@ Delete a runner
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **runner\_id** | **String**| the Runner identifier | [default to null] |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="deleteRunnerAccessControl"></a>
+# **deleteRunnerAccessControl**
+> deleteRunnerAccessControl(organization\_id, workspace\_id, runner\_id, identity\_id)
+
+Remove the specified access from the given Organization Runner
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+| **identity\_id** | **String**| the User identifier | [default to null] |
 
 ### Return type
 
@@ -158,34 +186,6 @@ Get a control access for the Runner
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getRunnerPermissions"></a>
-# **getRunnerPermissions**
-> List getRunnerPermissions(organization\_id, workspace\_id, runner\_id, role)
-
-Get the Runner permission by given role
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **runner\_id** | **String**| the Runner identifier | [default to null] |
-| **role** | **String**| the Role | [default to null] |
-
-### Return type
-
-**List**
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
 <a name="getRunnerSecurity"></a>
 # **getRunnerSecurity**
 > RunnerSecurity getRunnerSecurity(organization\_id, workspace\_id, runner\_id)
@@ -213,9 +213,37 @@ Get the Runner security information
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getRunnerSecurityUsers"></a>
-# **getRunnerSecurityUsers**
-> List getRunnerSecurityUsers(organization\_id, workspace\_id, runner\_id)
+<a name="listRunnerPermissions"></a>
+# **listRunnerPermissions**
+> List listRunnerPermissions(organization\_id, workspace\_id, runner\_id, role)
+
+Get the Runner permission by given role
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+| **role** | **String**| the Role | [default to null] |
+
+### Return type
+
+**List**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="listRunnerSecurityUsers"></a>
+# **listRunnerSecurityUsers**
+> List listRunnerSecurityUsers(organization\_id, workspace\_id, runner\_id)
 
 Get the Runner security users list
 
@@ -266,62 +294,6 @@ List all Runners
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
-
-<a name="removeRunnerAccessControl"></a>
-# **removeRunnerAccessControl**
-> removeRunnerAccessControl(organization\_id, workspace\_id, runner\_id, identity\_id)
-
-Remove the specified access from the given Organization Runner
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **runner\_id** | **String**| the Runner identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
-<a name="setRunnerDefaultSecurity"></a>
-# **setRunnerDefaultSecurity**
-> RunnerSecurity setRunnerDefaultSecurity(organization\_id, workspace\_id, runner\_id, RunnerRole)
-
-Set the Runner default security
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **runner\_id** | **String**| the Runner identifier | [default to null] |
-| **RunnerRole** | [**RunnerRole**](../Models/RunnerRole.md)| This change the runner default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the runner. | |
-
-### Return type
-
-[**RunnerSecurity**](../Models/RunnerSecurity.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="startRun"></a>
@@ -433,5 +405,33 @@ Update the specified access to User for a Runner
 ### HTTP request headers
 
 - **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="updateRunnerDefaultSecurity"></a>
+# **updateRunnerDefaultSecurity**
+> RunnerSecurity updateRunnerDefaultSecurity(organization\_id, workspace\_id, runner\_id, RunnerRole)
+
+Set the Runner default security
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+| **RunnerRole** | [**RunnerRole**](../Models/RunnerRole.md)| This change the runner default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the runner. | |
+
+### Return type
+
+[**RunnerSecurity**](../Models/RunnerSecurity.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 

@@ -16,8 +16,10 @@ import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.CreatedRun
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
+import com.cosmotech.runner.domain.RunnerCreateRequest
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
+import com.cosmotech.runner.domain.RunnerUpdateRequest
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -30,12 +32,17 @@ internal class RunnerApiServiceImpl(
 ) : RunnerApiServiceInterface {
   override fun getRunnerService(): RunnerService = runnerServiceManager.getRunnerService()
 
-  override fun createRunner(organizationId: String, workspaceId: String, runner: Runner): Runner {
+  override fun createRunner(
+    organizationId: String,
+    workspaceId: String,
+    runnerCreateRequest: RunnerCreateRequest
+  ): Runner {
     val runnerService =
         getRunnerService()
             .inOrganization(organizationId)
             .inWorkspace(workspaceId)
             .userHasPermissionOnWorkspace(PERMISSION_CREATE_CHILDREN)
+
     val runnerInstance =
         runnerService
             .getNewInstance()
@@ -55,10 +62,10 @@ internal class RunnerApiServiceImpl(
   }
 
   override fun updateRunner(
-      organizationId: String,
-      workspaceId: String,
-      runnerId: String,
-      runner: Runner
+    organizationId: String,
+    workspaceId: String,
+    runnerId: String,
+    runnerUpdateRequest: RunnerUpdateRequest
   ): Runner {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
@@ -103,17 +110,17 @@ internal class RunnerApiServiceImpl(
     runnerService.stopLastRunOf(runnerInstance)
   }
 
-  override fun addRunnerAccessControl(
-      organizationId: String,
-      workspaceId: String,
-      runnerId: String,
-      runnerAccessControl: RunnerAccessControl
+  override fun createRunnerAccessControl(
+    organizationId: String,
+    workspaceId: String,
+    runnerId: String,
+    runnerAccessControl: RunnerAccessControl
   ): RunnerAccessControl {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE_SECURITY)
 
-    val users = getRunnerSecurityUsers(organizationId, workspaceId, runnerId)
+    val users = listRunnerSecurityUsers(organizationId, workspaceId, runnerId)
     if (users.contains(runnerAccessControl.id)) {
       throw IllegalArgumentException("User is already in this Runner security")
     }
@@ -157,11 +164,11 @@ internal class RunnerApiServiceImpl(
     return runnerInstance.getAccessControlFor(identityId)
   }
 
-  override fun removeRunnerAccessControl(
-      organizationId: String,
-      workspaceId: String,
-      runnerId: String,
-      identityId: String
+  override fun deleteRunnerAccessControl(
+    organizationId: String,
+    workspaceId: String,
+    runnerId: String,
+    identityId: String
   ) {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
@@ -184,11 +191,11 @@ internal class RunnerApiServiceImpl(
     return runnerInstance.getRunnerDataObjet().security!!
   }
 
-  override fun getRunnerPermissions(
-      organizationId: String,
-      workspaceId: String,
-      runnerId: String,
-      role: String
+  override fun listRunnerPermissions(
+    organizationId: String,
+    workspaceId: String,
+    runnerId: String,
+    role: String
   ): List<String> {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
@@ -196,11 +203,7 @@ internal class RunnerApiServiceImpl(
     return com.cosmotech.api.rbac.getPermissions(role, getRunnerRolesDefinition())
   }
 
-  override fun getRunnerSecurityUsers(
-      organizationId: String,
-      workspaceId: String,
-      runnerId: String
-  ): List<String> {
+  override fun listRunnerSecurityUsers(organizationId: String, workspaceId: String, runnerId: String): List<String> {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
@@ -208,11 +211,11 @@ internal class RunnerApiServiceImpl(
     return runnerInstance.getUsers()
   }
 
-  override fun setRunnerDefaultSecurity(
-      organizationId: String,
-      workspaceId: String,
-      runnerId: String,
-      runnerRole: RunnerRole
+  override fun updateRunnerDefaultSecurity(
+    organizationId: String,
+    workspaceId: String,
+    runnerId: String,
+    runnerRole: RunnerRole
   ): RunnerSecurity {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =

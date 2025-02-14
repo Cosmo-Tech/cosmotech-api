@@ -1738,7 +1738,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.getRunnerPermissions(
+                      runnerApiService.listRunnerPermissions(
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
                     }
                 assertEquals(
@@ -1746,7 +1746,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.getRunnerPermissions(
+                  runnerApiService.listRunnerPermissions(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
                 }
               }
@@ -1754,7 +1754,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Dataset RBAC getRunnerPermissions`() =
+  fun `test Dataset RBAC listRunnerPermissions`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -1764,7 +1764,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Dataset RBAC getRunnerPermissions : $role") {
+            dynamicTest("Test Dataset RBAC listRunnerPermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -1802,7 +1802,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.getRunnerPermissions(
+                      runnerApiService.listRunnerPermissions(
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
                     }
                 assertEquals(
@@ -1810,7 +1810,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.getRunnerPermissions(
+                  runnerApiService.listRunnerPermissions(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
                 }
               }
@@ -1818,7 +1818,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Solution RBAC getRunnerPermissions`() =
+  fun `test Solution RBAC listRunnerPermissions`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -1828,7 +1828,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Solution RBAC getRunnerPermissions : $role") {
+            dynamicTest("Test Solution RBAC listRunnerPermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -1867,7 +1867,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.getRunnerPermissions(
+                      runnerApiService.listRunnerPermissions(
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
                     }
                 assertEquals(
@@ -1875,7 +1875,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.getRunnerPermissions(
+                  runnerApiService.listRunnerPermissions(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
                 }
               }
@@ -1883,7 +1883,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Workspace RBAC getRunnerPermissions`() =
+  fun `test Workspace RBAC listRunnerPermissions`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -1893,7 +1893,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Workspace RBAC getRunnerPermissions : $role") {
+            dynamicTest("Test Workspace RBAC listRunnerPermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -1929,7 +1929,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.getRunnerPermissions(
+                      runnerApiService.listRunnerPermissions(
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
                     }
                 assertEquals(
@@ -1937,7 +1937,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.getRunnerPermissions(
+                  runnerApiService.listRunnerPermissions(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
                 }
               }
@@ -1945,7 +1945,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Runner RBAC getRunnerPermissions`() =
+  fun `test Runner RBAC listRunnerPermissions`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
@@ -1954,7 +1954,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Runner RBAC getRunnerPermissions : $role") {
+            dynamicTest("Test Runner RBAC listRunnerPermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -1993,7 +1993,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.getRunnerPermissions(
+                      runnerApiService.listRunnerPermissions(
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
                     }
                 if (role == ROLE_NONE) {
@@ -2007,7 +2007,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 }
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.getRunnerPermissions(
+                  runnerApiService.listRunnerPermissions(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
                 }
               }
@@ -2335,7 +2335,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Organization RBAC setRunnerDefaultSecurity`() =
+  fun `test Organization RBAC updateRunnerDefaultSecurity`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -2345,7 +2345,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Organization RBAC setRunnerDefaultSecurity : $role") {
+            dynamicTest("Test Organization RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -2383,7 +2383,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.setRunnerDefaultSecurity(
+                      runnerApiService.updateRunnerDefaultSecurity(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -2394,7 +2394,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.setRunnerDefaultSecurity(
+                  runnerApiService.updateRunnerDefaultSecurity(
                       organizationSaved.id,
                     workspaceSaved.id,
                       runnerSaved.id!!,
@@ -2405,7 +2405,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Dataset RBAC setRunnerDefaultSecurity`() =
+  fun `test Dataset RBAC updateRunnerDefaultSecurity`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -2415,7 +2415,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Dataset RBAC setRunnerDefaultSecurity : $role") {
+            dynamicTest("Test Dataset RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -2453,7 +2453,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.setRunnerDefaultSecurity(
+                      runnerApiService.updateRunnerDefaultSecurity(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -2464,7 +2464,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.setRunnerDefaultSecurity(
+                  runnerApiService.updateRunnerDefaultSecurity(
                       organizationSaved.id,
                     workspaceSaved.id,
                       runnerSaved.id!!,
@@ -2475,7 +2475,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Solution RBAC setRunnerDefaultSecurity`() =
+  fun `test Solution RBAC updateRunnerDefaultSecurity`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -2485,7 +2485,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Solution RBAC setRunnerDefaultSecurity : $role") {
+            dynamicTest("Test Solution RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -2524,7 +2524,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.setRunnerDefaultSecurity(
+                      runnerApiService.updateRunnerDefaultSecurity(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -2535,7 +2535,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.setRunnerDefaultSecurity(
+                  runnerApiService.updateRunnerDefaultSecurity(
                       organizationSaved.id,
                     workspaceSaved.id,
                       runnerSaved.id!!,
@@ -2546,7 +2546,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Workspace RBAC setRunnerDefaultSecurity`() =
+  fun `test Workspace RBAC updateRunnerDefaultSecurity`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -2556,7 +2556,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Workspace RBAC setRunnerDefaultSecurity : $role") {
+            dynamicTest("Test Workspace RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -2591,7 +2591,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.setRunnerDefaultSecurity(
+                      runnerApiService.updateRunnerDefaultSecurity(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -2602,7 +2602,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.setRunnerDefaultSecurity(
+                  runnerApiService.updateRunnerDefaultSecurity(
                       organizationSaved.id,
                     workspaceSaved.id,
                       runnerSaved.id!!,
@@ -2613,7 +2613,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Runner RBAC setRunnerDefaultSecurity`() =
+  fun `test Runner RBAC updateRunnerDefaultSecurity`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -2622,7 +2622,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Runner RBAC setRunnerDefaultSecurity : $role") {
+            dynamicTest("Test Runner RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -2660,7 +2660,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.setRunnerDefaultSecurity(
+                      runnerApiService.updateRunnerDefaultSecurity(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -2677,7 +2677,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 }
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.setRunnerDefaultSecurity(
+                  runnerApiService.updateRunnerDefaultSecurity(
                       organizationSaved.id,
                     workspaceSaved.id,
                       runnerSaved.id!!,
@@ -2688,7 +2688,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Organization RBAC addRunnerAccessControl`() =
+  fun `test Organization RBAC createRunnerAccessControl`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -2698,7 +2698,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Organization RBAC addRunnerAccessControl : $role") {
+            dynamicTest("Test Organization RBAC createRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -2736,7 +2736,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.addRunnerAccessControl(
+                      runnerApiService.createRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -2747,7 +2747,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.addRunnerAccessControl(
+                  runnerApiService.createRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
                       runnerSaved.id!!,
@@ -2758,7 +2758,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Dataset RBAC modification when addRunnerAccessControl is called on a runner`() =
+  fun `test Dataset RBAC modification when createRunnerAccessControl is called on a runner`() =
       listOf(
               ROLE_VIEWER,
               ROLE_EDITOR,
@@ -2768,7 +2768,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { role ->
             dynamicTest(
                 "Check Dataset RBAC modification " +
-                    "when addRunnerAccessControl is called on a runner with role : $role") {
+                    "when createRunnerAccessControl is called on a runner with role : $role") {
                   every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
                   val connector = makeConnector()
                   val connectorSaved = connectorApiService.registerConnector(connector)
@@ -2815,7 +2815,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                             }
                             .isNullOrEmpty())
 
-                    runnerApiService.addRunnerAccessControl(
+                    runnerApiService.createRunnerAccessControl(
                         organizationSaved.id,
                       workspaceSaved.id,
                         runnerSaved.id!!,
@@ -2842,7 +2842,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @Test
-  fun `test addRunnerAccessControl when called on a runner with an user that do not exist in Dataset RBAC`() {
+  fun `test createRunnerAccessControl when called on a runner with an user that do not exist in Dataset RBAC`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     val connector = makeConnector()
     val connectorSaved = connectorApiService.registerConnector(connector)
@@ -2879,7 +2879,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
     val runnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
-    runnerApiService.addRunnerAccessControl(
+    runnerApiService.createRunnerAccessControl(
         organizationSaved.id,
       workspaceSaved.id,
         runnerSaved.id!!,
@@ -2894,7 +2894,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   }
 
   @TestFactory
-  fun `test Solution RBAC addRunnerAccessControl`() =
+  fun `test Solution RBAC createRunnerAccessControl`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -2904,7 +2904,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Solution RBAC addRunnerAccessControl : $role") {
+            dynamicTest("Test Solution RBAC createRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -2943,7 +2943,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.addRunnerAccessControl(
+                      runnerApiService.createRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -2954,7 +2954,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.addRunnerAccessControl(
+                  runnerApiService.createRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
                       runnerSaved.id!!,
@@ -2965,7 +2965,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Workspace RBAC addRunnerAccessControl`() =
+  fun `test Workspace RBAC createRunnerAccessControl`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -2975,7 +2975,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Workspace RBAC addRunnerAccessControl : $role") {
+            dynamicTest("Test Workspace RBAC createRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -3011,7 +3011,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.addRunnerAccessControl(
+                      runnerApiService.createRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -3022,7 +3022,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.addRunnerAccessControl(
+                  runnerApiService.createRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
                       runnerSaved.id!!,
@@ -3033,7 +3033,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Runner RBAC addRunnerAccessControl`() =
+  fun `test Runner RBAC createRunnerAccessControl`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -3042,7 +3042,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Runner RBAC addRunnerAccessControl : $role") {
+            dynamicTest("Test Runner RBAC createRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -3081,7 +3081,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.addRunnerAccessControl(
+                      runnerApiService.createRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -3098,7 +3098,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 }
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.addRunnerAccessControl(
+                  runnerApiService.createRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
                       runnerSaved.id!!,
@@ -3444,7 +3444,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Organization RBAC removeRunnerAccessControl`() =
+  fun `test Organization RBAC deleteRunnerAccessControl`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -3454,7 +3454,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Organization RBAC removeRunnerAccessControl : $role") {
+            dynamicTest("Test Organization RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -3492,7 +3492,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.removeRunnerAccessControl(
+                      runnerApiService.deleteRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -3503,7 +3503,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.removeRunnerAccessControl(
+                  runnerApiService.deleteRunnerAccessControl(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
@@ -3511,7 +3511,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Dataset RBAC removeRunnerAccessControl`() =
+  fun `test Dataset RBAC deleteRunnerAccessControl`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -3521,7 +3521,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Dataset RBAC removeRunnerAccessControl : $role") {
+            dynamicTest("Test Dataset RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -3559,7 +3559,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.removeRunnerAccessControl(
+                      runnerApiService.deleteRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -3576,7 +3576,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 }
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.removeRunnerAccessControl(
+                  runnerApiService.deleteRunnerAccessControl(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
@@ -3584,7 +3584,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Solution RBAC removeRunnerAccessControl`() =
+  fun `test Solution RBAC deleteRunnerAccessControl`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -3594,7 +3594,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Solution RBAC removeRunnerAccessControl : $role") {
+            dynamicTest("Test Solution RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -3633,7 +3633,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.removeRunnerAccessControl(
+                      runnerApiService.deleteRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -3644,7 +3644,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.removeRunnerAccessControl(
+                  runnerApiService.deleteRunnerAccessControl(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
@@ -3652,7 +3652,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Workspace RBAC removeRunnerAccessControl`() =
+  fun `test Workspace RBAC deleteRunnerAccessControl`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -3662,7 +3662,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Workspace RBAC removeRunnerAccessControl : $role") {
+            dynamicTest("Test Workspace RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -3698,7 +3698,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.removeRunnerAccessControl(
+                      runnerApiService.deleteRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -3709,7 +3709,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.removeRunnerAccessControl(
+                  runnerApiService.deleteRunnerAccessControl(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
@@ -3717,7 +3717,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Runner RBAC removeRunnerAccessControl`() =
+  fun `test Runner RBAC deleteRunnerAccessControl`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -3726,7 +3726,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Runner RBAC removeRunnerAccessControl : $role") {
+            dynamicTest("Test Runner RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -3765,7 +3765,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.removeRunnerAccessControl(
+                      runnerApiService.deleteRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
                           runnerSaved.id!!,
@@ -3782,7 +3782,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 }
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.removeRunnerAccessControl(
+                  runnerApiService.deleteRunnerAccessControl(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
                 }
               }
@@ -4180,7 +4180,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Organization RBAC getRunnerSecurityUsers`() =
+  fun `test Organization RBAC listRunnerSecurityUsers`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -4190,7 +4190,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Organization RBAC getRunnerSecurityUsers : $role") {
+            dynamicTest("Test Organization RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -4228,7 +4228,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.getRunnerSecurityUsers(
+                      runnerApiService.listRunnerSecurityUsers(
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
                     }
                 assertEquals(
@@ -4236,7 +4236,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.getRunnerSecurityUsers(
+                  runnerApiService.listRunnerSecurityUsers(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
                 }
               }
@@ -4244,7 +4244,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Dataset RBAC getRunnerSecurityUsers`() =
+  fun `test Dataset RBAC listRunnerSecurityUsers`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -4254,7 +4254,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Dataset RBAC getRunnerSecurityUsers : $role") {
+            dynamicTest("Test Dataset RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -4292,7 +4292,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.getRunnerSecurityUsers(
+                      runnerApiService.listRunnerSecurityUsers(
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
                     }
                 assertEquals(
@@ -4300,7 +4300,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.getRunnerSecurityUsers(
+                  runnerApiService.listRunnerSecurityUsers(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
                 }
               }
@@ -4308,7 +4308,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Solution RBAC getRunnerSecurityUsers`() =
+  fun `test Solution RBAC listRunnerSecurityUsers`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -4318,7 +4318,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Solution RBAC getRunnerSecurityUsers : $role") {
+            dynamicTest("Test Solution RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -4357,7 +4357,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.getRunnerSecurityUsers(
+                      runnerApiService.listRunnerSecurityUsers(
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
                     }
                 assertEquals(
@@ -4365,7 +4365,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.getRunnerSecurityUsers(
+                  runnerApiService.listRunnerSecurityUsers(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
                 }
               }
@@ -4373,7 +4373,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Workspace RBAC getRunnerSecurityUsers`() =
+  fun `test Workspace RBAC listRunnerSecurityUsers`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -4383,7 +4383,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Workspace RBAC getRunnerSecurityUsers : $role") {
+            dynamicTest("Test Workspace RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -4419,7 +4419,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.getRunnerSecurityUsers(
+                      runnerApiService.listRunnerSecurityUsers(
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
                     }
                 assertEquals(
@@ -4427,7 +4427,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.getRunnerSecurityUsers(
+                  runnerApiService.listRunnerSecurityUsers(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
                 }
               }
@@ -4435,7 +4435,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Runner RBAC getRunnerSecurityUsers`() =
+  fun `test Runner RBAC listRunnerSecurityUsers`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
@@ -4444,7 +4444,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            dynamicTest("Test Runner RBAC getRunnerSecurityUsers : $role") {
+            dynamicTest("Test Runner RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val connector = makeConnector()
               val connectorSaved = connectorApiService.registerConnector(connector)
@@ -4483,7 +4483,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.getRunnerSecurityUsers(
+                      runnerApiService.listRunnerSecurityUsers(
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
                     }
                 if (role == ROLE_NONE) {
@@ -4497,7 +4497,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 }
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.getRunnerSecurityUsers(
+                  runnerApiService.listRunnerSecurityUsers(
                       organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
                 }
               }
