@@ -114,8 +114,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build
-      - home_controller_test
-      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -146,6 +144,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -176,6 +176,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -211,6 +213,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -246,6 +250,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -282,6 +288,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -318,6 +326,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -353,6 +363,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
