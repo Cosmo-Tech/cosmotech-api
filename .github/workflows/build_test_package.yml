@@ -110,7 +110,7 @@ jobs:
         run: ./gradlew :cosmotech-api:integrationTest --tests "com.cosmotech.api.home.HomeControllerTests" -x spotlessCheck -x openApiValidate
 
 
-  test:
+  unit_test:
     runs-on: ubuntu-latest
     needs:
       - build
@@ -143,7 +143,7 @@ jobs:
   connector_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
       - home_controller_test
       - organization_controller_test
     env:
@@ -175,7 +175,7 @@ jobs:
   dataset_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
       - home_controller_test
       - organization_controller_test
     env:
@@ -212,7 +212,7 @@ jobs:
   organization_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
       - home_controller_test
       - organization_controller_test
     env:
@@ -249,7 +249,7 @@ jobs:
   solution_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
       - home_controller_test
       - organization_controller_test
     env:
@@ -287,7 +287,7 @@ jobs:
   workspace_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
       - home_controller_test
       - organization_controller_test
     env:
@@ -325,7 +325,7 @@ jobs:
   runner_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
       - home_controller_test
       - organization_controller_test
     env:
@@ -362,7 +362,7 @@ jobs:
   run_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
       - home_controller_test
       - organization_controller_test
     env:
@@ -604,7 +604,7 @@ jobs:
   scan_and_push_container_images_to_registries:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
       - connector_it
       - dataset_it
       - organization_it
@@ -721,7 +721,7 @@ jobs:
             chart_name: cosmotech-api-chart
             name: API
     needs:
-      - test
+      - unit_test
       - connector_it
       - dataset_it
       - organization_it
