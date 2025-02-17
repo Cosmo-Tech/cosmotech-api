@@ -114,6 +114,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -598,9 +600,7 @@ jobs:
       - workspace_it
       - runner_it
       - run_it
-      - home_controller_test
       - test_helm
-      - organization_controller_test
     permissions:
       packages: write
       contents: read
@@ -717,9 +717,7 @@ jobs:
       - workspace_it
       - runner_it
       - run_it
-      - home_controller_test
       - test_helm
-      - organization_controller_test
     permissions:
       packages: write
       contents: read
