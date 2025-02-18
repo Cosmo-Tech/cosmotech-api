@@ -10,11 +10,7 @@ import com.cosmotech.api.events.HasRunningRuns
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.api.rbac.*
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
@@ -25,26 +21,14 @@ import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.api.DatasetApiService
-import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetConnector
-import com.cosmotech.dataset.domain.DatasetSecurity
-import com.cosmotech.dataset.domain.IngestionStatusEnum
-import com.cosmotech.dataset.domain.TwincacheStatusEnum
+import com.cosmotech.dataset.domain.*
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.RunnerApiServiceInterface
-import com.cosmotech.runner.domain.Runner
-import com.cosmotech.runner.domain.RunnerAccessControl
-import com.cosmotech.runner.domain.RunnerJobState
-import com.cosmotech.runner.domain.RunnerLastRun
-import com.cosmotech.runner.domain.RunnerRole
-import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
-import com.cosmotech.runner.domain.RunnerSecurity
-import com.cosmotech.runner.domain.RunnerValidationStatus
+import com.cosmotech.runner.domain.*
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.api.WorkspaceApiService
@@ -60,15 +44,9 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.time.Instant
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
+import kotlin.test.*
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
@@ -207,24 +185,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test runner creation with null datasetList`() {
-    val runnerWithNullDatasetList =
-        makeRunner(
-            organizationSaved.id!!,
-            workspaceSaved.id!!,
-            solutionSaved.id!!,
-            "RunnerWithNullDatasetList",
-            datasetList = null)
-    val runnerWithNullDatasetListSaved =
-        runnerApiService.createRunner(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerWithNullDatasetList)
-
-    assertNotNull(runnerWithNullDatasetListSaved)
-    assertNotNull(runnerWithNullDatasetListSaved.datasetList)
-    assertEquals(0, runnerWithNullDatasetListSaved.datasetList!!.size)
-  }
-
-  @Test
   fun `test createRunner and check parameterValues data`() {
 
     logger.info(
@@ -248,6 +208,67 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("param1", newRunnerSaved.parametersValues!![0].parameterId)
     assertEquals("7", newRunnerSaved.parametersValues!![0].value)
     assertEquals("integer", newRunnerSaved.parametersValues!![0].varType)
+  }
+
+  @Test
+  fun `test createRunner with null datasetList with parent and check datasetList data`() {
+
+    logger.info("should create a new Runner and retrieve datasetList from parent Runner")
+    val newRunner =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "NewRunner",
+            null,
+            parentId = parentRunnerSaved.id)
+    val newRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, newRunner)
+
+    assertNotNull(newRunnerSaved.datasetList)
+    assertEquals(parentRunnerSaved.datasetList!!.size, newRunnerSaved.datasetList!!.size)
+    assertEquals(parentRunnerSaved.datasetList, newRunnerSaved.datasetList)
+  }
+
+  @Test
+  fun `test createRunner with empty datasetList with parent and check datasetList data`() {
+
+    logger.info("should create a new Runner and retrieve datasetList from parent Runner")
+    val newRunner =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "NewRunner",
+            mutableListOf(),
+            parentId = parentRunnerSaved.id)
+    val newRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, newRunner)
+
+    assertNotNull(newRunnerSaved.datasetList)
+    assertNotEquals(parentRunnerSaved.datasetList!!.size, newRunnerSaved.datasetList!!.size)
+    assertEquals(0, newRunnerSaved.datasetList!!.size)
+  }
+
+  @Test
+  fun `test createRunner with datasetList with parent and check datasetList data`() {
+
+    logger.info("should create a new Runner and retrieve datasetList from parent Runner")
+    val childRunnerDatasetList = mutableListOf("my-dataset-id")
+    val newRunner =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "NewRunner",
+            childRunnerDatasetList,
+            parentId = parentRunnerSaved.id)
+    val newRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, newRunner)
+
+    assertNotNull(newRunnerSaved.datasetList)
+    assertNotEquals(parentRunnerSaved.datasetList, newRunnerSaved.datasetList)
+    assertEquals(childRunnerDatasetList, newRunnerSaved.datasetList)
   }
 
   @Test
@@ -398,6 +419,127 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `update parentId on Runner delete`() {
+    // Create a 3 level hierarchy: grandParent <- parent <- child
+    val grandParentCreation =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+        )
+    val grandParentRunner =
+        runnerApiService.createRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, grandParentCreation)
+    val parentCreation =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            parentId = grandParentRunner.id)
+    val parentRunner =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, parentCreation)
+    val childCreation =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            parentId = parentRunner.id)
+    val childRunner =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, childCreation)
+
+    // Initial parents check
+    assertEquals(grandParentRunner.id, parentRunner.parentId)
+    assertEquals(parentRunner.id, childRunner.parentId)
+
+    // Delete intermediate parent, child should refer to grandParent
+    runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, parentRunner.id!!)
+    var newChildParentId =
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, childRunner.id!!)
+            .parentId
+    assertEquals(grandParentRunner.id, newChildParentId)
+
+    // Delete root grandParent, child should clear its parent
+    runnerApiService.deleteRunner(
+        organizationSaved.id!!, workspaceSaved.id!!, grandParentRunner.id!!)
+    newChildParentId =
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, childRunner.id!!)
+            .parentId
+    assertNull(newChildParentId)
+  }
+
+  @Test
+  fun `update rootId on root Runner delete`() {
+    // Create a 3 level hierarchy: grandParent <- parent1 <- child1
+    //                                         <- parent2 <- child2
+    val grandParentCreation =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+        )
+    val grandParentRunner =
+        runnerApiService.createRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, grandParentCreation)
+    val parentCreation =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            parentId = grandParentRunner.id)
+    val parentRunner1 =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, parentCreation)
+    val parentRunner2 =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, parentCreation)
+    var childCreation =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            parentId = parentRunner1.id)
+    val childRunner1 =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, childCreation)
+    childCreation.parentId = parentRunner2.id
+    val childRunner2 =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, childCreation)
+
+    // Initial parents check
+    assertEquals(grandParentRunner.id, parentRunner1.parentId)
+    assertEquals(grandParentRunner.id, parentRunner2.parentId)
+    assertEquals(parentRunner1.id, childRunner1.parentId)
+    assertEquals(parentRunner2.id, childRunner2.parentId)
+    // Initial root check
+    assertEquals(grandParentRunner.id, parentRunner1.rootId)
+    assertEquals(grandParentRunner.id, parentRunner2.rootId)
+    assertEquals(grandParentRunner.id, childRunner1.rootId)
+    assertEquals(grandParentRunner.id, childRunner2.rootId)
+
+    // Delete grand parent
+    runnerApiService.deleteRunner(
+        organizationSaved.id!!, workspaceSaved.id!!, grandParentRunner.id!!)
+    assertNull(
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, parentRunner1.id!!)
+            .rootId)
+    assertNull(
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, parentRunner2.id!!)
+            .rootId)
+    assertEquals(
+        parentRunner1.id,
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, childRunner1.id!!)
+            .rootId)
+    assertEquals(
+        parentRunner2.id,
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, childRunner2.id!!)
+            .rootId)
+  }
+
+  @Test
   fun `test RBAC RunnerSecurity as Platform Admin`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
 

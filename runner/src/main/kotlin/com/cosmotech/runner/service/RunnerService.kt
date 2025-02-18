@@ -44,10 +44,12 @@ import com.cosmotech.workspace.service.getRbac
 import java.time.Instant
 import org.springframework.context.annotation.Scope
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
 @Component
 @Scope("prototype")
+@Suppress("TooManyFunctions")
 class RunnerService(
     private val runnerRepository: RunnerRepository,
     private val organizationApiService: OrganizationApiServiceInterface,
@@ -109,12 +111,55 @@ class RunnerService(
           "Can't delete runner ${runner.id!!}: at least one run is still running")
     }
 
+    // Update parent and root references to deleted runner
+    var newRoots = mutableListOf<Runner>()
+    listAllRunnerByParentId(runner.organizationId!!, runner.workspaceId!!, runner.id!!).forEach {
+      it.parentId = runner.parentId
+      // Runner was root, child is now root
+      if (runner.rootId == null) {
+        it.rootId = null
+        newRoots.add(it)
+      }
+      runnerRepository.save(it)
+    }
+
+    // Update new root ids
+    newRoots.forEach { updateChildrenRootId(parent = it, newRootId = it.id!!) }
+
     // Notify the deletion
     val runnerDeleted =
         RunnerDeleted(this, runner.organizationId!!, runner.workspaceId!!, runner.id!!)
     this.eventPublisher.publishEvent(runnerDeleted)
 
     return runnerRepository.delete(runnerInstance.getRunnerDataObjet())
+  }
+
+  private fun listAllRunnerByParentId(
+      organizationId: String,
+      workspaceId: String,
+      parentId: String
+  ): List<Runner> {
+    val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
+    var pageRequest: Pageable = PageRequest.ofSize(defaultPageSize)
+
+    var runners = mutableListOf<Runner>()
+
+    do {
+      val pagedRunners =
+          runnerRepository.findByParentId(organizationId, workspaceId, parentId, pageRequest)
+      runners.addAll(pagedRunners.toList())
+      pageRequest = pagedRunners.nextPageable()
+    } while (pagedRunners.hasNext())
+
+    return runners
+  }
+
+  private fun updateChildrenRootId(parent: Runner, newRootId: String) {
+    listAllRunnerByParentId(parent.organizationId!!, parent.workspaceId!!, parent.id!!).forEach {
+      it.rootId = newRootId
+      runnerRepository.save(it)
+      updateChildrenRootId(it, newRootId)
+    }
   }
 
   fun saveInstance(runnerInstance: RunnerInstance): Runner {
@@ -189,7 +234,6 @@ class RunnerService(
           Runner(
               id = idGenerator.generate("runner"),
               ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-              datasetList = mutableListOf(),
               organizationId = organization!!.id,
               workspaceId = workspace!!.id,
               creationDate = now,
@@ -269,6 +313,16 @@ class RunnerService(
         parameterValueList.addAll(inheritedParameterValues)
         this.runner.parametersValues = parameterValueList
         consolidateParametersVarType()
+
+        // Compute rootId
+        this.runner.parentId?.let {
+          this.runner.rootId =
+              runnerRepository
+                  .findBy(organization!!.id!!, workspace!!.id!!, it)
+                  .orElseThrow { IllegalArgumentException("Parent runner not found: ${it}") }
+                  .rootId
+                  ?: this.runner.parentId
+        }
       }
     }
 
@@ -285,6 +339,32 @@ class RunnerService(
             ?.find { it.id == runnerParam.parameterId }
             ?.varType
             ?.let { runnerParam.varType = it }
+      }
+    }
+
+    fun initDatasetList(): RunnerInstance = apply {
+      val parentId = this.runner.parentId
+      val runnerId = this.runner.id
+      if (parentId != null) {
+        val parentRunner =
+            runnerRepository
+                .findBy(this.runner.organizationId!!, this.runner.workspaceId!!, parentId)
+                .orElseThrow {
+                  IllegalArgumentException(
+                      "Parent Id $parentId define on $runnerId does not exists")
+                }
+        val parentDatasetList = parentRunner.datasetList ?: mutableListOf()
+        val runnerDatasetList = this.runner.datasetList
+
+        if (parentDatasetList.isNotEmpty()) {
+          if (runnerDatasetList == null) {
+            this.runner.datasetList = parentDatasetList
+          }
+        }
+      }
+
+      if (this.runner.datasetList == null) {
+        this.runner.datasetList = mutableListOf()
       }
     }
 
