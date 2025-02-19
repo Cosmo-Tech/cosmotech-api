@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api.home.factory
+package com.cosmotech.api.home.factories
 
 import com.cosmotech.api.home.annotations.WithMockOauth2User
 import com.cosmotech.dataset.utils.convertToJsonValue
