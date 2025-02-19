@@ -197,6 +197,8 @@ subprojects {
   val openApiServerSourcesGenerationDir =
       "${layout.buildDirectory.get()}/generated-sources/openapi/kotlin-spring"
 
+  val testWorkingDirPath = "${layout.buildDirectory.get()}/run"
+
   sourceSets {
     create("integrationTest") {
       compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
@@ -353,12 +355,21 @@ subprojects {
         shouldRunAfter("test")
         classpath = sourceSets["integrationTest"].runtimeClasspath
         testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+        finalizedBy("copyAdocFiles")
       }
+
+
+  tasks.register<Copy>("copyAdocFiles") {
+    dependsOn("integrationTest")
+    finalizedBy("generate-doc")
+    from("$testWorkingDirPath/build/generated-snippets")
+    into("${rootDir}/doc/generated-snippets")
+  }
 
   tasks.check { dependsOn(integrationTest) }
 
   tasks.withType<Test> {
-    val testWorkingDir = file("${layout.buildDirectory.get()}/run")
+    val testWorkingDir = file(testWorkingDirPath)
     workingDir = testWorkingDir
 
     doFirst { testWorkingDir.mkdirs() }

@@ -2,12 +2,14 @@
 // Licensed under the MIT license.
 import com.google.cloud.tools.jib.gradle.JibTask
 import com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask
+import org.asciidoctor.gradle.jvm.AsciidoctorTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
   id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.5"
+  id("org.asciidoctor.jvm.convert") version "4.0.4" apply true
   id("org.jetbrains.kotlinx.kover")
 }
 
@@ -25,6 +27,7 @@ dependencies {
   testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.4")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
+  testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 }
 
 tasks.getByName<Delete>("clean") { delete("$rootDir/openapi/openapi.yaml") }
@@ -228,4 +231,16 @@ tasks.register<Exec>("rolloutKindDeployment") {
       "rollout",
       "restart",
       "deployment/cosmotech-api-${apiVersion}")
+}
+
+tasks.register<AsciidoctorTask>("generate-doc") {
+    dependsOn("copyAdocFiles")
+    baseDirIsRootProjectDir()
+    setSourceDir(file("${rootDir}/doc/generated-snippets"))
+    sources(
+        delegateClosureOf<PatternSet> {
+            include("index.adoc", "another.adoc", "third.adoc")
+        }
+    )
+    setOutputDir(file("${rootDir}/doc/generated-snippets"))
 }
