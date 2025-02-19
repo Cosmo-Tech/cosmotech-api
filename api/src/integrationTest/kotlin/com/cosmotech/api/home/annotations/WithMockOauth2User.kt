@@ -9,6 +9,14 @@ import com.cosmotech.api.home.factories.WithMockOauth2UserSecurityContextFactory
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import org.springframework.security.test.context.support.WithSecurityContext
 
+/**
+ * This annotation allows developers to mock the Oauth2 user connected
+ * Some values are defined by default (Admin profile by default) but you can specify:
+ * - issuer
+ * - subject
+ * - email
+ * - roles
+ */
 @Retention(AnnotationRetention.RUNTIME)
 @WithSecurityContext(factory = WithMockOauth2UserSecurityContextFactory::class)
 annotation class WithMockOauth2User(val issuer: String = DEFAULT_ISSUER,

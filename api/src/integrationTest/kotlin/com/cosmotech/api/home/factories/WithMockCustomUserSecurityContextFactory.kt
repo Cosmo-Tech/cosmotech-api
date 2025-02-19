@@ -15,6 +15,14 @@ import org.springframework.security.test.context.support.WithSecurityContextFact
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
+/**
+ * Class that override default Authentication based on annotation WithMockOauth2User
+ * @see WithMockOauth2User
+ * N.B:
+ * Authentication will not contain signed or valid BearerToken but simple JWT
+ * Fallback behavior on non-existing claim (or when ParseException is thrown) are dealt within SecurityUtils class
+ * @see <a href="https://github.com/Cosmo-Tech/cosmotech-api-common/blob/main/src/main/kotlin/com/cosmotech/api/utils/SecurityUtils.kt</a>
+ */
 class WithMockOauth2UserSecurityContextFactory : WithSecurityContextFactory<WithMockOauth2User> {
 
     private val ISSUER_CLAIM_NAME = "iss"
