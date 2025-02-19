@@ -681,7 +681,7 @@ components:
       required:
         - id
         - name
-        - owner
+        - ownerId
         - solutionId
         - runTemplateId
         - organizationId
@@ -708,6 +708,10 @@ components:
           description: the list of tags
           items:
             type: string
+        solutionId:
+          type: string
+          readOnly: true
+          description: the Solution Id associated with this Runner
         parentId:
           type: string
           description: the Runner parent id
@@ -727,12 +731,25 @@ components:
           description: the list of Solution Run Template parameters values
           items:
             $ref: '#/components/schemas/RunnerRunTemplateParameterValue'
+        ownerName:
+          type: string
+          readOnly: true
+          description: the name of the owner
+        solutionName:
+          type: string
+          readOnly: true
+          description: the Solution name
+        runTemplateName:
+          type: string
+          readOnly: true
+          description: the Solution Run Template name associated with this Runner
         security:
           $ref: '#/components/schemas/RunnerSecurity'
       required:
         - name
+        - solutionId
         - runTemplateId
-#        - datasetList
+        - ownerName
 
     RunnerUpdateRequest:
       type: object
@@ -765,6 +782,18 @@ components:
           description: the list of Solution Run Template parameters values
           items:
             $ref: '#/components/schemas/RunnerRunTemplateParameterValue'
+        ownerName:
+          type: string
+          readOnly: true
+          description: the name of the owner
+        solutionName:
+          type: string
+          readOnly: true
+          description: the Solution name
+        runTemplateName:
+          type: string
+          readOnly: true
+          description: the Solution Run Template name associated with this Runner
     RunnerSecurity:
       type: object
       description: the Runner security information
