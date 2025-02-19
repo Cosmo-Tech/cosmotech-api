@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home
 
-import com.cosmotech.api.tests.CsmRedisTestBase
 import com.redis.testcontainers.RedisServer
 import com.redis.testcontainers.RedisStackContainer
 import com.redis.testcontainers.junit.AbstractTestcontainersRedisTestBase
