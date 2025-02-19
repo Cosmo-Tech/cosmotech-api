@@ -43,7 +43,7 @@ plugins {
   id("com.github.jk1.dependency-license-report") version "2.9"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.7"
-  id("org.openapi.generator") version "7.8.0" apply false
+  id("org.openapi.generator") version "7.10.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.4" apply false
 }
 
