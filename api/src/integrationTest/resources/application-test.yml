@@ -13,10 +13,14 @@ spring:
   main:
     banner-mode: "off"
 
+logging:
+  level:
+    org.springframework.security: TRACE
+
 csm:
   platform:
     identityProvider:
-      code: on_premise_one
+      code: keycloak
       authorizationUrl: "http://fake_url:8080/authorize"
       tokenUrl: "http://fake_url:8080/token"
       containerScopes:
