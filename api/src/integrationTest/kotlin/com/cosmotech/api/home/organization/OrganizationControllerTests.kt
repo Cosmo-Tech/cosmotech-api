@@ -7,34 +7,41 @@ import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.annotations.WithMockOauth2User
 import com.cosmotech.api.home.organization.OrganizationConstants.Errors.emptyNameOrganizationCreationRequestError
+import com.cosmotech.api.home.organization.OrganizationConstants.NEW_ORGANIZATION_NAME
+import com.cosmotech.api.home.organization.OrganizationConstants.NEW_USER_ID
+import com.cosmotech.api.home.organization.OrganizationConstants.NEW_USER_ROLE
 import com.cosmotech.api.home.organization.OrganizationConstants.ORGANIZATION_NAME
 import com.cosmotech.api.home.organization.OrganizationConstants.RequestContent.EMPTY_NAME_ORGANIZATION_REQUEST_CREATION
+import com.cosmotech.api.home.organization.OrganizationConstants.RequestContent.MINIMAL_ORGANIZATION_ACCESS_CONTROL_REQUEST
 import com.cosmotech.api.home.organization.OrganizationConstants.RequestContent.MINIMAL_ORGANIZATION_REQUEST_CREATION
+import com.cosmotech.api.home.organization.OrganizationConstants.RequestContent.MINIMAL_ORGANIZATION_REQUEST_UPDATE
+import com.cosmotech.api.home.organization.OrganizationConstants.RequestContent.ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
+import org.json.JSONObject
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.springframework.web.context.WebApplicationContext
 
 
 @ActiveProfiles(profiles = ["test"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class OrganizationControllerTests(context: WebApplicationContext): ControllerTestBase(context) {
+class OrganizationControllerTests: ControllerTestBase() {
 
     private val logger = LoggerFactory.getLogger(OrganizationControllerTests::class.java)
 
-
     @Test
     @WithMockOauth2User
-    fun test_create_organization_with_only_mandatory_fields_as_platform_admin() {
+    fun create_organization() {
         mvc
             .perform(
                 post("/organizations")
@@ -50,11 +57,251 @@ class OrganizationControllerTests(context: WebApplicationContext): ControllerTes
             .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
             .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
             .andDo(MockMvcResultHandlers.print())
+            .andDo(document("createOrganization"))
     }
 
     @Test
     @WithMockOauth2User
-    fun test_create_organization_with_empty_name() {
+    fun update_organization() {
+
+        val organizationId = createOrganizationAndReturnId()
+
+        mvc
+            .perform(
+                patch("/organizations/$organizationId")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(MINIMAL_ORGANIZATION_REQUEST_UPDATE)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.name").value(NEW_ORGANIZATION_NAME))
+            .andExpect(jsonPath("$.ownerId").value(PLATFORM_ADMIN_EMAIL))
+            .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
+            .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
+            .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("updateOrganization"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun list_organizations() {
+
+        val firstOrganizationId = createOrganizationAndReturnId(name = "my_first_organization")
+        val secondOrganizationId = createOrganizationAndReturnId(name = "my_second_organization")
+
+        mvc
+            .perform(
+                get("/organizations")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$[0].id").value(firstOrganizationId))
+            .andExpect(jsonPath("$[0].name").value("my_first_organization"))
+            .andExpect(jsonPath("$[0].ownerId").value(PLATFORM_ADMIN_EMAIL))
+            .andExpect(jsonPath("$[0].security.default").value(ROLE_NONE))
+            .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
+            .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+            .andExpect(jsonPath("$[1].id").value(secondOrganizationId))
+            .andExpect(jsonPath("$[1].name").value("my_second_organization"))
+            .andExpect(jsonPath("$[1].ownerId").value(PLATFORM_ADMIN_EMAIL))
+            .andExpect(jsonPath("$[1].security.default").value(ROLE_NONE))
+            .andExpect(jsonPath("$[1].security.accessControlList[0].role").value(ROLE_ADMIN))
+            .andExpect(jsonPath("$[1].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("listOrganizations"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun get_organization() {
+
+        val organizationId = createOrganizationAndReturnId()
+
+        mvc
+            .perform(
+                get("/organizations/$organizationId")
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.name").value(ORGANIZATION_NAME))
+            .andExpect(jsonPath("$.ownerId").value(PLATFORM_ADMIN_EMAIL))
+            .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
+            .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
+            .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("getOrganization"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun delete_organization() {
+
+        val organizationId = createOrganizationAndReturnId()
+
+        mvc
+            .perform(
+                delete("/organizations/$organizationId")
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("deleteOrganization"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun get_organization_security() {
+
+        val organizationId = createOrganizationAndReturnId()
+
+        mvc
+            .perform(
+                get("/organizations/$organizationId/security")
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.default").value(ROLE_NONE))
+            .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
+            .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("getOrganizationSecurity"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun add_organization_security_access() {
+
+        val organizationId = createOrganizationAndReturnId()
+
+        mvc
+            .perform(
+                post("/organizations/$organizationId/security/access")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(MINIMAL_ORGANIZATION_ACCESS_CONTROL_REQUEST)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.role").value(NEW_USER_ROLE))
+            .andExpect(jsonPath("$.id").value(NEW_USER_ID))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("addOrganizationAccess"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun get_organization_security_access() {
+
+        val organizationId = createOrganizationAndReturnId()
+
+        mvc
+            .perform(
+                get("/organizations/$organizationId/security/access/$PLATFORM_ADMIN_EMAIL")
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
+            .andExpect(jsonPath("$.id").value(PLATFORM_ADMIN_EMAIL))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("getOrganizationAccess"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun update_organization_security_access() {
+
+        val organizationId = JSONObject(
+            mvc
+                .perform(
+                    post("/organizations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andReturn().response.contentAsString
+        ).getString("id")
+
+        mvc
+            .perform(
+                patch("/organizations/$organizationId/security/access/$NEW_USER_ID")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"role":"$ROLE_VIEWER"}""")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.role").value(ROLE_VIEWER))
+            .andExpect(jsonPath("$.id").value(NEW_USER_ID))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("updateOrganizationAccess"))
+    }
+
+
+
+    @Test
+    @WithMockOauth2User
+    fun delete_organization_security_access() {
+
+        val organizationId = JSONObject(
+            mvc
+            .perform(
+                post("/organizations")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            ).andReturn().response.contentAsString
+        ).getString("id")
+
+        mvc
+            .perform(
+                delete("/organizations/$organizationId/security/access/$NEW_USER_ID")
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("deleteOrganizationAccess"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun update_organization_security_default() {
+
+        val organizationId = JSONObject(
+            mvc
+                .perform(
+                    post("/organizations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(MINIMAL_ORGANIZATION_REQUEST_CREATION)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andReturn().response.contentAsString
+        ).getString("id")
+
+        mvc
+            .perform(
+                post("/organizations/$organizationId/security/default")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"role":"$ROLE_VIEWER"}""")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.default").value(ROLE_VIEWER))
+            .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+            .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("updateOrganizationDefaultAccess"))
+    }
+
+
+    @Test
+    @WithMockOauth2User
+    fun create_organization_with_empty_name() {
         mvc
             .perform(
                 post("/organizations")
@@ -71,7 +318,7 @@ class OrganizationControllerTests(context: WebApplicationContext): ControllerTes
 
     @Test
     @WithMockOauth2User(email = ORGANIZATION_USER_EMAIL, roles = [ROLE_ORGANIZATION_USER])
-    fun test_create_organization_as_organization_user() {
+    fun create_organization_as_organization_user() {
         mvc
             .perform(
                 post("/organizations")
@@ -84,5 +331,32 @@ class OrganizationControllerTests(context: WebApplicationContext): ControllerTes
             .andExpect(status().reason("Forbidden"))
             .andDo(MockMvcResultHandlers.print())
     }
+
+    @Test
+    @WithMockOauth2User(email = ORGANIZATION_USER_EMAIL, roles = [ROLE_ORGANIZATION_USER])
+    fun update_organization_as_organization_user() {
+        mvc
+            .perform(
+                patch("/organizations/my-org-id")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(MINIMAL_ORGANIZATION_REQUEST_CREATION)
+                    .accept(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().is4xxClientError)
+            .andExpect(status().isForbidden)
+            .andExpect(status().reason("Forbidden"))
+            .andDo(MockMvcResultHandlers.print())
+    }
+
+    private fun createOrganizationAndReturnId(name:String = ORGANIZATION_NAME): String = JSONObject(
+            mvc
+                .perform(
+                    post("/organizations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""{"name":"$name"}""")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                ).andReturn().response.contentAsString
+        ).getString("id")
 
 }
