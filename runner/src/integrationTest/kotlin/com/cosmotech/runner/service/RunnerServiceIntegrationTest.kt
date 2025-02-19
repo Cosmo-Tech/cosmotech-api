@@ -110,8 +110,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var solution: SolutionCreateRequest
   lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
-  lateinit var runner: Runner
-  lateinit var parentRunner: Runner
+  lateinit var runner: RunnerCreateRequest
+  lateinit var parentRunner: RunnerCreateRequest
 
   lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
@@ -175,11 +175,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     parentRunner =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
-            "RunnerParent",
-            mutableListOf(datasetSaved.id!!),
+            name = "RunnerParent",
+            datasetList = mutableListOf(datasetSaved.id!!),
             parametersValues = mutableListOf(runTemplateParameterValue1))
 
     parentRunnerSaved =
@@ -187,9 +184,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     runner =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
             name = "Runner",
             parentId = parentRunnerSaved.id!!,
             datasetList = mutableListOf(datasetSaved.id!!),
@@ -210,11 +204,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         "should create a new Runner and retrieve parameter varType from solution ignoring the one declared")
     val newRunner =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
-            "NewRunner",
-            mutableListOf(datasetSaved.id!!),
+            name = "NewRunner",
+            datasetList = mutableListOf(datasetSaved.id!!),
             parametersValues =
                 mutableListOf(
                     RunnerRunTemplateParameterValue(
@@ -239,11 +230,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             parameterId = "param1", value = "7", varType = "ignored_var_type")
     val newRunner =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
-            "NewRunner",
-            mutableListOf(datasetSaved.id!!),
+          name =   "NewRunner",
+            datasetList = mutableListOf(datasetSaved.id!!),
             parametersValues = mutableListOf(creationParameterValue))
     val newRunnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
@@ -260,7 +248,10 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id,
           workspaceSaved.id,
             newRunnerSaved.id!!,
-            newRunnerSaved.apply { parametersValues = mutableListOf(newParameterValue) })
+          RunnerUpdateRequest(
+            parametersValues = mutableListOf(newParameterValue)
+          )
+        )
 
     assertNotNull(updateRunnerSaved.parametersValues)
     assertTrue(updateRunnerSaved.parametersValues!!.size == 1)
@@ -279,11 +270,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should create a new Runner")
     val newRunner =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
-            "NewRunner",
-            mutableListOf(datasetSaved.id!!))
+            name = "NewRunner",
+            datasetList = mutableListOf(datasetSaved.id!!))
     val newRunnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
 
@@ -303,10 +291,10 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id,
           workspaceSaved.id,
             runnerRetrieved.id!!,
-            runnerRetrieved.copy(name = "Runner Updated"))
+          RunnerUpdateRequest(name = "Runner Updated"))
     assertEquals(
-        runnerRetrieved.copy(name = "Runner Updated", creationDate = null, lastUpdate = null),
-        runnerUpdated.copy(creationDate = null, lastUpdate = null))
+        runnerRetrieved.copy(name = "Runner Updated", creationDate = 0, lastUpdate = 0),
+        runnerUpdated.copy(creationDate = 0, lastUpdate = 0))
 
     logger.info("should delete the Runner and assert there is one less Runner left")
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, newRunnerSaved.id!!)
@@ -330,11 +318,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     IntRange(1, numberOfRunners - 1).forEach {
       val runner =
           makeRunner(
-              organizationSaved.id,
-            workspaceSaved.id,
-            solutionSaved.id,
-              "Runner$it",
-              mutableListOf(datasetSaved.id!!))
+              name = "Runner$it",
+              datasetList = mutableListOf(datasetSaved.id!!))
       runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
     }
 
@@ -380,28 +365,20 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun `update parentId on Runner delete`() {
     // Create a 3 level hierarchy: grandParent <- parent <- child
     val grandParentCreation =
-        makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
-        )
+        makeRunner()
     val grandParentRunner =
         runnerApiService.createRunner(
             organizationSaved.id, workspaceSaved.id, grandParentCreation)
     val parentCreation =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
-            parentId = grandParentRunner.id)
+          parentId = grandParentRunner.id
+        )
     val parentRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, parentCreation)
     val childCreation =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
-            parentId = parentRunner.id)
+            parentId = parentRunner.id
+        )
     val childRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, childCreation)
 
@@ -431,30 +408,22 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     // Create a 3 level hierarchy: grandParent <- parent1 <- child1
     //                                         <- parent2 <- child2
     val grandParentCreation =
-        makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
-        )
+        makeRunner()
     val grandParentRunner =
         runnerApiService.createRunner(
             organizationSaved.id, workspaceSaved.id, grandParentCreation)
     val parentCreation =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
-            parentId = grandParentRunner.id)
+            parentId = grandParentRunner.id
+        )
     val parentRunner1 =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, parentCreation)
     val parentRunner2 =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, parentCreation)
     var childCreation =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
-            parentId = parentRunner1.id)
+            parentId = parentRunner1.id
+        )
     val childRunner1 =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, childCreation)
     childCreation.parentId = parentRunner2.id
@@ -639,9 +608,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test deleting a running runner`() {
-    runnerSaved.lastRunId = "run-genid12345"
     runnerApiService.updateRunner(
-        organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, runnerSaved)
+        organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, RunnerUpdateRequest())
 
     every { eventPublisher.publishEvent(any<HasRunningRuns>()) } answers
         {
@@ -677,7 +645,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             .createRunner(
                 organizationSaved.id, workspaceSaved.id, parentRunnerWithEmptyDatasetList)
             .id
-    val childRunnerWithNullDatasetList = makeRunner(parentId = parentId, datasetList = null)
+    val childRunnerWithNullDatasetList = makeRunner(parentId = parentId, datasetList = mutableListOf())
     val childRunnerDatasetList =
         runnerApiService
             .createRunner(organizationSaved.id, workspaceSaved.id, childRunnerWithNullDatasetList)
@@ -699,7 +667,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             .createRunner(
                 organizationSaved.id, workspaceSaved.id, parentRunnerWithNonEmptyDatasetList)
             .id
-    val childRunnerWithNullDatasetList = makeRunner(parentId = parentId, datasetList = null)
+    val childRunnerWithNullDatasetList = makeRunner(parentId = parentId, datasetList = mutableListOf())
     val childRunnerDatasetList =
         runnerApiService
             .createRunner(organizationSaved.id, workspaceSaved.id, childRunnerWithNullDatasetList)
@@ -766,13 +734,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id,
           workspaceSaved.id,
             runnerSaved.id!!,
-            runner.copy(
-                datasetList = mutableListOf(datasetSaved.id!!, newDataset.id!!),
-                security =
-                    runner.security
-                        ?.accessControlList
-                        ?.apply { this.add(RunnerAccessControl("newUser", ROLE_VIEWER)) }
-                        ?.let { runner.security?.copy(accessControlList = it) }))
+          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!, newDataset.id!!)))
 
     val runnerUserList =
         runnerApiService.listRunnerSecurityUsers(
@@ -790,8 +752,12 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
     val brokenRunner =
-        Runner(
+        RunnerCreateRequest(
             name = "runner",
+            runTemplateId = "runTemplate",
+          solutionId = solutionSaved.id,
+          datasetList = mutableListOf(),
+          ownerName = "owner",
             security =
                 RunnerSecurity(
                     default = ROLE_NONE,
@@ -915,9 +881,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun `test runner creation with unknown runtemplateId`() {
     val runnerWithWrongRunTemplateId =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
             name = "Runner_With_unknown_runtemplate_id",
             parentId = "unknown_parent_id",
             runTemplateId = "unknown_runtemplate_id",
@@ -939,9 +902,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val parentId = "unknown_parent_id"
     val runnerWithWrongParentId =
         makeRunner(
-            organizationSaved.id,
-          workspaceSaved.id,
-          solutionSaved.id,
             name = "Runner_With_unknown_parent",
             parentId = parentId,
             datasetList = mutableListOf(datasetSaved.id!!),
@@ -977,15 +937,12 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id,
           workspaceSaved.id,
             parentRunnerSaved.id!!,
-            parentRunnerSaved.apply {
-              parametersValues =
-                  mutableListOf(
-                      RunnerRunTemplateParameterValue(
-                          parameterId = "param1",
-                          value = "param1value",
-                          isInherited = false,
-                          varType = "String"))
-            })
+          RunnerUpdateRequest(parametersValues = mutableListOf(
+            RunnerRunTemplateParameterValue(
+              parameterId = "param1",
+              value = "param1value",
+              isInherited = false,
+              varType = "String"))))
 
     val childRunnerWithEmptyParams = makeRunner(name = "child", parentId = parentRunnerUpdated.id!!)
 
@@ -1158,37 +1115,27 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                     WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
 
   fun makeRunner(
-    organizationId: String = organizationSaved.id,
-    workspaceId: String = workspaceSaved.id,
-    solutionId: String = solutionSaved.id,
     name: String = "name",
-    datasetList: MutableList<String>? = mutableListOf(),
+    datasetList: MutableList<String> = mutableListOf(),
     parentId: String? = null,
     userName: String = defaultName,
     role: String = ROLE_USER,
     runTemplateId: String = "runTemplateId",
-    validationStatus: RunnerValidationStatus = RunnerValidationStatus.Draft,
     parametersValues: MutableList<RunnerRunTemplateParameterValue>? = null
-  ): Runner {
-    return Runner(
-        id = UUID.randomUUID().toString(),
+  ) = RunnerCreateRequest(
         name = name,
-        organizationId = organizationId,
-        workspaceId = workspaceId,
-        solutionId = solutionId,
         runTemplateId = runTemplateId,
-        ownerId = "ownerId",
         datasetList = datasetList,
         parentId = parentId,
         parametersValues = parametersValues,
-        validationStatus = validationStatus,
+    solutionId = solutionSaved.id,
+    ownerName = "owner",
         security =
             RunnerSecurity(
                 ROLE_NONE,
                 mutableListOf(
                     RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                     RunnerAccessControl(userName, role))))
-  }
 
   private fun materializeTwingraph(
       dataset: Dataset = datasetSaved,

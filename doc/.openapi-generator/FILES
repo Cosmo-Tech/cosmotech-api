@@ -56,10 +56,12 @@ Models/RunTemplateParameterValue.md
 Models/RunTemplateResourceSizing.md
 Models/Runner.md
 Models/RunnerAccessControl.md
+Models/RunnerCreateRequest.md
 Models/RunnerResourceSizing.md
 Models/RunnerRole.md
 Models/RunnerRunTemplateParameterValue.md
 Models/RunnerSecurity.md
+Models/RunnerUpdateRequest.md
 Models/RunnerValidationStatus.md
 Models/Solution.md
 Models/SolutionAccessControl.md

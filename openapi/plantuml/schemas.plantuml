@@ -346,33 +346,49 @@ entity RunTemplateResourceSizing {
 }
 
 entity Runner {
-    id: String
-    name: String
+    * id: String
+    * name: String
     description: String
     tags: List<String>
     parentId: String
-    ownerId: String
+    * ownerId: String
     rootId: String
-    solutionId: String
-    runTemplateId: String
-    organizationId: String
-    workspaceId: String
-    creationDate: Long
-    lastUpdate: Long
-    ownerName: String
+    * solutionId: String
+    * runTemplateId: String
+    * organizationId: String
+    * workspaceId: String
+    * creationDate: Long
+    * lastUpdate: Long
+    * ownerName: String
     solutionName: String
     runTemplateName: String
-    datasetList: List<String>
+    * datasetList: List<String>
     runSizing: RunnerResourceSizing
     parametersValues: List<RunnerRunTemplateParameterValue>
     lastRunId: String
     validationStatus: RunnerValidationStatus
-    security: RunnerSecurity
+    * security: RunnerSecurity
 }
 
 entity RunnerAccessControl {
     * id: String
     * role: String
+}
+
+entity RunnerCreateRequest {
+    * name: String
+    description: String
+    tags: List<String>
+    * solutionId: String
+    parentId: String
+    * runTemplateId: String
+    datasetList: List<String>
+    runSizing: RunnerResourceSizing
+    parametersValues: List<RunnerRunTemplateParameterValue>
+    * ownerName: String
+    solutionName: String
+    runTemplateName: String
+    security: RunnerSecurity
 }
 
 entity RunnerResourceSizing {
@@ -394,6 +410,19 @@ entity RunnerRunTemplateParameterValue {
 entity RunnerSecurity {
     * default: String
     * accessControlList: List<RunnerAccessControl>
+}
+
+entity RunnerUpdateRequest {
+    name: String
+    description: String
+    tags: List<String>
+    runTemplateId: String
+    datasetList: List<String>
+    runSizing: RunnerResourceSizing
+    parametersValues: List<RunnerRunTemplateParameterValue>
+    ownerName: String
+    solutionName: String
+    runTemplateName: String
 }
 
 entity RunnerValidationStatus {
@@ -560,8 +589,13 @@ entity WorkspaceWebApp {
 }
 
 
+RunnerUpdateRequest -- RunnerResourceSizing : runSizing
+RunnerUpdateRequest -- "0..*" RunnerRunTemplateParameterValue : parametersValues
 RunTemplateResourceSizing -- ResourceSizeInfo : requests
 RunTemplateResourceSizing -- ResourceSizeInfo : limits
+RunnerCreateRequest -- RunnerResourceSizing : runSizing
+RunnerCreateRequest -- "0..*" RunnerRunTemplateParameterValue : parametersValues
+RunnerCreateRequest -- RunnerSecurity : security
 DatasetSecurity -- "0..*" DatasetAccessControl : accessControlList
 ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
