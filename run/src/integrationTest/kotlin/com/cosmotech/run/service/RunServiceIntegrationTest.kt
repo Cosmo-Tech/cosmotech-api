@@ -34,6 +34,7 @@ import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
+import com.cosmotech.runner.domain.RunnerCreateRequest
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
@@ -82,6 +83,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import java.time.Instant
 
 @ActiveProfiles(profiles = ["run-test"])
 @ExtendWith(MockKExtension::class)
@@ -117,6 +119,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
   lateinit var solution: SolutionCreateRequest
   lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
+  lateinit var runner: RunnerCreateRequest
 
   lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
@@ -260,15 +263,12 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     runTemplateId: String = solutionSaved.runTemplates[0].id,
     name: String = "runner",
     datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
-  ) = Runner(
-        id = "RunnerId",
+  ) = RunnerCreateRequest(
         name = name,
-        organizationId = organizationId,
-        workspaceId = workspaceId,
         solutionId = solutionId,
         runTemplateId = runTemplateId,
-        ownerId = "ownerId",
         datasetList = datasetList,
+    ownerName = "owner",
         security =
             RunnerSecurity(
                 ROLE_NONE, mutableListOf(RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
@@ -284,7 +284,16 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
             id = runnerId,
             solutionId = solutionId,
             organizationId = organizationId,
-            workspaceId = workspaceId)
+          name = "name",
+          ownerId = "owner",
+          runTemplateId = "runTemplate",
+          creationDate = Instant.now().toEpochMilli(),
+          lastUpdate = Instant.now().toEpochMilli(),
+          ownerName = "owner",
+          datasetList = mutableListOf(),
+            workspaceId = workspaceId,
+          security = RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN)))
+        )
     val runStart = RunStart(this, runner)
     eventPublisher.publishEvent(runStart)
     return runStart.response!!

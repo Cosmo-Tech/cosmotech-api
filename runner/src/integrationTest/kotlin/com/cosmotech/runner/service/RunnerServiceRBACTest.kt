@@ -40,8 +40,10 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.api.RunnerApiService
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
+import com.cosmotech.runner.domain.RunnerCreateRequest
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
+import com.cosmotech.runner.domain.RunnerUpdateRequest
 import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
@@ -683,7 +685,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunner(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -691,7 +694,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunner(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -746,7 +750,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunner(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -754,7 +759,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunner(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -810,7 +816,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunner(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
@@ -818,7 +825,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunner(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -871,7 +879,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunner(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
@@ -879,7 +888,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunner(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -934,15 +944,17 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunner(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
-                    "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunner(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -999,7 +1011,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.deleteRunner(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1007,7 +1020,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunner(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -1064,7 +1078,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.deleteRunner(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1072,7 +1087,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunner(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -1130,7 +1146,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.deleteRunner(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1138,7 +1155,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunner(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -1195,7 +1213,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.deleteRunner(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1203,7 +1222,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunner(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -1259,21 +1279,23 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.deleteRunner(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_DELETE",
                       exception.message)
                 }
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunner(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -1330,31 +1352,22 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunner(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
-                          makeRunnerWithRole(
-                              organizationSaved.id,
-                            workspaceSaved.id,
-                            solutionSaved.id,
-                              mutableListOf(datasetSaved.id!!),
-                              id = TEST_USER_MAIL,
-                              role = role))
+                        runnerSaved.id,
+                          RunnerUpdateRequest(
+                              datasetList = mutableListOf(datasetSaved.id!!))
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  runnerApiService.updateRunner(
+:                  runnerApiService.updateRunner(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
-                      makeRunnerWithRole(
-                          organizationSaved.id,
-                        workspaceSaved.id,
-                        solutionSaved.id,
-                          mutableListOf(datasetSaved.id!!),
-                          id = TEST_USER_MAIL,
-                          role = role))
+                    runnerSaved.id,
+                      RunnerUpdateRequest(
+                          datasetList = mutableListOf(datasetSaved.id!!)))
                 }
               }
             }
@@ -1411,14 +1424,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunner(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
-                          makeRunnerWithRole(
-                              organizationSaved.id,
-                            workspaceSaved.id,
-                            solutionSaved.id,
-                              mutableListOf(datasetSaved.id!!),
-                              id = TEST_USER_MAIL,
-                              role = role))
+                        runnerSaved.id,
+                          RunnerUpdateRequest(
+                              datasetList = mutableListOf(datasetSaved.id!!)))
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1428,14 +1436,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunner(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
-                      makeRunnerWithRole(
-                          organizationSaved.id,
-                        workspaceSaved.id,
-                        solutionSaved.id,
-                          mutableListOf(datasetSaved.id!!),
-                          id = TEST_USER_MAIL,
-                          role = role))
+                    runnerSaved.id,
+                      RunnerUpdateRequest(
+                          datasetList = mutableListOf(datasetSaved.id!!)))
                 }
               }
             }
@@ -1491,16 +1494,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunner(
-                          organizationSaved.id,
+                        organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
-                          makeRunnerWithRole(
-                              organizationSaved.id,
-                            workspaceSaved.id,
-                            solutionSaved.id,
-                              mutableListOf(datasetSaved.id!!),
-                              id = TEST_USER_MAIL,
-                              role = role))
+                        runnerSaved.id,
+                        RunnerUpdateRequest(
+                          datasetList = mutableListOf(datasetSaved.id!!)))
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1508,16 +1506,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunner(
-                      organizationSaved.id,
+                    organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
-                      makeRunnerWithRole(
-                          organizationSaved.id,
-                        workspaceSaved.id,
-                        solutionSaved.id,
-                          mutableListOf(datasetSaved.id!!),
-                          id = TEST_USER_MAIL,
-                          role = role))
+                    runnerSaved.id,
+                    RunnerUpdateRequest(
+                      datasetList = mutableListOf(datasetSaved.id!!)))
                 }
               }
             }
@@ -1570,16 +1563,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunner(
-                          organizationSaved.id,
+                        organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
-                          makeRunnerWithRole(
-                              organizationSaved.id,
-                            workspaceSaved.id,
-                            solutionSaved.id,
-                              mutableListOf(datasetSaved.id!!),
-                              id = TEST_USER_MAIL,
-                              role = role))
+                        runnerSaved.id,
+                        RunnerUpdateRequest(
+                          datasetList = mutableListOf(datasetSaved.id!!)))
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1587,16 +1575,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunner(
-                      organizationSaved.id,
+                    organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
-                      makeRunnerWithRole(
-                          organizationSaved.id,
-                        workspaceSaved.id,
-                        solutionSaved.id,
-                          mutableListOf(datasetSaved.id!!),
-                          id = TEST_USER_MAIL,
-                          role = role))
+                    runnerSaved.id,
+                    RunnerUpdateRequest(
+                      datasetList = mutableListOf(datasetSaved.id!!)))
                 }
               }
             }
@@ -1651,39 +1634,29 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.updateRunner(
-                          organizationSaved.id,
+                        organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
-                          makeRunnerWithRole(
-                              organizationSaved.id,
-                            workspaceSaved.id,
-                            solutionSaved.id,
-                              mutableListOf(datasetSaved.id!!),
-                              id = TEST_USER_MAIL,
-                              role = role))
+                        runnerSaved.id,
+                        RunnerUpdateRequest(
+                          datasetList = mutableListOf(datasetSaved.id!!)))
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_WRITE",
                       exception.message)
                 }
               } else {
                 assertDoesNotThrow {
                   runnerApiService.updateRunner(
-                      organizationSaved.id,
+                    organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
-                      makeRunnerWithRole(
-                          organizationSaved.id,
-                        workspaceSaved.id,
-                        solutionSaved.id,
-                          mutableListOf(datasetSaved.id!!),
-                          id = TEST_USER_MAIL,
-                          role = role))
+                    runnerSaved.id,
+                    RunnerUpdateRequest(
+                      datasetList = mutableListOf(datasetSaved.id!!)))
                 }
               }
             }
@@ -1739,7 +1712,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunnerPermissions(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1747,7 +1720,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunnerPermissions(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                 }
               }
             }
@@ -1803,7 +1776,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunnerPermissions(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1811,7 +1784,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunnerPermissions(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                 }
               }
             }
@@ -1868,7 +1841,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunnerPermissions(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1876,7 +1849,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunnerPermissions(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                 }
               }
             }
@@ -1930,7 +1903,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunnerPermissions(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1938,7 +1911,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunnerPermissions(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                 }
               }
             }
@@ -1994,21 +1967,21 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunnerPermissions(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                       exception.message)
                 }
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunnerPermissions(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, role)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                 }
               }
             }
@@ -2063,7 +2036,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurity(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -2071,7 +2045,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurity(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -2126,7 +2101,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurity(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -2134,7 +2110,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurity(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -2190,7 +2167,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurity(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
@@ -2198,7 +2176,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurity(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -2251,7 +2230,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurity(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
@@ -2259,7 +2239,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurity(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -2314,21 +2295,23 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.getRunnerSecurity(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                       exception.message)
                 }
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerSecurity(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -2386,7 +2369,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunnerDefaultSecurity(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           RunnerRole(ROLE_ADMIN))
                     }
                 assertEquals(
@@ -2397,7 +2380,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunnerDefaultSecurity(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       RunnerRole(ROLE_ADMIN))
                 }
               }
@@ -2456,7 +2439,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunnerDefaultSecurity(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           RunnerRole(ROLE_ADMIN))
                     }
                 assertEquals(
@@ -2467,7 +2450,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunnerDefaultSecurity(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       RunnerRole(ROLE_ADMIN))
                 }
               }
@@ -2527,7 +2510,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunnerDefaultSecurity(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           RunnerRole(ROLE_ADMIN))
                     }
                 assertEquals(
@@ -2538,7 +2521,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunnerDefaultSecurity(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       RunnerRole(ROLE_ADMIN))
                 }
               }
@@ -2594,7 +2577,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunnerDefaultSecurity(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           RunnerRole(ROLE_ADMIN))
                     }
                 assertEquals(
@@ -2605,7 +2588,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunnerDefaultSecurity(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       RunnerRole(ROLE_ADMIN))
                 }
               }
@@ -2663,16 +2646,16 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunnerDefaultSecurity(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           RunnerRole(ROLE_ADMIN))
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                       exception.message)
                 }
               } else {
@@ -2680,7 +2663,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunnerDefaultSecurity(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       RunnerRole(ROLE_ADMIN))
                 }
               }
@@ -2739,7 +2722,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.createRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           RunnerAccessControl("id", ROLE_ADMIN))
                     }
                 assertEquals(
@@ -2750,7 +2733,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.createRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       RunnerAccessControl("id", ROLE_ADMIN))
                 }
               }
@@ -2818,7 +2801,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     runnerApiService.createRunnerAccessControl(
                         organizationSaved.id,
                       workspaceSaved.id,
-                        runnerSaved.id!!,
+                      runnerSaved.id,
                         RunnerAccessControl("unknown_user@test.com", role))
 
                     val datasetWithUpgradedACL =
@@ -2882,7 +2865,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
     runnerApiService.createRunnerAccessControl(
         organizationSaved.id,
       workspaceSaved.id,
-        runnerSaved.id!!,
+      runnerSaved.id,
         RunnerAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
     val datasetWithUpgradedACL =
         datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
@@ -2946,7 +2929,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.createRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           RunnerAccessControl("id", ROLE_ADMIN))
                     }
                 assertEquals(
@@ -2957,7 +2940,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.createRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       RunnerAccessControl("id", ROLE_ADMIN))
                 }
               }
@@ -3014,7 +2997,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.createRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           RunnerAccessControl("id", ROLE_ADMIN))
                     }
                 assertEquals(
@@ -3025,7 +3008,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.createRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       RunnerAccessControl("id", ROLE_ADMIN))
                 }
               }
@@ -3084,16 +3067,16 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.createRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           RunnerAccessControl("id", ROLE_ADMIN))
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                       exception.message)
                 }
               } else {
@@ -3101,7 +3084,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.createRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       RunnerAccessControl("id", ROLE_ADMIN))
                 }
               }
@@ -3159,7 +3142,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.getRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL)
                     }
                 assertEquals(
@@ -3168,7 +3151,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -3225,7 +3208,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.getRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL)
                     }
                 assertEquals(
@@ -3234,7 +3217,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -3292,7 +3275,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.getRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL)
                     }
                 assertEquals(
@@ -3301,7 +3284,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -3356,7 +3339,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.getRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL)
                     }
                 assertEquals(
@@ -3365,7 +3348,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -3422,22 +3405,22 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.getRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                       exception.message)
                 }
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -3495,7 +3478,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.deleteRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL)
                     }
                 assertEquals(
@@ -3504,7 +3487,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -3562,7 +3545,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.deleteRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL)
                     }
                 if (role == ROLE_NONE || role == ROLE_VALIDATOR) {
@@ -3577,7 +3560,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -3636,7 +3619,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.deleteRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL)
                     }
                 assertEquals(
@@ -3645,7 +3628,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -3701,7 +3684,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.deleteRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL)
                     }
                 assertEquals(
@@ -3710,7 +3693,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -3768,22 +3751,22 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.deleteRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                       exception.message)
                 }
               } else {
                 assertDoesNotThrow {
                   runnerApiService.deleteRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, TEST_USER_MAIL)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                 }
               }
             }
@@ -3846,7 +3829,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL,
                           RunnerRole(ROLE_VIEWER))
                     }
@@ -3858,7 +3841,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       TEST_USER_MAIL,
                       RunnerRole(ROLE_VIEWER))
                 }
@@ -3923,7 +3906,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL,
                           RunnerRole(ROLE_VIEWER))
                     }
@@ -3935,7 +3918,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       TEST_USER_MAIL,
                       RunnerRole(ROLE_VIEWER))
                 }
@@ -4001,7 +3984,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL,
                           RunnerRole(ROLE_VIEWER))
                     }
@@ -4013,7 +3996,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       TEST_USER_MAIL,
                       RunnerRole(ROLE_VIEWER))
                 }
@@ -4076,7 +4059,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL,
                           RunnerRole(ROLE_VIEWER))
                     }
@@ -4088,7 +4071,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       TEST_USER_MAIL,
                       RunnerRole(ROLE_VIEWER))
                 }
@@ -4153,17 +4136,17 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       runnerApiService.updateRunnerAccessControl(
                           organizationSaved.id,
                         workspaceSaved.id,
-                          runnerSaved.id!!,
+                        runnerSaved.id,
                           TEST_USER_MAIL,
                           RunnerRole(ROLE_VIEWER))
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                       exception.message)
                 }
               } else {
@@ -4171,7 +4154,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   runnerApiService.updateRunnerAccessControl(
                       organizationSaved.id,
                     workspaceSaved.id,
-                      runnerSaved.id!!,
+                    runnerSaved.id,
                       TEST_USER_MAIL,
                       RunnerRole(ROLE_VIEWER))
                 }
@@ -4229,7 +4212,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunnerSecurityUsers(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -4237,7 +4221,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunnerSecurityUsers(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -4293,7 +4278,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunnerSecurityUsers(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -4301,7 +4287,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunnerSecurityUsers(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -4358,7 +4345,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunnerSecurityUsers(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
@@ -4366,7 +4354,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunnerSecurityUsers(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -4420,7 +4409,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunnerSecurityUsers(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
@@ -4428,7 +4418,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunnerSecurityUsers(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -4484,21 +4475,23 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       runnerApiService.listRunnerSecurityUsers(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                      )
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${runnerSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                       exception.message)
                 }
               } else {
                 assertDoesNotThrow {
                   runnerApiService.listRunnerSecurityUsers(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
+                      organizationSaved.id, workspaceSaved.id, runnerSaved.id
+                  )
                 }
               }
             }
@@ -4594,17 +4587,13 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
       id: String,
       role: String,
       validationStatus: RunnerValidationStatus = RunnerValidationStatus.Draft
-  ) = Runner(
-        id = UUID.randomUUID().toString(),
+  ) = RunnerCreateRequest(
         name = "Runner",
-        organizationId = organizationId,
-        workspaceId = workspaceId,
         solutionId = solutionId,
         runTemplateId = "runTemplateId",
-        ownerId = "ownerId",
         datasetList = datasetList,
         parentId = null,
-        validationStatus = validationStatus,
+        ownerName = "owner",
         security =
             RunnerSecurity(
                 ROLE_NONE,

@@ -45,12 +45,10 @@ internal class RunnerApiServiceImpl(
 
     val runnerInstance =
         runnerService
-            .getNewInstance()
-            .setValueFrom(runner)
-            .initSecurity(runner)
+            .getNewInstance(runnerCreateRequest)
+            .initSecurity(runnerCreateRequest)
             .initParameters()
             .initDatasetList()
-
     return runnerService.saveInstance(runnerInstance)
   }
 
@@ -67,10 +65,16 @@ internal class RunnerApiServiceImpl(
     runnerId: String,
     runnerUpdateRequest: RunnerUpdateRequest
   ): Runner {
-    val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
-    val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
+    val runnerService = getRunnerService()
+      .inOrganization(organizationId)
+      .inWorkspace(workspaceId)
+    val runnerInstance = runnerService
+      .getInstance(runnerId)
+      .userHasPermission(PERMISSION_WRITE)
 
-    return runnerService.saveInstance(runnerInstance.setValueFrom(runner))
+    return runnerService
+      .saveInstance(runnerInstance
+        .setValueFrom(runnerUpdateRequest))
   }
 
   override fun deleteRunner(organizationId: String, workspaceId: String, runnerId: String) {
@@ -188,7 +192,7 @@ internal class RunnerApiServiceImpl(
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
 
-    return runnerInstance.getRunnerDataObjet().security!!
+    return runnerInstance.getRunnerDataObjet().security
   }
 
   override fun listRunnerPermissions(
@@ -224,7 +228,7 @@ internal class RunnerApiServiceImpl(
     runnerInstance.setDefaultSecurity(runnerRole.role)
     runnerService.saveInstance(runnerInstance)
 
-    return runnerInstance.getRunnerDataObjet().security!!
+    return runnerInstance.getRunnerDataObjet().security
   }
 
   @EventListener(RunDeleted::class)

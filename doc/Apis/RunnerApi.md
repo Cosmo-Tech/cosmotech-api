@@ -23,7 +23,7 @@ All URIs are relative to *http://localhost*
 
 <a name="createRunner"></a>
 # **createRunner**
-> Runner createRunner(organization\_id, workspace\_id, Runner)
+> Runner createRunner(organization\_id, workspace\_id, RunnerCreateRequest)
 
 Create a new Runner
 
@@ -33,7 +33,7 @@ Create a new Runner
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **Runner** | [**Runner**](../Models/Runner.md)| the Runner to create | |
+| **RunnerCreateRequest** | [**RunnerCreateRequest**](../Models/RunnerCreateRequest.md)| the Runner to create | |
 
 ### Return type
 
@@ -352,7 +352,7 @@ null (empty response body)
 
 <a name="updateRunner"></a>
 # **updateRunner**
-> Runner updateRunner(organization\_id, workspace\_id, runner\_id, Runner)
+> Runner updateRunner(organization\_id, workspace\_id, runner\_id, RunnerUpdateRequest)
 
 Update a runner
 
@@ -363,7 +363,7 @@ Update a runner
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **runner\_id** | **String**| the Runner identifier | [default to null] |
-| **Runner** | [**Runner**](../Models/Runner.md)| the new Runner details. This endpoint can&#39;t be used to update security | |
+| **RunnerUpdateRequest** | [**RunnerUpdateRequest**](../Models/RunnerUpdateRequest.md)| the new Runner details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
 

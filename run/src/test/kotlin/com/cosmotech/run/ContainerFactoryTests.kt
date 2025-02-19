@@ -16,7 +16,9 @@ import com.cosmotech.run.domain.RunContainer
 import com.cosmotech.run.service.WORKFLOW_TYPE_RUN
 import com.cosmotech.runner.api.RunnerApiService
 import com.cosmotech.runner.domain.Runner
+import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
+import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
@@ -36,6 +38,8 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.extension.ExtendWith
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import java.sql.Time
+import java.time.Instant
 
 private const val CSM_SIMULATION_ID = "simulationrunid"
 private const val CSM_RUN_TEMPLATE_ID = "testruntemplate"
@@ -220,10 +224,18 @@ class ContainerFactoryTests {
         name = "TestRunner",
         runTemplateId = CSM_RUN_TEMPLATE_ID,
         datasetList = mutableListOf("1", "2"),
+      ownerId = "owner",
+      solutionId = "solution",
+      organizationId = "organization",
+      workspaceId = "workspace",
+      creationDate = Instant.now().toEpochMilli(),
+      lastUpdate = Instant.now().toEpochMilli(),
+      ownerName = "owner",
         parametersValues =
             mutableListOf(
                 RunnerRunTemplateParameterValue(parameterId = "param1", value = "value1"),
-                RunnerRunTemplateParameterValue(parameterId = "param2", value = "value2")))
+                RunnerRunTemplateParameterValue(parameterId = "param2", value = "value2")),
+      security = RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))))
   }
 
   private fun getRunTemplate(): RunTemplate {
