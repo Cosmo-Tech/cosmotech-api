@@ -1,0 +1,11 @@
+= Cosmo Tech Spring REST Docs Example
+
+This is an example output for a service running at http://localhost:8080:
+
+== POST API Example
+
+.request
+include::{snippets}/createOrganization/http-request.adoc[]
+
+.response
+include::{snippets}/createOrganization/http-response.adoc[]

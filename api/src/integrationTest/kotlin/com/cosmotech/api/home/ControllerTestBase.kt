@@ -6,7 +6,13 @@ import com.redis.testcontainers.RedisServer
 import com.redis.testcontainers.RedisStackContainer
 import com.redis.testcontainers.junit.AbstractTestcontainersRedisTestBase
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
+import org.springframework.restdocs.RestDocumentationContextProvider
+import org.springframework.restdocs.RestDocumentationExtension
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -19,13 +25,19 @@ import org.testcontainers.junit.jupiter.Testcontainers
 
 @Testcontainers
 @EnableWebSecurity
-abstract class ControllerTestBase(private val context: WebApplicationContext) : AbstractTestcontainersRedisTestBase() {
+@ExtendWith(RestDocumentationExtension::class)
+@AutoConfigureRestDocs
+abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
+
+    @Autowired
+    private lateinit var context: WebApplicationContext
 
     lateinit var mvc: MockMvc
+
     private val logger = LoggerFactory.getLogger(ControllerTestBase::class.java)
 
     @BeforeEach
-    fun beforeEach() {
+    fun beforeEach(restDocumentationContextProvider: RestDocumentationContextProvider) {
 
         this.mvc =
             MockMvcBuilders.webAppContextSetup(context)
@@ -44,6 +56,7 @@ abstract class ControllerTestBase(private val context: WebApplicationContext) : 
                     }
                 }
                 .apply<DefaultMockMvcBuilder>(springSecurity())
+                .apply<DefaultMockMvcBuilder>(documentationConfiguration(restDocumentationContextProvider))
                 .build()
     }
 

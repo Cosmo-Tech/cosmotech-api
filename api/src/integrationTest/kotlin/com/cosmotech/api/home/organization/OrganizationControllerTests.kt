@@ -17,17 +17,18 @@ import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
+import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import org.springframework.web.context.WebApplicationContext
 
 
 @ActiveProfiles(profiles = ["test"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class OrganizationControllerTests(context: WebApplicationContext): ControllerTestBase(context) {
+class OrganizationControllerTests: ControllerTestBase() {
 
     private val logger = LoggerFactory.getLogger(OrganizationControllerTests::class.java)
 
@@ -50,6 +51,10 @@ class OrganizationControllerTests(context: WebApplicationContext): ControllerTes
             .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
             .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
             .andDo(MockMvcResultHandlers.print())
+            .andDo(document("createOrganization",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()))
+            )
     }
 
     @Test

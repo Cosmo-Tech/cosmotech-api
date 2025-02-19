@@ -12,12 +12,11 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.web.context.WebApplicationContext
 
 
 @ActiveProfiles(profiles = ["test"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class HomeControllerTests(context: WebApplicationContext) : ControllerTestBase(context) {
+class HomeControllerTests : ControllerTestBase() {
 
     @Test
     fun `redirects to Swagger UI from home if accepting HTML`() {
