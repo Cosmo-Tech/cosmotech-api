@@ -169,6 +169,9 @@ argo:
     password: ""
 
 config:
+  secrets:
+    envFrom:
+      enabled: false
   csm:
     platform:
       twincache:
