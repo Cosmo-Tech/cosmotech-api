@@ -240,7 +240,15 @@ paths:
         - scenario
       summary: Update a scenario
       requestBody:
-        description: the new Scenario details. This endpoint can't be used to update security
+        description: the new Scenario details.
+          This endpoint can't be used to update ':'
+            - id
+            - ownerId
+            - datasetList
+            - solutionId
+            - runTemplateId
+            - parametersValues
+            - security
         required: true
         content:
           application/json:

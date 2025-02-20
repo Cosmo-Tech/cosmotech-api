@@ -127,7 +127,11 @@ paths:
         - solution
       summary: Update a solution
       requestBody:
-        description: the new Solution details. This endpoint can't be used to update security
+        description: the new Solution details.
+          This endpoint can't be used to update ':'
+            - id
+            - runTemplates
+            - security
         required: true
         content:
           application/json:
