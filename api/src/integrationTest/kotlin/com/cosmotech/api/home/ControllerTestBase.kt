@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home
 
+import com.cosmotech.organization.domain.Organization
+import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisServer
 import com.redis.testcontainers.RedisStackContainer
 import com.redis.testcontainers.junit.AbstractTestcontainersRedisTestBase
@@ -10,9 +12,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
+import org.springframework.http.HttpHeaders
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration
+import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -32,12 +36,17 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
     @Autowired
     private lateinit var context: WebApplicationContext
 
+    @Autowired
+    lateinit var rediSearchIndexer: RediSearchIndexer
+
     lateinit var mvc: MockMvc
 
     private val logger = LoggerFactory.getLogger(ControllerTestBase::class.java)
 
     @BeforeEach
     fun beforeEach(restDocumentationContextProvider: RestDocumentationContextProvider) {
+
+        rediSearchIndexer.createIndexFor(Organization::class.java)
 
         this.mvc =
             MockMvcBuilders.webAppContextSetup(context)
@@ -56,7 +65,23 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
                     }
                 }
                 .apply<DefaultMockMvcBuilder>(springSecurity())
-                .apply<DefaultMockMvcBuilder>(documentationConfiguration(restDocumentationContextProvider))
+                .apply<DefaultMockMvcBuilder>(
+                    documentationConfiguration(restDocumentationContextProvider)
+                        .operationPreprocessors()
+                        .withRequestDefaults(
+                            modifyHeaders().remove(HttpHeaders.CONTENT_LENGTH),
+                            prettyPrint()
+                        )
+                        .withResponseDefaults(
+                            modifyHeaders()
+                                .remove("X-Content-Type-Options")
+                                .remove("X-XSS-Protection")
+                                .remove("X-Frame-Options")
+                                .remove(HttpHeaders.CONTENT_LENGTH)
+                                .remove(HttpHeaders.CACHE_CONTROL),
+                            prettyPrint()
+                        )
+                )
                 .build()
     }
 

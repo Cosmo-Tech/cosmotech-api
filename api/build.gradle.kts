@@ -223,28 +223,14 @@ tasks.register<Exec>("rolloutKindDeployment") {
       "deployment/cosmotech-api-${apiVersion}")
 }
 
-//////////////////////////////////////
-// Asciidoctor
-//////////////////////////////////////
-/*val snippetsDir by extra { file("${rootDir}/doc/generated-snippets") }
-tasks {
-    test {
-        outputs.dir(snippetsDir)
-    }
-
-    asciidoctor {
-        inputs.dir(snippetsDir)
-        sourceDir("src/main/resources/asciidoc")
-        dependsOn(test)
-    }
-}*/
-
 tasks.register<AsciidoctorTask>("generate-doc") {
-    baseDirFollowsSourceDir()
-    sourceDir(file("build/generated-snippets"))
+    dependsOn("copyAdocFiles")
+    baseDirIsRootProjectDir()
+    setSourceDir(file("${rootDir}/doc/generated-snippets"))
     sources(
         delegateClosureOf<PatternSet> {
             include("index.adoc", "another.adoc", "third.adoc")
         }
     )
+    setOutputDir(file("${rootDir}/doc/generated-snippets"))
 }
