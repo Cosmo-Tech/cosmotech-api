@@ -590,7 +590,7 @@ Update a scenario
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **scenario\_id** | **String**| the Scenario identifier | [default to null] |
-| **Scenario** | [**Scenario**](../Models/Scenario.md)| the new Scenario details. This endpoint can&#39;t be used to update security | |
+| **Scenario** | [**Scenario**](../Models/Scenario.md)| the new Scenario details. This endpoint can&#39;t be used to update &#39;:&#39; - id - ownerId - datasetList - solutionId - runTemplateId - parametersValues - security | |
 
 ### Return type
 
