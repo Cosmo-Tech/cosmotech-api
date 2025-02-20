@@ -2,15 +2,26 @@ openapi: 3.0.3
 
 info:
   title: Cosmo Tech Runner Manager API
-  description: Cosmo Tech Runner Manager API
+  description: |
+    Cosmo Tech Runner Manager API
+    
+    This API provides endpoints to manage runners for simulations and analyses.
   version: 0.0.8-SNAPSHOT
+  contact:
+    name: Cosmo Tech Support
+    url: https://support.cosmotech.com
+    email: support@cosmotech.com
 
 servers:
 - url: 'https://api.azure.cosmo-platform.com'
+  description: Production server
 - url: 'http://localhost:4010'
+  description: Local development server
 
 security:
-- oAuth2AuthCode: [ ]
+- oAuth2AuthCode: 
+  - platform.runner.read
+  - platform.runner.write
 
 tags:
 - name: runner
@@ -143,7 +154,14 @@ paths:
         - runner
       summary: Update a runner
       requestBody:
-        description: the new Runner details. This endpoint can't be used to update security
+        description: the new Runner details.
+          This endpoint can't be used to update ':'
+            - id 
+            - ownerId
+            - organizationId
+            - workspaceId
+            - creationDate
+            - security
         required: true
         content:
           application/json:

@@ -391,7 +391,7 @@ Update a runner
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **runner\_id** | **String**| the Runner identifier | [default to null] |
-| **Runner** | [**Runner**](../Models/Runner.md)| the new Runner details. This endpoint can&#39;t be used to update security | |
+| **Runner** | [**Runner**](../Models/Runner.md)| the new Runner details. This endpoint can&#39;t be used to update &#39;:&#39; - id - ownerId - organizationId - workspaceId - creationDate - security | |
 
 ### Return type
 
