@@ -135,6 +135,14 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
           "pythonAttrNoneIfUnset" to true))
 }
 
+// PROD-14252: temporary fix waiting for upstream resolution of
+// https://github.com/OpenAPITools/openapi-generator/pull/20701
+tasks.register<Copy>("overwriteGeneratedPythonFile") {
+  dependsOn("openApiPythonGenerate")
+  from("${rootDir}/scripts/clients/patches/python.yml")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/python/.github/workflows/")
+}
+
 tasks.register<Copy>("copyPythonGitPushScript") {
   dependsOn("openApiPythonGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
@@ -147,7 +155,9 @@ tasks.register<Copy>("copyPythonLicense") {
   into("${layout.buildDirectory.get()}/generated-sources/openapi/python")
 }
 
-tasks.register("generatePythonClient") { dependsOn("copyPythonGitPushScript", "copyPythonLicense") }
+// PROD-14252: temporary fix waiting for upstream resolution
+// of https://github.com/OpenAPITools/openapi-generator/pull/20701
+tasks.register("generatePythonClient") { dependsOn("copyPythonGitPushScript", "copyPythonLicense", "overwriteGeneratedPythonFile") }
 
 tasks.register<GenerateTask>("openApiUmlGenerate") {
   dependsOn("mergeOpenApiFiles")
