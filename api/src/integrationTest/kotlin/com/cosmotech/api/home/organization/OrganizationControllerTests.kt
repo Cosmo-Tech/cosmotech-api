@@ -57,7 +57,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
             .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("createOrganization"))
+            .andDo(document("organizations/POST"))
     }
 
     @Test
@@ -81,7 +81,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
             .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("updateOrganization"))
+            .andDo(document("organizations/{organization_id}/PATCH"))
     }
 
     @Test
@@ -112,7 +112,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$[1].security.accessControlList[0].role").value(ROLE_ADMIN))
             .andExpect(jsonPath("$[1].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("listOrganizations"))
+            .andDo(document("organizations/GET"))
     }
 
     @Test
@@ -133,7 +133,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
             .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("getOrganization"))
+            .andDo(document("organizations/{organization_id}/GET"))
     }
 
     @Test
@@ -149,7 +149,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             )
             .andExpect(status().is2xxSuccessful)
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("deleteOrganization"))
+            .andDo(document("organizations/{organization_id}/DELETE"))
     }
 
     @Test
@@ -168,7 +168,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
             .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("getOrganizationSecurity"))
+            .andDo(document("organizations/{organization_id}/security/GET"))
     }
 
     @Test
@@ -189,7 +189,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$.role").value(NEW_USER_ROLE))
             .andExpect(jsonPath("$.id").value(NEW_USER_ID))
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("addOrganizationAccess"))
+            .andDo(document("organizations/{organization_id}/security/access/POST"))
     }
 
     @Test
@@ -207,7 +207,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
             .andExpect(jsonPath("$.id").value(PLATFORM_ADMIN_EMAIL))
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("getOrganizationAccess"))
+            .andDo(document("organizations/{organization_id}/security/access/{identity_id}/GET"))
     }
 
     @Test
@@ -237,7 +237,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$.role").value(ROLE_VIEWER))
             .andExpect(jsonPath("$.id").value(NEW_USER_ID))
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("updateOrganizationAccess"))
+            .andDo(document("organizations/{organization_id}/security/access/{identity_id}/PATCH"))
     }
 
 
@@ -264,7 +264,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             )
             .andExpect(status().is2xxSuccessful)
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("deleteOrganizationAccess"))
+            .andDo(document("organizations/{organization_id}/security/access/{identity_id}/DELETE"))
     }
 
     @Test
@@ -295,7 +295,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
             .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
             .andDo(MockMvcResultHandlers.print())
-            .andDo(document("updateOrganizationDefaultAccess"))
+            .andDo(document("organizations/{organization_id}/security/default/POST"))
     }
 
 
