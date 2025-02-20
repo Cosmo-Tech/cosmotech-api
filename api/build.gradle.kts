@@ -239,8 +239,24 @@ tasks.register<AsciidoctorTask>("generate-doc") {
     setSourceDir(file("${rootDir}/doc/generated-snippets"))
     sources(
         delegateClosureOf<PatternSet> {
-            include("index.adoc", "another.adoc", "third.adoc")
+            include("index.adoc")
         }
     )
     setOutputDir(file("${rootDir}/doc/generated-snippets"))
+}
+
+
+tasks.register<GenerateTask>("generate-main-doc") {
+    inputSpec.set("${rootDir}/openapi/openapi.yaml")
+    outputDir.set("${rootDir}/doc")
+    generatorName.set("asciidoc")
+    additionalProperties.set(
+        mapOf(
+            "appName" to "Cosmo Tech API",
+            "appDescription" to "Cosmo Tech API Description",
+            "disallowAdditionalPropertiesIfNotPresent" to false,
+            "infoEmail" to "platform@cosmotech.com",
+            "snippetDir" to "${rootDir}/doc/generated-snippets/",
+            "infoUrl" to "https://github.com/Cosmo-Tech/cosmotech-api")
+    )
 }
