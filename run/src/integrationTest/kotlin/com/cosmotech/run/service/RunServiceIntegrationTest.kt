@@ -142,6 +142,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
 
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
+    rediSearchIndexer.createIndexFor(Dataset::class.java)
     rediSearchIndexer.createIndexFor(Runner::class.java)
     rediSearchIndexer.createIndexFor(Run::class.java)
 
@@ -154,20 +155,21 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     dataset = mockDataset(organizationSaved.id, "Dataset", connectorSaved)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
-    solution = mockSolution(organizationSaved.id)
+    solution = makeSolutionCreateRequest(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
     workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-    runnerSaved =
-        mockRunner(
+    runner =
+        makeRunnerCreateRequest(
             organizationSaved.id,
           workspaceSaved.id,
           solutionSaved.id,
             solutionSaved.runTemplates[0].id,
             "Runner",
             mutableListOf(datasetSaved.id!!))
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
     every { workflowService.launchRun(any(), any(), any(), any()) } returns
         mockWorkflowRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
@@ -208,7 +210,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     )
   }
 
-  fun mockSolution(organizationId: String = organizationSaved.id) = SolutionCreateRequest(
+  fun makeSolutionCreateRequest(organizationId: String = organizationSaved.id) = SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "My solution",
         runTemplates =
@@ -256,7 +258,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
             WorkspaceSecurity(
                 ROLE_NONE, mutableListOf(WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
 
-  fun mockRunner(
+  fun makeRunnerCreateRequest(
     organizationId: String = organizationSaved.id,
     workspaceId: String = workspaceSaved.id,
     solutionId: String = solutionSaved.id,
