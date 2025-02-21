@@ -45,10 +45,11 @@ internal class RunnerApiServiceImpl(
 
     val runnerInstance =
         runnerService
-            .getNewInstance(runnerCreateRequest)
+            .getNewInstance()
+            .setValueFrom(runnerCreateRequest)
             .initSecurity(runnerCreateRequest)
             .initParameters()
-            .initDatasetList()
+            .initDatasetList(runnerCreateRequest)
     return runnerService.saveInstance(runnerInstance)
   }
 
