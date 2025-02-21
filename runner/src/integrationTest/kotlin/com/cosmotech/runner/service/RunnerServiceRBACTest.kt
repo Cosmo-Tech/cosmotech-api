@@ -1362,7 +1362,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     exception.message)
               } else {
                 assertDoesNotThrow {
-:                  runnerApiService.updateRunner(
+                  runnerApiService.updateRunner(
                       organizationSaved.id,
                     workspaceSaved.id,
                     runnerSaved.id,
