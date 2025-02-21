@@ -298,7 +298,7 @@ class RunnerService(
                 }
         val solution =
             workspace?.solution?.solutionId?.let {
-              solutionApiService.findSolutionById(organization?.id!!, it)
+              solutionApiService.getSolution(organization?.id!!, it)
             }
         val runTemplateId = this.runner.runTemplateId
         val runTemplate =
@@ -330,7 +330,7 @@ class RunnerService(
           workspace
               ?.solution
               ?.solutionId
-              ?.let { solutionApiService.findSolutionById(organization?.id!!, it) }
+              ?.let { solutionApiService.getSolution(organization?.id!!, it) }
               ?.parameters
 
       this.runner.parametersValues?.forEach { runnerParam ->

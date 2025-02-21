@@ -28,7 +28,12 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.toGenericSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
@@ -269,7 +274,7 @@ class WorkspaceServiceImplTests {
     val workspace =mockWorkspaceCreateRequest(
       solutionId = "SOL-my-solution-id", workspaceName = "my workspace name", roleName = "", role = "" )
     workspace.security = WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
+    every { solutionService.getSolution(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
     assertThrows<CsmResourceNotFoundException> {
       workspaceServiceImpl.createWorkspace(ORGANIZATION_ID, workspace)
@@ -288,7 +293,7 @@ class WorkspaceServiceImplTests {
         roleName = CONNECTED_DEFAULT_USER,
         role = ROLE_ADMIN)
     every { workspaceRepository.findByIdOrNull(WORKSPACE_ID) } returns workspace
-    every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
+    every { solutionService.getSolution(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
     assertThrows<CsmResourceNotFoundException> {
       workspaceServiceImpl.updateWorkspace(
@@ -337,10 +342,10 @@ class WorkspaceServiceImplTests {
                     it.organization.security.toGenericSecurity(it.organization.id), permission)
               }
               every { workspaceRepository.save(any()) } returns it.workspace
-              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every { solutionService.getSolution(any(), any()) } returns it.solution
               workspaceServiceImpl.createWorkspace(
                 it.organization.id, mockWorkspaceCreateRequest(
-                  solutionId = it.solution.id!!, workspaceName = "workspace"))
+                  solutionId = it.solution.id, workspaceName = "workspace"))
             }
           }
 
@@ -371,7 +376,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC update workspace: $role", role, shouldThrow) {
-              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every { solutionService.getSolution(any(), any()) } returns it.solution
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.updateWorkspace(
@@ -603,7 +608,7 @@ class WorkspaceServiceImplTests {
     val organization = mockOrganization(username = CONNECTED_DEFAULT_USER, role = role)
     val solution = mockSolution(organization.id)
     val workspace =
-        mockWorkspace(organization.id, solution.id!!, "Workspace", CONNECTED_DEFAULT_USER, role)
+        mockWorkspace(organization.id, solution.id, "Workspace", CONNECTED_DEFAULT_USER, role)
     return DynamicTest.dynamicTest(testName) {
       if (shouldThrow) {
         assertThrows<CsmAccessForbiddenException> {
@@ -640,11 +645,19 @@ class WorkspaceServiceImplTests {
 
   fun mockSolution(organizationId: String): Solution {
     return Solution(
-        id = "solutionId",
-        key = UUID.randomUUID().toString(),
-        name = "My solution",
-        organizationId = organizationId,
-        ownerId = "ownerId")
+      id = "solutionId",
+      key = UUID.randomUUID().toString(),
+      name = "My solution",
+      organizationId = organizationId,
+      ownerId = "ownerId",
+      version = "1.0.0",
+      repository = "repository",
+      csmSimulator = "simulator",
+      parameters = mutableListOf(RunTemplateParameter("parameter")),
+      parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+      runTemplates = mutableListOf(RunTemplate("template")),
+      security = SolutionSecurity(ROLE_ADMIN, mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN)))
+    )
   }
   
   private fun mockWorkspaceCreateRequest(

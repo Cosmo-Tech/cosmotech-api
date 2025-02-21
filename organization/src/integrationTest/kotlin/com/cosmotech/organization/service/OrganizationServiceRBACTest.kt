@@ -85,7 +85,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to 5,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC findAllOrganizations : $role") {
+            DynamicTest.dynamicTest("Test RBAC listOrganizations : $role") {
               organizationApiService.createOrganization(
                   makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
 

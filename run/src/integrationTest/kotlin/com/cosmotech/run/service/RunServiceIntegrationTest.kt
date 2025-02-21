@@ -37,8 +37,11 @@ import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionCreateRequest
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
@@ -111,7 +114,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
 
   lateinit var connector: Connector
   lateinit var dataset: Dataset
-  lateinit var solution: Solution
+  lateinit var solution: SolutionCreateRequest
   lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
 
@@ -151,14 +154,14 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     solution = mockSolution(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id!!, "Workspace")
+    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     runnerSaved =
         mockRunner(
             organizationSaved.id,
           workspaceSaved.id,
-            solutionSaved.id!!,
+          solutionSaved.id,
             solutionSaved.runTemplates[0].id,
             "Runner",
             mutableListOf(datasetSaved.id!!))
@@ -202,19 +205,20 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     )
   }
 
-  fun mockSolution(organizationId: String = organizationSaved.id): Solution {
-    return Solution(
-        id = "solutionId",
+  fun mockSolution(organizationId: String = organizationSaved.id) = SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "My solution",
-        organizationId = organizationId,
-        ownerId = "ownerId",
         runTemplates =
             mutableListOf(
                 RunTemplate(
                     id = UUID.randomUUID().toString(),
                     name = "RunTemplate1",
                     description = "RunTemplate1 description")),
+    parameters = mutableListOf(RunTemplateParameter("parameter")),
+    csmSimulator = "simulator",
+    version = "1.0.0",
+    repository = "repository",
+    parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
@@ -222,7 +226,6 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                     mutableListOf(
                         SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         SolutionAccessControl(id = CONNECTED_READER_USER, role = ROLE_ADMIN))))
-  }
 
   fun makeOrganizationCreateRequest(id: String = "organizationId") =
     OrganizationCreateRequest(
@@ -236,9 +239,9 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
 
   fun makeWorkspaceCreateRequest(
-      organizationId: String = organizationSaved.id,
-      solutionId: String = solutionSaved.id!!,
-      name: String = "workspace"
+    organizationId: String = organizationSaved.id,
+    solutionId: String = solutionSaved.id,
+    name: String = "workspace"
   ) = WorkspaceCreateRequest(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -253,7 +256,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
   fun mockRunner(
     organizationId: String = organizationSaved.id,
     workspaceId: String = workspaceSaved.id,
-    solutionId: String = solutionSaved.id!!,
+    solutionId: String = solutionSaved.id,
     runTemplateId: String = solutionSaved.runTemplates[0].id,
     name: String = "runner",
     datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
@@ -300,7 +303,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
 
     runSavedId =
         mockStartRun(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id!!)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id
+        )
     assertNotEquals("", runSavedId)
 
     logger.info("should find 1 Run")
@@ -321,7 +325,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     logger.info("should create second Run")
     val runSaved2id =
         mockStartRun(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id!!)
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id
+        )
 
     logger.info("should find all Runs by Runner id and assert size is 2")
     runs =
@@ -345,7 +350,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     val expectedSize = 15
 
     IntRange(1, numberOfRuns).forEach {
-      mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id!!)
+      mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id)
     }
 
     logger.info("should find all Runs and assert there are $numberOfRuns")
@@ -399,7 +404,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     fun setUp() {
       runSavedId =
           mockStartRun(
-              organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id!!)
+              organizationSaved.id, workspaceSaved.id, runnerSaved.id!!, solutionSaved.id
+          )
       assertTrue(adminRunStorageTemplate.existDB(runSavedId))
 
       val internalResultServices = csmPlatformProperties.internalResultServices!!

@@ -26,8 +26,12 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionCreateRequest
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
@@ -125,7 +129,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                   organizationSaved.id,
                   makeWorkspaceCreateRequest(
                       organizationSaved.id,
-                      solutionSaved.id!!,
+                    solutionSaved.id,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -168,7 +172,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                   organizationSaved.id,
                   makeWorkspaceCreateRequest(
                       organizationSaved.id,
-                      solutionSaved.id!!,
+                    solutionSaved.id,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -180,7 +184,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id,
                           makeWorkspaceCreateRequest(
                               organizationSaved.id,
-                              solutionSaved.id!!,
+                            solutionSaved.id,
                               id = TEST_USER_MAIL,
                               role = ROLE_ADMIN))
                     }
@@ -199,7 +203,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
                 }
@@ -230,7 +234,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -282,7 +286,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -328,7 +332,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -372,7 +376,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -416,7 +420,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -467,7 +471,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -518,7 +522,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -566,7 +570,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -614,7 +618,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -662,7 +666,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -710,7 +714,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -758,7 +762,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -806,7 +810,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -860,7 +864,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -914,7 +918,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -960,7 +964,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1006,7 +1010,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1052,7 +1056,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1098,7 +1102,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1146,7 +1150,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1194,7 +1198,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1240,7 +1244,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1286,7 +1290,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1336,7 +1340,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1386,7 +1390,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1432,7 +1436,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1478,7 +1482,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1524,7 +1528,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1570,7 +1574,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1622,7 +1626,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1674,7 +1678,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1722,7 +1726,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
                           organizationSaved.id,
-                          solutionSaved.id!!,
+                        solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1757,12 +1761,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                         OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                         OrganizationAccessControl(id = id, role = role))))
 
-  fun makeSolution(organizationId: String) = Solution(
-        id = UUID.randomUUID().toString(),
+  fun makeSolution(organizationId: String) = SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "Solution",
-        organizationId = organizationId,
-        ownerId = "ownerId",
+    parameters = mutableListOf(RunTemplateParameter("parameter")),
+    csmSimulator = "simulator",
+    version = "1.0.0",
+    repository = "repository",
+    parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+    runTemplates = mutableListOf(RunTemplate("template")),
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
