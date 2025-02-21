@@ -2,14 +2,12 @@
 // Licensed under the MIT license.
 import com.google.cloud.tools.jib.gradle.JibTask
 import com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask
-import org.asciidoctor.gradle.jvm.AsciidoctorTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
   id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.5"
-  id("org.asciidoctor.jvm.convert") version "4.0.4" apply true
   id("org.jetbrains.kotlinx.kover")
 }
 
@@ -233,20 +231,9 @@ tasks.register<Exec>("rolloutKindDeployment") {
       "deployment/cosmotech-api-${apiVersion}")
 }
 
-tasks.register<AsciidoctorTask>("generate-doc") {
-    dependsOn("copyAdocFiles")
-    baseDirIsRootProjectDir()
-    setSourceDir(file("${rootDir}/doc/generated-snippets"))
-    sources(
-        delegateClosureOf<PatternSet> {
-            include("index.adoc")
-        }
-    )
-    setOutputDir(file("${rootDir}/doc/generated-snippets"))
-}
-
-
-tasks.register<GenerateTask>("generate-main-doc") {
+tasks.register<GenerateTask>("generateDocumentation") {
+    group = "documentation"
+    description = "Generates adoc file containing API documentation"
     inputSpec.set("${rootDir}/openapi/openapi.yaml")
     outputDir.set("${rootDir}/doc")
     generatorName.set("asciidoc")

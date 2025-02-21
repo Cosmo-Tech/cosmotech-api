@@ -361,7 +361,6 @@ subprojects {
 
   tasks.register<Copy>("copyAdocFiles") {
     dependsOn("integrationTest")
-    finalizedBy("generate-doc")
     from("$testWorkingDirPath/build/generated-snippets")
     into("${rootDir}/doc/generated-snippets")
   }
