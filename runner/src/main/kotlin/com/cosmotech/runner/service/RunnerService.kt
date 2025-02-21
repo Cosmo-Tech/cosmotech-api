@@ -173,9 +173,9 @@ class RunnerService(
     return runnerRepository.save(runnerInstance.getRunnerDataObjet())
   }
 
-  fun getNewInstance(runnerCreateRequest: RunnerCreateRequest): RunnerInstance {
+  fun getNewInstance(): RunnerInstance {
     val runnerInstance = RunnerInstance()
-    return runnerInstance.initialize(runnerCreateRequest = runnerCreateRequest)
+    return runnerInstance.initialize()
   }
 
   fun getInstance(runnerId: String): RunnerInstance {
@@ -186,26 +186,23 @@ class RunnerService(
         )
       }
     updateSecurityVisibility(runner)
-    return RunnerInstance().setValueFrom(runner).userHasPermission(PERMISSION_READ)
+    return RunnerInstance().initializeFrom(runner).userHasPermission(PERMISSION_READ)
   }
 
   fun listInstances(pageRequest: PageRequest): List<Runner> {
     val isPlatformAdmin =
       getCurrentAuthenticatedRoles(this.csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
-    val runners: List<Runner>
-    if (!this.csmPlatformProperties.rbac.enabled || isPlatformAdmin) {
-      runners =
-        runnerRepository
-          .findByWorkspaceId(organization!!.id, workspace!!.id, pageRequest)
-          .toList()
+    val runners: List<Runner> = if (!this.csmPlatformProperties.rbac.enabled || isPlatformAdmin) {
+      runnerRepository
+        .findByWorkspaceId(organization!!.id, workspace!!.id, pageRequest)
+        .toList()
     } else {
       val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
-      runners =
-        runnerRepository
-          .findByWorkspaceIdAndSecurity(
-            organization!!.id, workspace!!.id, currentUser, pageRequest
-          )
-          .toList()
+      runnerRepository
+        .findByWorkspaceIdAndSecurity(
+          organization!!.id, workspace!!.id, currentUser, pageRequest
+        )
+        .toList()
     }
     runners.forEach { it.security = updateSecurityVisibility(it).security }
     return runners
@@ -232,9 +229,74 @@ class RunnerService(
     private val roleDefinition: RolesDefinition = getRunnerRolesDefinition()
     lateinit var runner: Runner
 
-    fun initialize(runnerCreateRequest: RunnerCreateRequest): RunnerInstance = apply {
-        val now = Instant.now().toEpochMilli()
-        this.runner = Runner(
+    fun initialize(): RunnerInstance = apply {
+      val now = Instant.now().toEpochMilli()
+      this.runner = Runner(
+        id = idGenerator.generate("runner"),
+        name = "init",
+        ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+        solutionId = "init",
+        runTemplateId = "init",
+        organizationId = organization!!.id,
+        workspaceId = workspace!!.id,
+        creationDate = now,
+        lastUpdate = now,
+        ownerName = "init",
+        datasetList = mutableListOf(),
+        security = RunnerSecurity("", accessControlList = mutableListOf()),
+      )
+    }
+
+    fun initializeFrom(runner: Runner): RunnerInstance = apply {
+      this.runner = runner
+    }
+
+    fun getRunnerDataObjet(): Runner = this.runner
+
+    fun userHasPermission(permission: String): RunnerInstance = apply {
+      csmRbac.verify(this.getRbacSecurity(), permission, this.roleDefinition)
+    }
+
+    fun setValueFrom(runner: Runner): RunnerInstance = apply {
+      if (runner.runTemplateId.isEmpty())
+        throw IllegalArgumentException("runner does not have a runTemplateId define")
+      if (!solutionApiService.isRunTemplateExist(
+          organization!!.id,
+          workspace!!.id,
+          workspace!!.solution.solutionId,
+          runner.runTemplateId
+        )
+      )
+        throw IllegalArgumentException("Run Template not found: ${runner.runTemplateId}")
+      val beforeMutateDatasetList = this.runner.datasetList
+
+      val excludeFields =
+        arrayOf(
+          "id",
+          "ownerId",
+          "rootId",
+          "organizationId",
+          "workspaceId",
+          "creationDate",
+          "security"
+        )
+      this.runner.compareToAndMutateIfNeeded(runner, excludedFields = excludeFields)
+      consolidateParametersVarType()
+
+      // take newly added datasets and propagate existing ACL on it
+      this.runner.datasetList
+        .filterNot { beforeMutateDatasetList.contains(it) }
+        .mapNotNull { datasetApiService.findByOrganizationIdAndDatasetId(organization!!.id, it) }
+        .forEach { dataset ->
+          this.runner.security.accessControlList.forEach { roleDefinition ->
+            addUserAccessControlOnDataset(dataset, roleDefinition)
+          }
+        }
+    }
+
+    fun setValueFrom(runnerCreateRequest: RunnerCreateRequest): RunnerInstance {
+      return setValueFrom(
+        Runner(
           runSizing = runnerCreateRequest.runSizing,
           tags = runnerCreateRequest.tags,
           description = runnerCreateRequest.description,
@@ -243,329 +305,282 @@ class RunnerService(
           datasetList = runnerCreateRequest.datasetList ?: mutableListOf(),
           parametersValues = runnerCreateRequest.parametersValues,
           parentId = runnerCreateRequest.parentId,
-          lastRunId = null,
+          lastRunId = this.runner.lastRunId,
           solutionName = runnerCreateRequest.solutionName,
           solutionId = runnerCreateRequest.solutionId,
-          validationStatus = RunnerValidationStatus.Draft,
+          validationStatus = this.runner.validationStatus,
           ownerName = runnerCreateRequest.ownerName,
           runTemplateName = runnerCreateRequest.runTemplateName,
           security = runnerCreateRequest.security!!,
-          id = idGenerator.generate("runner"),
-          ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-          organizationId = organization!!.id,
-          workspaceId = workspace!!.id,
-          creationDate = now,
-          lastUpdate = now
+          id = this.runner.id,
+          ownerId = this.runner.ownerId,
+          organizationId = this.runner.organizationId,
+          workspaceId = this.runner.workspaceId,
+          creationDate = this.runner.creationDate,
+          lastUpdate = this.runner.lastUpdate
         )
-      }
+      )
+    }
 
-      fun getRunnerDataObjet(): Runner = this.runner
-
-      fun userHasPermission(permission: String): RunnerInstance = apply {
-        csmRbac.verify(this.getRbacSecurity(), permission, this.roleDefinition)
-      }
-
-      fun setValueFrom(runner: Runner): RunnerInstance = apply {
-        if (runner.runTemplateId.isEmpty())
-          throw IllegalArgumentException("runner does not have a runTemplateId define")
-        if (!solutionApiService.isRunTemplateExist(
-            organization!!.id,
-            workspace!!.id,
-            workspace!!.solution.solutionId,
-            runner.runTemplateId
-          )
+    fun setValueFrom(runnerUpdateRequest: RunnerUpdateRequest): RunnerInstance {
+      return setValueFrom(
+        Runner(
+          runSizing = runnerUpdateRequest.runSizing ?: this.runner.runSizing,
+          tags = runnerUpdateRequest.tags ?: this.runner.tags,
+          description = runnerUpdateRequest.description ?: this.runner.description,
+          name = runnerUpdateRequest.name ?: this.runner.name,
+          runTemplateId = runnerUpdateRequest.runTemplateId ?: this.runner.runTemplateId,
+          datasetList = runnerUpdateRequest.datasetList ?: this.runner.datasetList,
+          parametersValues = runnerUpdateRequest.parametersValues ?: this.runner.parametersValues,
+          id = this.runner.id,
+          organizationId = this.runner.organizationId,
+          security = this.runner.security,
+          ownerId = this.runner.ownerId,
+          runTemplateName = runnerUpdateRequest.runTemplateName ?: this.runner.runTemplateName,
+          solutionName = runnerUpdateRequest.solutionName ?: this.runner.solutionName,
+          solutionId = this.runner.solutionId,
+          rootId = this.runner.rootId,
+          ownerName = runnerUpdateRequest.ownerName ?: this.runner.ownerName,
+          lastUpdate = this.runner.lastUpdate,
+          creationDate = this.runner.creationDate,
+          parentId = this.runner.parentId,
+          workspaceId = this.runner.workspaceId,
+          lastRunId = this.runner.lastRunId,
+          validationStatus = this.runner.validationStatus
         )
-          throw IllegalArgumentException("Run Template not found: ${runner.runTemplateId}")
-        val beforeMutateDatasetList = this.runner.datasetList
+      )
+    }
 
-        val excludeFields =
-          arrayOf(
-            "id",
-            "ownerId",
-            "rootId",
-            "organizationId",
-            "workspaceId",
-            "creationDate",
-            "security"
+    fun setLastRunId(runInfo: String) {
+      this.runner.lastRunId = runInfo
+    }
+
+    fun initSecurity(runnerCreateRequest: RunnerCreateRequest): RunnerInstance = apply {
+      val security = this.extractRbacSecurity(runnerCreateRequest.security!!)
+      val rbacSecurity = csmRbac.initSecurity(security)
+      this.setRbacSecurity(rbacSecurity)
+    }
+
+    fun initParameters(): RunnerInstance = apply {
+      val parentId = this.runner.parentId
+      val runnerId = this.runner.id
+      if (parentId != null) {
+        val parentRunner =
+          runnerRepository
+            .findBy(this.runner.organizationId, this.runner.workspaceId, parentId)
+            .orElseThrow {
+              IllegalArgumentException(
+                "Parent Id $parentId define on $runnerId does not exists"
+              )
+            }
+        val solution =
+          workspace?.solution?.solutionId?.let {
+            solutionApiService.getSolution(organization?.id!!, it)
+          }
+        val runTemplateId = this.runner.runTemplateId
+        val runTemplate =
+          solution?.runTemplates?.find { runTemplate -> runTemplate.id == runTemplateId }
+        if (runTemplate == null) {
+          throw IllegalArgumentException("Run Template not found: $runTemplateId")
+        }
+        val inheritedParameterValues =
+          constructParametersValuesFromParent(
+            parentId, solution, runTemplate, parentRunner, this.runner
           )
-        this.runner.compareToAndMutateIfNeeded(runner, excludedFields = excludeFields)
+        val parameterValueList = this.runner.parametersValues ?: mutableListOf()
+        parameterValueList.addAll(inheritedParameterValues)
+        this.runner.parametersValues = parameterValueList
         consolidateParametersVarType()
 
-        // take newly added datasets and propagate existing ACL on it
-        this.runner.datasetList
-          .filterNot { beforeMutateDatasetList.contains(it) }
-          .mapNotNull { datasetApiService.findByOrganizationIdAndDatasetId(organization!!.id, it) }
-          .forEach { dataset ->
-            this.runner.security.accessControlList.forEach { roleDefinition ->
-              addUserAccessControlOnDataset(dataset, roleDefinition)
-            }
-          }
-      }
-
-      fun setValueFrom(runnerUpdateRequest: RunnerUpdateRequest): RunnerInstance {
-        return setValueFrom(
-          Runner(
-            runSizing = runnerUpdateRequest.runSizing ?: this.runner.runSizing,
-            tags = runnerUpdateRequest.tags ?: this.runner.tags,
-            description = runnerUpdateRequest.description ?: this.runner.description,
-            name = runnerUpdateRequest.name ?: this.runner.name,
-            runTemplateId = runnerUpdateRequest.runTemplateId ?: this.runner.runTemplateId,
-            datasetList = runnerUpdateRequest.datasetList ?: this.runner.datasetList,
-            parametersValues = runnerUpdateRequest.parametersValues ?: this.runner.parametersValues,
-            id = this.runner.id,
-            organizationId = this.runner.organizationId,
-            security = this.runner.security,
-            ownerId = this.runner.ownerId,
-            runTemplateName = runnerUpdateRequest.runTemplateName ?: this.runner.runTemplateName,
-            solutionName = runnerUpdateRequest.solutionName ?: this.runner.solutionName,
-            solutionId = this.runner.solutionId,
-            rootId = this.runner.rootId,
-            ownerName = runnerUpdateRequest.ownerName ?: this.runner.ownerName,
-            lastUpdate = this.runner.lastUpdate,
-            creationDate = this.runner.creationDate,
-            parentId = this.runner.parentId,
-            workspaceId = this.runner.workspaceId,
-            lastRunId = this.runner.lastRunId,
-            validationStatus = this.runner.validationStatus
-          )
-        )
-      }
-
-      fun setLastRunId(runInfo: String) {
-        this.runner.lastRunId = runInfo
-      }
-
-      fun initSecurity(runnerCreateRequest: RunnerCreateRequest): RunnerInstance = apply {
-        val security = this.extractRbacSecurity(runnerCreateRequest.security!!)
-        val rbacSecurity = csmRbac.initSecurity(security)
-        this.setRbacSecurity(rbacSecurity)
-      }
-
-      fun initParameters(): RunnerInstance = apply {
-        val parentId = this.runner.parentId
-        val runnerId = this.runner.id
-        if (parentId != null) {
-          val parentRunner =
+        // Compute rootId
+        this.runner.parentId?.let {
+          this.runner.rootId =
             runnerRepository
-              .findBy(this.runner.organizationId, this.runner.workspaceId, parentId)
-              .orElseThrow {
-                IllegalArgumentException(
-                  "Parent Id $parentId define on $runnerId does not exists"
-                )
-              }
-          val solution =
-            workspace?.solution?.solutionId?.let {
-              solutionApiService.getSolution(organization?.id!!, it)
-            }
-          val runTemplateId = this.runner.runTemplateId
-          val runTemplate =
-            solution?.runTemplates?.find { runTemplate -> runTemplate.id == runTemplateId }
-          if (runTemplate == null) {
-            throw IllegalArgumentException("Run Template not found: $runTemplateId")
-          }
-          val inheritedParameterValues =
-            constructParametersValuesFromParent(
-              parentId, solution, runTemplate, parentRunner, this.runner
-            )
-          val parameterValueList = this.runner.parametersValues ?: mutableListOf()
-          parameterValueList.addAll(inheritedParameterValues)
-          this.runner.parametersValues = parameterValueList
-          consolidateParametersVarType()
-
-          // Compute rootId
-          this.runner.parentId?.let {
-            this.runner.rootId =
-              runnerRepository
-                .findBy(organization!!.id, workspace!!.id, it)
-                .orElseThrow { IllegalArgumentException("Parent runner not found: $it") }
-                .rootId ?: this.runner.parentId
-          }
+              .findBy(organization!!.id, workspace!!.id, it)
+              .orElseThrow { IllegalArgumentException("Parent runner not found: $it") }
+              .rootId ?: this.runner.parentId
         }
-      }
-
-      private fun consolidateParametersVarType() {
-        val solutionParameters =
-          workspace
-            ?.solution
-            ?.solutionId
-            ?.let { solutionApiService.getSolution(organization?.id!!, it) }
-            ?.parameters
-
-        this.runner.parametersValues?.forEach { runnerParam ->
-          solutionParameters
-            ?.find { it.id == runnerParam.parameterId }
-            ?.varType
-            ?.let { runnerParam.varType = it }
-        }
-      }
-
-      fun initDatasetList(): RunnerInstance = apply {
-        val parentId = this.runner.parentId
-        val runnerId = this.runner.id
-        if (parentId != null) {
-          val parentRunner =
-            runnerRepository
-              .findBy(this.runner.organizationId, this.runner.workspaceId, parentId)
-              .orElseThrow {
-                IllegalArgumentException(
-                  "Parent Id $parentId define on $runnerId does not exists"
-                )
-              }
-          val parentDatasetList = parentRunner.datasetList
-          val runnerDatasetList = this.runner.datasetList
-
-          if (parentDatasetList.isNotEmpty()) {
-            if (runnerDatasetList == null) {
-              this.runner.datasetList = parentDatasetList
-            }
-          }
-        }
-
-        if (this.runner.datasetList == null) {
-          this.runner.datasetList = mutableListOf()
-        }
-      }
-
-      fun setAccessControl(runnerAccessControl: RunnerAccessControl) {
-        // create a rbacSecurity object from runner Rbac by adding user with id and role in
-        // runnerAccessControl
-        val rbacSecurity =
-          csmRbac.setUserRole(
-            this.runner.getRbac(),
-            runnerAccessControl.id,
-            runnerAccessControl.role,
-            this.roleDefinition
-          )
-        this.setRbacSecurity(rbacSecurity)
-
-        val userId = runnerAccessControl.id
-        val datasetRole = runnerAccessControl.role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER
-        val organizationId = this.runner.organizationId
-
-        // Assign roles on linked datasets if not already present on dataset resource
-        this.runner.datasetList
-          .mapNotNull { datasetApiService.findByOrganizationIdAndDatasetId(organizationId, it) }
-          .forEach { dataset ->
-            addUserAccessControlOnDataset(dataset, RunnerAccessControl(userId, datasetRole))
-          }
-      }
-
-      fun getAccessControlFor(userId: String): RunnerAccessControl {
-        val rbacAccessControl = csmRbac.getAccessControl(this.getRbacSecurity(), userId)
-        return RunnerAccessControl(rbacAccessControl.id, rbacAccessControl.role)
-      }
-
-      fun deleteAccessControlFor(userId: String) {
-        // create a rbacSecurity object from runner Rbac by removing user
-        val rbacSecurity = csmRbac.removeUser(this.getRbacSecurity(), userId, this.roleDefinition)
-        this.setRbacSecurity(rbacSecurity)
-
-        this.removeAccessControlToDatasets(userId)
-      }
-
-      fun checkUserExists(userId: String) {
-        csmRbac.checkUserExists(
-          runner.getRbac(), userId, "User '$userId' not found in runner ${runner.id}"
-        )
-      }
-
-      private fun getRbacSecurity(): RbacSecurity {
-        return extractRbacSecurity(this.runner.security)
-      }
-
-      private fun setRbacSecurity(rbacSecurity: RbacSecurity) {
-        this.runner.security =
-          RunnerSecurity(
-            rbacSecurity.default,
-            rbacSecurity.accessControlList
-              .distinctBy { it.id }
-              .map { RunnerAccessControl(it.id, it.role) }
-              .toMutableList())
-      }
-
-      private fun extractRbacSecurity(security: RunnerSecurity): RbacSecurity {
-        return RbacSecurity(
-          this.runner.id,
-          security.default,
-          security
-            .accessControlList
-            .map { RbacAccessControl(it.id, it.role) }
-            .toMutableList())
-      }
-
-      @Suppress("NestedBlockDepth")
-      private fun constructParametersValuesFromParent(
-        parentId: String?,
-        solution: Solution?,
-        runTemplate: RunTemplate?,
-        parent: Runner,
-        runner: Runner
-      ): MutableList<RunnerRunTemplateParameterValue> {
-        val parametersValuesList = mutableListOf<RunnerRunTemplateParameterValue>()
-        logger.debug("Copying parameters values from parent $parentId")
-
-        logger.debug("Getting runTemplate parameters ids")
-        val runTemplateParametersIds =
-          solution
-            ?.parameterGroups
-            ?.filter { parameterGroup ->
-              runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
-            }
-            ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
-
-        if (!runTemplateParametersIds.isNullOrEmpty()) {
-          val parentParameters =
-            parent.parametersValues?.associate { it.parameterId to it } ?: mutableMapOf()
-          val runnerParameters =
-            runner.parametersValues?.associate { it.parameterId to it } ?: mutableMapOf()
-
-          // TODO:
-          //  Here parameters values are only retrieved from parent runner
-          //  At the moment default parameters values defined in solution.parameters are not handled
-          //  This behaviour is inherited from previously removed Scenario module (in which it was not
-          // handled too)
-          //  Depending on request and priority, it could be defined in next API versions
-
-          runTemplateParametersIds
-            .filter { !runnerParameters.contains(it) }
-            .filter { parentParameters.contains(it) }
-            .forEach { parameterId ->
-              logger.debug("Copying parameter value from parent for parameter $parameterId")
-              val parameterValue = parentParameters[parameterId]
-              if (parameterValue != null) {
-                parameterValue.isInherited = true
-                parametersValuesList.add(parameterValue)
-              } else {
-                logger.warn(
-                  "Parameter $parameterId not found in parent ($parentId) parameters values"
-                )
-              }
-            }
-        }
-        return parametersValuesList
-      }
-
-      private fun removeAccessControlToDatasets(userId: String) {
-        val organizationId = this.runner.organizationId
-        this.runner.datasetList.forEach { datasetId ->
-          val datasetACL =
-            datasetApiService.findDatasetById(organizationId, datasetId).getRbac().accessControlList
-
-          if (datasetACL.any { it.id == userId })
-            datasetApiService.removeDatasetAccessControl(organizationId, datasetId, userId)
-        }
-      }
-
-      fun getUsers(): List<String> {
-        return csmRbac.getUsers(this.getRbacSecurity())
-      }
-
-      fun setDefaultSecurity(role: String) {
-        // create a rbacSecurity object from runner Rbac by changing default value
-        val rbacSecurity = csmRbac.setDefault(this.getRbacSecurity(), role, this.roleDefinition)
-        this.setRbacSecurity(rbacSecurity)
       }
     }
+
+    private fun consolidateParametersVarType() {
+      val solutionParameters =
+        workspace
+          ?.solution
+          ?.solutionId
+          ?.let { solutionApiService.getSolution(organization?.id!!, it) }
+          ?.parameters
+
+      this.runner.parametersValues?.forEach { runnerParam ->
+        solutionParameters
+          ?.find { it.id == runnerParam.parameterId }
+          ?.varType
+          ?.let { runnerParam.varType = it }
+      }
+    }
+
+    fun initDatasetList(runnerCreateRequest: RunnerCreateRequest): RunnerInstance = apply {
+      val parentId = this.runner.parentId
+      val runnerId = this.runner.id
+      if (parentId != null) {
+        val parentRunner =
+          runnerRepository
+            .findBy(this.runner.organizationId, this.runner.workspaceId, parentId)
+            .orElseThrow {
+              IllegalArgumentException(
+                "Parent Id $parentId define on $runnerId does not exists"
+              )
+            }
+        val parentDatasetList = parentRunner.datasetList
+
+        if (parentDatasetList.isNotEmpty()) {
+          if (runnerCreateRequest.datasetList == null) {
+            this.runner.datasetList = parentDatasetList
+          }
+        }
+      }
+    }
+
+    fun setAccessControl(runnerAccessControl: RunnerAccessControl) {
+      // create a rbacSecurity object from runner Rbac by adding user with id and role in
+      // runnerAccessControl
+      val rbacSecurity =
+        csmRbac.setUserRole(
+          this.runner.getRbac(),
+          runnerAccessControl.id,
+          runnerAccessControl.role,
+          this.roleDefinition
+        )
+      this.setRbacSecurity(rbacSecurity)
+
+      val userId = runnerAccessControl.id
+      val datasetRole = runnerAccessControl.role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER
+      val organizationId = this.runner.organizationId
+
+      // Assign roles on linked datasets if not already present on dataset resource
+      this.runner.datasetList
+        .mapNotNull { datasetApiService.findByOrganizationIdAndDatasetId(organizationId, it) }
+        .forEach { dataset ->
+          addUserAccessControlOnDataset(dataset, RunnerAccessControl(userId, datasetRole))
+        }
+    }
+
+    fun getAccessControlFor(userId: String): RunnerAccessControl {
+      val rbacAccessControl = csmRbac.getAccessControl(this.getRbacSecurity(), userId)
+      return RunnerAccessControl(rbacAccessControl.id, rbacAccessControl.role)
+    }
+
+    fun deleteAccessControlFor(userId: String) {
+      // create a rbacSecurity object from runner Rbac by removing user
+      val rbacSecurity = csmRbac.removeUser(this.getRbacSecurity(), userId, this.roleDefinition)
+      this.setRbacSecurity(rbacSecurity)
+
+      this.removeAccessControlToDatasets(userId)
+    }
+
+    fun checkUserExists(userId: String) {
+      csmRbac.checkUserExists(
+        runner.getRbac(), userId, "User '$userId' not found in runner ${runner.id}"
+      )
+    }
+
+    private fun getRbacSecurity(): RbacSecurity {
+      return extractRbacSecurity(this.runner.security)
+    }
+
+    fun setRbacSecurity(rbacSecurity: RbacSecurity) = apply {
+      this.runner.security =
+        RunnerSecurity(
+          rbacSecurity.default,
+          rbacSecurity.accessControlList
+            .distinctBy { it.id }
+            .map { RunnerAccessControl(it.id, it.role) }
+            .toMutableList())
+    }
+
+    private fun extractRbacSecurity(security: RunnerSecurity): RbacSecurity {
+      return RbacSecurity(
+        this.runner.id,
+        security.default,
+        security
+          .accessControlList
+          .map { RbacAccessControl(it.id, it.role) }
+          .toMutableList())
+    }
+
+    @Suppress("NestedBlockDepth")
+    private fun constructParametersValuesFromParent(
+      parentId: String?,
+      solution: Solution?,
+      runTemplate: RunTemplate?,
+      parent: Runner,
+      runner: Runner
+    ): MutableList<RunnerRunTemplateParameterValue> {
+      val parametersValuesList = mutableListOf<RunnerRunTemplateParameterValue>()
+      logger.debug("Copying parameters values from parent $parentId")
+
+      logger.debug("Getting runTemplate parameters ids")
+      val runTemplateParametersIds =
+        solution
+          ?.parameterGroups
+          ?.filter { parameterGroup ->
+            runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
+          }
+          ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
+
+      if (!runTemplateParametersIds.isNullOrEmpty()) {
+        val parentParameters =
+          parent.parametersValues?.associate { it.parameterId to it } ?: mutableMapOf()
+        val runnerParameters =
+          runner.parametersValues?.associate { it.parameterId to it } ?: mutableMapOf()
+
+        // TODO:
+        //  Here parameters values are only retrieved from parent runner
+        //  At the moment default parameters values defined in solution.parameters are not handled
+        //  This behaviour is inherited from previously removed Scenario module (in which it was not
+        // handled too)
+        //  Depending on request and priority, it could be defined in next API versions
+
+        runTemplateParametersIds
+          .filter { !runnerParameters.contains(it) }
+          .filter { parentParameters.contains(it) }
+          .forEach { parameterId ->
+            logger.debug("Copying parameter value from parent for parameter $parameterId")
+            val parameterValue = parentParameters[parameterId]
+            if (parameterValue != null) {
+              parameterValue.isInherited = true
+              parametersValuesList.add(parameterValue)
+            } else {
+              logger.warn(
+                "Parameter $parameterId not found in parent ($parentId) parameters values"
+              )
+            }
+          }
+      }
+      return parametersValuesList
+    }
+
+    private fun removeAccessControlToDatasets(userId: String) {
+      val organizationId = this.runner.organizationId
+      this.runner.datasetList.forEach { datasetId ->
+        val datasetACL =
+          datasetApiService.findDatasetById(organizationId, datasetId).getRbac().accessControlList
+
+        if (datasetACL.any { it.id == userId })
+          datasetApiService.removeDatasetAccessControl(organizationId, datasetId, userId)
+      }
+    }
+
+    fun getUsers(): List<String> {
+      return csmRbac.getUsers(this.getRbacSecurity())
+    }
+
+    fun setDefaultSecurity(role: String) {
+      // create a rbacSecurity object from runner Rbac by changing default value
+      val rbacSecurity = csmRbac.setDefault(this.getRbacSecurity(), role, this.roleDefinition)
+      this.setRbacSecurity(rbacSecurity)
+    }
+  }
 
   private fun addUserAccessControlOnDataset(dataset: Dataset, roleDefinition: RunnerAccessControl) {
     val newDatasetAcl = dataset.getRbac().accessControlList
