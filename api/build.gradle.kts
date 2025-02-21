@@ -20,6 +20,12 @@ dependencies {
   implementation(projects.cosmotechMetricsService)
   implementation(projects.cosmotechRunApi)
   implementation(projects.cosmotechRunnerApi)
+
+  testImplementation("org.testng:testng:7.8.0")
+  testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.4")
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.security:spring-security-test")
+  testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 }
 
 tasks.getByName<Delete>("clean") { delete("$rootDir/openapi/openapi.yaml") }
@@ -223,4 +229,21 @@ tasks.register<Exec>("rolloutKindDeployment") {
       "rollout",
       "restart",
       "deployment/cosmotech-api-${apiVersion}")
+}
+
+tasks.register<GenerateTask>("generateDocumentation") {
+    group = "documentation"
+    description = "Generates adoc file containing API documentation"
+    inputSpec.set("${rootDir}/openapi/openapi.yaml")
+    outputDir.set("${rootDir}/doc")
+    generatorName.set("asciidoc")
+    additionalProperties.set(
+        mapOf(
+            "appName" to "Cosmo Tech API",
+            "appDescription" to "Cosmo Tech API Description",
+            "disallowAdditionalPropertiesIfNotPresent" to false,
+            "infoEmail" to "platform@cosmotech.com",
+            "snippetDir" to "${rootDir}/doc/generated-snippets/",
+            "infoUrl" to "https://github.com/Cosmo-Tech/cosmotech-api")
+    )
 }

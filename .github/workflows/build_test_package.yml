@@ -48,7 +48,69 @@ jobs:
             -x openApiValidate
             -x detekt
 
-  test:
+  organization_controller_test:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    permissions: read-all
+
+    if: github.event_name != 'pull_request_target'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
+
+      - name: Run Organization Controller tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :cosmotech-api:integrationTest --tests "com.cosmotech.api.home.organization.OrganizationControllerTests" -x spotlessCheck -x openApiValidate
+
+
+  home_controller_test:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    permissions: read-all
+
+    if: github.event_name != 'pull_request_target'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
+
+      - name: Run Home Controller tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :cosmotech-api:integrationTest --tests "com.cosmotech.api.home.HomeControllerTests" -x spotlessCheck -x openApiValidate
+
+
+  unit_test:
     runs-on: ubuntu-latest
     needs:
       - build
@@ -81,7 +143,9 @@ jobs:
   connector_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -111,7 +175,9 @@ jobs:
   dataset_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -146,7 +212,9 @@ jobs:
   organization_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -181,7 +249,9 @@ jobs:
   solution_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -217,7 +287,9 @@ jobs:
   workspace_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -253,7 +325,9 @@ jobs:
   runner_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -288,7 +362,9 @@ jobs:
   run_it:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
+      - home_controller_test
+      - organization_controller_test
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -314,36 +390,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew :cosmotech-run-api:integrationTest -x spotlessCheck -x openApiValidate
-
-  homecontroller_it:
-    runs-on: ubuntu-latest
-    needs:
-      - test
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    permissions: read-all
-
-    if: github.event_name != 'pull_request_target'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-disabled: true
-
-      - name: Run HomeController integration tests
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :cosmotech-api:integrationTest -x spotlessCheck -x openApiValidate
 
   test_helm:
     name: Test Helm Chart
@@ -558,7 +604,7 @@ jobs:
   scan_and_push_container_images_to_registries:
     runs-on: ubuntu-latest
     needs:
-      - test
+      - unit_test
       - connector_it
       - dataset_it
       - organization_it
@@ -566,7 +612,6 @@ jobs:
       - workspace_it
       - runner_it
       - run_it
-      - homecontroller_it
       - test_helm
     permissions:
       packages: write
@@ -676,7 +721,7 @@ jobs:
             chart_name: cosmotech-api-chart
             name: API
     needs:
-      - test
+      - unit_test
       - connector_it
       - dataset_it
       - organization_it
@@ -684,7 +729,6 @@ jobs:
       - workspace_it
       - runner_it
       - run_it
-      - homecontroller_it
       - test_helm
     permissions:
       packages: write
