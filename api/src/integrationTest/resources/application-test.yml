@@ -13,10 +13,6 @@ spring:
   main:
     banner-mode: "off"
 
-logging:
-  level:
-    org.springframework.security: TRACE
-
 csm:
   platform:
     identityProvider:
