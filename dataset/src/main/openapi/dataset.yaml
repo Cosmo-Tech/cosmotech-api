@@ -42,8 +42,7 @@ paths:
                 $ref: '#/components/examples/BreweryADT'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Dataset'
             examples:
               BreweryADT:
                 $ref: '#/components/examples/BreweryADT'
@@ -131,8 +130,7 @@ paths:
                 $ref: '#/components/examples/DatasetSearch'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/DatasetSearch'
             examples:
               DatasetSearch:
                 $ref: '#/components/examples/DatasetSearch'
@@ -174,8 +172,7 @@ paths:
                 $ref: '#/components/examples/BreweryDatasetCopyParameters'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/DatasetCopyParameters'
             examples:
               BreweryDatasetCopyParameters:
                 $ref: '#/components/examples/BreweryDatasetCopyParameters'
@@ -230,7 +227,11 @@ paths:
         - dataset
       summary: Update a dataset
       requestBody:
-        description: the new Dataset details. This endpoint can't be used to update security
+        description: |
+          The new Dataset details.
+          This endpoint can't be used to update :
+            - id
+            - security
         required: true
         content:
           application/json:
@@ -241,8 +242,7 @@ paths:
                 $ref: '#/components/examples/BreweryADTUpdate'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Dataset'
             examples:
               BreweryADTUpdate:
                 $ref: '#/components/examples/BreweryADTUpdate'
@@ -345,6 +345,12 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/SubDatasetGraphQuery'
+            examples:
+              BreweryADT:
+                $ref: '#/components/examples/BreweryADT'
+          application/yaml:
             schema:
               $ref: '#/components/schemas/SubDatasetGraphQuery'
             examples:
@@ -464,6 +470,12 @@ paths:
             examples:
               GetAllNodes:
                 $ref: '#/components/examples/TwinGraphGetAllNodes'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/DatasetTwinGraphQuery'
+            examples:
+              GetAllNodes:
+                $ref: '#/components/examples/TwinGraphGetAllNodes'
       responses:
         '200':
           description: Successful response
@@ -517,6 +529,14 @@ paths:
             examples:
               QueryEntities:
                 $ref: '#/components/examples/QueryEntities'
+          application/yaml:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GraphProperties'
+            examples:
+              QueryEntities:
+                $ref: '#/components/examples/QueryEntities'
       responses:
         '200':
           description: Successful response
@@ -561,6 +581,14 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GraphProperties'
+            examples:
+              QueryEntities:
+                $ref: '#/components/examples/QueryEntities'
+          application/yaml:
             schema:
               type: array
               items:
@@ -647,7 +675,7 @@ paths:
       operationId: twingraphBatchUpdate
       tags:
         - dataset
-      summary: "Async batch update by loading a CSV file on a graph instance "
+      summary: Async batch update by loading a CSV file on a graph instance
       description: |
         Async batch update by loading a CSV file on a graph instance 
         Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
@@ -916,8 +944,7 @@ paths:
                 $ref: '#/components/examples/BreweryDatasetRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/DatasetRole'
             examples:
               BreweryDatasetRole:
                 $ref: '#/components/examples/BreweryDatasetRole'
@@ -961,8 +988,7 @@ paths:
                 $ref: '#/components/examples/BreweryDatasetAccessControl'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/DatasetAccessControl'
             examples:
               DatasetAccess:
                 $ref: '#/components/examples/BreweryDatasetAccessControl'

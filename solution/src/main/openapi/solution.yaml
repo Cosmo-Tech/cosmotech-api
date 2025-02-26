@@ -42,8 +42,7 @@ paths:
                 $ref: '#/components/examples/Brewery'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Solution'
             examples:
               ADTConnector:
                 $ref: '#/components/examples/Brewery'
@@ -127,8 +126,9 @@ paths:
         - solution
       summary: Update a solution
       requestBody:
-        description: the new Solution details.
-          This endpoint can't be used to update ':'
+        description: |
+          the new Solution details.
+          This endpoint can't be used to update :
             - id
             - runTemplates
             - security
@@ -142,8 +142,7 @@ paths:
                 $ref: '#/components/examples/BreweryUpdate'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Solution'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryUpdate'
@@ -200,6 +199,11 @@ paths:
               type: array
               items:
                 $ref: "#/components/schemas/RunTemplateParameter"
+          application/yaml:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/RunTemplateParameter"
       responses:
         "201":
           description: the Parameters
@@ -252,6 +256,11 @@ paths:
               type: array
               items:
                 $ref: "#/components/schemas/RunTemplateParameterGroup"
+          application/yaml:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/RunTemplateParameterGroup"
       responses:
         "201":
           description: the Parameter Groups
@@ -300,6 +309,11 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/RunTemplate"
+          application/yaml:
             schema:
               type: array
               items:
@@ -550,8 +564,7 @@ paths:
                 $ref: '#/components/examples/BrewerySolutionRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/SolutionRole'
             examples:
               BrewerySolutionRole:
                 $ref: '#/components/examples/BrewerySolutionRole'
@@ -628,8 +641,7 @@ paths:
                 $ref: '#/components/examples/BrewerySolutionAccessControl'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/SolutionAccessControl'
             examples:
               SolutionAccess:
                 $ref: '#/components/examples/BrewerySolutionAccessControl'
@@ -693,6 +705,12 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/SolutionRole'
+            examples:
+              BrewerySolutionRole:
+                $ref: '#/components/examples/BrewerySolutionRole'
+          application/yaml:
             schema:
               $ref: '#/components/schemas/SolutionRole'
             examples:

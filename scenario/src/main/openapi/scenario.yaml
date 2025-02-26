@@ -51,8 +51,7 @@ paths:
                 $ref: '#/components/examples/BreweryChildScenarioIn'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Scenario'
             examples:
               MasterScenario:
                 $ref: '#/components/examples/BreweryScenarioIn'
@@ -240,8 +239,9 @@ paths:
         - scenario
       summary: Update a scenario
       requestBody:
-        description: the new Scenario details.
-          This endpoint can't be used to update ':'
+        description: |
+          The new Scenario details.
+          This endpoint can't be used to update :
             - id
             - ownerId
             - datasetList
@@ -259,8 +259,7 @@ paths:
                 $ref: '#/components/examples/BreweryScenarioUpdate'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Scenario'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryScenarioUpdate'
@@ -400,6 +399,14 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
+            examples:
+              TwoScenarioRunTemplateParameterValueToAddOrReplace:
+                $ref: '#/components/examples/TwoScenarioRunTemplateParameterValueToAddOrReplace'
+          application/yaml:
             schema:
               type: array
               items:
@@ -646,8 +653,7 @@ paths:
                 $ref: '#/components/examples/BreweryScenarioRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/ScenarioRole'
             examples:
               BreweryScenarioRole:
                 $ref: '#/components/examples/BreweryScenarioRole'
@@ -704,8 +710,7 @@ paths:
                 $ref: '#/components/examples/BreweryScenarioAccessControl'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/ScenarioAccessControl'
             examples:
               ScenarioAccess:
                 $ref: '#/components/examples/BreweryScenarioAccessControl'
@@ -777,6 +782,12 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioRole'
+            examples:
+              BreweryScenarioRole:
+                $ref: '#/components/examples/BreweryScenarioRole'
+          application/yaml:
             schema:
               $ref: '#/components/schemas/ScenarioRole'
             examples:

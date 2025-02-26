@@ -53,7 +53,7 @@ Add (or replace) Parameter Values for the Scenario specified
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="addScenarioAccessControl"></a>
@@ -590,7 +590,7 @@ Update a scenario
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **scenario\_id** | **String**| the Scenario identifier | [default to null] |
-| **Scenario** | [**Scenario**](../Models/Scenario.md)| the new Scenario details. This endpoint can&#39;t be used to update &#39;:&#39; - id - ownerId - datasetList - solutionId - runTemplateId - parametersValues - security | |
+| **Scenario** | [**Scenario**](../Models/Scenario.md)| The new Scenario details. This endpoint can&#39;t be used to update :   - id   - ownerId   - datasetList   - solutionId   - runTemplateId   - parametersValues   - security  | |
 
 ### Return type
 
@@ -631,6 +631,6 @@ Update the specified access to User for a Scenario
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 

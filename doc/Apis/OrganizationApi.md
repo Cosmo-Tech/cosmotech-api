@@ -337,7 +337,7 @@ Update an Organization
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **Organization** | [**Organization**](../Models/Organization.md)| the new Organization details. This endpoint can&#39;t be used to update security | |
+| **Organization** | [**Organization**](../Models/Organization.md)| The new Organization details. This endpoint can&#39;t be used to update :   - id   - ownerId   - security  | |
 
 ### Return type
 
@@ -376,7 +376,7 @@ Update the specified access to User for an Organization
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="updateSolutionsContainerRegistryByOrganizationId"></a>
@@ -454,6 +454,6 @@ Update tenant credentials for the Organization specified
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 

@@ -61,8 +61,7 @@ paths:
                 $ref: '#/components/examples/BreweryChildRunnerIn'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Runner'
             examples:
               MasterRunner:
                 $ref: '#/components/examples/BreweryRunnerIn'
@@ -154,8 +153,9 @@ paths:
         - runner
       summary: Update a runner
       requestBody:
-        description: the new Runner details.
-          This endpoint can't be used to update ':'
+        description: |
+          The new Runner details.
+          This endpoint can't be used to update :
             - id 
             - ownerId
             - organizationId
@@ -172,8 +172,7 @@ paths:
                 $ref: '#/components/examples/BreweryRunnerUpdate'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Runner'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryRunnerUpdate'
@@ -390,8 +389,7 @@ paths:
                 $ref: '#/components/examples/BreweryRunnerRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/RunnerRole'
             examples:
               BreweryRunnerRole:
                 $ref: '#/components/examples/BreweryRunnerRole'
@@ -447,8 +445,7 @@ paths:
                 $ref: '#/components/examples/BreweryRunnerAccessControl'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/RunnerAccessControl'
             examples:
               RunnerAccess:
                 $ref: '#/components/examples/BreweryRunnerAccessControl'
@@ -518,6 +515,12 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/RunnerRole'
+            examples:
+              BreweryRunnerRole:
+                $ref: '#/components/examples/BreweryRunnerRole'
+          application/yaml:
             schema:
               $ref: '#/components/schemas/RunnerRole'
             examples:
