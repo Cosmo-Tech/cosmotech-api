@@ -36,6 +36,7 @@ import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
 import com.cosmotech.runner.domain.RunnerSecurity
+import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
@@ -294,6 +295,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
           ownerName = "owner",
           datasetList = mutableListOf(),
             workspaceId = workspaceId,
+          validationStatus = RunnerValidationStatus.Draft,
+          parametersValues = mutableListOf(),
           security = RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN)))
         )
     val runStart = RunStart(this, runner)

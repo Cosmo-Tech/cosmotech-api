@@ -21,9 +21,9 @@
 | **runTemplateName** | **String** | the Solution Run Template name associated with this Runner | [optional] [default to null] |
 | **datasetList** | **List** | the list of Dataset Id associated to this Runner Run Template | [default to null] |
 | **runSizing** | [**RunnerResourceSizing**](RunnerResourceSizing.md) |  | [optional] [default to null] |
-| **parametersValues** | [**List**](RunnerRunTemplateParameterValue.md) | the list of Solution Run Template parameters values | [optional] [default to null] |
+| **parametersValues** | [**List**](RunnerRunTemplateParameterValue.md) | the list of Solution Run Template parameters values | [default to null] |
 | **lastRunId** | **String** | last run id from current runner | [optional] [default to null] |
-| **validationStatus** | [**RunnerValidationStatus**](RunnerValidationStatus.md) |  | [optional] [default to null] |
+| **validationStatus** | [**RunnerValidationStatus**](RunnerValidationStatus.md) |  | [default to null] |
 | **security** | [**RunnerSecurity**](RunnerSecurity.md) |  | [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

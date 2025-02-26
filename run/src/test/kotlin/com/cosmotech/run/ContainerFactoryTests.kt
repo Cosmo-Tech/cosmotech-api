@@ -19,6 +19,7 @@ import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.runner.domain.RunnerSecurity
+import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
@@ -235,6 +236,7 @@ class ContainerFactoryTests {
             mutableListOf(
                 RunnerRunTemplateParameterValue(parameterId = "param1", value = "value1"),
                 RunnerRunTemplateParameterValue(parameterId = "param2", value = "value2")),
+      validationStatus = RunnerValidationStatus.Draft,
       security = RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))))
   }
 
