@@ -243,6 +243,8 @@ class RunnerService(
         lastUpdate = now,
         ownerName = "init",
         datasetList = mutableListOf(),
+        parametersValues = mutableListOf(),
+        validationStatus = RunnerValidationStatus.Draft,
         security = RunnerSecurity("", accessControlList = mutableListOf()),
       )
     }
@@ -303,7 +305,7 @@ class RunnerService(
           name = runnerCreateRequest.name,
           runTemplateId = runnerCreateRequest.runTemplateId,
           datasetList = runnerCreateRequest.datasetList ?: mutableListOf(),
-          parametersValues = runnerCreateRequest.parametersValues,
+          parametersValues = runnerCreateRequest.parametersValues ?: mutableListOf(),
           parentId = runnerCreateRequest.parentId,
           lastRunId = this.runner.lastRunId,
           solutionName = runnerCreateRequest.solutionName,

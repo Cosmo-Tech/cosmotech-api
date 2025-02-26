@@ -54,10 +54,6 @@ paths:
                   $ref: '#/components/examples/Brewery'
         "400":
           description: Bad request - Invalid request content or parameters
-        "401":
-          description: Authorization failed - incorrect or missing credentials
-        "403":
-          description: Forbidden - insufficient permissions to create solutions
     get:
       operationId: listSolutions
       parameters:
@@ -88,10 +84,6 @@ paths:
               examples:
                 Two:
                   $ref: '#/components/examples/OneSolution'
-        "401":
-          description: Authorization failed - incorrect or missing credentials
-        "403":
-          description: Forbidden - insufficient permissions to list solutions
 
   /organizations/{organization_id}/solutions/{solution_id}:
     parameters:
