@@ -42,8 +42,7 @@ paths:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Workspace'
             examples:
               Workspace:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
@@ -126,8 +125,9 @@ paths:
         - workspace
       summary: Update a workspace
       requestBody:
-        description: The new Workspace details.
-          This endpoint can't be used to update ':'
+        description: |
+          The new Workspace details.
+          This endpoint can't be used to update :
             - id
             - ownerId
             - security
@@ -141,8 +141,7 @@ paths:
                 $ref: '#/components/examples/BreweryWorkspaceUpdate'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Workspace'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryWorkspaceUpdate'
@@ -535,8 +534,7 @@ paths:
                 $ref: '#/components/examples/BreweryWorkspaceRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/WorkspaceRole'
             examples:
               BreweryWorkspaceRole:
                 $ref: '#/components/examples/BreweryWorkspaceRole'
@@ -584,8 +582,7 @@ paths:
                 $ref: '#/components/examples/BreweryWorkspaceAccessControl'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/WorkspaceAccessControl'
             examples:
               WorkspaceAccess:
                 $ref: '#/components/examples/BreweryWorkspaceAccessControl'
@@ -649,6 +646,12 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceRole'
+            examples:
+              BreweryWorkspaceRole:
+                $ref: '#/components/examples/BreweryWorkspaceRole'
+          application/yaml:
             schema:
               $ref: '#/components/schemas/WorkspaceRole'
             examples:
@@ -741,8 +744,7 @@ paths:
                 $ref: '#/components/examples/WorkspaceSecretExample'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/WorkspaceSecret'
             examples:
               Workspace:
                 $ref: '#/components/examples/WorkspaceSecretExample'

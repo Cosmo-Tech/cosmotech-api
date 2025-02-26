@@ -52,7 +52,7 @@ Add Parameter Groups. Any item with the same ID will be overwritten
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="addOrReplaceParameters"></a>
@@ -79,7 +79,7 @@ Add Parameters. Any item with the same ID will be overwritten
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="addOrReplaceRunTemplates"></a>
@@ -106,7 +106,7 @@ Add Run Templates. Any item with the same ID will be overwritten
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="addSolutionAccessControl"></a>
@@ -519,7 +519,7 @@ Update a solution
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **Solution** | [**Solution**](../Models/Solution.md)| the new Solution details. This endpoint can&#39;t be used to update &#39;:&#39; - id - runTemplates - security | |
+| **Solution** | [**Solution**](../Models/Solution.md)| the new Solution details. This endpoint can&#39;t be used to update :   - id   - runTemplates   - security  | |
 
 ### Return type
 
@@ -559,7 +559,7 @@ Update the specified access to User for a Solution
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="updateSolutionRunTemplate"></a>

@@ -518,7 +518,7 @@ Update a workspace
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **Workspace** | [**Workspace**](../Models/Workspace.md)| The new Workspace details. This endpoint can&#39;t be used to update &#39;:&#39; - id - ownerId - security | |
+| **Workspace** | [**Workspace**](../Models/Workspace.md)| The new Workspace details. This endpoint can&#39;t be used to update :   - id   - ownerId   - security  | |
 
 ### Return type
 
@@ -558,7 +558,7 @@ Update the specified access to User for a Workspace
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="uploadWorkspaceFile"></a>
