@@ -364,9 +364,9 @@ entity Runner {
     runTemplateName: String
     * datasetList: List<String>
     runSizing: RunnerResourceSizing
-    parametersValues: List<RunnerRunTemplateParameterValue>
+    * parametersValues: List<RunnerRunTemplateParameterValue>
     lastRunId: String
-    validationStatus: RunnerValidationStatus
+    * validationStatus: RunnerValidationStatus
     * security: RunnerSecurity
 }
 
