@@ -1057,30 +1057,146 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `when workspace datasetCopy is false, users added to scenario RBAC should not have the same role in dataset`() {
+  fun `when workspace datasetCopy is false, users added to scenario RBAC should not have the same role in dataset copy`() {
+    val userId = "new_id"
     workspace =
         Workspace(
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id!!),
-            id = "id",
+            id = userId,
             datasetCopy = false)
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!))
+
+    val datasetCopy =
+        makeDataset(organizationSaved.id!!, "DatasetCopy", connectorSaved, isMain = false)
+    var datasetCopySaved = datasetApiService.createDataset(organizationSaved.id!!, datasetCopy)
+
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!, datasetCopySaved.id!!))
     scenarioSaved =
         scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
 
     datasetSaved =
         datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    datasetCopySaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![1])
+
     scenarioApiService.addScenarioAccessControl(
         organizationSaved.id!!,
         workspaceSaved.id!!,
         scenarioSaved.id!!,
-        ScenarioAccessControl(id = "id", role = ROLE_EDITOR))
+        ScenarioAccessControl(id = userId, role = ROLE_EDITOR))
+
+    val datasetCopyAC =
+        datasetApiService.getDatasetAccessControl(
+            organizationSaved.id!!, datasetCopySaved.id!!, userId)
+    assertEquals(ROLE_VIEWER, datasetCopyAC.role)
 
     val datasetAC =
-        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, datasetSaved.id!!, "id")
+        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, datasetSaved.id!!, userId)
     assertEquals(ROLE_VIEWER, datasetAC.role)
+  }
+
+  @Test
+  fun `when a user is removed from ACL on a scenario, only dataset copy should be updated`() {
+    val userId = "new_id"
+    workspace =
+        Workspace(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            id = userId,
+            datasetCopy = false)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+
+    val datasetCopy =
+        makeDataset(organizationSaved.id!!, "DatasetCopy", connectorSaved, isMain = false)
+    var datasetCopySaved = datasetApiService.createDataset(organizationSaved.id!!, datasetCopy)
+
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!, datasetCopySaved.id!!))
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+    datasetSaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    datasetCopySaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![1])
+
+    scenarioApiService.addScenarioAccessControl(
+        organizationSaved.id!!,
+        workspaceSaved.id!!,
+        scenarioSaved.id!!,
+        ScenarioAccessControl(id = userId, role = ROLE_EDITOR))
+
+    scenarioApiService.removeScenarioAccessControl(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, userId)
+
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          datasetApiService.getDatasetAccessControl(
+              organizationSaved.id!!, datasetCopySaved.id!!, userId)
+        }
+
+    assertEquals("User $userId not found in ${datasetCopySaved.id!!} component", exception.message)
+
+    val datasetAC =
+        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, datasetSaved.id!!, userId)
+
+    // Check that the user access is still defined and equals to default role when datasetCopy =
+    // false
+    assertEquals(ROLE_VIEWER, datasetAC.role)
+  }
+
+  @Test
+  fun `when a user is updated from ACL on a scenario,and workspace datasetCopy to true all datasets should be updated`() {
+    val userId = "new_id"
+    workspace =
+        Workspace(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            id = userId,
+            datasetCopy = true)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+
+    val datasetCopy =
+        makeDataset(organizationSaved.id!!, "DatasetCopy", connectorSaved, isMain = false)
+    var datasetCopySaved = datasetApiService.createDataset(organizationSaved.id!!, datasetCopy)
+    materializeTwingraph(datasetCopySaved)
+
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!, datasetCopySaved.id!!))
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+    datasetSaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    datasetCopySaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![1])
+
+    scenarioApiService.addScenarioAccessControl(
+        organizationSaved.id!!,
+        workspaceSaved.id!!,
+        scenarioSaved.id!!,
+        ScenarioAccessControl(id = userId, role = ROLE_EDITOR))
+
+    scenarioApiService.removeScenarioAccessControl(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, userId)
+
+    var exception =
+        assertThrows<CsmResourceNotFoundException> {
+          datasetApiService.getDatasetAccessControl(
+              organizationSaved.id!!, datasetSaved.id!!, userId)
+        }
+
+    assertEquals("User $userId not found in ${datasetSaved.id!!} component", exception.message)
+
+    exception =
+        assertThrows<CsmResourceNotFoundException> {
+          datasetApiService.getDatasetAccessControl(
+              organizationSaved.id!!, datasetCopySaved.id!!, userId)
+        }
+
+    assertEquals("User $userId not found in ${datasetCopySaved.id!!} component", exception.message)
   }
 
   @Test
@@ -1167,7 +1283,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       organizationId: String = organizationSaved.id!!,
       name: String = "name",
       connector: Connector = connectorSaved,
-      sourceType: DatasetSourceType = DatasetSourceType.Twincache
+      sourceType: DatasetSourceType = DatasetSourceType.Twincache,
+      isMain: Boolean = true
   ): Dataset {
     return Dataset(
         name = name,
@@ -1181,6 +1298,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 name = connector.name,
                 version = connector.version,
             ),
+        main = isMain,
         security =
             DatasetSecurity(
                 default = ROLE_NONE,

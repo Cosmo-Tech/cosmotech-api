@@ -43,7 +43,6 @@ import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.service.getRbac
-import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
@@ -1087,14 +1086,27 @@ internal class ScenarioServiceImpl(
 
       scenario.datasetList!!
           .mapNotNull { datasetService.findByOrganizationIdAndDatasetId(organizationId, it) }
-          // Filter on dataset copy (cause we do not want update main dataset when
-          // workspace.dataCopy is true)
-          .filter { it.main == false }
           .forEach { dataset ->
-            // Dataset roles should be similar to scenario ones if dataset are copy of a master one
-            // This is possible when workspace.datasetCopy is true
-            datasetService.addOrUpdateAccessControl(
-                organizationId, dataset, userIdForAcl, datasetRoleFromScenarioAcl)
+            if (dataset.main == true) {
+              val datasetAcl = dataset.getRbac().accessControlList
+              if (datasetAcl.none { it.id == userIdForAcl }) {
+                // If the access for this user is not defined on the dataset
+                // As its a main dataset, we can add access for this user
+                // but not update the existing access to prevent issues
+                // if the dataset is shared between several scenarios
+                datasetService.addOrUpdateAccessControl(
+                    organizationId, dataset, userIdForAcl, datasetRoleFromScenarioAcl)
+              }
+            } else {
+              // Dataset roles should be similar to scenario ones if dataset are copy of a master
+              // one
+              // This is possible when workspace.datasetCopy is true
+              // Filter on dataset copy (cause we do not want update main dataset as it can be
+              // shared
+              // between scenarios)
+              datasetService.addOrUpdateAccessControl(
+                  organizationId, dataset, userIdForAcl, datasetRoleFromScenarioAcl)
+            }
           }
     } else {
       scenario.datasetList!!
@@ -1102,6 +1114,10 @@ internal class ScenarioServiceImpl(
           .forEach { dataset ->
             val datasetAcl = dataset.getRbac().accessControlList
             if (datasetAcl.none { it.id == userIdForAcl }) {
+              // If the access for this user is not defined on the dataset
+              // As its a main dataset, we can add access for this user
+              // but not update the existing access to prevent issues
+              // if the dataset is shared between several scenarios
               datasetService.addOrUpdateAccessControl(
                   organizationId, dataset, userIdForAcl, ROLE_VIEWER)
             }
@@ -1129,13 +1145,15 @@ internal class ScenarioServiceImpl(
       scenario: Scenario,
       identityId: String
   ) {
-    scenario.datasetList!!.forEach {
-      val datasetRBACIds = mutableListOf<String>()
-      datasetService.findDatasetById(organizationId, it).getRbac().accessControlList.forEach {
-        datasetRBACIds.add(it.id)
-      }
-      if (datasetRBACIds.contains(identityId)) {
-        datasetService.removeDatasetAccessControl(organizationId, it, identityId)
+    scenario.datasetList!!.forEach { datasetId ->
+      val dataset = datasetService.findDatasetById(organizationId, datasetId)
+      // Filter on dataset copy (cause we do not want update main dataset as it can be shared
+      // between scenarios)
+      if (dataset.main != true) {
+        val datasetRBACIds = dataset.getRbac().accessControlList.map { it.id }
+        if (datasetRBACIds.contains(identityId)) {
+          datasetService.removeDatasetAccessControl(organizationId, datasetId, identityId)
+        }
       }
     }
   }
