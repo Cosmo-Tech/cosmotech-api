@@ -6,9 +6,9 @@ import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.rbac.ROLE_ADMIN
 
 /**
- * Constant class that contains:
+ * Constant class that contains for Organization endpoints:
  * - default payload (RequestContent) for API calls
- * -default error messages (Errors) returned by API
+ * - default error messages (Errors) returned by API
  */
 object OrganizationConstants {
 

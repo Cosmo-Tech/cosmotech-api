@@ -3,6 +3,8 @@
 package com.cosmotech.api.home
 
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.solution.domain.Solution
+import com.cosmotech.workspace.domain.Workspace
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisServer
 import com.redis.testcontainers.RedisStackContainer
@@ -47,6 +49,8 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
     fun beforeEach(restDocumentationContextProvider: RestDocumentationContextProvider) {
 
         rediSearchIndexer.createIndexFor(Organization::class.java)
+        rediSearchIndexer.createIndexFor(Workspace::class.java)
+        rediSearchIndexer.createIndexFor(Solution::class.java)
 
         this.mvc =
             MockMvcBuilders.webAppContextSetup(context)
