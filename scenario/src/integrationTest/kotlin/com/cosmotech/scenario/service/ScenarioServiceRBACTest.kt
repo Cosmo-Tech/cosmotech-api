@@ -6044,10 +6044,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Dataset RBAC removeScenarioAccessControl`() =
       mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
               ROLE_VALIDATOR to true,
-              ROLE_USER to true,
+              ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
           )
@@ -7141,7 +7141,8 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
       organizationId: String,
       solutionId: String,
       id: String,
-      role: String
+      role: String,
+      datasetCopy: Boolean = true
   ): Workspace {
     return Workspace(
         key = UUID.randomUUID().toString(),
@@ -7152,6 +7153,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
             ),
         organizationId = organizationId,
         ownerId = "ownerId",
+        datasetCopy = datasetCopy,
         security =
             WorkspaceSecurity(
                 default = ROLE_NONE,
