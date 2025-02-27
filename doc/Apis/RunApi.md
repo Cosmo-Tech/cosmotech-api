@@ -180,7 +180,7 @@ query the run data
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="sendRunData"></a>
@@ -209,6 +209,6 @@ Send data associated to a run
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 

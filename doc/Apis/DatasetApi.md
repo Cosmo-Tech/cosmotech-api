@@ -28,7 +28,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 | [**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets by tags |
 | [**setDatasetDefaultSecurity**](DatasetApi.md#setDatasetDefaultSecurity) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/security/default | Set the Dataset default security |
 | [**twingraphBatchQuery**](DatasetApi.md#twingraphBatchQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch-query | Run a query on a graph instance and return the result as a zip file in async mode |
-| [**twingraphBatchUpdate**](DatasetApi.md#twingraphBatchUpdate) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch | Async batch update by loading a CSV file on a graph instance  |
+| [**twingraphBatchUpdate**](DatasetApi.md#twingraphBatchUpdate) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch | Async batch update by loading a CSV file on a graph instance |
 | [**twingraphQuery**](DatasetApi.md#twingraphQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph | Return the result of a query made on the graph instance as a json |
 | [**unlinkWorkspace**](DatasetApi.md#unlinkWorkspace) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/unlink |  |
 | [**updateDataset**](DatasetApi.md#updateDataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset |
@@ -171,7 +171,7 @@ Create a sub-dataset from the dataset in parameter
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="createTwingraphEntities"></a>
@@ -201,7 +201,7 @@ Create new entities in a graph instance
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="deleteDataset"></a>
@@ -702,7 +702,7 @@ Run a query on a graph instance and return the result as a zip file in async mod
 # **twingraphBatchUpdate**
 > TwinGraphBatchResult twingraphBatchUpdate(organization\_id, dataset\_id, twinGraphQuery, body)
 
-Async batch update by loading a CSV file on a graph instance 
+Async batch update by loading a CSV file on a graph instance
 
     Async batch update by loading a CSV file on a graph instance  Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
@@ -754,7 +754,7 @@ Return the result of a query made on the graph instance as a json
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="unlinkWorkspace"></a>
@@ -796,7 +796,7 @@ Update a dataset
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **dataset\_id** | **String**| the Dataset identifier | [default to null] |
-| **Dataset** | [**Dataset**](../Models/Dataset.md)| the new Dataset details. This endpoint can&#39;t be used to update security | |
+| **Dataset** | [**Dataset**](../Models/Dataset.md)| The new Dataset details. This endpoint can&#39;t be used to update :   - id   - security  | |
 
 ### Return type
 
@@ -866,7 +866,7 @@ Update entities in a graph instance
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="uploadTwingraph"></a>
