@@ -172,6 +172,8 @@ class RunContainerFactory(
     val runTemplateId =
         runner.runTemplateId ?: throw IllegalStateException("Runner runTemplateId cannot be null")
 
+    val solutionRepository =
+        solution.repository
     val imageName =
         getImageName(
             csmPlatformProperties.containerRegistry.host, solution.repository, solution.version)

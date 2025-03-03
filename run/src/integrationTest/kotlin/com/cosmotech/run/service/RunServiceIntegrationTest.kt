@@ -34,7 +34,9 @@ import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
+import com.cosmotech.runner.domain.RunnerCreateRequest
 import com.cosmotech.runner.domain.RunnerSecurity
+import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
@@ -82,6 +84,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import java.time.Instant
 
 @ActiveProfiles(profiles = ["run-test"])
 @ExtendWith(MockKExtension::class)
@@ -117,6 +120,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
   lateinit var solution: SolutionCreateRequest
   lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
+  lateinit var runner: RunnerCreateRequest
 
   lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
@@ -139,6 +143,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
 
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
+    rediSearchIndexer.createIndexFor(Dataset::class.java)
     rediSearchIndexer.createIndexFor(Runner::class.java)
     rediSearchIndexer.createIndexFor(Run::class.java)
 
@@ -151,20 +156,21 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     dataset = mockDataset(organizationSaved.id, "Dataset", connectorSaved)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
 
-    solution = mockSolution(organizationSaved.id)
+    solution = makeSolutionCreateRequest(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
     workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-    runnerSaved =
-        mockRunner(
+    runner =
+        makeRunnerCreateRequest(
             organizationSaved.id,
           workspaceSaved.id,
           solutionSaved.id,
             solutionSaved.runTemplates[0].id,
             "Runner",
             mutableListOf(datasetSaved.id!!))
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
     every { workflowService.launchRun(any(), any(), any(), any()) } returns
         mockWorkflowRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id!!)
@@ -205,7 +211,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     )
   }
 
-  fun mockSolution(organizationId: String = organizationSaved.id) = SolutionCreateRequest(
+  fun makeSolutionCreateRequest(organizationId: String = organizationSaved.id) = SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
         name = "My solution",
         runTemplates =
@@ -253,22 +259,19 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
             WorkspaceSecurity(
                 ROLE_NONE, mutableListOf(WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
 
-  fun mockRunner(
+  fun makeRunnerCreateRequest(
     organizationId: String = organizationSaved.id,
     workspaceId: String = workspaceSaved.id,
     solutionId: String = solutionSaved.id,
     runTemplateId: String = solutionSaved.runTemplates[0].id,
     name: String = "runner",
     datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
-  ) = Runner(
-        id = "RunnerId",
+  ) = RunnerCreateRequest(
         name = name,
-        organizationId = organizationId,
-        workspaceId = workspaceId,
         solutionId = solutionId,
         runTemplateId = runTemplateId,
-        ownerId = "ownerId",
         datasetList = datasetList,
+    ownerName = "owner",
         security =
             RunnerSecurity(
                 ROLE_NONE, mutableListOf(RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
@@ -284,7 +287,18 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
             id = runnerId,
             solutionId = solutionId,
             organizationId = organizationId,
-            workspaceId = workspaceId)
+          name = "name",
+          ownerId = "owner",
+          runTemplateId = "runTemplate",
+          creationDate = Instant.now().toEpochMilli(),
+          lastUpdate = Instant.now().toEpochMilli(),
+          ownerName = "owner",
+          datasetList = mutableListOf(),
+            workspaceId = workspaceId,
+          validationStatus = RunnerValidationStatus.Draft,
+          parametersValues = mutableListOf(),
+          security = RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN)))
+        )
     val runStart = RunStart(this, runner)
     eventPublisher.publishEvent(runStart)
     return runStart.response!!

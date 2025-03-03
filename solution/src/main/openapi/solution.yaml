@@ -53,7 +53,7 @@ paths:
                 Brewery:
                   $ref: '#/components/examples/Brewery'
         "400":
-          description: Bad request
+          description: Bad request - Invalid request content or parameters
     get:
       operationId: listSolutions
       parameters:

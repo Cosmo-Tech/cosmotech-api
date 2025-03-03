@@ -970,8 +970,6 @@ components:
         key: brewery
         name: Brewery Analysis
         description: Brewery analysis for stock, production, transport and customer satisfaction
-        linkedDatasetIdList:
-          - "d-pe57ai0h34"
         version: "1.0.0"
         tags:
           - Brewery
