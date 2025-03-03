@@ -343,7 +343,7 @@ class RunnerService(
           solutionId = this.runner.solutionId,
           rootId = this.runner.rootId,
           ownerName = runnerUpdateRequest.ownerName ?: this.runner.ownerName,
-          lastUpdate = this.runner.lastUpdate,
+          lastUpdate = Instant.now().toEpochMilli(),
           creationDate = this.runner.creationDate,
           parentId = this.runner.parentId,
           workspaceId = this.runner.workspaceId,

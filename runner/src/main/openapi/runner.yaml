@@ -699,6 +699,7 @@ components:
         name:
           type: string
           description: the Runner name
+          minLength: 1
         description:
           type: string
           description: the Runner description
@@ -711,17 +712,23 @@ components:
           type: string
           readOnly: true
           description: the Solution Id associated with this Runner
+          minLength: 1
+          pattern: '^sol-\w{10,20}'
+          example: "sol-123456aBcDeF"
         parentId:
           type: string
           description: the Runner parent id
+          minLength: 1
         runTemplateId:
           type: string
           description: the Solution Run Template Id associated with this Runner
+          minLength: 1
         datasetList:
           type: array
           description: the list of Dataset Id associated to this Runner Run Template
           items:
             type: string
+          default: []
         runSizing:
           description: definition of resources needed for the runner run
           $ref: "#/components/schemas/RunnerResourceSizing"
@@ -730,18 +737,22 @@ components:
           description: the list of Solution Run Template parameters values
           items:
             $ref: '#/components/schemas/RunnerRunTemplateParameterValue'
+          default: []
         ownerName:
           type: string
           readOnly: true
           description: the name of the owner
+          minLength: 1
         solutionName:
           type: string
           readOnly: true
           description: the Solution name
+          minLength: 1
         runTemplateName:
           type: string
           readOnly: true
           description: the Solution Run Template name associated with this Runner
+          minLength: 1
         security:
           $ref: '#/components/schemas/RunnerSecurity'
       required:
@@ -757,6 +768,7 @@ components:
         name:
           type: string
           description: the Runner name
+          minLength: 1
         description:
           type: string
           description: the Runner description
@@ -768,6 +780,7 @@ components:
         runTemplateId:
           type: string
           description: the Solution Run Template Id associated with this Runner
+          minLength: 1
         datasetList:
           type: array
           description: the list of Dataset Id associated to this Runner Run Template
@@ -783,16 +796,18 @@ components:
             $ref: '#/components/schemas/RunnerRunTemplateParameterValue'
         ownerName:
           type: string
-          readOnly: true
           description: the name of the owner
+          minLength: 1
         solutionName:
           type: string
           readOnly: true
           description: the Solution name
+          minLength: 1
         runTemplateName:
           type: string
           readOnly: true
           description: the Solution Run Template name associated with this Runner
+          minLength: 1
     RunnerSecurity:
       type: object
       description: the Runner security information
