@@ -7,10 +7,10 @@ spring:
     oauth2:
       resource-server:
         jwt:
-          issuer-uri: "https://localhost/auth/realms/cosmotech"
-          jwk-set-uri: "https://localhost/auth/realms/cosmotech/protocol/openid-connect/certs"
+          issuer-uri: "${csm.platform.identityProvider.serverBaseUrl}/realms/${csm.platform.identityProvider.identity.tenantId}"
+          jwk-set-uri: "${csm.platform.identityProvider.serverBaseUrl}/realms/${csm.platform.identityProvider.identity.tenantId}/protocol/openid-connect/certs"
           audiences:
-            - "account"
+            - ${csm.platform.identityProvider.audience}
 
 csm:
   platform:
@@ -18,7 +18,8 @@ csm:
       mail-jwt-claim: "email"
       roles-jwt-claim: "customRoles"
       principal-jwt-claim: "sub"
+      application-id-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"
-      allowed-tenants: ["cosmotech"]
+      allowed-tenants: ${csm.platform.authorization.allowedTenants}
 
 
