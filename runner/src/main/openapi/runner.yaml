@@ -712,13 +712,13 @@ components:
           type: string
           readOnly: true
           description: the Solution Id associated with this Runner
-          minLength: 1
           pattern: '^sol-\w{10,20}'
           example: "sol-123456aBcDeF"
         parentId:
           type: string
           description: the Runner parent id
-          minLength: 1
+          pattern: '^r-\w{10,20}'
+          example: "r-123456aBcDeF"
         runTemplateId:
           type: string
           description: the Solution Run Template Id associated with this Runner
