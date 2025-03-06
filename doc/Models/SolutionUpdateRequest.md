@@ -13,8 +13,6 @@
 | **sdkVersion** | **String** | The MAJOR.MINOR version used to build this solution | [optional] [default to null] |
 | **url** | **String** | An optional URL link to solution page | [optional] [default to null] |
 | **tags** | **List** | The list of tags | [optional] [default to null] |
-| **parameters** | [**List**](RunTemplateParameter.md) | The list of Run Template Parameters | [optional] [default to null] |
-| **parameterGroups** | [**List**](RunTemplateParameterGroup.md) | The list of parameters groups for the Run Templates | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -260,16 +260,16 @@ class SolutionServiceImpl(
       url = solutionUpdateRequest.url ?: existingSolution.url,
       csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
       alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
-      parameters = solutionUpdateRequest.parameters ?: existingSolution.parameters,
+      parameters = existingSolution.parameters,
       sdkVersion = solutionUpdateRequest.sdkVersion ?: existingSolution.sdkVersion,
-      parameterGroups = solutionUpdateRequest.parameterGroups ?: existingSolution.parameterGroups,
+      parameterGroups = existingSolution.parameterGroups,
       security = existingSolution.security
     )
     
     val hasChanged =
         existingSolution
             .compareToAndMutateIfNeeded(
-              updatedSolution, excludedFields = arrayOf("ownerId", "runTemplates"))
+              updatedSolution, excludedFields = arrayOf("ownerId", "runTemplates","parameters","parameterGroups"))
             .isNotEmpty()
 
     return if (hasChanged) {

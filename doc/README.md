@@ -55,7 +55,7 @@ All URIs are relative to *http://localhost*
 *OrganizationApi* | [**listPermissions**](Apis/OrganizationApi.md#listpermissions) | **GET** /organizations/permissions | Get all permissions per components |
 *OrganizationApi* | [**updateOrganization**](Apis/OrganizationApi.md#updateorganization) | **PATCH** /organizations/{organization_id} | Update an Organization |
 *OrganizationApi* | [**updateOrganizationAccessControl**](Apis/OrganizationApi.md#updateorganizationaccesscontrol) | **PATCH** /organizations/{organization_id}/security/access/{identity_id} | Update the specified access to User for an Organization |
-*OrganizationApi* | [**updateOrganizationDefaultSecurity**](Apis/OrganizationApi.md#updateorganizationdefaultsecurity) | **POST** /organizations/{organization_id}/security/default | Update the Organization default security |
+*OrganizationApi* | [**updateOrganizationDefaultSecurity**](Apis/OrganizationApi.md#updateorganizationdefaultsecurity) | **PATCH** /organizations/{organization_id}/security/default | Update the Organization default security |
 | *RunApi* | [**deleteRun**](Apis/RunApi.md#deleterun) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Delete a run |
 *RunApi* | [**getRun**](Apis/RunApi.md#getrun) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Get the details of a run |
 *RunApi* | [**getRunLogs**](Apis/RunApi.md#getrunlogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run |

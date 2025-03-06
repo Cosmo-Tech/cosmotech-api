@@ -1,3 +1,5 @@
+// Copyright (c) Cosmo Tech.
+// Licensed under the MIT license.
 package com.cosmotech.api.home.solution
 
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
@@ -21,10 +23,7 @@ object SolutionConstants {
 
     object RequestContent {
         const val MINIMAL_SOLUTION_REQUEST_CREATION = """{"key":"$SOLUTION_KEY","name":"$SOLUTION_NAME","repository":"$SOLUTION_REPOSITORY","version":"$SOLUTION_VERSION","csmSimulator":"$SOLUTION_SIMULATOR"}"""
-        const val SOLUTION_REQUEST_CREATION_WITH_ACCESSES = """{"name":"$SOLUTION_NAME","security":{"default":"none","accessControlList":[{"id":"$PLATFORM_ADMIN_EMAIL", "role":"$ROLE_ADMIN"},{"id":"$NEW_USER_ID", "role":"$NEW_USER_ROLE"}] }}"""
-        const val EMPTY_NAME_SOLUTION_REQUEST_CREATION = """{"name":""}"""
-        const val MINIMAL_SOLUTION_REQUEST_UPDATE = """{"name":"$NEW_SOLUTION_NAME"}"""
-        const val MINIMAL_SOLUTION_ACCESS_CONTROL_REQUEST = """{"id":"$NEW_USER_ID","role":"$NEW_USER_ROLE"}"""
+
     }
 
     object Errors {

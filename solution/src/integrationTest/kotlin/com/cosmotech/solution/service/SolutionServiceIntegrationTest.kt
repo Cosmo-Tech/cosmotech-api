@@ -598,8 +598,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
       tags = mutableListOf("newTag1", "newTag2"),
       alwaysPull = false,
       repository = "new_repo",
-      parameters = mutableListOf(RunTemplateParameter(id = "new_parameter")),
-      parameterGroups = mutableListOf(RunTemplateParameterGroup(id = "new_group")),
       sdkVersion = "2.0.0",
       csmSimulator = "new_simulator",
       url = "new_url",
@@ -612,13 +610,11 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
       ownerId = solutionSaved.ownerId,
       description = solutionUpdateRequest.description,
       tags = solutionUpdateRequest.tags,
-      parameterGroups = solutionUpdateRequest.parameterGroups!!,
       alwaysPull = solutionUpdateRequest.alwaysPull,
       sdkVersion = solutionUpdateRequest.sdkVersion,
       csmSimulator = solutionUpdateRequest.csmSimulator!!,
       url = solutionUpdateRequest.url,
       repository = solutionUpdateRequest.repository!!,
-      parameters = solutionUpdateRequest.parameters!!,
       version = solutionUpdateRequest.version!!,
     )
 

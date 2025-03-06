@@ -5,6 +5,7 @@ package com.cosmotech.api.home.organization
 import com.cosmotech.api.home.Constants.ORGANIZATION_USER_EMAIL
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
+import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.createOrganizationAndReturnId
 import com.cosmotech.api.home.annotations.WithMockOauth2User
 import com.cosmotech.api.home.organization.OrganizationConstants.Errors.emptyNameOrganizationCreationRequestError
@@ -47,7 +48,7 @@ class OrganizationControllerTests: ControllerTestBase() {
             .perform(
                 post("/organizations")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(MINIMAL_ORGANIZATION_REQUEST_CREATION)
+                    .content(ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES)
                     .accept(MediaType.APPLICATION_JSON)
                     .with(csrf())
             )
@@ -57,6 +58,8 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
             .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
             .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+            .andExpect(jsonPath("$.security.accessControlList[1].role").value(NEW_USER_ROLE))
+            .andExpect(jsonPath("$.security.accessControlList[1].id").value(NEW_USER_ID))
             .andDo(MockMvcResultHandlers.print())
             .andDo(document("organizations/POST"))
     }
@@ -65,7 +68,7 @@ class OrganizationControllerTests: ControllerTestBase() {
     @WithMockOauth2User
     fun update_organization() {
 
-        val organizationId = createOrganizationAndReturnId(mvc)
+        val organizationId = createOrganizationAndReturnId(mvc,constructOrganizationCreateRequest())
 
         mvc
             .perform(
@@ -89,8 +92,10 @@ class OrganizationControllerTests: ControllerTestBase() {
     @WithMockOauth2User
     fun list_organizations() {
 
-        val firstOrganizationId = createOrganizationAndReturnId(mvc,name = "my_first_organization")
-        val secondOrganizationId = createOrganizationAndReturnId(mvc,name = "my_second_organization")
+        val firstOrganizationId = createOrganizationAndReturnId(mvc,
+            constructOrganizationCreateRequest("my_first_organization"))
+        val secondOrganizationId = createOrganizationAndReturnId(mvc,
+            constructOrganizationCreateRequest("my_second_organization"))
 
         mvc
             .perform(
@@ -120,7 +125,7 @@ class OrganizationControllerTests: ControllerTestBase() {
     @WithMockOauth2User
     fun get_organization() {
 
-        val organizationId = createOrganizationAndReturnId(mvc)
+        val organizationId = createOrganizationAndReturnId(mvc,constructOrganizationCreateRequest())
 
         mvc
             .perform(
@@ -141,7 +146,7 @@ class OrganizationControllerTests: ControllerTestBase() {
     @WithMockOauth2User
     fun delete_organization() {
 
-        val organizationId = createOrganizationAndReturnId(mvc)
+        val organizationId = createOrganizationAndReturnId(mvc,constructOrganizationCreateRequest())
 
         mvc
             .perform(
@@ -157,7 +162,7 @@ class OrganizationControllerTests: ControllerTestBase() {
     @WithMockOauth2User
     fun get_organization_security() {
 
-        val organizationId = createOrganizationAndReturnId(mvc)
+        val organizationId = createOrganizationAndReturnId(mvc,constructOrganizationCreateRequest())
 
         mvc
             .perform(
@@ -176,7 +181,7 @@ class OrganizationControllerTests: ControllerTestBase() {
     @WithMockOauth2User
     fun add_organization_security_access() {
 
-        val organizationId = createOrganizationAndReturnId(mvc)
+        val organizationId = createOrganizationAndReturnId(mvc,constructOrganizationCreateRequest())
 
         mvc
             .perform(
@@ -197,7 +202,7 @@ class OrganizationControllerTests: ControllerTestBase() {
     @WithMockOauth2User
     fun get_organization_security_access() {
 
-        val organizationId = createOrganizationAndReturnId(mvc)
+        val organizationId = createOrganizationAndReturnId(mvc,constructOrganizationCreateRequest())
 
         mvc
             .perform(
@@ -285,7 +290,7 @@ class OrganizationControllerTests: ControllerTestBase() {
 
         mvc
             .perform(
-                post("/organizations/$organizationId/security/default")
+                patch("/organizations/$organizationId/security/default")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"role":"$ROLE_VIEWER"}""")
                     .accept(MediaType.APPLICATION_JSON)
@@ -297,6 +302,34 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
             .andDo(MockMvcResultHandlers.print())
             .andDo(document("organizations/{organization_id}/security/default/POST"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun list_organization_users() {
+
+        val organizationId = JSONObject(mvc
+            .perform(
+                post("/organizations")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            ).andReturn().response.contentAsString
+        ).getString("id")
+
+        mvc
+            .perform(
+                get("/organizations/$organizationId/security/users")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))
+            .andExpect(jsonPath("$[1]").value(NEW_USER_ID))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/security/users/GET"))
     }
 
 
@@ -348,6 +381,5 @@ class OrganizationControllerTests: ControllerTestBase() {
             .andExpect(status().reason("Forbidden"))
             .andDo(MockMvcResultHandlers.print())
     }
-
 
 }

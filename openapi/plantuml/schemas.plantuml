@@ -467,8 +467,6 @@ entity SolutionUpdateRequest {
     sdkVersion: String
     url: String
     tags: List<String>
-    parameters: List<RunTemplateParameter>
-    parameterGroups: List<RunTemplateParameterGroup>
 }
 
 entity SourceInfo {
@@ -580,8 +578,6 @@ SolutionCreateRequest -- "0..*" RunTemplateParameter : parameters
 SolutionCreateRequest -- "0..*" RunTemplateParameterGroup : parameterGroups
 SolutionCreateRequest -- "0..*" RunTemplate : runTemplates
 SolutionCreateRequest -- SolutionSecurity : security
-SolutionUpdateRequest -- "0..*" RunTemplateParameter : parameters
-SolutionUpdateRequest -- "0..*" RunTemplateParameterGroup : parameterGroups
 OrganizationCreateRequest -- OrganizationSecurity : security
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing

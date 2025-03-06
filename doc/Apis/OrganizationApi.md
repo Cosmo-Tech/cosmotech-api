@@ -17,7 +17,7 @@ All URIs are relative to *http://localhost*
 | [**listPermissions**](OrganizationApi.md#listPermissions) | **GET** /organizations/permissions | Get all permissions per components |
 | [**updateOrganization**](OrganizationApi.md#updateOrganization) | **PATCH** /organizations/{organization_id} | Update an Organization |
 | [**updateOrganizationAccessControl**](OrganizationApi.md#updateOrganizationAccessControl) | **PATCH** /organizations/{organization_id}/security/access/{identity_id} | Update the specified access to User for an Organization |
-| [**updateOrganizationDefaultSecurity**](OrganizationApi.md#updateOrganizationDefaultSecurity) | **POST** /organizations/{organization_id}/security/default | Update the Organization default security |
+| [**updateOrganizationDefaultSecurity**](OrganizationApi.md#updateOrganizationDefaultSecurity) | **PATCH** /organizations/{organization_id}/security/default | Update the Organization default security |
 
 
 <a name="createOrganization"></a>
