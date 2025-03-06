@@ -681,8 +681,6 @@ EOF
 
 helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/helm-chart" \
     --namespace "${NAMESPACE}" \
-    --set config.csm.platform.commit-id="$(git rev-parse --short HEAD || "")" \
-    --set config.csm.platform.vcs-ref="$(git rev-parse --abbrev-ref HEAD || "")" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
     --values "values-cosmotech-api-deploy.yaml" \
     "${@:5}"
