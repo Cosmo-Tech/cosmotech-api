@@ -4,6 +4,7 @@ package com.cosmotech.api.home.organization
 
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_NONE
 
 /**
  * Constant class that contains for Organization endpoints:
@@ -19,7 +20,7 @@ object OrganizationConstants {
 
     object RequestContent {
         const val MINIMAL_ORGANIZATION_REQUEST_CREATION = """{"name":"$ORGANIZATION_NAME"}"""
-        const val ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES = """{"name":"$ORGANIZATION_NAME","security":{"default":"none","accessControlList":[{"id":"$PLATFORM_ADMIN_EMAIL", "role":"$ROLE_ADMIN"},{"id":"$NEW_USER_ID", "role":"$NEW_USER_ROLE"}] }}"""
+        const val ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES = """{"name":"$ORGANIZATION_NAME","security":{"default":"$ROLE_NONE","accessControlList":[{"id":"$PLATFORM_ADMIN_EMAIL", "role":"$ROLE_ADMIN"},{"id":"$NEW_USER_ID", "role":"$NEW_USER_ROLE"}] }}"""
         const val EMPTY_NAME_ORGANIZATION_REQUEST_CREATION = """{"name":""}"""
         const val MINIMAL_ORGANIZATION_REQUEST_UPDATE = """{"name":"$NEW_ORGANIZATION_NAME"}"""
         const val MINIMAL_ORGANIZATION_ACCESS_CONTROL_REQUEST = """{"id":"$NEW_USER_ID","role":"$NEW_USER_ROLE"}"""

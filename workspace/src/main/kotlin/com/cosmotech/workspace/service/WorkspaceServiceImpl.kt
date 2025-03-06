@@ -26,7 +26,6 @@ import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
-import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -45,10 +44,6 @@ import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.cosmotech.workspace.repository.WorkspaceRepository
 import com.cosmotech.workspace.utils.getWorkspaceFilePath
 import com.cosmotech.workspace.utils.getWorkspaceFilesDir
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
@@ -60,6 +55,10 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 @Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -177,8 +176,16 @@ internal class WorkspaceServiceImpl(
     if (updatedWorkspace.solution.solutionId != existingWorkspace.solution.solutionId) {
       // Validate solution ID
       updatedWorkspace.solution.solutionId.let { solutionService.getSolution(organizationId, it) }
-      existingWorkspace.solution = updatedWorkspace.solution
+      existingWorkspace.solution.solutionId = updatedWorkspace.solution.solutionId
       hasChanged = true
+    } else if(
+        updatedWorkspace.solution.runTemplateFilter != existingWorkspace.solution.runTemplateFilter
+        || updatedWorkspace.solution.defaultRunTemplateDataset != existingWorkspace.solution.defaultRunTemplateDataset
+        ) {
+
+        existingWorkspace.solution.runTemplateFilter = updatedWorkspace.solution.runTemplateFilter
+        existingWorkspace.solution.defaultRunTemplateDataset = updatedWorkspace.solution.defaultRunTemplateDataset
+        hasChanged = true
     }
 
     return if (hasChanged) {

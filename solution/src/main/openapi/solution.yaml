@@ -909,16 +909,6 @@ components:
           items:
             type: string
           example: [ "brewery", "optimization" ]
-        parameters:
-          type: array
-          description: The list of Run Template Parameters
-          items:
-            $ref: '#/components/schemas/RunTemplateParameter'
-        parameterGroups:
-          type: array
-          description: The list of parameters groups for the Run Templates
-          items:
-            $ref: '#/components/schemas/RunTemplateParameterGroup'
 
     # Security Objects
     SolutionSecurity:
