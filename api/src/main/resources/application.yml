@@ -54,14 +54,7 @@ server:
 
 csm:
   platform:
-    summary: Cosmo Tech Platform
-    description: Cosmo Tech Digital Twins Simulation Platform
-    version: "3.0.0"
     namespace: "phoenix"
-    # Commit ID and Ref have to be set in the config, but a better approach could be to
-    # generate such info at build time
-    commit-id: ""
-    vcs-ref: ""
     rbac:
       enabled: true
     api:
