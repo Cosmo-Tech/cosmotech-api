@@ -1,10 +1,13 @@
 Apis/ConnectorApi.md
 Apis/DatasetApi.md
+Apis/MetaApi.md
 Apis/OrganizationApi.md
 Apis/RunApi.md
 Apis/RunnerApi.md
 Apis/SolutionApi.md
 Apis/WorkspaceApi.md
+Models/AboutInfo.md
+Models/AboutInfoVersion.md
 Models/ComponentRolePermissions.md
 Models/Connector.md
 Models/ConnectorParameter.md
