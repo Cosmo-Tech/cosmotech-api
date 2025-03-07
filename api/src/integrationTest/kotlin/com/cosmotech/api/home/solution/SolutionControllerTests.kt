@@ -19,6 +19,7 @@ import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_SIMULATOR
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_VERSION
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.solution.domain.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -38,9 +39,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @ActiveProfiles(profiles = ["test"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SolutionControllerTests : ControllerTestBase() {
-
-
-    private val logger = LoggerFactory.getLogger(SolutionControllerTests::class.java)
 
     private lateinit var organizationId:String
 
@@ -1000,8 +998,6 @@ class SolutionControllerTests : ControllerTestBase() {
             100
         )
 
-
-        logger.error(JSONObject(newRunTemplate).toString())
         mvc
             .perform(
                 patch("/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId")
@@ -1041,5 +1037,191 @@ class SolutionControllerTests : ControllerTestBase() {
                 )
             )
     }
+
+
+    @Test
+    @WithMockOauth2User
+    fun get_solution_security() {
+
+        val solutionId = createSolutionAndReturnId(mvc,
+            organizationId,
+            constructSolutionCreateRequest()
+        )
+
+        mvc
+            .perform(
+                get("/organizations/$organizationId/solutions/$solutionId/security")
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.default").value(ROLE_NONE))
+            .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
+            .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/GET"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun add_solution_security_access() {
+
+        val solutionId = createSolutionAndReturnId(mvc,
+            organizationId,
+            constructSolutionCreateRequest()
+        )
+
+        mvc
+            .perform(
+                post("/organizations/$organizationId/solutions/$solutionId/security/access")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""
+                        {
+                        "id": "$NEW_USER_ID",
+                        "role": "$NEW_USER_ROLE"
+                        }
+                    """.trimMargin())
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.role").value(NEW_USER_ROLE))
+            .andExpect(jsonPath("$.id").value(NEW_USER_ID))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/access/POST"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun get_solution_security_access() {
+
+        val solutionId = createSolutionAndReturnId(mvc,organizationId,
+            constructSolutionCreateRequest()
+        )
+
+        mvc
+            .perform(
+                get("/organizations/$organizationId/solutions/$solutionId/security/access/$PLATFORM_ADMIN_EMAIL")
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
+            .andExpect(jsonPath("$.id").value(PLATFORM_ADMIN_EMAIL))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}/GET"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun update_solution_security_access() {
+
+        val solutionSecurity = SolutionSecurity(default = ROLE_NONE,
+            accessControlList = mutableListOf(
+                SolutionAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
+                SolutionAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE)
+            ))
+        val solutionId = createSolutionAndReturnId(mvc,organizationId,
+            constructSolutionCreateRequest(
+                security = solutionSecurity
+            )
+        )
+
+        mvc
+            .perform(
+                patch("/organizations/$organizationId/solutions/$solutionId/security/access/$NEW_USER_ID")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"role":"$ROLE_VIEWER"}""")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.role").value(ROLE_VIEWER))
+            .andExpect(jsonPath("$.id").value(NEW_USER_ID))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}/PATCH"))
+    }
+
+
+
+    @Test
+    @WithMockOauth2User
+    fun delete_solution_security_access() {
+
+        val solutionSecurity = SolutionSecurity(default = ROLE_NONE,
+            accessControlList = mutableListOf(
+                SolutionAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
+                SolutionAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE)
+            ))
+        val solutionId = createSolutionAndReturnId(mvc,organizationId,
+            constructSolutionCreateRequest(
+                security = solutionSecurity
+            )
+        )
+
+
+        mvc
+            .perform(
+                delete("/organizations/$organizationId/solutions/$solutionId/security/access/$NEW_USER_ID")
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}/DELETE"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun update_solution_security_default() {
+
+        val solutionId = createSolutionAndReturnId(mvc,
+            organizationId,
+            constructSolutionCreateRequest()
+        )
+
+        mvc
+            .perform(
+                patch("/organizations/$organizationId/solutions/$solutionId/security/default")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"role":"$ROLE_VIEWER"}""")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$.default").value(ROLE_VIEWER))
+            .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+            .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/default/POST"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun list_solution_users() {
+
+        val solutionSecurity = SolutionSecurity(default = ROLE_NONE,
+            accessControlList = mutableListOf(
+                SolutionAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
+                SolutionAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE)
+            ))
+        val solutionId = createSolutionAndReturnId(mvc,organizationId,
+            constructSolutionCreateRequest(
+                security = solutionSecurity
+            )
+        )
+
+        mvc
+            .perform(
+                get("/organizations/$organizationId/solutions/$solutionId/security/users")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))
+            .andExpect(jsonPath("$[1]").value(NEW_USER_ID))
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/users/GET"))
+    }
+
+
 
 }
