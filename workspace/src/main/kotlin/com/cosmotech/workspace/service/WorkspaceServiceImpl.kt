@@ -460,8 +460,10 @@ internal class WorkspaceServiceImpl(
   ): Workspace {
     organizationService.getVerifiedOrganization(organizationId)
     val workspace =
-        workspaceRepository.findByIdOrNull(workspaceId)
-            ?: throw CsmResourceNotFoundException("Workspace $workspaceId does not exist!")
+        workspaceRepository.findBy(organizationId,workspaceId)
+            .orElseThrow{
+                CsmResourceNotFoundException("Workspace $workspaceId not found in organization $organizationId")
+            }
     csmRbac.verify(workspace.security.toGenericSecurity(workspaceId), requiredPermission)
     return workspace
   }
