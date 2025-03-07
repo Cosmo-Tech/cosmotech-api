@@ -39,7 +39,6 @@ import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
-import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.cosmotech.workspace.repository.WorkspaceRepository
 import com.cosmotech.workspace.utils.getWorkspaceFilePath

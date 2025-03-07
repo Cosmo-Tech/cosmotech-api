@@ -1222,6 +1222,4 @@ class SolutionControllerTests : ControllerTestBase() {
             .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/users/GET"))
     }
 
-
-
 }
