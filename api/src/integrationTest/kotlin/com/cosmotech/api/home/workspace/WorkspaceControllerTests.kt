@@ -19,7 +19,8 @@ import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_NAME
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_VIEWER
-import com.cosmotech.workspace.domain.*
+import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceSecurity
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -34,6 +35,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.testcontainers.shaded.org.apache.commons.io.IOUtils
+
 
 @ActiveProfiles(profiles = ["test"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -526,23 +529,32 @@ class WorkspaceControllerTests : ControllerTestBase() {
     @Test
     @WithMockOauth2User
     fun create_workspace_files() {
-
+        //TODO: here response snippets has wrong value.
+        // response will look like path/to/a/directory/null
+        // instead of path/to/a/directory/test.txt
+        // related bug: https://github.com/OpenAPITools/openapi-generator/issues/20555
+        // a workaround may exist by overriding typeMappings/importMappings
+        // in kotlin-spring openapi generator (see. https://stackoverflow.com/questions/76720790/how-to-set-type-mappings-for-openapi-generator-in-build-gradle-file)
         val workspaceId = createWorkspaceAndReturnId(mvc,
             organizationId,
             constructWorkspaceCreateRequest(solutionId = solutionId))
         val fileName = "test.txt"
         val fileToUpload =
-            this::class.java.getResourceAsStream("/workspace/$fileName")?.let { MockMultipartFile(fileName, it) }
-        if (fileToUpload == null) {
-            throw IllegalStateException("$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null")
-        }
+            this::class.java.getResourceAsStream("/workspace/$fileName")
+                ?: throw IllegalStateException("$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null")
+
+        val mockFile  = MockMultipartFile("file",
+            fileName,
+            MediaType.TEXT_PLAIN_VALUE,
+            IOUtils.toByteArray(fileToUpload))
 
         mvc
             .perform(
                 multipart("/organizations/$organizationId/workspaces/$workspaceId/files")
-                    .file(fileToUpload)
+                    .file(mockFile)
                     .param("overwrite","true")
                     .param("destination","path/to/a/directory/")
+                    .accept(MediaType.APPLICATION_JSON)
                     .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
@@ -550,5 +562,115 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/files/POST"))
     }
 
+
+    @Test
+    @WithMockOauth2User
+    fun delete_workspace_files() {
+
+        val workspaceId = createWorkspaceAndReturnId(mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId))
+
+        mvc
+            .perform(
+                delete("/organizations/$organizationId/workspaces/$workspaceId/files")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/files/DELETE"))
+    }
+
+    @Test
+    @WithMockOauth2User
+    fun delete_workspace_file() {
+        //TODO: here request snippets has wrong value.
+        // request looks like path/to/a/directory/null
+        // instead of path/to/a/directory/test.txt
+        // related bug: https://github.com/OpenAPITools/openapi-generator/issues/20555
+        // a workaround may exist by overriding typeMappings/importMappings
+        // in kotlin-spring openapi generator (see. https://stackoverflow.com/questions/76720790/how-to-set-type-mappings-for-openapi-generator-in-build-gradle-file)
+
+        val workspaceId = createWorkspaceAndReturnId(mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId))
+
+        val fileName = "test.txt"
+        val fileToUpload =
+            this::class.java.getResourceAsStream("/workspace/$fileName")
+                ?: throw IllegalStateException("$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null")
+
+        val mockFile  = MockMultipartFile("file",
+            fileName,
+            MediaType.TEXT_PLAIN_VALUE,
+            IOUtils.toByteArray(fileToUpload)
+        )
+
+        val destination = "path/to/a/directory/"
+        mvc
+            .perform(
+                multipart("/organizations/$organizationId/workspaces/$workspaceId/files")
+                    .file(mockFile)
+                    .param("overwrite","true")
+                    .param("destination", destination)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+
+        mvc
+            .perform(
+                delete("/organizations/$organizationId/workspaces/$workspaceId/files/delete")
+                    .param("file_name",destination+fileName)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/files/delete/DELETE"))
+    }
+
+
+    @Test
+    @WithMockOauth2User
+    fun download_workspace_file() {
+
+        val workspaceId = createWorkspaceAndReturnId(mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId))
+
+        val fileName = "test.txt"
+        val fileToUpload =
+            this::class.java.getResourceAsStream("/workspace/$fileName")
+                ?: throw IllegalStateException("$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null")
+
+        val mockFile  = MockMultipartFile("file",
+            fileName,
+            MediaType.TEXT_PLAIN_VALUE,
+            IOUtils.toByteArray(fileToUpload)
+        )
+
+        val destination = "path/to/a/directory/"
+        mvc
+            .perform(
+                multipart("/organizations/$organizationId/workspaces/$workspaceId/files")
+                    .file(mockFile)
+                    .param("overwrite","true")
+                    .param("destination", destination)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+
+        mvc
+            .perform(
+                get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
+                    .param("file_name",destination+"null")
+                    .accept(MediaType.APPLICATION_OCTET_STREAM)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/files/download/GET"))
+    }
 
 }
