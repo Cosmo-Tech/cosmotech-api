@@ -199,6 +199,22 @@ paths:
                   items:
                     type: object
                     additionalProperties: true
+            examples:
+              RunDataSend:
+                $ref: '#/components/examples/RunDataSendExample'
+          application/yaml:
+            schema:
+              properties:
+                id:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true
+            examples:
+              RunDataSend:
+                $ref: '#/components/examples/RunDataSendExample'
       responses:
         "201":
           description: Data stored
@@ -247,6 +263,12 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/RunDataQuery'
+            examples:
+              GetAllRunDataInTable:
+                $ref: '#/components/examples/RunDataQueryExample'
+          application/yaml:
             schema:
               $ref: '#/components/schemas/RunDataQuery'
             examples:
@@ -762,6 +784,18 @@ components:
       description: Run Data exemple
       value:
         name: test
+    RunDataSendExample:
+      summary: Run Data Send Example
+      description: Example of data to send to a run
+      value:
+        id: "custom-data-1"
+        data:
+          - name: "Product A"
+            quantity: 100
+            price: 25.50
+          - name: "Product B"
+            quantity: 50
+            price: 34.99
     BreweryRun:
       summary: Brewery Run example
       description: Brewery Run example

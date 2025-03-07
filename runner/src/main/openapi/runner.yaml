@@ -2,15 +2,26 @@ openapi: 3.0.3
 
 info:
   title: Cosmo Tech Runner Manager API
-  description: Cosmo Tech Runner Manager API
+  description: |
+    Cosmo Tech Runner Manager API
+    
+    This API provides endpoints to manage runners for simulations and analyses.
   version: 0.0.8-SNAPSHOT
+  contact:
+    name: Cosmo Tech Support
+    url: https://support.cosmotech.com
+    email: support@cosmotech.com
 
 servers:
 - url: 'https://api.azure.cosmo-platform.com'
+  description: Production server
 - url: 'http://localhost:4010'
+  description: Local development server
 
 security:
-- oAuth2AuthCode: [ ]
+- oAuth2AuthCode: 
+  - platform.runner.read
+  - platform.runner.write
 
 tags:
 - name: runner
@@ -50,8 +61,7 @@ paths:
                 $ref: '#/components/examples/BreweryChildRunnerIn'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Runner'
             examples:
               MasterRunner:
                 $ref: '#/components/examples/BreweryRunnerIn'
@@ -143,7 +153,15 @@ paths:
         - runner
       summary: Update a runner
       requestBody:
-        description: the new Runner details. This endpoint can't be used to update security
+        description: |
+          The new Runner details.
+          This endpoint can't be used to update :
+            - id 
+            - ownerId
+            - organizationId
+            - workspaceId
+            - creationDate
+            - security
         required: true
         content:
           application/json:
@@ -154,8 +172,7 @@ paths:
                 $ref: '#/components/examples/BreweryRunnerUpdate'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Runner'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryRunnerUpdate'
@@ -372,8 +389,7 @@ paths:
                 $ref: '#/components/examples/BreweryRunnerRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/RunnerRole'
             examples:
               BreweryRunnerRole:
                 $ref: '#/components/examples/BreweryRunnerRole'
@@ -429,8 +445,7 @@ paths:
                 $ref: '#/components/examples/BreweryRunnerAccessControl'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/RunnerAccessControl'
             examples:
               RunnerAccess:
                 $ref: '#/components/examples/BreweryRunnerAccessControl'
@@ -500,6 +515,12 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/RunnerRole'
+            examples:
+              BreweryRunnerRole:
+                $ref: '#/components/examples/BreweryRunnerRole'
+          application/yaml:
             schema:
               $ref: '#/components/schemas/RunnerRole'
             examples:
