@@ -49,6 +49,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
@@ -498,6 +499,28 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
           it.security)
       assertEquals(1, it.security!!.accessControlList.size)
     }
+  }
+
+  @Test
+  fun `SDCOSMO-2543 - test workspace is not accessible from another organization`() {
+    val workspace = makeWorkspace()
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+
+    val anotherOrganization = makeOrganization("Another Organization")
+    val anotherOrganizationSaved = organizationApiService.registerOrganization(anotherOrganization)
+
+    assertDoesNotThrow {
+      workspaceApiService.findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+    }
+
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          workspaceApiService.findWorkspaceById(anotherOrganizationSaved.id!!, workspaceSaved.id!!)
+        }
+
+    assertEquals(
+        "Workspace ${workspaceSaved.id} not found in organization ${anotherOrganizationSaved.id}",
+        exception.message)
   }
 
   fun makeOrganization(
