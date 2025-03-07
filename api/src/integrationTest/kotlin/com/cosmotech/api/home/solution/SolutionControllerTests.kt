@@ -71,7 +71,6 @@ class SolutionControllerTests : ControllerTestBase() {
             .perform(
                 get("/organizations/$organizationId/solutions")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$[0].id").value(firstSolutionId))
@@ -384,7 +383,6 @@ class SolutionControllerTests : ControllerTestBase() {
             .perform(
                 get("/organizations/$organizationId/solutions/$solutionId")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$.id").value(solutionId))
@@ -1051,7 +1049,6 @@ class SolutionControllerTests : ControllerTestBase() {
         mvc
             .perform(
                 get("/organizations/$organizationId/solutions/$solutionId/security")
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$.default").value(ROLE_NONE))
@@ -1101,7 +1098,6 @@ class SolutionControllerTests : ControllerTestBase() {
         mvc
             .perform(
                 get("/organizations/$organizationId/solutions/$solutionId/security/access/$PLATFORM_ADMIN_EMAIL")
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
@@ -1213,7 +1209,6 @@ class SolutionControllerTests : ControllerTestBase() {
                 get("/organizations/$organizationId/solutions/$solutionId/security/users")
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))

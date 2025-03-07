@@ -203,7 +203,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .perform(
                 get("/organizations/$organizationId/workspaces")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$[0].id").value(firstWorkspaceId))
@@ -269,7 +268,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .perform(
                 get("/organizations/$organizationId/workspaces/$workspaceId")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$.name").value(WORKSPACE_NAME))
@@ -327,7 +325,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
         mvc
             .perform(
                 get("/organizations/$organizationId/workspaces/$workspaceId/security")
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$.default").value(ROLE_NONE))
@@ -375,7 +372,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
         mvc
             .perform(
                 get("/organizations/$organizationId/workspaces/$workspaceId/security/access/$PLATFORM_ADMIN_EMAIL")
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
@@ -495,7 +491,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 get("/organizations/$organizationId/workspaces/$workspaceId/security/users")
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))
@@ -518,7 +513,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .perform(
                 get("/organizations/$organizationId/workspaces/$workspaceId/files")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andDo(MockMvcResultHandlers.print())
@@ -666,7 +660,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
                     .param("file_name",destination+"null")
                     .accept(MediaType.APPLICATION_OCTET_STREAM)
-                    .with(csrf())
             )
             .andExpect(status().is2xxSuccessful)
             .andDo(MockMvcResultHandlers.print())
