@@ -64,6 +64,10 @@ jobs:
         service:
           - testPrefix: Organization
             packageName: .organization
+          - testPrefix: Workspace
+            packageName: .workspace
+          - testPrefix: Solution
+            packageName: .solution
           - testPrefix: Home
             packageName: ""
     steps:
