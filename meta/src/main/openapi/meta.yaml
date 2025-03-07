@@ -1,0 +1,118 @@
+openapi: 3.0.3
+
+info:
+  title: ""
+  version: ""
+
+security:
+  - oAuth2AuthCode: []
+
+tags:
+- name: meta
+  description: Meta Management
+
+paths:
+  /about:
+    get:
+      operationId: about
+      tags:
+        - meta
+      summary: Get various information about the API
+      responses:
+        "200":
+          description: API information details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AboutInfo'
+              examples:
+                ReleaseAboutInfo:
+                  $ref: '#/components/examples/ReleaseAboutInfo'
+                DirtySnapshotAboutInfo:
+                  $ref: '#/components/examples/DirtySnapshotAboutInfo'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/AboutInfo'
+              examples:
+                ReleaseAboutInfo:
+                  $ref: '#/components/examples/ReleaseAboutInfo'
+                DirtySnapshotAboutInfo:
+                  $ref: '#/components/examples/DirtySnapshotAboutInfo'
+
+components:
+  securitySchemes:
+    oAuth2AuthCode:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        authorizationCode:
+          authorizationUrl: "https://example.com/authorize"
+          tokenUrl: "https://example.com/token"
+          scopes: {}
+  schemas:
+    AboutInfo:
+      type: object
+      description: Misc information about the api
+      required:
+        - version
+      properties:
+        version:
+          $ref: '#/components/schemas/AboutInfoVersion'
+    AboutInfoVersion:
+      type: object
+      description: API version details
+      required:
+        - full
+        - release
+        - major
+        - minor
+        - patch
+        - label
+        - build
+      properties:
+        full:
+          type: string
+          description: Full version representation
+        release:
+          type: string
+          description: Release main version representation
+        major:
+          type: integer
+          description: Major version number
+        minor:
+          type: integer
+          description: Minor version number
+        patch:
+          type: integer
+          description: Patch version number
+        label:
+          type: string
+          description: Label version, may be empty
+        build:
+          type: string
+          description: Build VCS id
+  examples:
+    ReleaseAboutInfo:
+      summary: "Released version"
+      description: "Version details for a clean released version"
+      value:
+        version:
+          full: "4.2.0-a6bdbc29"
+          release: "4.2.0"
+          major: 4
+          minor: 2
+          patch: 0
+          label: ""
+          build: "a6bdbc29"
+    DirtySnapshotAboutInfo:
+      summary: "Dirty state snapshot version"
+      description: "Version details for an in development snapshot version"
+      value:
+        version:
+          full: "4.2.0-SNAPSHOT-a6bdbc29"
+          release: "4.2.0"
+          major: 4
+          minor: 2
+          patch: 0
+          label: "SNAPSHOT"
+          build: "a6bdbc29"

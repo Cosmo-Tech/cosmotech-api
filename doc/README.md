@@ -42,6 +42,7 @@ All URIs are relative to *http://localhost*
 *DatasetApi* | [**updateDatasetAccessControl**](Apis/DatasetApi.md#updatedatasetaccesscontrol) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset |
 *DatasetApi* | [**updateTwingraphEntities**](Apis/DatasetApi.md#updatetwingraphentities) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Update entities in a graph instance |
 *DatasetApi* | [**uploadTwingraph**](Apis/DatasetApi.md#uploadtwingraph) | **POST** /organizations/{organization_id}/datasets/{dataset_id} | Upload data from zip file to dataset's twingraph |
+| *MetaApi* | [**about**](Apis/MetaApi.md#about) | **GET** /about | Get various information about the API |
 | *OrganizationApi* | [**createOrganization**](Apis/OrganizationApi.md#createorganization) | **POST** /organizations | Create a new organization |
 *OrganizationApi* | [**createOrganizationAccessControl**](Apis/OrganizationApi.md#createorganizationaccesscontrol) | **POST** /organizations/{organization_id}/security/access | Add a control access to the Organization |
 *OrganizationApi* | [**deleteOrganization**](Apis/OrganizationApi.md#deleteorganization) | **DELETE** /organizations/{organization_id} | Delete an organization |
@@ -123,6 +124,8 @@ All URIs are relative to *http://localhost*
 <a name="documentation-for-models"></a>
 ## Documentation for Models
 
+ - [AboutInfo](./Models/AboutInfo.md)
+ - [AboutInfoVersion](./Models/AboutInfoVersion.md)
  - [ComponentRolePermissions](./Models/ComponentRolePermissions.md)
  - [Connector](./Models/Connector.md)
  - [ConnectorParameter](./Models/ConnectorParameter.md)
