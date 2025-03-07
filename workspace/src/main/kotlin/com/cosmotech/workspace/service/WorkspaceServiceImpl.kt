@@ -57,7 +57,6 @@ import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.Pageable
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
@@ -458,8 +457,10 @@ internal class WorkspaceServiceImpl(
   ): Workspace {
     organizationService.getVerifiedOrganization(organizationId)
     val workspace =
-        workspaceRepository.findByIdOrNull(workspaceId)
-            ?: throw CsmResourceNotFoundException("Workspace $workspaceId does not exist!")
+        workspaceRepository.findBy(organizationId, workspaceId).orElseThrow {
+          CsmResourceNotFoundException(
+              "Workspace $workspaceId not found in organization $organizationId")
+        }
     csmRbac.verify(workspace.getRbac(), requiredPermission)
     return workspace
   }
