@@ -979,9 +979,6 @@ components:
         description:
           type: string
           description: The Run Template description
-        csmSimulation:
-          type: string
-          description: The Cosmo Tech simulation name
         tags:
           type: array
           description: The list of Run Template tags
@@ -993,49 +990,17 @@ components:
         runSizing:
           description: Definition of resources needed for the scenario run
           $ref: "#/components/schemas/RunTemplateResourceSizing"
-        noDataIngestionState:
-          type: boolean
-          description: Set to true if the run template does not want to check data ingestion state
-        parametersHandlerSource:
-          $ref: "#/components/schemas/RunTemplateStepSource"
-        datasetValidatorSource:
-          $ref: "#/components/schemas/RunTemplateStepSource"
-        preRunSource:
-          $ref: "#/components/schemas/RunTemplateStepSource"
-        runSource:
-          $ref: "#/components/schemas/RunTemplateStepSource"
-        postRunSource:
-          $ref: "#/components/schemas/RunTemplateStepSource"
-        scenariodataTransformSource:
-          $ref: "#/components/schemas/RunTemplateStepSource"
         parameterGroups:
           type: array
           description: The ordered list of parameters groups for the Run Template
           items:
             type: string
             description: A Run Template Group Parameter id
-        stackSteps:
-          type: boolean
-          description: Whether or not to stack adjacent scenario run steps
-        gitRepositoryUrl:
-          type: string
-          description: An optional URL to the git repository
-        gitBranchName:
-          type: string
-          description: An optional git branch name
-        runTemplateSourceDir:
-          type: string
-          description: An optional directory where to find the run template source
         executionTimeout:
           type: integer
           description: An optional duration in seconds in which a workflow is allowed to run
       required:
         - id
-
-    RunTemplateStepSource:
-      type: string
-      description: The source local, cloud or git repository
-      enum: ["cloud","git","local","platform"]
 
     RunTemplateResourceSizing:
       type: object

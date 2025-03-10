@@ -4,7 +4,6 @@ package com.cosmotech.run
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.containerregistry.ContainerRegistryService
-import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.utils.sanitizeForKubernetes
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -53,10 +52,8 @@ private const val PARAMETERS_RUNNER_VAR = "CSM_RUNNER_ID"
 private const val PARAMETERS_RUN_VAR = "CSM_RUN_ID"
 
 private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
-private const val CONTAINER_ORCHESTRATOR_LEGACY_VAR = "CSM_ENTRYPOINT_LEGACY"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
 private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
-private const val CSM_SIMULATION_VAR = "CSM_SIMULATION"
 private const val NODE_PARAM_NONE = "%NONE%"
 const val NODE_LABEL_DEFAULT = "basic"
 private const val NODE_LABEL_HIGH_CPU = "highcpu"
@@ -186,14 +183,9 @@ class RunContainerFactory(
             runId)
 
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
-    envVars[CONTAINER_ORCHESTRATOR_LEGACY_VAR] = "false"
 
     envVars.putAll(getEventBusEnvVars(workspace))
 
-    val csmSimulation = template.csmSimulation
-    if (csmSimulation != null) {
-      envVars[CSM_SIMULATION_VAR] = csmSimulation
-    }
     val customSizing = runSizing ?: (runTemplateSizing ?: defaultSizing)
 
     containers.add(

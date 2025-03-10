@@ -293,22 +293,10 @@ entity RunTemplate {
     name: String
     labels: Map
     description: String
-    csmSimulation: String
     tags: List<String>
     computeSize: String
     runSizing: RunTemplateResourceSizing
-    noDataIngestionState: Boolean
-    parametersHandlerSource: RunTemplateStepSource
-    datasetValidatorSource: RunTemplateStepSource
-    preRunSource: RunTemplateStepSource
-    runSource: RunTemplateStepSource
-    postRunSource: RunTemplateStepSource
-    scenariodataTransformSource: RunTemplateStepSource
     parameterGroups: List<String>
-    stackSteps: Boolean
-    gitRepositoryUrl: String
-    gitBranchName: String
-    runTemplateSourceDir: String
     executionTimeout: Integer
 }
 
@@ -341,9 +329,6 @@ entity RunTemplateParameterValue {
 entity RunTemplateResourceSizing {
     * requests: ResourceSizeInfo
     * limits: ResourceSizeInfo
-}
-
-entity RunTemplateStepSource {
 }
 
 entity Runner {

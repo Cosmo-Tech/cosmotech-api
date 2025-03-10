@@ -51,7 +51,6 @@ Models/RunTemplateParameter.md
 Models/RunTemplateParameterGroup.md
 Models/RunTemplateParameterValue.md
 Models/RunTemplateResourceSizing.md
-Models/RunTemplateStepSource.md
 Models/Runner.md
 Models/RunnerAccessControl.md
 Models/RunnerResourceSizing.md
