@@ -25,7 +25,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.slf4j.LoggerFactory
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -149,31 +148,16 @@ class SolutionControllerTests : ControllerTestBase() {
                 "memory_limits"
             )
         )
-        val runTemplateGitRepositoryUrl = "this_is_a_git_repository_url"
-        val runTemplateGitBranchName = "this_is_a_git_branch_name"
-        val runTemplateRunTemplateSourceDir = "this_is_a_runTemplate_source_directory"
         val runTemplates = mutableListOf(
             RunTemplate(
                 runTemplateId,
                 runTemplateName,
                 parameterLabels,
                 description,
-                runTemplateCsmSimulation,
                 tags,
                 runTemplateComputeSize,
                 runTemplateRunSizing,
-                false,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
                 mutableListOf(parameterGroupId),
-                false,
-                runTemplateGitRepositoryUrl,
-                runTemplateGitBranchName,
-                runTemplateRunTemplateSourceDir,
                 10
             )
         )
@@ -234,25 +218,13 @@ class SolutionControllerTests : ControllerTestBase() {
             .andExpect(jsonPath("$.runTemplates[0].name").value(runTemplateName))
             .andExpect(jsonPath("$.runTemplates[0].labels").value(parameterLabels))
             .andExpect(jsonPath("$.runTemplates[0].description").value(description))
-            .andExpect(jsonPath("$.runTemplates[0].csmSimulation").value(runTemplateCsmSimulation))
             .andExpect(jsonPath("$.runTemplates[0].tags").value(tags))
             .andExpect(jsonPath("$.runTemplates[0].computeSize").value(runTemplateComputeSize))
             .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.cpu").value("cpu_requests"))
             .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.memory").value("memory_requests"))
             .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.cpu").value("cpu_limits"))
             .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.memory").value("memory_limits"))
-            .andExpect(jsonPath("$.runTemplates[0].noDataIngestionState").value(false))
-            .andExpect(jsonPath("$.runTemplates[0].parametersHandlerSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$.runTemplates[0].datasetValidatorSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$.runTemplates[0].preRunSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$.runTemplates[0].runSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$.runTemplates[0].postRunSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$.runTemplates[0].scenariodataTransformSource").value(RunTemplateStepSource.platform.value))
             .andExpect(jsonPath("$.runTemplates[0].parameterGroups").value(mutableListOf(parameterGroupId)))
-            .andExpect(jsonPath("$.runTemplates[0].stackSteps").value(false))
-            .andExpect(jsonPath("$.runTemplates[0].gitRepositoryUrl").value(runTemplateGitRepositoryUrl))
-            .andExpect(jsonPath("$.runTemplates[0].gitBranchName").value(runTemplateGitBranchName))
-            .andExpect(jsonPath("$.runTemplates[0].runTemplateSourceDir").value(runTemplateRunTemplateSourceDir))
             .andExpect(jsonPath("$.runTemplates[0].executionTimeout").value(10))
             .andExpect(jsonPath("$.url").value(url))
             .andExpect(jsonPath("$.tags").value(tags))
@@ -310,7 +282,6 @@ class SolutionControllerTests : ControllerTestBase() {
         )
         val runTemplateId = "runtemplate1"
         val runTemplateName = "this_is_a_name"
-        val runTemplateCsmSimulation = "this_is_a_csm_simulation"
         val runTemplateComputeSize = "this_is_a_compute_size"
         val runTemplateRunSizing = RunTemplateResourceSizing(
             ResourceSizeInfo(
@@ -322,31 +293,16 @@ class SolutionControllerTests : ControllerTestBase() {
                 "memory_limits"
             )
         )
-        val runTemplateGitRepositoryUrl = "this_is_a_git_repository_url"
-        val runTemplateGitBranchName = "this_is_a_git_branch_name"
-        val runTemplateRunTemplateSourceDir = "this_is_a_runTemplate_source_directory"
         val runTemplates = mutableListOf(
             RunTemplate(
                 runTemplateId,
                 runTemplateName,
                 parameterLabels,
                 description,
-                runTemplateCsmSimulation,
                 tags,
                 runTemplateComputeSize,
                 runTemplateRunSizing,
-                false,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
                 mutableListOf(parameterGroupId),
-                false,
-                runTemplateGitRepositoryUrl,
-                runTemplateGitBranchName,
-                runTemplateRunTemplateSourceDir,
                 10
             )
         )
@@ -414,25 +370,13 @@ class SolutionControllerTests : ControllerTestBase() {
             .andExpect(jsonPath("$.runTemplates[0].name").value(runTemplateName))
             .andExpect(jsonPath("$.runTemplates[0].labels").value(parameterLabels))
             .andExpect(jsonPath("$.runTemplates[0].description").value(description))
-            .andExpect(jsonPath("$.runTemplates[0].csmSimulation").value(runTemplateCsmSimulation))
             .andExpect(jsonPath("$.runTemplates[0].tags").value(tags))
             .andExpect(jsonPath("$.runTemplates[0].computeSize").value(runTemplateComputeSize))
             .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.cpu").value("cpu_requests"))
             .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.memory").value("memory_requests"))
             .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.cpu").value("cpu_limits"))
             .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.memory").value("memory_limits"))
-            .andExpect(jsonPath("$.runTemplates[0].noDataIngestionState").value(false))
-            .andExpect(jsonPath("$.runTemplates[0].parametersHandlerSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$.runTemplates[0].datasetValidatorSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$.runTemplates[0].preRunSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$.runTemplates[0].runSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$.runTemplates[0].postRunSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$.runTemplates[0].scenariodataTransformSource").value(RunTemplateStepSource.platform.value))
             .andExpect(jsonPath("$.runTemplates[0].parameterGroups").value(mutableListOf(parameterGroupId)))
-            .andExpect(jsonPath("$.runTemplates[0].stackSteps").value(false))
-            .andExpect(jsonPath("$.runTemplates[0].gitRepositoryUrl").value(runTemplateGitRepositoryUrl))
-            .andExpect(jsonPath("$.runTemplates[0].gitBranchName").value(runTemplateGitBranchName))
-            .andExpect(jsonPath("$.runTemplates[0].runTemplateSourceDir").value(runTemplateRunTemplateSourceDir))
             .andExpect(jsonPath("$.runTemplates[0].executionTimeout").value(10))
             .andExpect(jsonPath("$.url").value(url))
             .andExpect(jsonPath("$.tags").value(tags))
@@ -698,7 +642,6 @@ class SolutionControllerTests : ControllerTestBase() {
         val parameterGroupId = "parameterGroup1"
         val runTemplateId = "runtemplate1"
         val runTemplateName = "this_is_a_name"
-        val runTemplateCsmSimulation = "this_is_a_csm_simulation"
         val runTemplateComputeSize = "this_is_a_compute_size"
         val runTemplateRunSizing = RunTemplateResourceSizing(
             ResourceSizeInfo(
@@ -710,31 +653,16 @@ class SolutionControllerTests : ControllerTestBase() {
                 "memory_limits"
             )
         )
-        val runTemplateGitRepositoryUrl = "this_is_a_git_repository_url"
-        val runTemplateGitBranchName = "this_is_a_git_branch_name"
-        val runTemplateRunTemplateSourceDir = "this_is_a_runTemplate_source_directory"
         val runTemplates = mutableListOf(
             RunTemplate(
                 runTemplateId,
                 runTemplateName,
                 parameterLabels,
                 description,
-                runTemplateCsmSimulation,
                 tags,
                 runTemplateComputeSize,
                 runTemplateRunSizing,
-                false,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
                 mutableListOf(parameterGroupId),
-                false,
-                runTemplateGitRepositoryUrl,
-                runTemplateGitBranchName,
-                runTemplateRunTemplateSourceDir,
                 10
             )
         )
@@ -753,25 +681,13 @@ class SolutionControllerTests : ControllerTestBase() {
             .andExpect(jsonPath("$[0].name").value(runTemplateName))
             .andExpect(jsonPath("$[0].labels").value(parameterLabels))
             .andExpect(jsonPath("$[0].description").value(description))
-            .andExpect(jsonPath("$[0].csmSimulation").value(runTemplateCsmSimulation))
             .andExpect(jsonPath("$[0].tags").value(tags))
             .andExpect(jsonPath("$[0].computeSize").value(runTemplateComputeSize))
             .andExpect(jsonPath("$[0].runSizing.requests.cpu").value("cpu_requests"))
             .andExpect(jsonPath("$[0].runSizing.requests.memory").value("memory_requests"))
             .andExpect(jsonPath("$[0].runSizing.limits.cpu").value("cpu_limits"))
             .andExpect(jsonPath("$[0].runSizing.limits.memory").value("memory_limits"))
-            .andExpect(jsonPath("$[0].noDataIngestionState").value(false))
-            .andExpect(jsonPath("$[0].parametersHandlerSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$[0].datasetValidatorSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$[0].preRunSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$[0].runSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$[0].postRunSource").value(RunTemplateStepSource.platform.value))
-            .andExpect(jsonPath("$[0].scenariodataTransformSource").value(RunTemplateStepSource.platform.value))
             .andExpect(jsonPath("$[0].parameterGroups").value(mutableListOf(parameterGroupId)))
-            .andExpect(jsonPath("$[0].stackSteps").value(false))
-            .andExpect(jsonPath("$[0].gitRepositoryUrl").value(runTemplateGitRepositoryUrl))
-            .andExpect(jsonPath("$[0].gitBranchName").value(runTemplateGitBranchName))
-            .andExpect(jsonPath("$[0].runTemplateSourceDir").value(runTemplateRunTemplateSourceDir))
             .andExpect(jsonPath("$[0].executionTimeout").value(10))
             .andDo(MockMvcResultHandlers.print())
             .andDo(document("organizations/{organization_id}/solutions/{solution_id}/runTemplates/PATCH"))
@@ -787,7 +703,6 @@ class SolutionControllerTests : ControllerTestBase() {
         val parameterGroupId = "parameterGroup1"
         val runTemplateId = "runtemplate1"
         val runTemplateName = "this_is_a_name"
-        val runTemplateCsmSimulation = "this_is_a_csm_simulation"
         val runTemplateComputeSize = "this_is_a_compute_size"
         val runTemplateRunSizing = RunTemplateResourceSizing(
             ResourceSizeInfo(
@@ -799,31 +714,16 @@ class SolutionControllerTests : ControllerTestBase() {
                 "memory_limits"
             )
         )
-        val runTemplateGitRepositoryUrl = "this_is_a_git_repository_url"
-        val runTemplateGitBranchName = "this_is_a_git_branch_name"
-        val runTemplateRunTemplateSourceDir = "this_is_a_runTemplate_source_directory"
         val runTemplates = mutableListOf(
             RunTemplate(
                 runTemplateId,
                 runTemplateName,
                 parameterLabels,
                 description,
-                runTemplateCsmSimulation,
                 tags,
                 runTemplateComputeSize,
                 runTemplateRunSizing,
-                false,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
                 mutableListOf(parameterGroupId),
-                false,
-                runTemplateGitRepositoryUrl,
-                runTemplateGitBranchName,
-                runTemplateRunTemplateSourceDir,
                 10
             )
         )
@@ -852,7 +752,6 @@ class SolutionControllerTests : ControllerTestBase() {
         val parameterGroupId = "parameterGroup1"
         val runTemplateId = "runtemplate1"
         val runTemplateName = "this_is_a_name"
-        val runTemplateCsmSimulation = "this_is_a_csm_simulation"
         val runTemplateComputeSize = "this_is_a_compute_size"
         val runTemplateRunSizing = RunTemplateResourceSizing(
             ResourceSizeInfo(
@@ -864,31 +763,16 @@ class SolutionControllerTests : ControllerTestBase() {
                 "memory_limits"
             )
         )
-        val runTemplateGitRepositoryUrl = "this_is_a_git_repository_url"
-        val runTemplateGitBranchName = "this_is_a_git_branch_name"
-        val runTemplateRunTemplateSourceDir = "this_is_a_runTemplate_source_directory"
         val runTemplates = mutableListOf(
             RunTemplate(
                 runTemplateId,
                 runTemplateName,
                 parameterLabels,
                 description,
-                runTemplateCsmSimulation,
                 tags,
                 runTemplateComputeSize,
                 runTemplateRunSizing,
-                false,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
                 mutableListOf(parameterGroupId),
-                false,
-                runTemplateGitRepositoryUrl,
-                runTemplateGitBranchName,
-                runTemplateRunTemplateSourceDir,
                 10
             )
         )
@@ -922,7 +806,6 @@ class SolutionControllerTests : ControllerTestBase() {
                 "this_is_a_name",
                 mutableMapOf("fr" to "this_is_a_label"),
                 "this_is_a_description",
-                "this_is_a_csm_simulation",
                 mutableListOf("tag1", "tag2"),
                 "this_is_a_compute_size",
                 RunTemplateResourceSizing(
@@ -935,18 +818,7 @@ class SolutionControllerTests : ControllerTestBase() {
                         "memory_limits"
                     )
                 ),
-                false,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
-                RunTemplateStepSource.platform,
                 mutableListOf("parameterGroup1"),
-                false,
-                "this_is_a_git_repository_url",
-                "this_is_a_git_branch_name",
-                "this_is_a_runTemplate_source_directory",
                 10
             )
         )
@@ -959,7 +831,6 @@ class SolutionControllerTests : ControllerTestBase() {
         val parameterLabels = mutableMapOf("de" to "this_is_a_label")
         val parameterGroupId = "parameterGroup2"
         val runTemplateName = "this_is_a_name2"
-        val runTemplateCsmSimulation = "this_is_a_csm_simulation2"
         val runTemplateComputeSize = "this_is_a_compute_size2"
         val runTemplateRunSizing = RunTemplateResourceSizing(
             ResourceSizeInfo(
@@ -971,30 +842,15 @@ class SolutionControllerTests : ControllerTestBase() {
                 "memory_limits2"
             )
         )
-        val runTemplateGitRepositoryUrl = "this_is_a_git_repository_url2"
-        val runTemplateGitBranchName = "this_is_a_git_branch_name2"
-        val runTemplateRunTemplateSourceDir = "this_is_a_runTemplate_source_directory2"
         val newRunTemplate = RunTemplate(
             runTemplateId,
             runTemplateName,
             parameterLabels,
             description,
-            runTemplateCsmSimulation,
             tags,
             runTemplateComputeSize,
             runTemplateRunSizing,
-            true,
-            RunTemplateStepSource.cloud,
-            RunTemplateStepSource.cloud,
-            RunTemplateStepSource.cloud,
-            RunTemplateStepSource.cloud,
-            RunTemplateStepSource.cloud,
-            RunTemplateStepSource.cloud,
             mutableListOf(parameterGroupId),
-            true,
-            runTemplateGitRepositoryUrl,
-            runTemplateGitBranchName,
-            runTemplateRunTemplateSourceDir,
             100
         )
 
@@ -1010,25 +866,13 @@ class SolutionControllerTests : ControllerTestBase() {
             .andExpect(jsonPath("$[0].name").value(runTemplateName))
             .andExpect(jsonPath("$[0].labels").value(parameterLabels))
             .andExpect(jsonPath("$[0].description").value(description))
-            .andExpect(jsonPath("$[0].csmSimulation").value(runTemplateCsmSimulation))
             .andExpect(jsonPath("$[0].tags").value(tags))
             .andExpect(jsonPath("$[0].computeSize").value(runTemplateComputeSize))
             .andExpect(jsonPath("$[0].runSizing.requests.cpu").value("cpu_requests2"))
             .andExpect(jsonPath("$[0].runSizing.requests.memory").value("memory_requests2"))
             .andExpect(jsonPath("$[0].runSizing.limits.cpu").value("cpu_limits2"))
             .andExpect(jsonPath("$[0].runSizing.limits.memory").value("memory_limits2"))
-            .andExpect(jsonPath("$[0].noDataIngestionState").value(true))
-            .andExpect(jsonPath("$[0].parametersHandlerSource").value(RunTemplateStepSource.cloud.value))
-            .andExpect(jsonPath("$[0].datasetValidatorSource").value(RunTemplateStepSource.cloud.value))
-            .andExpect(jsonPath("$[0].preRunSource").value(RunTemplateStepSource.cloud.value))
-            .andExpect(jsonPath("$[0].runSource").value(RunTemplateStepSource.cloud.value))
-            .andExpect(jsonPath("$[0].postRunSource").value(RunTemplateStepSource.cloud.value))
-            .andExpect(jsonPath("$[0].scenariodataTransformSource").value(RunTemplateStepSource.cloud.value))
             .andExpect(jsonPath("$[0].parameterGroups").value(mutableListOf(parameterGroupId)))
-            .andExpect(jsonPath("$[0].stackSteps").value(true))
-            .andExpect(jsonPath("$[0].gitRepositoryUrl").value(runTemplateGitRepositoryUrl))
-            .andExpect(jsonPath("$[0].gitBranchName").value(runTemplateGitBranchName))
-            .andExpect(jsonPath("$[0].runTemplateSourceDir").value(runTemplateRunTemplateSourceDir))
             .andExpect(jsonPath("$[0].executionTimeout").value(100))
             .andDo(MockMvcResultHandlers.print())
             .andDo(

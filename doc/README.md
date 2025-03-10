@@ -169,7 +169,6 @@ All URIs are relative to *http://localhost*
  - [RunTemplateParameterGroup](./Models/RunTemplateParameterGroup.md)
  - [RunTemplateParameterValue](./Models/RunTemplateParameterValue.md)
  - [RunTemplateResourceSizing](./Models/RunTemplateResourceSizing.md)
- - [RunTemplateStepSource](./Models/RunTemplateStepSource.md)
  - [Runner](./Models/Runner.md)
  - [RunnerAccessControl](./Models/RunnerAccessControl.md)
  - [RunnerResourceSizing](./Models/RunnerResourceSizing.md)

@@ -5,7 +5,6 @@ package com.cosmotech.run
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -22,7 +21,6 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
@@ -32,11 +30,11 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import kotlin.test.BeforeTest
-import kotlin.test.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.extension.ExtendWith
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 
 private const val CSM_SIMULATION_ID = "simulationrunid"
 private const val CSM_RUN_TEMPLATE_ID = "testruntemplate"
@@ -202,9 +200,7 @@ class ContainerFactoryTests {
                 "CSM_RUNNER_ID" to runner.id!!,
                 "CSM_RUN_ID" to runId,
                 "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
-                "CSM_ENTRYPOINT_LEGACY" to "false",
                 "CSM_PROBES_MEASURES_TOPIC" to eventHubUri,
-                "CSM_SIMULATION" to runTemplate.csmSimulation!!,
                 "CSM_AMQPCONSUMER_USER" to "username",
                 "CSM_AMQPCONSUMER_PASSWORD" to "password",
             ),
@@ -233,7 +229,6 @@ class ContainerFactoryTests {
     return RunTemplate(
         id = CSM_RUN_TEMPLATE_ID,
         name = "Test Run",
-        csmSimulation = "TestSimulation",
         computeSize = "highcpupool",
     )
   }
