@@ -20,6 +20,6 @@ class AddQueueOnRunStartListener(
 
   override fun onApplicationEvent(event: RunStart) {
     val exchange = rabbitMqConfigModel.exchange
-    amqpClientServiceImpl.addNewQueue(exchange, (event.runnerData as Runner).workspaceId!!)
+    amqpClientServiceImpl.addNewQueue(exchange, (event.runnerData as Runner).workspaceId)
   }
 }

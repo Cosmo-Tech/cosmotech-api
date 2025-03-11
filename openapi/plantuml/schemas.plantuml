@@ -467,9 +467,9 @@ entity SolutionCreateRequest {
     alwaysPull: Boolean
     * csmSimulator: String
     tags: List<String>
-    * parameters: List<RunTemplateParameter>
-    * parameterGroups: List<RunTemplateParameterGroup>
-    * runTemplates: List<RunTemplate>
+    parameters: List<RunTemplateParameter>
+    parameterGroups: List<RunTemplateParameterGroup>
+    runTemplates: List<RunTemplate>
     sdkVersion: String
     url: String
     security: SolutionSecurity
@@ -573,8 +573,8 @@ entity WorkspaceSolution {
 }
 
 entity WorkspaceUpdateRequest {
-    * key: String
-    * name: String
+    key: String
+    name: String
     description: String
     tags: List<String>
     solution: WorkspaceSolution

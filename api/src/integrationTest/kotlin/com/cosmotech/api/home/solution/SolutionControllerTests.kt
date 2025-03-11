@@ -136,7 +136,6 @@ class SolutionControllerTests : ControllerTestBase() {
         )
         val runTemplateId = "runtemplate1"
         val runTemplateName = "this_is_a_name"
-        val runTemplateCsmSimulation = "this_is_a_csm_simulation"
         val runTemplateComputeSize = "this_is_a_compute_size"
         val runTemplateRunSizing = RunTemplateResourceSizing(
             ResourceSizeInfo(

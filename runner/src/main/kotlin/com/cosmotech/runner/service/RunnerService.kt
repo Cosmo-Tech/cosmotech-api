@@ -389,7 +389,7 @@ class RunnerService(
           constructParametersValuesFromParent(
             parentId, solution, runTemplate, parentRunner, this.runner
           )
-        val parameterValueList = this.runner.parametersValues ?: mutableListOf()
+        val parameterValueList = this.runner.parametersValues
         parameterValueList.addAll(inheritedParameterValues)
         this.runner.parametersValues = parameterValueList
         consolidateParametersVarType()
@@ -413,7 +413,7 @@ class RunnerService(
           ?.let { solutionApiService.getSolution(organization?.id!!, it) }
           ?.parameters
 
-      this.runner.parametersValues?.forEach { runnerParam ->
+      this.runner.parametersValues.forEach { runnerParam ->
         solutionParameters
           ?.find { it.id == runnerParam.parameterId }
           ?.varType
@@ -532,9 +532,9 @@ class RunnerService(
 
       if (!runTemplateParametersIds.isNullOrEmpty()) {
         val parentParameters =
-          parent.parametersValues?.associate { it.parameterId to it } ?: mutableMapOf()
+          parent.parametersValues.associate { it.parameterId to it }
         val runnerParameters =
-          runner.parametersValues?.associate { it.parameterId to it } ?: mutableMapOf()
+          runner.parametersValues.associate { it.parameterId to it }
 
         // TODO:
         //  Here parameters values are only retrieved from parent runner

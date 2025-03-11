@@ -53,7 +53,7 @@ paths:
                 Brewery:
                   $ref: '#/components/examples/Brewery'
         "400":
-          description: Bad request - Invalid request content or parameters
+          description: Bad request
     get:
       operationId: listSolutions
       parameters:
@@ -404,7 +404,7 @@ paths:
         "400":
           description: Bad request - Invalid run template updates
         "404":
-          description: Solution or Run Template not found or insufficient access rights
+          description: Solution or run template not found or insufficient access rights
     delete:
       operationId: deleteSolutionRunTemplate
       tags:
@@ -414,7 +414,7 @@ paths:
         "204":
           description: Run template successfully deleted
         "404":
-          description: Solution or Run Template not found or insufficient access rights
+          description: Solution or run template not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/security:
     parameters:

@@ -493,7 +493,7 @@ class RunServiceImpl(
 
     if (csmPlatformProperties.internalResultServices?.enabled == true) {
       val dbComment =
-          "organizationId=${runner.organizationId!!}, workspaceId=${runner.workspaceId!!}, runnerId=${runner.id!!}"
+          "organizationId=${runner.organizationId}, workspaceId=${runner.workspaceId}, runnerId=${runner.id}"
       adminRunStorageTemplate.createDB(runId, dbComment)
 
       val runtimeDS =
@@ -535,11 +535,11 @@ class RunServiceImpl(
 
     val startInfo =
         containerFactory.getStartInfo(
-            runner.organizationId!!, runner.workspaceId!!, runner.id!!, WORKFLOW_TYPE_RUN, runId)
+            runner.organizationId, runner.workspaceId, runner.id, WORKFLOW_TYPE_RUN, runId)
     val runRequest =
         workflowService.launchRun(
-            runner.organizationId!!,
-            runner.workspaceId!!,
+            runner.organizationId,
+            runner.workspaceId,
             startInfo.startContainers,
             startInfo.runTemplate.executionTimeout,
             startInfo.solution.alwaysPull ?: false)
@@ -568,11 +568,11 @@ class RunServiceImpl(
             datasetList = runner.datasetList,
             createdAt = now,
             parametersValues =
-                (runner.parametersValues?.map {
+                (runner.parametersValues.map {
                       RunTemplateParameterValue(
                           parameterId = it.parameterId, varType = it.varType, value = it.value)
                     })
-                    ?.toList(),
+                    .toList(),
             nodeLabel = startInfo.startContainers.nodeLabel,
             containers = startInfo.startContainers.containers,
         )
@@ -588,7 +588,7 @@ class RunServiceImpl(
   @EventListener(RunStop::class)
   fun onRunStop(runStopRequest: RunStop) {
     val runner = runStopRequest.runnerData as Runner
-    val run = getRun(runner.organizationId!!, runner.workspaceId!!, runner.id!!, runner.lastRunId!!)
+    val run = getRun(runner.organizationId, runner.workspaceId, runner.id, runner.lastRunId!!)
     run.hasPermission(PERMISSION_WRITE)
     if (run.state!!.isTerminal()) {
       throw IllegalStateException(

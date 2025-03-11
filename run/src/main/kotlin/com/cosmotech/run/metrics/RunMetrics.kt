@@ -77,19 +77,19 @@ internal class RunMetrics(
     publishRunStartLabeledMetric(name, labels)
 
     // By Organization
-    val organizationId = runner.organizationId!!
+    val organizationId = runner.organizationId
     labels[ORGANIZATION_ID_LABEL] = organizationId
     name += ":$organizationId"
     publishRunStartLabeledMetric(name, labels)
 
     // By Workspace
-    val workspaceId = runner.workspaceId!!
+    val workspaceId = runner.workspaceId
     labels[WORKSPACE_ID_LABEL] = workspaceId
     name += ":$workspaceId"
     publishRunStartLabeledMetric(name, labels)
 
     // By Runner
-    val runnerId = runner.id!!
+    val runnerId = runner.id
     labels[RUNNER_ID_LABEL] = runnerId
     name += ":$runnerId"
     publishRunStartLabeledMetric(name, labels)
