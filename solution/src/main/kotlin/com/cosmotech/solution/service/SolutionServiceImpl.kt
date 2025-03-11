@@ -4,7 +4,6 @@ package com.cosmotech.solution.service
 
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
@@ -16,14 +15,10 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
-import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
-import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
-import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
-import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.toGenericSecurity
@@ -209,7 +204,7 @@ class SolutionServiceImpl(
         version = solutionCreateRequest.version,
         tags = solutionCreateRequest.tags,
         organizationId = organizationId,
-        runTemplates = solutionCreateRequest.runTemplates,
+        runTemplates = solutionCreateRequest.runTemplates!!,
         parameters = solutionCreateRequest.parameters!!,
         parameterGroups = solutionCreateRequest.parameterGroups!!,
         url = solutionCreateRequest.url,
@@ -260,9 +255,9 @@ class SolutionServiceImpl(
       url = solutionUpdateRequest.url ?: existingSolution.url,
       csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
       alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
-      parameters = existingSolution.parameters ?: existingSolution.parameters,
+      parameters = existingSolution.parameters,
       sdkVersion = solutionUpdateRequest.sdkVersion ?: existingSolution.sdkVersion,
-      parameterGroups = existingSolution.parameterGroups ?: existingSolution.parameterGroups,
+      parameterGroups = existingSolution.parameterGroups,
       security = existingSolution.security
     )
 

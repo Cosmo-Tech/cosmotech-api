@@ -113,7 +113,7 @@ class OrganizationServiceImpl(
 
     if (organizationUpdateRequest.name != null &&
         organizationUpdateRequest.name != existingOrganization.name) {
-      existingOrganization.name = organizationUpdateRequest.name
+      existingOrganization.name = organizationUpdateRequest.name!!
       hasChanged = true
     }
 

@@ -110,7 +110,7 @@ class RunContainerFactory(
     }
 
     val runner = runnerApiService.getRunner(organizationId, workspaceId, runnerId)
-    val runTemplate = this.getRunTemplate(solution, (runner.runTemplateId ?: ""))
+    val runTemplate = this.getRunTemplate(solution, (runner.runTemplateId))
 
     return StartInfo(
         startContainers =
@@ -142,10 +142,10 @@ class RunContainerFactory(
       workflowType: String,
   ): RunStartContainers {
 
-    if (runner.runTemplateId.isNullOrBlank())
+    if (runner.runTemplateId.isBlank())
         throw IllegalStateException("Runner runTemplateId cannot be null")
 
-    val template = getRunTemplate(solution, (runner.runTemplateId ?: ""))
+    val template = getRunTemplate(solution, (runner.runTemplateId))
 
     val nodeLabel =
         if (template.computeSize == NODE_PARAM_NONE) {
@@ -160,14 +160,13 @@ class RunContainerFactory(
 
     var defaultSizing = BASIC_SIZING
 
-    if (!nodeLabel.isBlank()) {
+    if (nodeLabel.isNotBlank()) {
       defaultSizing = LABEL_SIZING[nodeLabel] ?: BASIC_SIZING
     }
 
     val containers: MutableList<RunContainer> = mutableListOf()
 
-    val runTemplateId =
-        runner.runTemplateId ?: throw IllegalStateException("Runner runTemplateId cannot be null")
+    val runTemplateId = runner.runTemplateId
 
     val imageName =
         getImageName(
@@ -179,7 +178,7 @@ class RunContainerFactory(
             csmSimulationId,
             organization.id,
           workspace.id,
-            runner.id!!,
+            runner.id,
             runId)
 
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
@@ -212,7 +211,7 @@ class RunContainerFactory(
                 WORKFLOW_TYPE_LABEL to workflowType,
                 ORGANIZATION_ID_LABEL to organization.id,
                 WORKSPACE_ID_LABEL to workspace.id,
-                RUNNER_ID_LABEL to runner.id!!,
+                RUNNER_ID_LABEL to runner.id,
             ))
   }
 

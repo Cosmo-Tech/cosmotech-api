@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.runner.service
 
-import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.runner.domain.Runner
@@ -12,7 +11,6 @@ import com.cosmotech.runner.domain.Runner
 fun Runner.getRbac(): RbacSecurity {
   return RbacSecurity(
       this.id,
-      this.security?.default ?: ROLE_NONE,
-      this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
-          ?: mutableListOf())
+      this.security.default,
+      this.security.accessControlList.map { RbacAccessControl(it.id, it.role) }.toMutableList())
 }

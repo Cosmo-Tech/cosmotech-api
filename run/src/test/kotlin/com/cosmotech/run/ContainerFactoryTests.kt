@@ -5,7 +5,6 @@ package com.cosmotech.run
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -39,7 +38,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.extension.ExtendWith
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import java.sql.Time
 import java.time.Instant
 
 private const val CSM_SIMULATION_ID = "simulationrunid"
@@ -203,7 +201,7 @@ class ContainerFactoryTests {
                 "CSM_SIMULATION_ID" to CSM_SIMULATION_ID,
                 "CSM_ORGANIZATION_ID" to organization.id,
                 "CSM_WORKSPACE_ID" to workspace.id,
-                "CSM_RUNNER_ID" to runner.id!!,
+                "CSM_RUNNER_ID" to runner.id,
                 "CSM_RUN_ID" to runId,
                 "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
                 "CSM_PROBES_MEASURES_TOPIC" to eventHubUri,
