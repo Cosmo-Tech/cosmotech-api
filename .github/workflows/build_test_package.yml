@@ -68,6 +68,8 @@ jobs:
             packageName: .workspace
           - testPrefix: Solution
             packageName: .solution
+          - testPrefix: Meta
+            packageName: ".meta"
           - testPrefix: Home
             packageName: ""
     steps:

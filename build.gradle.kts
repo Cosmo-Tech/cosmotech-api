@@ -35,7 +35,7 @@ plugins {
   val kotlinVersion = "1.9.23"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
-  id("pl.allegro.tech.build.axion-release") version "1.15.5"
+  id("pl.allegro.tech.build.axion-release") version "1.18.17"
   id("com.diffplug.spotless") version "6.25.0"
   id("org.springframework.boot") version "3.4.1" apply false
   id("project-report")
@@ -125,6 +125,8 @@ allprojects {
   apply(plugin = "project-report")
   apply(plugin = "org.owasp.dependencycheck")
 
+  version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
+
   java {
     targetCompatibility = JavaVersion.VERSION_21
     sourceCompatibility = JavaVersion.VERSION_21
@@ -188,8 +190,6 @@ subprojects {
   apply(plugin = "org.springframework.boot")
   apply(plugin = "org.openapi.generator")
   apply(plugin = "com.google.cloud.tools.jib")
-
-  version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
 
   val projectDirName = projectDir.relativeTo(rootDir).name
   val openApiDefinitionFile = file("${projectDir}/src/main/openapi/${projectDirName}.yaml")
@@ -474,14 +474,37 @@ subprojects {
     rename { if (it != "openapi.yaml") "openapi.yaml" else it }
   }
 
+  var fullVersion = project.version.toString()
+  var buildVersion = ""
+  if (!rootProject.scmVersion.scmPosition.revision.isNullOrEmpty()) {
+    buildVersion = "${rootProject.scmVersion.scmPosition.revision.substring(0, 8)}"
+    fullVersion = "$fullVersion-$buildVersion"
+  }
   tasks.getByName<Copy>("processResources") {
     dependsOn("copyOpenApiYamlToMainResources")
     filesMatching("**/banner.txt") {
-      filter<ReplaceTokens>("tokens" to mapOf("projectVersion" to project.version))
+      filter<ReplaceTokens>("tokens" to mapOf("projectVersion" to fullVersion))
+    }
+    filesMatching("**/about.json") {
+      filter<ReplaceTokens>("tokens" to mapOf(
+        "fullVersion" to fullVersion,
+        "releaseVersion" to project.version,
+        "buildVersion" to buildVersion))
     }
   }
 
-  tasks.getByName<Copy>("processTestResources") { dependsOn("copyOpenApiYamlToTestResources") }
+  tasks.register<Copy>("copyAboutJsonToTestResources") {
+    from("${rootDir}/api/src/main/resources/about.json")
+    into("${layout.buildDirectory.get()}/resources/test/")
+    filter<ReplaceTokens>("tokens" to mapOf(
+      "fullVersion" to fullVersion,
+      "releaseVersion" to project.version,
+      "buildVersion" to buildVersion))
+  }
+  tasks.getByName<Copy>("processTestResources") {
+    dependsOn("copyOpenApiYamlToTestResources")
+    dependsOn("copyAboutJsonToTestResources")
+  }
 
   tasks.getByName<BootJar>("bootJar") { archiveClassifier.set("uberjar") }
 

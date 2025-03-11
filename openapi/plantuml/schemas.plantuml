@@ -2,6 +2,20 @@
 
 title Cosmo Tech Platform API Schemas Diagram
 
+entity AboutInfo {
+    * version: AboutInfoVersion
+}
+
+entity AboutInfoVersion {
+    * full: String
+    * release: String
+    * major: Integer
+    * minor: Integer
+    * patch: Integer
+    * label: String
+    * build: String
+}
+
 entity ComponentRolePermissions {
     * component: String
     * roles: Map
@@ -557,6 +571,7 @@ WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 WorkspaceCreateRequest -- WorkspaceSolution : solution
 WorkspaceCreateRequest -- WorkspaceWebApp : webApp
 WorkspaceCreateRequest -- WorkspaceSecurity : security
+AboutInfo -- AboutInfoVersion : version
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 RunContainer -- ContainerResourceSizing : runSizing
 SolutionCreateRequest -- "0..*" RunTemplateParameter : parameters

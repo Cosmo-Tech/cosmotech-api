@@ -1,0 +1,7 @@
+{
+  "version": {
+    "full": "@fullVersion@",
+    "release": "@releaseVersion@",
+    "build": "@buildVersion@"
+  }
+}

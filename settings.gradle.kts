@@ -15,6 +15,7 @@ rootProject.name = "cosmotech-api-parent"
 
 include(
     "api",
+    "meta",
     "connector",
     "dataset",
     "organization",
@@ -25,6 +26,8 @@ include(
     "run")
 
 project(":api").name = "cosmotech-api"
+
+project(":meta").name = "cosmotech-meta-api"
 
 project(":connector").name = "cosmotech-connector-api"
 
