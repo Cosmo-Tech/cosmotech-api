@@ -2,6 +2,9 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home.runner
 
+import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.events.RunStart
+import com.cosmotech.api.events.RunStop
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
@@ -27,10 +30,13 @@ import com.cosmotech.runner.domain.*
 import com.cosmotech.runner.domain.ResourceSizeInfo
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
+import com.ninjasquad.springmockk.SpykBean
+import io.mockk.every
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -51,6 +57,9 @@ class RunnerControllerTests: ControllerTestBase() {
     private lateinit var solutionId: String
     private val logger = LoggerFactory.getLogger(RunnerControllerTests::class.java)
 
+    @SpykBean
+    @Autowired
+    private lateinit var eventPublisher: CsmEventPublisher
 
     @BeforeEach
     fun beforeEach() {
@@ -698,10 +707,14 @@ class RunnerControllerTests: ControllerTestBase() {
     }
 
 
-/*
     @Test
     @WithMockOauth2User
     fun start_runner() {
+        val expectedRunId = "run-genid12345"
+        every { eventPublisher.publishEvent(any<RunStart>()) } answers
+                {
+                    firstArg<RunStart>().response = expectedRunId
+                }
 
         val runnerId = createRunnerAndReturnId(
             mvc,
@@ -735,6 +748,58 @@ class RunnerControllerTests: ControllerTestBase() {
             .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/start/POST"))
     }
 
-*/
+    @Test
+    @WithMockOauth2User
+    fun stop_runner() {
+        val expectedRunId = "run-genid12345"
+
+        val runnerId = createRunnerAndReturnId(
+            mvc,
+            organizationId,
+            workspaceId,
+            constructRunnerObject(
+                solutionId = solutionId,
+                runTemplateId = RUNNER_RUN_TEMPLATE,
+                runSizing = RunnerResourceSizing(
+                    requests = ResourceSizeInfo(
+                        cpu = "1Gi",
+                        memory = "1Gi",
+                    ),
+                    limits = ResourceSizeInfo(
+                        cpu = "1Gi",
+                        memory = "1Gi",
+                    ),
+                )
+            )
+        )
+        every { eventPublisher.publishEvent(any<RunStart>()) } answers
+                {
+                    firstArg<RunStart>().response = expectedRunId
+                }
+        mvc
+            .perform(
+                post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/start")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+
+        every { eventPublisher.publishEvent(any<RunStop>()) } answers
+                {
+                    firstArg<RunStop>()
+                }
+
+        mvc
+            .perform(
+                post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/stop")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(csrf())
+            )
+            .andExpect(status().is2xxSuccessful)
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/stop/POST"))
+    }
 
 }
