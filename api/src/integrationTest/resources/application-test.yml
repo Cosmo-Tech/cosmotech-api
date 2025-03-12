@@ -15,6 +15,10 @@ spring:
 
 csm:
   platform:
+    internalResultServices:
+      enabled: true
+      eventBus:
+        enabled: false
     containerRegistry:
       checkSolutionImage: false
     identityProvider:
