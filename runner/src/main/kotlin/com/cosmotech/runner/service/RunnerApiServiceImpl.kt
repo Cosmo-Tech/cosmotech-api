@@ -47,7 +47,6 @@ internal class RunnerApiServiceImpl(
         runnerService
             .getNewInstance()
             .setValueFrom(runnerCreateRequest)
-            .initSecurity(runnerCreateRequest)
             .initParameters()
             .initDatasetList(runnerCreateRequest)
     return runnerService.saveInstance(runnerInstance)
