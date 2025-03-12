@@ -16,8 +16,6 @@ object WorkspaceConstants {
 
   object RequestContent {}
 
-  object Errors {
-    val emptyNameOrganizationCreationRequestError =
-        """{"type":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400","title":"Bad Request","status":400,"detail":"name: size must be between 1 and 50","instance":"/organizations"}"""
-  }
+    object Errors {
+    }
 }

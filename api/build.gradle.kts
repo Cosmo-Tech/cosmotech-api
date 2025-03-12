@@ -24,6 +24,7 @@ dependencies {
 
   testImplementation("org.testng:testng:7.8.0")
   testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.4")
+  testImplementation("org.testcontainers:postgresql:1.19.7")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")

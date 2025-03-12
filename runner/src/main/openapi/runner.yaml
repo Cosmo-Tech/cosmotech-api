@@ -348,7 +348,7 @@ paths:
         required: true
         schema:
           type: string
-    post:
+    patch:
       operationId: updateRunnerDefaultSecurity
       tags:
         - runner
