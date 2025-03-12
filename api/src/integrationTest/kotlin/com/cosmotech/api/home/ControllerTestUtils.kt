@@ -5,7 +5,6 @@ package com.cosmotech.api.home
 import com.cosmotech.api.home.organization.OrganizationConstants.ORGANIZATION_NAME
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_NAME
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_OWNER_NAME
-import com.cosmotech.api.home.solution.SolutionConstants.RequestContent.MINIMAL_SOLUTION_REQUEST_CREATION
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_KEY
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_NAME
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_REPOSITORY
