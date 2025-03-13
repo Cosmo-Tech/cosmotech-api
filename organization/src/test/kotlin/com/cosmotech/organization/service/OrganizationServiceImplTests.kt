@@ -81,7 +81,7 @@ class OrganizationServiceImplTests {
     val rbacSecurity =
         RbacSecurity(
             organization.id,
-          organization.security.default,
+            organization.security.default,
             mutableListOf(RbacAccessControl("ID", ROLE_VIEWER)))
     val rbacAccessControl = RbacAccessControl(USER_ID, ROLE_ADMIN)
     every { organizationRepository.findByIdOrNull(any()) } returns organization

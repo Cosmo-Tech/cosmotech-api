@@ -79,7 +79,6 @@ private val LABEL_SIZING =
         NODE_LABEL_HIGH_MEMORY to HIGH_MEMORY_SIZING,
     )
 
-
 @Component
 class RunContainerFactory(
     private val csmPlatformProperties: CsmPlatformProperties,
@@ -99,11 +98,9 @@ class RunContainerFactory(
   ): StartInfo {
     val organization = organizationService.getOrganization(organizationId)
     val workspace = workspaceService.getWorkspace(organizationId, workspaceId)
-    val solution =
-        solutionService.getSolution(organizationId, workspace.solution.solutionId)
+    val solution = solutionService.getSolution(organizationId, workspace.solution.solutionId)
 
-    val solutionRepository =
-        solution.repository
+    val solutionRepository = solution.repository
 
     if (csmPlatformProperties.containerRegistry.checkSolutionImage) {
       containerRegistryService.checkSolutionImage(solutionRepository, solution.version)
@@ -174,12 +171,7 @@ class RunContainerFactory(
 
     val envVars =
         getCommonEnvVars(
-            csmPlatformProperties,
-            csmSimulationId,
-            organization.id,
-          workspace.id,
-            runner.id,
-            runId)
+            csmPlatformProperties, csmSimulationId, organization.id, workspace.id, runner.id, runId)
 
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
 

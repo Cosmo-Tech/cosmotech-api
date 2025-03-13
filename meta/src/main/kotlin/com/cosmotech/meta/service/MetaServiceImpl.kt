@@ -19,14 +19,16 @@ class MetaServiceImpl : CsmPhoenixService(), MetaApiServiceInterface {
     // Split the numbers
     val numbers = numbersAndLabel.first().split('.', limit = 3)
 
-    return AboutInfo(version=AboutInfoVersion(
-      release=releaseVersion,
-      full=aboutVersion.getString("full"),
-      major=numbers[0].toInt(),
-      minor=numbers[1].toInt(),
-      patch=numbers[2].toInt(),
-      label=numbersAndLabel.getOrElse(1, {""}),
-      build=aboutVersion.getString("build"),
-    ))
+    return AboutInfo(
+        version =
+            AboutInfoVersion(
+                release = releaseVersion,
+                full = aboutVersion.getString("full"),
+                major = numbers[0].toInt(),
+                minor = numbers[1].toInt(),
+                patch = numbers[2].toInt(),
+                label = numbersAndLabel.getOrElse(1, { "" }),
+                build = aboutVersion.getString("build"),
+            ))
   }
 }

@@ -34,9 +34,7 @@ private const val TS_RUN_WORKFLOW_NAME = "run"
 
 @Service
 @ConditionalOnProperty(
-    name = ["csm.platform.metrics.enabled"],
-    havingValue = "true",
-    matchIfMissing = false)
+    name = ["csm.platform.metrics.enabled"], havingValue = "true", matchIfMissing = false)
 internal class RunMetrics(
     private val workflowService: WorkflowService,
     private val eventPublisher: CsmEventPublisher,

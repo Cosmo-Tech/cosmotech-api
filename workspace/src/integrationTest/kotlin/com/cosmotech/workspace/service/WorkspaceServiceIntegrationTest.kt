@@ -132,7 +132,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
     logger.info("should create a second new workspace")
-    val workspace2 = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace 2")
+    val workspace2 =
+        makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace 2")
     workspaceApiService.createWorkspace(organizationSaved.id, workspace2)
     val workspaceRetrieved =
         workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
@@ -147,7 +148,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val updatedWorkspace =
         workspaceApiService.updateWorkspace(
             organizationSaved.id,
-          workspaceSaved.id,
+            workspaceSaved.id,
             WorkspaceUpdateRequest(key = "key", name = "Workspace 1 updated"))
     assertEquals("Workspace 1 updated", updatedWorkspace.name)
     assertEquals(workspaceSaved.organizationId, updatedWorkspace.organizationId)
@@ -168,7 +169,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns "userLambda"
 
     logger.info("should not create a new workspace")
-    val workspace2 = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace 2")
+    val workspace2 =
+        makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace 2")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.createWorkspace(organizationSaved.id, workspace2)
     }
@@ -187,9 +189,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.updateWorkspace(
           organizationSaved.id,
-        workspaceSaved.id,
-          WorkspaceUpdateRequest(key = "key", name = "Workspace 1 updated")
-      )
+          workspaceSaved.id,
+          WorkspaceUpdateRequest(key = "key", name = "Workspace 1 updated"))
     }
 
     logger.info("should not delete a workspace")
@@ -205,7 +206,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
     val expectedSize = 15
     IntRange(1, workspaceNumber - 1).forEach {
-      val workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "w-workspace-$it")
+      val workspace =
+          makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "w-workspace-$it")
       workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     }
     logger.info("should find all workspaces and assert there are $workspaceNumber")
@@ -372,7 +374,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertThrows<IllegalArgumentException> {
       workspaceApiService.createWorkspaceAccessControl(
           organizationSaved.id,
-        workspaceSaved.id,
+          workspaceSaved.id,
           WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
     }
   }
@@ -385,12 +387,14 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
 
-    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.createDatasetLink(
+        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
 
     val datasetIds = listOf(datasetSaved.id!!)
     checkLinkedDatasetId(datasetIds)
 
-    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.createDatasetLink(
+        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
 
     checkLinkedDatasetId(datasetIds)
   }
@@ -418,9 +422,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
 
-    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.createDatasetLink(
+        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
 
-    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.deleteDatasetLink(
+        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
 
     assertEquals(
         workspaceApiService
@@ -438,7 +444,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
 
-    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.deleteDatasetLink(
+        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
 
     assertNull(
         workspaceApiService
@@ -460,8 +467,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-    workspaceSaved =
-        workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+    workspaceSaved = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
     assertEquals(
         WorkspaceSecurity(
             default = ROLE_NONE,
@@ -496,37 +502,40 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `assert createWorkspace take all infos in considerations`(){
-    val workspaceToCreate = Workspace(
-      id = "id",
-      organizationId = organizationSaved.id,
-      key = "key",
-      name = "name",
-      ownerId = "ownerId",
-      solution = WorkspaceSolution(solutionSaved.id),
-      description = "description",
-      linkedDatasetIdList = null,
-      version = "1.0.0",
-      tags = mutableListOf("tag1", "tag2"),
-      webApp = WorkspaceWebApp(url = "url"),
-      datasetCopy = true,
-      security = WorkspaceSecurity(
-        default = ROLE_NONE,
-        accessControlList = mutableListOf(WorkspaceAccessControl("id", ROLE_ADMIN))),
-      )
-      val workspaceCreateRequest = WorkspaceCreateRequest(
-        key = workspaceToCreate.key,
-        name = workspaceToCreate.name,
-        solution = workspaceToCreate.solution,
-        description = workspaceToCreate.description,
-        version = workspaceToCreate.version,
-        tags = workspaceToCreate.tags,
-        webApp = workspaceToCreate.webApp,
-        datasetCopy = workspaceToCreate.datasetCopy,
-        security = workspaceToCreate.security
-      )
+  fun `assert createWorkspace take all infos in considerations`() {
+    val workspaceToCreate =
+        Workspace(
+            id = "id",
+            organizationId = organizationSaved.id,
+            key = "key",
+            name = "name",
+            ownerId = "ownerId",
+            solution = WorkspaceSolution(solutionSaved.id),
+            description = "description",
+            linkedDatasetIdList = null,
+            version = "1.0.0",
+            tags = mutableListOf("tag1", "tag2"),
+            webApp = WorkspaceWebApp(url = "url"),
+            datasetCopy = true,
+            security =
+                WorkspaceSecurity(
+                    default = ROLE_NONE,
+                    accessControlList = mutableListOf(WorkspaceAccessControl("id", ROLE_ADMIN))),
+        )
+    val workspaceCreateRequest =
+        WorkspaceCreateRequest(
+            key = workspaceToCreate.key,
+            name = workspaceToCreate.name,
+            solution = workspaceToCreate.solution,
+            description = workspaceToCreate.description,
+            version = workspaceToCreate.version,
+            tags = workspaceToCreate.tags,
+            webApp = workspaceToCreate.webApp,
+            datasetCopy = workspaceToCreate.datasetCopy,
+            security = workspaceToCreate.security)
 
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspaceCreateRequest)
+    workspaceSaved =
+        workspaceApiService.createWorkspace(organizationSaved.id, workspaceCreateRequest)
 
     workspaceToCreate.id = workspaceSaved.id
     workspaceToCreate.ownerId = workspaceSaved.ownerId
@@ -535,58 +544,64 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `assert updateWorkspace take all infos in considerations`() {
-    var workspaceToCreate = Workspace(
-      id = "id",
-      organizationId = organizationSaved.id,
-      key = "key",
-      name = "name",
-      ownerId = "ownerId",
-      solution = WorkspaceSolution(solutionSaved.id),
-      description = "description",
-      linkedDatasetIdList = null,
-      version = "1.0.0",
-      tags = mutableListOf("tag1", "tag2"),
-      webApp = WorkspaceWebApp(url = "url"),
-      datasetCopy = true,
-      security = WorkspaceSecurity(
-        default = ROLE_ADMIN,
-        accessControlList = mutableListOf(WorkspaceAccessControl("id", ROLE_ADMIN))),
-    )
-    val workspaceCreateRequest = WorkspaceCreateRequest(
-      key = workspaceToCreate.key,
-      name = workspaceToCreate.name,
-      solution = workspaceToCreate.solution,
-      description = workspaceToCreate.description,
-      version = workspaceToCreate.version,
-      tags = workspaceToCreate.tags,
-      webApp = workspaceToCreate.webApp,
-      datasetCopy = workspaceToCreate.datasetCopy,
-      security = workspaceToCreate.security
-    )
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspaceCreateRequest)
+    var workspaceToCreate =
+        Workspace(
+            id = "id",
+            organizationId = organizationSaved.id,
+            key = "key",
+            name = "name",
+            ownerId = "ownerId",
+            solution = WorkspaceSolution(solutionSaved.id),
+            description = "description",
+            linkedDatasetIdList = null,
+            version = "1.0.0",
+            tags = mutableListOf("tag1", "tag2"),
+            webApp = WorkspaceWebApp(url = "url"),
+            datasetCopy = true,
+            security =
+                WorkspaceSecurity(
+                    default = ROLE_ADMIN,
+                    accessControlList = mutableListOf(WorkspaceAccessControl("id", ROLE_ADMIN))),
+        )
+    val workspaceCreateRequest =
+        WorkspaceCreateRequest(
+            key = workspaceToCreate.key,
+            name = workspaceToCreate.name,
+            solution = workspaceToCreate.solution,
+            description = workspaceToCreate.description,
+            version = workspaceToCreate.version,
+            tags = workspaceToCreate.tags,
+            webApp = workspaceToCreate.webApp,
+            datasetCopy = workspaceToCreate.datasetCopy,
+            security = workspaceToCreate.security)
+    workspaceSaved =
+        workspaceApiService.createWorkspace(organizationSaved.id, workspaceCreateRequest)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-    val workspaceUpdateRequest = WorkspaceUpdateRequest(
-      key = "new key",
-      name = "new name",
-      solution = WorkspaceSolution(solutionSaved.id),
-      description = "new description",
-      tags = mutableListOf("newTag1", "newTag2"),
-      webApp = WorkspaceWebApp(url = "new url"),
-      datasetCopy = false,
-    )
-    workspaceToCreate = workspaceToCreate.copy(
-      id = workspaceSaved.id,
-      key = workspaceUpdateRequest.key!!,
-      name = workspaceUpdateRequest.name!!,
-      ownerId = workspaceSaved.ownerId,
-      solution = workspaceUpdateRequest.solution!!,
-      description = workspaceUpdateRequest.description,
-      tags = workspaceUpdateRequest.tags,
-      webApp = workspaceUpdateRequest.webApp,
-      datasetCopy = workspaceUpdateRequest.datasetCopy
-    )
+    val workspaceUpdateRequest =
+        WorkspaceUpdateRequest(
+            key = "new key",
+            name = "new name",
+            solution = WorkspaceSolution(solutionSaved.id),
+            description = "new description",
+            tags = mutableListOf("newTag1", "newTag2"),
+            webApp = WorkspaceWebApp(url = "new url"),
+            datasetCopy = false,
+        )
+    workspaceToCreate =
+        workspaceToCreate.copy(
+            id = workspaceSaved.id,
+            key = workspaceUpdateRequest.key!!,
+            name = workspaceUpdateRequest.name!!,
+            ownerId = workspaceSaved.ownerId,
+            solution = workspaceUpdateRequest.solution!!,
+            description = workspaceUpdateRequest.description,
+            tags = workspaceUpdateRequest.tags,
+            webApp = workspaceUpdateRequest.webApp,
+            datasetCopy = workspaceUpdateRequest.datasetCopy)
 
-    workspaceSaved = workspaceApiService.updateWorkspace(organizationSaved.id, workspaceSaved.id, workspaceUpdateRequest)
+    workspaceSaved =
+        workspaceApiService.updateWorkspace(
+            organizationSaved.id, workspaceSaved.id, workspaceUpdateRequest)
 
     assertEquals(workspaceToCreate, workspaceSaved)
   }
@@ -596,13 +611,9 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-      workspaceSaved = workspaceApiService.updateWorkspace(
-        organizationSaved.id,
-        workspaceSaved.id,
-        WorkspaceUpdateRequest(
-          key = "new_key"
-        )
-      )
+    workspaceSaved =
+        workspaceApiService.updateWorkspace(
+            organizationSaved.id, workspaceSaved.id, WorkspaceUpdateRequest(key = "new_key"))
     assertEquals("new_key", workspaceSaved.key)
     assertEquals(workspace.name, workspaceSaved.name)
     assertEquals(workspace.solution, workspaceSaved.solution)
@@ -612,11 +623,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test createWorkspace and updateWorkspace with only required parameters`() {
     logger.info("should create workspace with only required parameters")
-    val minimalRequest = WorkspaceCreateRequest(
-      key = "minimal-key",
-      name = "Minimal Workspace",
-      solution = WorkspaceSolution(solutionSaved.id)
-    )
+    val minimalRequest =
+        WorkspaceCreateRequest(
+            key = "minimal-key",
+            name = "Minimal Workspace",
+            solution = WorkspaceSolution(solutionSaved.id))
     val createdWorkspace = workspaceApiService.createWorkspace(organizationSaved.id, minimalRequest)
     assertEquals("minimal-key", createdWorkspace.key)
     assertEquals("Minimal Workspace", createdWorkspace.name)
@@ -625,11 +636,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertNull(createdWorkspace.webApp)
 
     logger.info("should update workspace with only required parameters")
-    val updatedWorkspace = workspaceApiService.updateWorkspace(
-      organizationSaved.id,
-      createdWorkspace.id,
-      WorkspaceUpdateRequest(key = "updated-key", name = "Updated Workspace")
-    )
+    val updatedWorkspace =
+        workspaceApiService.updateWorkspace(
+            organizationSaved.id,
+            createdWorkspace.id,
+            WorkspaceUpdateRequest(key = "updated-key", name = "Updated Workspace"))
     assertEquals("updated-key", updatedWorkspace.key)
     assertEquals("Updated Workspace", updatedWorkspace.name)
     assertEquals(createdWorkspace.solution, updatedWorkspace.solution)
@@ -637,97 +648,92 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(createdWorkspace.webApp, updatedWorkspace.webApp)
   }
 
-
   @Test
   fun `SDCOSMO-2543 - test workspace is not accessible from another organization`() {
     val workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-
     val anotherOrganization = makeOrganizationCreateRequest("Another Organization")
     val anotherOrganizationSaved = organizationApiService.createOrganization(anotherOrganization)
 
-    assertDoesNotThrow {
-      workspaceApiService.getWorkspace(
-        organizationSaved.id,
-        workspaceSaved.id
-      )
-    }
+    assertDoesNotThrow { workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id) }
 
-    val exception = assertThrows<CsmResourceNotFoundException> {
-      workspaceApiService.getWorkspace(
-        anotherOrganizationSaved.id,
-        workspaceSaved.id
-      )
-    }
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          workspaceApiService.getWorkspace(anotherOrganizationSaved.id, workspaceSaved.id)
+        }
 
-    assertEquals("Workspace ${workspaceSaved.id} not found in organization ${anotherOrganizationSaved.id}",
-      exception.message)
-
+    assertEquals(
+        "Workspace ${workspaceSaved.id} not found in organization ${anotherOrganizationSaved.id}",
+        exception.message)
   }
 
   fun makeOrganizationCreateRequest(
       id: String,
       userName: String = CONNECTED_ADMIN_USER,
       role: String = ROLE_ADMIN
-  ) = OrganizationCreateRequest(
-        name = "Organization Name",
-        security =
-            OrganizationSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        OrganizationAccessControl(id = userName, role = role),
-                        OrganizationAccessControl("userLambda", "viewer"))))
+  ) =
+      OrganizationCreateRequest(
+          name = "Organization Name",
+          security =
+              OrganizationSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          OrganizationAccessControl(id = userName, role = role),
+                          OrganizationAccessControl("userLambda", "viewer"))))
 
   fun makeSolution(
       organizationId: String = organizationSaved.id,
       userName: String = CONNECTED_DEFAULT_USER,
       role: String = ROLE_USER
-  ) = SolutionCreateRequest(
-        key = UUID.randomUUID().toString(),
-        name = "My solution",
-    runTemplates = mutableListOf(RunTemplate("template")),
-    parameters = mutableListOf(RunTemplateParameter("parameter")),
-    csmSimulator = "simulator",
-    parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
-    repository = "repository",
-    version = "1.0.0",
-        security =
-            SolutionSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        SolutionAccessControl(id = userName, role = role))))
+  ) =
+      SolutionCreateRequest(
+          key = UUID.randomUUID().toString(),
+          name = "My solution",
+          runTemplates = mutableListOf(RunTemplate("template")),
+          parameters = mutableListOf(RunTemplateParameter("parameter")),
+          csmSimulator = "simulator",
+          parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+          repository = "repository",
+          version = "1.0.0",
+          security =
+              SolutionSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                          SolutionAccessControl(id = userName, role = role))))
 
   fun makeWorkspaceCreateRequest(
-    organizationId: String = organizationSaved.id,
-    solutionId: String = solutionSaved.id,
-    name: String = "name",
-    userName: String = CONNECTED_ADMIN_USER,
-    role: String = ROLE_ADMIN
-  ) = WorkspaceCreateRequest(
-        key = UUID.randomUUID().toString(),
-        name = name,
-        solution =
-            WorkspaceSolution(
-                solutionId = solutionId,
-            ),
-        security =
-            WorkspaceSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        WorkspaceAccessControl(id = userName, role = role),
-                        WorkspaceAccessControl(CONNECTED_DEFAULT_USER, "viewer"))))
+      organizationId: String = organizationSaved.id,
+      solutionId: String = solutionSaved.id,
+      name: String = "name",
+      userName: String = CONNECTED_ADMIN_USER,
+      role: String = ROLE_ADMIN
+  ) =
+      WorkspaceCreateRequest(
+          key = UUID.randomUUID().toString(),
+          name = name,
+          solution =
+              WorkspaceSolution(
+                  solutionId = solutionId,
+              ),
+          security =
+              WorkspaceSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          WorkspaceAccessControl(id = userName, role = role),
+                          WorkspaceAccessControl(CONNECTED_DEFAULT_USER, "viewer"))))
 
-  private fun makeConnector(name: String = "name") = Connector(
-        key = UUID.randomUUID().toString(),
-        name = name,
-        repository = "/repository",
-        version = "1.0",
-        ioTypes = listOf(IoTypesEnum.read))
+  private fun makeConnector(name: String = "name") =
+      Connector(
+          key = UUID.randomUUID().toString(),
+          name = name,
+          repository = "/repository",
+          version = "1.0",
+          ioTypes = listOf(IoTypesEnum.read))
 
   fun makeDataset(
       organizationId: String = organizationSaved.id,
@@ -735,21 +741,22 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       connector: Connector = connectorSaved,
       userName: String = CONNECTED_DEFAULT_USER,
       role: String = ROLE_ADMIN
-  ) = Dataset(
-        name = name,
-        organizationId = organizationId,
-        ownerId = "ownerId",
-        connector =
-            DatasetConnector(
-                id = connector.id,
-                name = connector.name,
-                version = connector.version,
-            ),
-        security =
-            DatasetSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        DatasetAccessControl(id = userName, role = role),
-                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+  ) =
+      Dataset(
+          name = name,
+          organizationId = organizationId,
+          ownerId = "ownerId",
+          connector =
+              DatasetConnector(
+                  id = connector.id,
+                  name = connector.name,
+                  version = connector.version,
+              ),
+          security =
+              DatasetSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          DatasetAccessControl(id = userName, role = role),
+                          DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
 }

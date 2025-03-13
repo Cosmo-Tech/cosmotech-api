@@ -33,12 +33,12 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import java.time.Instant
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.extension.ExtendWith
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import java.time.Instant
 
 private const val CSM_SIMULATION_ID = "simulationrunid"
 private const val CSM_RUN_TEMPLATE_ID = "testruntemplate"
@@ -176,7 +176,7 @@ class ContainerFactoryTests {
         "amqp://" +
             "${csmPlatformProperties.internalResultServices?.eventBus?.host}:" +
             "${csmPlatformProperties.internalResultServices?.eventBus?.port}/" +
-                workspace.id
+            workspace.id
 
     return RunContainer(
         name = CONTAINER_CSM_ORC,
@@ -223,19 +223,20 @@ class ContainerFactoryTests {
         name = "TestRunner",
         runTemplateId = CSM_RUN_TEMPLATE_ID,
         datasetList = mutableListOf("1", "2"),
-      ownerId = "owner",
-      solutionId = "solution",
-      organizationId = "organization",
-      workspaceId = "workspace",
-      creationDate = Instant.now().toEpochMilli(),
-      lastUpdate = Instant.now().toEpochMilli(),
-      ownerName = "owner",
+        ownerId = "owner",
+        solutionId = "solution",
+        organizationId = "organization",
+        workspaceId = "workspace",
+        creationDate = Instant.now().toEpochMilli(),
+        lastUpdate = Instant.now().toEpochMilli(),
+        ownerName = "owner",
         parametersValues =
             mutableListOf(
                 RunnerRunTemplateParameterValue(parameterId = "param1", value = "value1"),
                 RunnerRunTemplateParameterValue(parameterId = "param2", value = "value2")),
-      validationStatus = RunnerValidationStatus.Draft,
-      security = RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))))
+        validationStatus = RunnerValidationStatus.Draft,
+        security =
+            RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))))
   }
 
   private fun getRunTemplate(): RunTemplate {
@@ -251,25 +252,24 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-      ownerId = "ownerId",
+        ownerId = "ownerId",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplate()),
-      parameters = mutableListOf(RunTemplateParameter("parameter")),
-      parameterGroups = mutableListOf(RunTemplateParameterGroup("parameter")),
-      organizationId = "Organizationid",
-      csmSimulator = "simulator",
-      security = SolutionSecurity(ROLE_ADMIN, mutableListOf()),
+        parameters = mutableListOf(RunTemplateParameter("parameter")),
+        parameterGroups = mutableListOf(RunTemplateParameterGroup("parameter")),
+        organizationId = "Organizationid",
+        csmSimulator = "simulator",
+        security = SolutionSecurity(ROLE_ADMIN, mutableListOf()),
     )
   }
 
-  private fun getWorkspace(
-  ): Workspace {
+  private fun getWorkspace(): Workspace {
     return Workspace(
         id = "Workspaceid",
         key = "Test",
-      organizationId = "organizationId",
-      ownerId = "ownerId",
+        organizationId = "organizationId",
+        ownerId = "ownerId",
         name = "Test Workspace",
         description = "Test Workspace Description",
         version = "1.0.0",
@@ -277,8 +277,7 @@ class ContainerFactoryTests {
             WorkspaceSolution(
                 solutionId = "1",
             ),
-      security = WorkspaceSecurity(default = ROLE_ADMIN, accessControlList = mutableListOf())
-    )
+        security = WorkspaceSecurity(default = ROLE_ADMIN, accessControlList = mutableListOf()))
   }
 
   private fun getOrganization(): Organization {

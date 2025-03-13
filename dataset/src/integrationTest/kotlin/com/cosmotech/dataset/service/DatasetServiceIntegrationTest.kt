@@ -1078,42 +1078,42 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  fun makeConnector() = Connector(
-        key = "connector",
-        name = "connector-1",
-        repository = "repo",
-        version = "1.0.0",
-        ioTypes = listOf(),
-        id = "c-AbCdEf123")
+  fun makeConnector() =
+      Connector(
+          key = "connector",
+          name = "connector-1",
+          repository = "repo",
+          version = "1.0.0",
+          ioTypes = listOf(),
+          id = "c-AbCdEf123")
 
-  fun makeOrganizationCreateRequest(
-      userName: String = TEST_USER_MAIL,
-      role: String = ROLE_EDITOR
-  ) = OrganizationCreateRequest(
-        name = "Organization NameRbac",
-        security =
-            OrganizationSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        OrganizationAccessControl(id = userName, role = role))))
+  fun makeOrganizationCreateRequest(userName: String = TEST_USER_MAIL, role: String = ROLE_EDITOR) =
+      OrganizationCreateRequest(
+          name = "Organization NameRbac",
+          security =
+              OrganizationSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                          OrganizationAccessControl(id = userName, role = role))))
 
   fun makeDataset(
       organizationId: String = organizationSaved.id,
       parentId: String = "",
       sourceType: DatasetSourceType = DatasetSourceType.Twincache
-  ) = Dataset(
-        id = UUID.randomUUID().toString(),
-        name = "My datasetRbac",
-        organizationId = organizationId,
-        parentId = parentId,
-        ownerId = "ownerId",
-        connector = DatasetConnector(connectorSaved.id!!),
-        twingraphId = "graph",
-        source = SourceInfo("location", "name", "path"),
-        tags = mutableListOf("dataset"),
-        sourceType = sourceType)
+  ) =
+      Dataset(
+          id = UUID.randomUUID().toString(),
+          name = "My datasetRbac",
+          organizationId = organizationId,
+          parentId = parentId,
+          ownerId = "ownerId",
+          connector = DatasetConnector(connectorSaved.id!!),
+          twingraphId = "graph",
+          source = SourceInfo("location", "name", "path"),
+          tags = mutableListOf("dataset"),
+          sourceType = sourceType)
 
   fun makeDatasetWithRole(
       organizationId: String = organizationSaved.id,
@@ -1121,45 +1121,47 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN,
       sourceType: DatasetSourceType = DatasetSourceType.Twincache
-  ) = Dataset(
-        id = UUID.randomUUID().toString(),
-        name = "My datasetRbac",
-        organizationId = organizationId,
-        parentId = parentId,
-        ownerId = "ownerId",
-        connector = DatasetConnector(connectorSaved.id!!),
-        twingraphId = "graph",
-        source = SourceInfo("location", "name", "path"),
-        tags = mutableListOf("dataset"),
-        sourceType = sourceType,
-        security =
-            DatasetSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        DatasetAccessControl(id = userName, role = role))))
+  ) =
+      Dataset(
+          id = UUID.randomUUID().toString(),
+          name = "My datasetRbac",
+          organizationId = organizationId,
+          parentId = parentId,
+          ownerId = "ownerId",
+          connector = DatasetConnector(connectorSaved.id!!),
+          twingraphId = "graph",
+          source = SourceInfo("location", "name", "path"),
+          tags = mutableListOf("dataset"),
+          sourceType = sourceType,
+          security =
+              DatasetSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                          DatasetAccessControl(id = userName, role = role))))
 
   fun makeSolution(
       organizationId: String = organizationSaved.id,
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_EDITOR
-  ) = SolutionCreateRequest(
-        key = UUID.randomUUID().toString(),
-        name = "My solution",
-    runTemplates = mutableListOf(RunTemplate("template")),
-    csmSimulator = "simulator",
-    repository = "repository",
-    parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
-    parameters = mutableListOf(RunTemplateParameter("parameter")),
-    version = "1.0.0",
-        security =
-            SolutionSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        SolutionAccessControl(id = userName, role = role))))
+  ) =
+      SolutionCreateRequest(
+          key = UUID.randomUUID().toString(),
+          name = "My solution",
+          runTemplates = mutableListOf(RunTemplate("template")),
+          csmSimulator = "simulator",
+          repository = "repository",
+          parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+          parameters = mutableListOf(RunTemplateParameter("parameter")),
+          version = "1.0.0",
+          security =
+              SolutionSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                          SolutionAccessControl(id = userName, role = role))))
 
   fun makeWorkspaceCreateRequest(
       organizationId: String = organizationSaved.id,
@@ -1167,18 +1169,19 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       name: String = "name",
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN
-  ) = WorkspaceCreateRequest(
-        key = UUID.randomUUID().toString(),
-        name = name,
-        solution =
-            WorkspaceSolution(
-                solutionId = solutionId,
-            ),
-        security =
-            WorkspaceSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        WorkspaceAccessControl(id = userName, role = role),
-                        WorkspaceAccessControl(CONNECTED_ADMIN_USER, "admin"))))
+  ) =
+      WorkspaceCreateRequest(
+          key = UUID.randomUUID().toString(),
+          name = name,
+          solution =
+              WorkspaceSolution(
+                  solutionId = solutionId,
+              ),
+          security =
+              WorkspaceSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          WorkspaceAccessControl(id = userName, role = role),
+                          WorkspaceAccessControl(CONNECTED_ADMIN_USER, "admin"))))
 }

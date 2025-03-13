@@ -23,12 +23,12 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 buildscript {
-    configurations.all {
-      // Due to bug OpenAPITools/openapi-generator#20375 when we use another
-      // plugin that also depends on jmustache the newer version ends up being
-      // used and it breaks the generation of the python client.
-        resolutionStrategy.force("com.samskivert:jmustache:1.15")
-    }
+  configurations.all {
+    // Due to bug OpenAPITools/openapi-generator#20375 when we use another
+    // plugin that also depends on jmustache the newer version ends up being
+    // used and it breaks the generation of the python client.
+    resolutionStrategy.force("com.samskivert:jmustache:1.15")
+  }
 }
 
 plugins {
@@ -36,13 +36,13 @@ plugins {
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.18.17"
-  id("com.diffplug.spotless") version "6.25.0"
+  id("com.diffplug.spotless") version "7.0.2"
   id("org.springframework.boot") version "3.4.1" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.0.0"
   id("com.github.jk1.dependency-license-report") version "2.9"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
-  id("io.gitlab.arturbosch.detekt") version "1.23.7"
+  id("io.gitlab.arturbosch.detekt") version "1.23.8"
   id("org.openapi.generator") version "7.10.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.4" apply false
 }
@@ -91,15 +91,13 @@ mkdir(configBuildDir)
 
 val hardCodedLicensesReportPath = "project-licenses-for-check-license-task.json"
 
-dependencyCheck{
+dependencyCheck {
   // Configure dependency check plugin. It checks for publicly disclosed
   // vulnerabilities in project dependencies. To use it, you need to have an
   // API key from the NVD (National Vulnerability Database), pass it by setting
   // the environment variable NVD_API_key (See project README.md: Static Code
   // Analysis -> Vulnerability report).
-  nvd{
-    apiKey = System.getenv("NVD_API_key")
-  }
+  nvd { apiKey = System.getenv("NVD_API_key") }
 }
 
 licenseReport {
@@ -173,10 +171,12 @@ allprojects {
       licenseHeader(licenseHeaderComment)
     }
     kotlin {
+      ktfmt()
       target("**/*.kt")
       licenseHeader(licenseHeaderComment)
     }
     kotlinGradle {
+      ktfmt()
       target("**/*.kts")
       //      licenseHeader(licenseHeaderComment, "import")
     }
@@ -358,7 +358,6 @@ subprojects {
         finalizedBy("copyAdocFiles")
       }
 
-
   tasks.register<Copy>("copyAdocFiles") {
     dependsOn("integrationTest")
     from("$testWorkingDirPath/build/generated-snippets")
@@ -486,20 +485,24 @@ subprojects {
       filter<ReplaceTokens>("tokens" to mapOf("projectVersion" to fullVersion))
     }
     filesMatching("**/about.json") {
-      filter<ReplaceTokens>("tokens" to mapOf(
-        "fullVersion" to fullVersion,
-        "releaseVersion" to project.version,
-        "buildVersion" to buildVersion))
+      filter<ReplaceTokens>(
+          "tokens" to
+              mapOf(
+                  "fullVersion" to fullVersion,
+                  "releaseVersion" to project.version,
+                  "buildVersion" to buildVersion))
     }
   }
 
   tasks.register<Copy>("copyAboutJsonToTestResources") {
     from("${rootDir}/api/src/main/resources/about.json")
     into("${layout.buildDirectory.get()}/resources/test/")
-    filter<ReplaceTokens>("tokens" to mapOf(
-      "fullVersion" to fullVersion,
-      "releaseVersion" to project.version,
-      "buildVersion" to buildVersion))
+    filter<ReplaceTokens>(
+        "tokens" to
+            mapOf(
+                "fullVersion" to fullVersion,
+                "releaseVersion" to project.version,
+                "buildVersion" to buildVersion))
   }
   tasks.getByName<Copy>("processTestResources") {
     dependsOn("copyOpenApiYamlToTestResources")
@@ -590,7 +593,4 @@ extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverReportExtension> {
 }
 
 // https://github.com/jk1/Gradle-License-Report/blob/master/README.md
-tasks.register<ReportTask>(
-    "generateLicenseDoc") {}
-
-
+tasks.register<ReportTask>("generateLicenseDoc") {}
