@@ -164,7 +164,9 @@ tasks.register<Copy>("copyPythonLicense") {
 
 // PROD-14252: temporary fix waiting for upstream resolution
 // of https://github.com/OpenAPITools/openapi-generator/pull/20701
-tasks.register("generatePythonClient") { dependsOn("copyPythonGitPushScript", "copyPythonLicense", "overwriteGeneratedPythonFile") }
+tasks.register("generatePythonClient") {
+  dependsOn("copyPythonGitPushScript", "copyPythonLicense", "overwriteGeneratedPythonFile")
+}
 
 tasks.register<GenerateTask>("openApiUmlGenerate") {
   dependsOn("mergeOpenApiFiles")
@@ -233,18 +235,17 @@ tasks.register<Exec>("rolloutKindDeployment") {
 }
 
 tasks.register<GenerateTask>("generateDocumentation") {
-    group = "documentation"
-    description = "Generates adoc file containing API documentation"
-    inputSpec.set("${rootDir}/openapi/openapi.yaml")
-    outputDir.set("${rootDir}/doc")
-    generatorName.set("asciidoc")
-    additionalProperties.set(
-        mapOf(
-            "appName" to "Cosmo Tech API",
-            "appDescription" to "Cosmo Tech API Description",
-            "disallowAdditionalPropertiesIfNotPresent" to false,
-            "infoEmail" to "platform@cosmotech.com",
-            "snippetDir" to "${rootDir}/doc/generated-snippets/",
-            "infoUrl" to "https://github.com/Cosmo-Tech/cosmotech-api")
-    )
+  group = "documentation"
+  description = "Generates adoc file containing API documentation"
+  inputSpec.set("${rootDir}/openapi/openapi.yaml")
+  outputDir.set("${rootDir}/doc")
+  generatorName.set("asciidoc")
+  additionalProperties.set(
+      mapOf(
+          "appName" to "Cosmo Tech API",
+          "appDescription" to "Cosmo Tech API Description",
+          "disallowAdditionalPropertiesIfNotPresent" to false,
+          "infoEmail" to "platform@cosmotech.com",
+          "snippetDir" to "${rootDir}/doc/generated-snippets/",
+          "infoUrl" to "https://github.com/Cosmo-Tech/cosmotech-api"))
 }

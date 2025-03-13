@@ -283,26 +283,24 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         val name = "o-connector-test-1"
         val organizationRegistered =
             organizationApiService.createOrganization(makeSimpleOrganizationCreateRequest(name))
-          val newName ="my-new-name"
-          val organizationUpdated =  organizationApiService.updateOrganization(
-              organizationRegistered.id, OrganizationUpdateRequest(newName))
+        val newName = "my-new-name"
+        val organizationUpdated =
+            organizationApiService.updateOrganization(
+                organizationRegistered.id, OrganizationUpdateRequest(newName))
 
-          assertEquals(
-              newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+        assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
 
-          // Update organization with empty body
-          organizationApiService.updateOrganization(
-              organizationUpdated.id, OrganizationUpdateRequest())
+        // Update organization with empty body
+        organizationApiService.updateOrganization(
+            organizationUpdated.id, OrganizationUpdateRequest())
 
-          assertEquals(
-              newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+        assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
 
-          // Update organization with null value as name
-          organizationApiService.updateOrganization(
-              organizationUpdated.id, OrganizationUpdateRequest(null))
+        // Update organization with null value as name
+        organizationApiService.updateOrganization(
+            organizationUpdated.id, OrganizationUpdateRequest(null))
 
-          assertEquals(
-              newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+        assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
       }
     }
 
@@ -318,26 +316,24 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
         runAsOrganizationUser()
 
-          val newName ="my-new-name"
-          val organizationUpdated =  organizationApiService.updateOrganization(
-              organizationRegistered.id, OrganizationUpdateRequest(newName))
+        val newName = "my-new-name"
+        val organizationUpdated =
+            organizationApiService.updateOrganization(
+                organizationRegistered.id, OrganizationUpdateRequest(newName))
 
-          assertEquals(
-              newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+        assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
 
-          // Update organization with empty body
-          organizationApiService.updateOrganization(
-              organizationUpdated.id, OrganizationUpdateRequest())
+        // Update organization with empty body
+        organizationApiService.updateOrganization(
+            organizationUpdated.id, OrganizationUpdateRequest())
 
-          assertEquals(
-              newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+        assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
 
-          // Update organization with null value as name
-          organizationApiService.updateOrganization(
-              organizationUpdated.id, OrganizationUpdateRequest(null))
+        // Update organization with null value as name
+        organizationApiService.updateOrganization(
+            organizationUpdated.id, OrganizationUpdateRequest(null))
 
-          assertEquals(
-              newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+        assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
       }
     }
 
@@ -1239,29 +1235,26 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `updateOrganization as resource admin organization name`() {
     assertDoesNotThrow {
-
       val organizationRegistered =
-          organizationApiService.createOrganization(makeSimpleOrganizationCreateRequest("o-connector-test-1"))
-        val newName ="my-new-name"
-        val organizationUpdated =  organizationApiService.updateOrganization(
-          organizationRegistered.id, OrganizationUpdateRequest(newName))
+          organizationApiService.createOrganization(
+              makeSimpleOrganizationCreateRequest("o-connector-test-1"))
+      val newName = "my-new-name"
+      val organizationUpdated =
+          organizationApiService.updateOrganization(
+              organizationRegistered.id, OrganizationUpdateRequest(newName))
 
-      assertEquals(
-          newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+      assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
 
-        // Update organization with empty body
-        organizationApiService.updateOrganization(
-            organizationUpdated.id, OrganizationUpdateRequest())
+      // Update organization with empty body
+      organizationApiService.updateOrganization(organizationUpdated.id, OrganizationUpdateRequest())
 
-        assertEquals(
-            newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+      assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
 
-        // Update organization with null value as name
-        organizationApiService.updateOrganization(
-            organizationUpdated.id, OrganizationUpdateRequest(null))
+      // Update organization with null value as name
+      organizationApiService.updateOrganization(
+          organizationUpdated.id, OrganizationUpdateRequest(null))
 
-        assertEquals(
-            newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+      assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
     }
   }
 
@@ -1277,26 +1270,23 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
       runAsPlatformAdmin()
 
-        val newName ="my-new-name"
-        val organizationUpdated =  organizationApiService.updateOrganization(
-            organizationRegistered.id, OrganizationUpdateRequest(newName))
+      val newName = "my-new-name"
+      val organizationUpdated =
+          organizationApiService.updateOrganization(
+              organizationRegistered.id, OrganizationUpdateRequest(newName))
 
-        assertEquals(
-            newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+      assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
 
-        // Update organization with empty body
-        organizationApiService.updateOrganization(
-            organizationUpdated.id, OrganizationUpdateRequest())
+      // Update organization with empty body
+      organizationApiService.updateOrganization(organizationUpdated.id, OrganizationUpdateRequest())
 
-        assertEquals(
-            newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+      assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
 
-        // Update organization with null value as name
-        organizationApiService.updateOrganization(
-            organizationUpdated.id, OrganizationUpdateRequest(null))
+      // Update organization with null value as name
+      organizationApiService.updateOrganization(
+          organizationUpdated.id, OrganizationUpdateRequest(null))
 
-        assertEquals(
-            newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+      assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
     }
   }
 
@@ -1308,26 +1298,23 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       val organizationRegistered =
           organizationApiService.createOrganization(makeSimpleOrganizationCreateRequest(name))
       runAsPlatformAdmin()
-        val newName ="my-new-name"
-        val organizationUpdated =  organizationApiService.updateOrganization(
-            organizationRegistered.id, OrganizationUpdateRequest(newName))
+      val newName = "my-new-name"
+      val organizationUpdated =
+          organizationApiService.updateOrganization(
+              organizationRegistered.id, OrganizationUpdateRequest(newName))
 
-        assertEquals(
-            newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+      assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
 
-        // Update organization with empty body
-        organizationApiService.updateOrganization(
-            organizationUpdated.id, OrganizationUpdateRequest())
+      // Update organization with empty body
+      organizationApiService.updateOrganization(organizationUpdated.id, OrganizationUpdateRequest())
 
-        assertEquals(
-            newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+      assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
 
-        // Update organization with null value as name
-        organizationApiService.updateOrganization(
-            organizationUpdated.id, OrganizationUpdateRequest(null))
+      // Update organization with null value as name
+      organizationApiService.updateOrganization(
+          organizationUpdated.id, OrganizationUpdateRequest(null))
 
-        assertEquals(
-            newName, organizationApiService.getOrganization(organizationUpdated.id).name)
+      assertEquals(newName, organizationApiService.getOrganization(organizationUpdated.id).name)
     }
   }
 

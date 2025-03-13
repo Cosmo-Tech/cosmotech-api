@@ -35,91 +35,83 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @AutoConfigureRestDocs
 abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
 
-    @Autowired
-    private lateinit var context: WebApplicationContext
+  @Autowired private lateinit var context: WebApplicationContext
 
-    @Autowired
-    lateinit var rediSearchIndexer: RediSearchIndexer
+  @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
 
-    lateinit var mvc: MockMvc
+  lateinit var mvc: MockMvc
 
-    private val logger = LoggerFactory.getLogger(ControllerTestBase::class.java)
+  private val logger = LoggerFactory.getLogger(ControllerTestBase::class.java)
 
-    @BeforeEach
-    fun beforeEach(restDocumentationContextProvider: RestDocumentationContextProvider) {
+  @BeforeEach
+  fun beforeEach(restDocumentationContextProvider: RestDocumentationContextProvider) {
 
-        rediSearchIndexer.createIndexFor(Organization::class.java)
-        rediSearchIndexer.createIndexFor(Workspace::class.java)
-        rediSearchIndexer.createIndexFor(Solution::class.java)
+    rediSearchIndexer.createIndexFor(Organization::class.java)
+    rediSearchIndexer.createIndexFor(Workspace::class.java)
+    rediSearchIndexer.createIndexFor(Solution::class.java)
 
-        this.mvc =
-            MockMvcBuilders.webAppContextSetup(context)
-                .alwaysDo<DefaultMockMvcBuilder> { result ->
-                    if (logger.isTraceEnabled) {
-                        val response = result.response
-                        logger.trace(
-                            """
+    this.mvc =
+        MockMvcBuilders.webAppContextSetup(context)
+            .alwaysDo<DefaultMockMvcBuilder> { result ->
+              if (logger.isTraceEnabled) {
+                val response = result.response
+                logger.trace(
+                    """
                  <<< Response : 
                  [${response.status}]
                  ${response.headerNames.associateWith { response.getHeaderValues(it) }.entries.joinToString("\n")}}
                     
                   ${response.contentAsString}
                 """
-                                .trimIndent())
-                    }
-                }
-                .apply<DefaultMockMvcBuilder>(springSecurity())
-                .apply<DefaultMockMvcBuilder>(
-                    documentationConfiguration(restDocumentationContextProvider)
-                        .operationPreprocessors()
-                        .withRequestDefaults(
-                            modifyHeaders().remove(HttpHeaders.CONTENT_LENGTH),
-                            prettyPrint()
-                        )
-                        .withResponseDefaults(
-                            modifyHeaders()
-                                .remove("X-Content-Type-Options")
-                                .remove("X-XSS-Protection")
-                                .remove("X-Frame-Options")
-                                .remove(HttpHeaders.CONTENT_LENGTH)
-                                .remove(HttpHeaders.CACHE_CONTROL),
-                            prettyPrint()
-                        )
-                )
-                .build()
+                        .trimIndent())
+              }
+            }
+            .apply<DefaultMockMvcBuilder>(springSecurity())
+            .apply<DefaultMockMvcBuilder>(
+                documentationConfiguration(restDocumentationContextProvider)
+                    .operationPreprocessors()
+                    .withRequestDefaults(
+                        modifyHeaders().remove(HttpHeaders.CONTENT_LENGTH), prettyPrint())
+                    .withResponseDefaults(
+                        modifyHeaders()
+                            .remove("X-Content-Type-Options")
+                            .remove("X-XSS-Protection")
+                            .remove("X-Frame-Options")
+                            .remove(HttpHeaders.CONTENT_LENGTH)
+                            .remove(HttpHeaders.CACHE_CONTROL),
+                        prettyPrint()))
+            .build()
+  }
+
+  companion object {
+
+    private const val DEFAULT_REDIS_PORT = 6379
+
+    private const val REDIS_STACK_LASTEST_TAG_WITH_GRAPH = "6.2.6-v18"
+
+    @JvmStatic
+    val redisStackServer =
+        RedisStackContainer(
+            RedisStackContainer.DEFAULT_IMAGE_NAME.withTag(REDIS_STACK_LASTEST_TAG_WITH_GRAPH))
+
+    init {
+      redisStackServer.start()
     }
 
-
-    companion object {
-
-        private const val DEFAULT_REDIS_PORT = 6379
-
-        private const val REDIS_STACK_LASTEST_TAG_WITH_GRAPH = "6.2.6-v18"
-
-        @JvmStatic
-        val redisStackServer =
-            RedisStackContainer(
-                RedisStackContainer.DEFAULT_IMAGE_NAME.withTag(REDIS_STACK_LASTEST_TAG_WITH_GRAPH))
-
-        init {
-            redisStackServer.start()
-        }
-
-        @JvmStatic
-        @DynamicPropertySource
-        fun connectionProperties(registry: DynamicPropertyRegistry) {
-            val containerIp =
-                redisStackServer.containerInfo.networkSettings.networks.entries
-                    .elementAt(0)
-                    .value
-                    .ipAddress
-            registry.add("spring.data.redis.host") { containerIp }
-            registry.add("spring.data.redis.port") { DEFAULT_REDIS_PORT }
-        }
+    @JvmStatic
+    @DynamicPropertySource
+    fun connectionProperties(registry: DynamicPropertyRegistry) {
+      val containerIp =
+          redisStackServer.containerInfo.networkSettings.networks.entries
+              .elementAt(0)
+              .value
+              .ipAddress
+      registry.add("spring.data.redis.host") { containerIp }
+      registry.add("spring.data.redis.port") { DEFAULT_REDIS_PORT }
     }
+  }
 
-
-    override fun redisServers(): MutableCollection<RedisServer> {
-        return mutableListOf(redisStackServer)
-    }
+  override fun redisServers(): MutableCollection<RedisServer> {
+    return mutableListOf(redisStackServer)
+  }
 }

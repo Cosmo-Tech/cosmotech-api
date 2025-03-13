@@ -127,9 +127,9 @@ class SolutionServiceImpl(
   }
 
   override fun updateSolutionParameterGroups(
-    organizationId: String,
-    solutionId: String,
-    runTemplateParameterGroup: List<RunTemplateParameterGroup>
+      organizationId: String,
+      solutionId: String,
+      runTemplateParameterGroup: List<RunTemplateParameterGroup>
   ): List<RunTemplateParameterGroup> {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
@@ -148,9 +148,9 @@ class SolutionServiceImpl(
   }
 
   override fun updateSolutionParameters(
-    organizationId: String,
-    solutionId: String,
-    runTemplateParameter: List<RunTemplateParameter>
+      organizationId: String,
+      solutionId: String,
+      runTemplateParameter: List<RunTemplateParameter>
   ): List<RunTemplateParameter> {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
@@ -158,8 +158,7 @@ class SolutionServiceImpl(
       return runTemplateParameter
     }
 
-    val runTemplateParameterMap =
-        existingSolution.parameters.associateBy { it.id }.toMutableMap()
+    val runTemplateParameterMap = existingSolution.parameters.associateBy { it.id }.toMutableMap()
     runTemplateParameterMap.putAll(
         runTemplateParameter.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameters = runTemplateParameterMap.values.toMutableList()
@@ -169,9 +168,9 @@ class SolutionServiceImpl(
   }
 
   override fun updateSolutionRunTemplates(
-    organizationId: String,
-    solutionId: String,
-    runTemplate: List<RunTemplate>
+      organizationId: String,
+      solutionId: String,
+      runTemplate: List<RunTemplate>
   ): List<RunTemplate> {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
@@ -187,32 +186,36 @@ class SolutionServiceImpl(
     return runTemplate
   }
 
-  override fun createSolution(organizationId: String, solutionCreateRequest: SolutionCreateRequest): Solution {
+  override fun createSolution(
+      organizationId: String,
+      solutionCreateRequest: SolutionCreateRequest
+  ): Solution {
     organizationApiService.getVerifiedOrganization(organizationId, PERMISSION_CREATE_CHILDREN)
 
     val solutionId = idGenerator.generate("solution", prependPrefix = "sol-")
-    val security = csmRbac.initSecurity(
-      solutionCreateRequest.security.toGenericSecurity(solutionId)).toResourceSecurity()
+    val security =
+        csmRbac
+            .initSecurity(solutionCreateRequest.security.toGenericSecurity(solutionId))
+            .toResourceSecurity()
     val createdSolution =
-      Solution(
-        id = solutionId,
-        key = solutionCreateRequest.key,
-        name = solutionCreateRequest.name,
-        ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-        description = solutionCreateRequest.description,
-        repository = solutionCreateRequest.repository,
-        version = solutionCreateRequest.version,
-        tags = solutionCreateRequest.tags,
-        organizationId = organizationId,
-        runTemplates = solutionCreateRequest.runTemplates!!,
-        parameters = solutionCreateRequest.parameters!!,
-        parameterGroups = solutionCreateRequest.parameterGroups!!,
-        url = solutionCreateRequest.url,
-        csmSimulator = solutionCreateRequest.csmSimulator,
-        alwaysPull = solutionCreateRequest.alwaysPull,
-        sdkVersion = solutionCreateRequest.sdkVersion,
-        security = security
-      )
+        Solution(
+            id = solutionId,
+            key = solutionCreateRequest.key,
+            name = solutionCreateRequest.name,
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+            description = solutionCreateRequest.description,
+            repository = solutionCreateRequest.repository,
+            version = solutionCreateRequest.version,
+            tags = solutionCreateRequest.tags,
+            organizationId = organizationId,
+            runTemplates = solutionCreateRequest.runTemplates!!,
+            parameters = solutionCreateRequest.parameters!!,
+            parameterGroups = solutionCreateRequest.parameterGroups!!,
+            url = solutionCreateRequest.url,
+            csmSimulator = solutionCreateRequest.csmSimulator,
+            alwaysPull = solutionCreateRequest.alwaysPull,
+            sdkVersion = solutionCreateRequest.sdkVersion,
+            security = security)
     return solutionRepository.save(createdSolution)
   }
 
@@ -236,35 +239,37 @@ class SolutionServiceImpl(
   }
 
   override fun updateSolution(
-    organizationId: String,
-    solutionId: String,
-    solutionUpdateRequest: SolutionUpdateRequest
+      organizationId: String,
+      solutionId: String,
+      solutionUpdateRequest: SolutionUpdateRequest
   ): Solution {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
-    val updatedSolution = Solution(
-      id = solutionId,
-      name = solutionUpdateRequest.name ?: existingSolution.name,
-      organizationId = existingSolution.organizationId,
-      ownerId = existingSolution.ownerId,
-      description = solutionUpdateRequest.description ?: existingSolution.description,
-      tags = solutionUpdateRequest.tags ?: existingSolution.tags,
-      repository = solutionUpdateRequest.repository ?: existingSolution.repository,
-      key = solutionUpdateRequest.key ?: existingSolution.key,
-      version = solutionUpdateRequest.version ?: existingSolution.version,
-      url = solutionUpdateRequest.url ?: existingSolution.url,
-      csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
-      alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
-      parameters = existingSolution.parameters,
-      sdkVersion = solutionUpdateRequest.sdkVersion ?: existingSolution.sdkVersion,
-      parameterGroups = existingSolution.parameterGroups,
-      security = existingSolution.security
-    )
+    val updatedSolution =
+        Solution(
+            id = solutionId,
+            name = solutionUpdateRequest.name ?: existingSolution.name,
+            organizationId = existingSolution.organizationId,
+            ownerId = existingSolution.ownerId,
+            description = solutionUpdateRequest.description ?: existingSolution.description,
+            tags = solutionUpdateRequest.tags ?: existingSolution.tags,
+            repository = solutionUpdateRequest.repository ?: existingSolution.repository,
+            key = solutionUpdateRequest.key ?: existingSolution.key,
+            version = solutionUpdateRequest.version ?: existingSolution.version,
+            url = solutionUpdateRequest.url ?: existingSolution.url,
+            csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
+            alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
+            parameters = existingSolution.parameters,
+            sdkVersion = solutionUpdateRequest.sdkVersion ?: existingSolution.sdkVersion,
+            parameterGroups = existingSolution.parameterGroups,
+            security = existingSolution.security)
 
     val hasChanged =
         existingSolution
             .compareToAndMutateIfNeeded(
-              updatedSolution, excludedFields = arrayOf("ownerId", "runTemplates","parameters","parameterGroups"))
+                updatedSolution,
+                excludedFields =
+                    arrayOf("ownerId", "runTemplates", "parameters", "parameterGroups"))
             .isNotEmpty()
 
     return if (hasChanged) {
@@ -309,21 +314,22 @@ class SolutionServiceImpl(
   }
 
   override fun updateSolutionDefaultSecurity(
-    organizationId: String,
-    solutionId: String,
-    solutionRole: SolutionRole
+      organizationId: String,
+      solutionId: String,
+      solutionRole: SolutionRole
   ): SolutionSecurity {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.setDefault(solution.security.toGenericSecurity(solutionId), solutionRole.role)
+    val rbacSecurity =
+        csmRbac.setDefault(solution.security.toGenericSecurity(solutionId), solutionRole.role)
     solution.security = rbacSecurity.toResourceSecurity()
     solutionRepository.save(solution)
     return solution.security
   }
 
   override fun createSolutionAccessControl(
-    organizationId: String,
-    solutionId: String,
-    solutionAccessControl: SolutionAccessControl
+      organizationId: String,
+      solutionId: String,
+      solutionAccessControl: SolutionAccessControl
   ): SolutionAccessControl {
     val organization = organizationApiService.getVerifiedOrganization(organizationId)
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
@@ -341,8 +347,9 @@ class SolutionServiceImpl(
             solutionAccessControl.role)
     solution.security = rbacSecurity.toResourceSecurity()
     solutionRepository.save(solution)
-    val rbacAccessControl = csmRbac.getAccessControl(
-      solution.security.toGenericSecurity(solutionId), solutionAccessControl.id)
+    val rbacAccessControl =
+        csmRbac.getAccessControl(
+            solution.security.toGenericSecurity(solutionId), solutionAccessControl.id)
     return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
@@ -352,7 +359,8 @@ class SolutionServiceImpl(
       identityId: String
   ): SolutionAccessControl {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ_SECURITY)
-    val rbacAccessControl = csmRbac.getAccessControl(solution.security.toGenericSecurity(solutionId), identityId)
+    val rbacAccessControl =
+        csmRbac.getAccessControl(solution.security.toGenericSecurity(solutionId), identityId)
     return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
@@ -364,19 +372,27 @@ class SolutionServiceImpl(
   ): SolutionAccessControl {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
     csmRbac.checkUserExists(
-        solution.security.toGenericSecurity(
-          solutionId), identityId, "User '$identityId' not found in solution $solutionId")
-    val rbacSecurity = csmRbac.setUserRole(
-      solution.security.toGenericSecurity(solutionId), identityId, solutionRole.role)
+        solution.security.toGenericSecurity(solutionId),
+        identityId,
+        "User '$identityId' not found in solution $solutionId")
+    val rbacSecurity =
+        csmRbac.setUserRole(
+            solution.security.toGenericSecurity(solutionId), identityId, solutionRole.role)
     solution.security = rbacSecurity.toResourceSecurity()
     solutionRepository.save(solution)
-    val rbacAccessControl = csmRbac.getAccessControl(solution.security.toGenericSecurity(solutionId), identityId)
+    val rbacAccessControl =
+        csmRbac.getAccessControl(solution.security.toGenericSecurity(solutionId), identityId)
     return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
-  override fun deleteSolutionAccessControl(organizationId: String, solutionId: String, identityId: String) {
+  override fun deleteSolutionAccessControl(
+      organizationId: String,
+      solutionId: String,
+      identityId: String
+  ) {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.removeUser(solution.security.toGenericSecurity(solutionId), identityId)
+    val rbacSecurity =
+        csmRbac.removeUser(solution.security.toGenericSecurity(solutionId), identityId)
     solution.security = rbacSecurity.toResourceSecurity()
     solutionRepository.save(solution)
   }
@@ -402,7 +418,9 @@ class SolutionServiceImpl(
   }
 
   fun updateSecurityVisibility(solution: Solution): Solution {
-    if (csmRbac.check(solution.security.toGenericSecurity(solution.id), PERMISSION_READ_SECURITY).not()) {
+    if (csmRbac
+        .check(solution.security.toGenericSecurity(solution.id), PERMISSION_READ_SECURITY)
+        .not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = solution.security.accessControlList.firstOrNull { it.id == username }
       if (retrievedAC != null) {
@@ -422,16 +440,14 @@ class SolutionServiceImpl(
   }
 }
 
-
-fun SolutionSecurity?.toGenericSecurity(solutionId: String) = RbacSecurity(
-  solutionId,
-  this?.default ?: ROLE_NONE,
-  this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList() ?: mutableListOf()
-)
+fun SolutionSecurity?.toGenericSecurity(solutionId: String) =
+    RbacSecurity(
+        solutionId,
+        this?.default ?: ROLE_NONE,
+        this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
+            ?: mutableListOf())
 
 fun RbacSecurity.toResourceSecurity() =
-  SolutionSecurity(
-    this.default,
-    this.accessControlList
-      .map { SolutionAccessControl(it.id, it.role) }
-      .toMutableList())
+    SolutionSecurity(
+        this.default,
+        this.accessControlList.map { SolutionAccessControl(it.id, it.role) }.toMutableList())

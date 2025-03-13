@@ -33,9 +33,9 @@ internal class RunnerApiServiceImpl(
   override fun getRunnerService(): RunnerService = runnerServiceManager.getRunnerService()
 
   override fun createRunner(
-    organizationId: String,
-    workspaceId: String,
-    runnerCreateRequest: RunnerCreateRequest
+      organizationId: String,
+      workspaceId: String,
+      runnerCreateRequest: RunnerCreateRequest
   ): Runner {
     val runnerService =
         getRunnerService()
@@ -61,21 +61,15 @@ internal class RunnerApiServiceImpl(
   }
 
   override fun updateRunner(
-    organizationId: String,
-    workspaceId: String,
-    runnerId: String,
-    runnerUpdateRequest: RunnerUpdateRequest
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+      runnerUpdateRequest: RunnerUpdateRequest
   ): Runner {
-    val runnerService = getRunnerService()
-      .inOrganization(organizationId)
-      .inWorkspace(workspaceId)
-    val runnerInstance = runnerService
-      .getInstance(runnerId)
-      .userHasPermission(PERMISSION_WRITE)
+    val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
+    val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
 
-    return runnerService
-      .saveInstance(runnerInstance
-        .setValueFrom(runnerUpdateRequest))
+    return runnerService.saveInstance(runnerInstance.setValueFrom(runnerUpdateRequest))
   }
 
   override fun deleteRunner(organizationId: String, workspaceId: String, runnerId: String) {
@@ -116,10 +110,10 @@ internal class RunnerApiServiceImpl(
   }
 
   override fun createRunnerAccessControl(
-    organizationId: String,
-    workspaceId: String,
-    runnerId: String,
-    runnerAccessControl: RunnerAccessControl
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+      runnerAccessControl: RunnerAccessControl
   ): RunnerAccessControl {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
@@ -170,10 +164,10 @@ internal class RunnerApiServiceImpl(
   }
 
   override fun deleteRunnerAccessControl(
-    organizationId: String,
-    workspaceId: String,
-    runnerId: String,
-    identityId: String
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+      identityId: String
   ) {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
@@ -197,10 +191,10 @@ internal class RunnerApiServiceImpl(
   }
 
   override fun listRunnerPermissions(
-    organizationId: String,
-    workspaceId: String,
-    runnerId: String,
-    role: String
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+      role: String
   ): List<String> {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
@@ -208,7 +202,11 @@ internal class RunnerApiServiceImpl(
     return com.cosmotech.api.rbac.getPermissions(role, getRunnerRolesDefinition())
   }
 
-  override fun listRunnerSecurityUsers(organizationId: String, workspaceId: String, runnerId: String): List<String> {
+  override fun listRunnerSecurityUsers(
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String
+  ): List<String> {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
@@ -217,10 +215,10 @@ internal class RunnerApiServiceImpl(
   }
 
   override fun updateRunnerDefaultSecurity(
-    organizationId: String,
-    workspaceId: String,
-    runnerId: String,
-    runnerRole: RunnerRole
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+      runnerRole: RunnerRole
   ): RunnerSecurity {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
