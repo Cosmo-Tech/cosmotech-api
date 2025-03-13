@@ -72,6 +72,9 @@ jobs:
             packageName: ".meta"
           - testPrefix: Home
             packageName: ""
+
+    name: controller_tests - ${{ matrix.service.testPrefix }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -124,8 +127,7 @@ jobs:
   integration_tests:
     runs-on: ubuntu-latest
     needs:
-      - unit_tests
-      - controller_tests
+      - build
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -150,6 +152,9 @@ jobs:
             packageName: run
           - testPrefix: Runner
             packageName: runner
+
+    name: integration_tests - ${{ matrix.service.testPrefix }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -391,6 +396,7 @@ jobs:
     needs:
       - unit_tests
       - integration_tests
+      - controller_tests
       - test_helm
     permissions:
       packages: write
@@ -502,6 +508,7 @@ jobs:
     needs:
       - unit_tests
       - integration_tests
+      - controller_tests
       - test_helm
     permissions:
       packages: write
