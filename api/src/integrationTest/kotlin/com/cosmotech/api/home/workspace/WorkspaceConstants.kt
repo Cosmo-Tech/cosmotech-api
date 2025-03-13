@@ -16,6 +16,5 @@ object WorkspaceConstants {
 
   object RequestContent {}
 
-    object Errors {
-    }
+  object Errors {}
 }

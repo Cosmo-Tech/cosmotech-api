@@ -852,39 +852,34 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(ROLE_EDITOR, datasetAC.role)
   }
 
-    @Test
-    fun `test create Runner with only mandatory fields`() {
-        val userId = "random_user_with_patform_admin_role"
-        every { getCurrentAccountIdentifier(any()) } returns userId
-        every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+  @Test
+  fun `test create Runner with only mandatory fields`() {
+    val userId = "random_user_with_patform_admin_role"
+    every { getCurrentAccountIdentifier(any()) } returns userId
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
 
-        logger.info("should create a new Runner")
-        val name = "new_runner"
-        val runTemplateId = "runTemplateId"
-        val ownerName = "owner"
-        val newRunner =
-            RunnerCreateRequest(
-                name = name,
-                solutionId = solutionSaved.id,
-                runTemplateId = runTemplateId,
-                ownerName = ownerName
-            )
+    logger.info("should create a new Runner")
+    val name = "new_runner"
+    val runTemplateId = "runTemplateId"
+    val ownerName = "owner"
+    val newRunner =
+        RunnerCreateRequest(
+            name = name,
+            solutionId = solutionSaved.id,
+            runTemplateId = runTemplateId,
+            ownerName = ownerName)
 
-        val newRunnerCreated = runnerApiService
-            .createRunner(
-                organizationSaved.id,
-                workspaceSaved.id,
-                newRunner)
+    val newRunnerCreated =
+        runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
 
-        assertNotNull(newRunnerCreated)
-        assertEquals(name,newRunnerCreated.name)
-        assertEquals(runTemplateId,newRunnerCreated.runTemplateId)
-        assertEquals(ownerName,newRunnerCreated.ownerName)
-        assertEquals(ROLE_NONE,newRunnerCreated.security.default)
-        assertEquals(userId,newRunnerCreated.security.accessControlList[0].id)
-        assertEquals(ROLE_ADMIN,newRunnerCreated.security.accessControlList[0].role)
-
-    }
+    assertNotNull(newRunnerCreated)
+    assertEquals(name, newRunnerCreated.name)
+    assertEquals(runTemplateId, newRunnerCreated.runTemplateId)
+    assertEquals(ownerName, newRunnerCreated.ownerName)
+    assertEquals(ROLE_NONE, newRunnerCreated.security.default)
+    assertEquals(userId, newRunnerCreated.security.accessControlList[0].id)
+    assertEquals(ROLE_ADMIN, newRunnerCreated.security.accessControlList[0].role)
+  }
 
   @Test
   fun `test runner creation with unknown runtemplateId`() {

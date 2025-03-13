@@ -217,33 +217,31 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 solutionId = solutionId,
             ))
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/workspaces")
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$[0].id").value(firstWorkspaceId))
-            .andExpect(jsonPath("$[0].key").value(firstWorkspaceKey))
-            .andExpect(jsonPath("$[0].name").value(firstWorkspaceName))
-            .andExpect(jsonPath("$[0].ownerId").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$[0].organizationId").value(organizationId))
-            .andExpect(jsonPath("$[0].solution.solutionId").value(solutionId))
-            .andExpect(jsonPath("$[0].security.default").value(ROLE_NONE))
-            .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
-            .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$[1].id").value(secondWorkspaceId))
-            .andExpect(jsonPath("$[1].key").value(secondWorkspaceKey))
-            .andExpect(jsonPath("$[1].name").value(secondWorkspaceName))
-            .andExpect(jsonPath("$[1].ownerId").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$[1].organizationId").value(organizationId))
-            .andExpect(jsonPath("$[1].solution.solutionId").value(solutionId))
-            .andExpect(jsonPath("$[1].security.default").value(ROLE_NONE))
-            .andExpect(jsonPath("$[1].security.accessControlList[0].role").value(ROLE_ADMIN))
-            .andExpect(jsonPath("$[1].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/workspaces/GET"))
-    }
+    mvc.perform(
+            get("/organizations/$organizationId/workspaces")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$[0].id").value(firstWorkspaceId))
+        .andExpect(jsonPath("$[0].key").value(firstWorkspaceKey))
+        .andExpect(jsonPath("$[0].name").value(firstWorkspaceName))
+        .andExpect(jsonPath("$[0].ownerId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[0].solution.solutionId").value(solutionId))
+        .andExpect(jsonPath("$[0].security.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[1].id").value(secondWorkspaceId))
+        .andExpect(jsonPath("$[1].key").value(secondWorkspaceKey))
+        .andExpect(jsonPath("$[1].name").value(secondWorkspaceName))
+        .andExpect(jsonPath("$[1].ownerId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[1].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[1].solution.solutionId").value(solutionId))
+        .andExpect(jsonPath("$[1].security.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$[1].security.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$[1].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(document("organizations/{organization_id}/workspaces/GET"))
+  }
 
   @Test
   @WithMockOauth2User
@@ -292,11 +290,9 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 options,
                 tags))
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/workspaces/$workspaceId")
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
+    mvc.perform(
+            get("/organizations/$organizationId/workspaces/$workspaceId")
+                .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(WORKSPACE_NAME))
         .andExpect(jsonPath("$.key").value(WORKSPACE_KEY))
@@ -344,17 +340,14 @@ class WorkspaceControllerTests : ControllerTestBase() {
         createWorkspaceAndReturnId(
             mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/workspaces/$workspaceId/security")
-            )
-            .andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$.default").value(ROLE_NONE))
-            .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
-            .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/security/GET"))
-    }
+    mvc.perform(get("/organizations/$organizationId/workspaces/$workspaceId/security"))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/security/GET"))
+  }
 
   @Test
   @WithMockOauth2User
@@ -394,10 +387,9 @@ class WorkspaceControllerTests : ControllerTestBase() {
         createWorkspaceAndReturnId(
             mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/workspaces/$workspaceId/security/access/$PLATFORM_ADMIN_EMAIL")
-            )
+    mvc.perform(
+            get(
+                "/organizations/$organizationId/workspaces/$workspaceId/security/access/$PLATFORM_ADMIN_EMAIL"))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.id").value(PLATFORM_ADMIN_EMAIL))
@@ -521,12 +513,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 solutionId = solutionId,
                 security = workspaceSecurity))
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/workspaces/$workspaceId/security/users")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-            )
+    mvc.perform(
+            get("/organizations/$organizationId/workspaces/$workspaceId/security/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[1]").value(NEW_USER_ID))
@@ -544,15 +534,13 @@ class WorkspaceControllerTests : ControllerTestBase() {
         createWorkspaceAndReturnId(
             mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/workspaces/$workspaceId/files")
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().is2xxSuccessful)
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/files/GET"))
-    }
+    mvc.perform(
+            get("/organizations/$organizationId/workspaces/$workspaceId/files")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/files/GET"))
+  }
 
   @Test
   @WithMockOauth2User
@@ -679,12 +667,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .accept(MediaType.APPLICATION_JSON)
             .with(csrf()))
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
-                    .param("file_name",destination+"null")
-                    .accept(MediaType.APPLICATION_OCTET_STREAM)
-            )
+    mvc.perform(
+            get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
+                .param("file_name", destination + "null")
+                .accept(MediaType.APPLICATION_OCTET_STREAM))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(

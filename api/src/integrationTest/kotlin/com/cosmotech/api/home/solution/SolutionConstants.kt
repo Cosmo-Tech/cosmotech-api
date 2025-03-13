@@ -23,6 +23,5 @@ object SolutionConstants {
         """{"key":"$SOLUTION_KEY","name":"$SOLUTION_NAME","repository":"$SOLUTION_REPOSITORY","version":"$SOLUTION_VERSION","csmSimulator":"$SOLUTION_SIMULATOR"}"""
   }
 
-    object Errors {
-    }
+  object Errors {}
 }

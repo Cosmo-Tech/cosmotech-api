@@ -19,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
-import org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT
 import org.springframework.http.HttpHeaders
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
@@ -33,8 +32,9 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT
+import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.MountableFile
 
 @Testcontainers
@@ -101,77 +101,76 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
     private const val DEFAULT_REDIS_PORT = 6379
     private const val REDIS_STACK_LASTEST_TAG_WITH_GRAPH = "6.2.6-v18"
 
+    var postgres: PostgreSQLContainer<*> =
+        PostgreSQLContainer("postgres:alpine3.19")
+            .withCopyFileToContainer(
+                MountableFile.forClasspathResource("init-db.sql"), "/docker-entrypoint-initdb.d/")
 
-        var postgres: PostgreSQLContainer<*> =
-            PostgreSQLContainer("postgres:alpine3.19")
-                .withCopyFileToContainer(
-                    MountableFile.forClasspathResource("init-db.sql"), "/docker-entrypoint-initdb.d/")
-
-        var redisStackServer =
+    var redisStackServer =
         RedisStackContainer(
             RedisStackContainer.DEFAULT_IMAGE_NAME.withTag(REDIS_STACK_LASTEST_TAG_WITH_GRAPH))
 
-        init {
-            redisStackServer.start()
-            postgres.start()
-        }
+    init {
+      redisStackServer.start()
+      postgres.start()
+    }
 
     @JvmStatic
     @DynamicPropertySource
     fun connectionProperties(registry: DynamicPropertyRegistry) {
       initPostgresConfiguration(registry)
-            initRedisConfiguration(registry)
-        }
-
-        private fun initRedisConfiguration(registry: DynamicPropertyRegistry) {
-            val containerIp =
-                redisStackServer.containerInfo.networkSettings.networks.entries
-                    .elementAt(0)
-                    .value
-                    .ipAddress
-
-            registry.add("spring.data.redis.host") { containerIp }
-            registry.add("spring.data.redis.port") { DEFAULT_REDIS_PORT }
-        }
-
-        private fun initPostgresConfiguration(registry: DynamicPropertyRegistry) {
-            registry.add("csm.platform.internalResultServices.storage.host") { postgres.host }
-            registry.add("csm.platform.internalResultServices.storage.port") {
-                postgres.getMappedPort(POSTGRESQL_PORT)
-            }
-            registry.add("csm.platform.internalResultServices.storage.admin.username") {
-                ADMIN_USER_CREDENTIALS
-            }
-            registry.add("csm.platform.internalResultServices.storage.admin.password") {
-                ADMIN_USER_CREDENTIALS
-            }
-            registry.add("csm.platform.internalResultServices.storage.writer.username") {
-                WRITER_USER_CREDENTIALS
-            }
-            registry.add("csm.platform.internalResultServices.storage.writer.password") {
-                WRITER_USER_CREDENTIALS
-            }
-            registry.add("csm.platform.internalResultServices.storage.reader.username") {
-                READER_USER_CREDENTIALS
-            }
-            registry.add("csm.platform.internalResultServices.storage.reader.password") {
-                READER_USER_CREDENTIALS
-            }
-        }
+      initRedisConfiguration(registry)
     }
 
-    @BeforeAll
-    fun beforeAll() {
-        redisStackServer.start()
-        postgres.start()
+    private fun initRedisConfiguration(registry: DynamicPropertyRegistry) {
+      val containerIp =
+          redisStackServer.containerInfo.networkSettings.networks.entries
+              .elementAt(0)
+              .value
+              .ipAddress
+
+      registry.add("spring.data.redis.host") { containerIp }
+      registry.add("spring.data.redis.port") { DEFAULT_REDIS_PORT }
     }
 
-    @AfterAll
-    fun afterAll() {
-        postgres.stop()
+    private fun initPostgresConfiguration(registry: DynamicPropertyRegistry) {
+      registry.add("csm.platform.internalResultServices.storage.host") { postgres.host }
+      registry.add("csm.platform.internalResultServices.storage.port") {
+        postgres.getMappedPort(POSTGRESQL_PORT)
+      }
+      registry.add("csm.platform.internalResultServices.storage.admin.username") {
+        ADMIN_USER_CREDENTIALS
+      }
+      registry.add("csm.platform.internalResultServices.storage.admin.password") {
+        ADMIN_USER_CREDENTIALS
+      }
+      registry.add("csm.platform.internalResultServices.storage.writer.username") {
+        WRITER_USER_CREDENTIALS
+      }
+      registry.add("csm.platform.internalResultServices.storage.writer.password") {
+        WRITER_USER_CREDENTIALS
+      }
+      registry.add("csm.platform.internalResultServices.storage.reader.username") {
+        READER_USER_CREDENTIALS
+      }
+      registry.add("csm.platform.internalResultServices.storage.reader.password") {
+        READER_USER_CREDENTIALS
+      }
     }
+  }
 
-    override fun redisServers(): MutableCollection<RedisServer> {
-        return mutableListOf(redisStackServer)
-    }
+  @BeforeAll
+  fun beforeAll() {
+    redisStackServer.start()
+    postgres.start()
+  }
+
+  @AfterAll
+  fun afterAll() {
+    postgres.stop()
+  }
+
+  override fun redisServers(): MutableCollection<RedisServer> {
+    return mutableListOf(redisStackServer)
+  }
 }

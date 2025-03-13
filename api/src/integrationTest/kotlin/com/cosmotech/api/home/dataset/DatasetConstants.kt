@@ -9,16 +9,12 @@ package com.cosmotech.api.home.dataset
  */
 object DatasetConstants {
 
-    const val DATASET_NAME = "my_dataset_name"
-    const val NEW_USER_ID = "new.user@cosmotech.com"
-    const val NEW_USER_ROLE = "editor"
-    const val NEW_DATASET_NAME = "my_new_dataset_name"
+  const val DATASET_NAME = "my_dataset_name"
+  const val NEW_USER_ID = "new.user@cosmotech.com"
+  const val NEW_USER_ROLE = "editor"
+  const val NEW_DATASET_NAME = "my_new_dataset_name"
 
-    object RequestContent {
+  object RequestContent {}
 
-    }
-
-    object Errors {
-    }
-
+  object Errors {}
 }
