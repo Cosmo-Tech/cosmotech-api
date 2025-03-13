@@ -51,7 +51,8 @@ class ControllerTestUtils {
       return OrganizationCreateRequest(name = name, security = security)
     }
   }
-    object SolutionUtils{
+
+  object SolutionUtils {
 
     @JvmStatic
     fun createSolutionAndReturnId(
@@ -71,38 +72,39 @@ class ControllerTestUtils {
                     .contentAsString)
             .getString("id")
 
-        @JvmStatic
-        fun constructSolutionCreateRequest(key: String = SOLUTION_KEY,
-                                           name: String = SOLUTION_NAME,
-                                           repository: String = SOLUTION_REPOSITORY,
-                                           version: String = SOLUTION_VERSION,
-                                           csmSimulator: String = SOLUTION_SIMULATOR,
-                                           description: String="",
-                                           alwaysPull: Boolean? = null,
-                                           tags:MutableList<String> = mutableListOf(),
-                                           parameters: MutableList<RunTemplateParameter> = mutableListOf(),
-                                           parameterGroups: MutableList<RunTemplateParameterGroup> = mutableListOf(),
-                                           runTemplates: MutableList<RunTemplate> = mutableListOf(),
-                                           sdkVersion: String="",
-                                           url: String="",
-                                           security: SolutionSecurity? = null
-        ):SolutionCreateRequest {
-            return SolutionCreateRequest(
-                key = key,
-                name = name,
-                repository = repository,
-                version = version,
-                csmSimulator = csmSimulator,
-                description = description,
-                alwaysPull = alwaysPull,
-                tags = tags,
-                parameters = parameters,
-                parameterGroups = parameterGroups,
-                runTemplates = runTemplates,
-                sdkVersion = sdkVersion,
-                url = url,
-                security = security,
-)
+    @JvmStatic
+    fun constructSolutionCreateRequest(
+        key: String = SOLUTION_KEY,
+        name: String = SOLUTION_NAME,
+        repository: String = SOLUTION_REPOSITORY,
+        version: String = SOLUTION_VERSION,
+        csmSimulator: String = SOLUTION_SIMULATOR,
+        description: String = "",
+        alwaysPull: Boolean? = null,
+        tags: MutableList<String> = mutableListOf(),
+        parameters: MutableList<RunTemplateParameter> = mutableListOf(),
+        parameterGroups: MutableList<RunTemplateParameterGroup> = mutableListOf(),
+        runTemplates: MutableList<RunTemplate> = mutableListOf(),
+        sdkVersion: String = "",
+        url: String = "",
+        security: SolutionSecurity? = null
+    ): SolutionCreateRequest {
+      return SolutionCreateRequest(
+          key = key,
+          name = name,
+          repository = repository,
+          version = version,
+          csmSimulator = csmSimulator,
+          description = description,
+          alwaysPull = alwaysPull,
+          tags = tags,
+          parameters = parameters,
+          parameterGroups = parameterGroups,
+          runTemplates = runTemplates,
+          sdkVersion = sdkVersion,
+          url = url,
+          security = security,
+      )
     }
 
     @JvmStatic
@@ -132,109 +134,108 @@ class ControllerTestUtils {
     }
   }
 
+  object RunnerUtils {
 
-
-    object RunnerUtils{
-
-
-        @JvmStatic
-        fun createRunnerAndReturnId(mvc: MockMvc,
-                                    organizationId:String,
-                                    workspaceId:String,
-                                    runnerCreateRequest: RunnerCreateRequest
-        ): String = JSONObject(mvc
-            .perform(
-                post("/organizations/$organizationId/workspaces/$workspaceId/runners")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        JSONObject(runnerCreateRequest).toString()
-                    )
-                    .accept(MediaType.APPLICATION_JSON)
-                    .with(csrf())
-            ).andReturn().response.contentAsString)
+    @JvmStatic
+    fun createRunnerAndReturnId(
+        mvc: MockMvc,
+        organizationId: String,
+        workspaceId: String,
+        runnerCreateRequest: RunnerCreateRequest
+    ): String =
+        JSONObject(
+                mvc.perform(
+                        post("/organizations/$organizationId/workspaces/$workspaceId/runners")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(JSONObject(runnerCreateRequest).toString())
+                            .accept(MediaType.APPLICATION_JSON)
+                            .with(csrf()))
+                    .andReturn()
+                    .response
+                    .contentAsString)
             .getString("id")
 
+    @JvmStatic
+    fun constructRunnerObject(
+        name: String = RUNNER_NAME,
+        solutionId: String,
+        runTemplateId: String,
+        parentId: String? = null,
+        solutionName: String? = null,
+        runTemplateName: String? = null,
+        security: RunnerSecurity? = null,
+        runSizing: RunnerResourceSizing? = null,
+        ownerName: String = RUNNER_OWNER_NAME,
+        description: String = "",
+        tags: MutableList<String> = mutableListOf(),
+        datasetList: MutableList<String>? = mutableListOf(),
+        parametersValues: MutableList<RunnerRunTemplateParameterValue>? = mutableListOf(),
+    ): RunnerCreateRequest {
 
-        @JvmStatic
-        fun constructRunnerObject(name : String = RUNNER_NAME,
-                                  solutionId: String,
-                                  runTemplateId: String,
-                                  parentId:String? = null,
-                                  solutionName:String? = null,
-                                  runTemplateName:String? = null,
-                                  security: RunnerSecurity? = null,
-                                  runSizing: RunnerResourceSizing? = null,
-                                  ownerName: String = RUNNER_OWNER_NAME,
-                                  description: String = "",
-                                  tags:MutableList<String> = mutableListOf(),
-                                  datasetList:MutableList<String>? = mutableListOf(),
-                                  parametersValues: MutableList<RunnerRunTemplateParameterValue>? = mutableListOf(),
-                                  ) : RunnerCreateRequest {
-
-            return RunnerCreateRequest(
-                name = name,
-                solutionId = solutionId,
-                runTemplateId = runTemplateId,
-                ownerName = ownerName,
-                description = description,
-                tags = tags,
-                datasetList = datasetList,
-                parentId = parentId,
-                solutionName = solutionName,
-                runTemplateName = runTemplateName,
-                security = security,
-                runSizing = runSizing,
-                parametersValues = parametersValues
-            )
-        }
-
-        @JvmStatic
-        fun constructUpdateRunnerObject(name : String = RUNNER_NAME,
-                                  runTemplateId: String,
-                                  solutionName:String? = null,
-                                  runTemplateName:String? = null,
-                                  runSizing: RunnerResourceSizing? = null,
-                                  ownerName: String = RUNNER_OWNER_NAME,
-                                  description: String = "",
-                                  tags:MutableList<String> = mutableListOf(),
-                                  datasetList:MutableList<String>? = mutableListOf(),
-                                  parametersValues: MutableList<RunnerRunTemplateParameterValue>? = mutableListOf(),
-        ) : RunnerUpdateRequest {
-
-            return RunnerUpdateRequest(
-                name = name,
-                description = description,
-                tags = tags,
-                runTemplateId = runTemplateId,
-                datasetList = datasetList,
-                runSizing = runSizing,
-                parametersValues = parametersValues,
-                ownerName = ownerName,
-                solutionName = solutionName,
-                runTemplateName = runTemplateName
-            )
-        }
-
+      return RunnerCreateRequest(
+          name = name,
+          solutionId = solutionId,
+          runTemplateId = runTemplateId,
+          ownerName = ownerName,
+          description = description,
+          tags = tags,
+          datasetList = datasetList,
+          parentId = parentId,
+          solutionName = solutionName,
+          runTemplateName = runTemplateName,
+          security = security,
+          runSizing = runSizing,
+          parametersValues = parametersValues)
     }
 
+    @JvmStatic
+    fun constructUpdateRunnerObject(
+        name: String = RUNNER_NAME,
+        runTemplateId: String,
+        solutionName: String? = null,
+        runTemplateName: String? = null,
+        runSizing: RunnerResourceSizing? = null,
+        ownerName: String = RUNNER_OWNER_NAME,
+        description: String = "",
+        tags: MutableList<String> = mutableListOf(),
+        datasetList: MutableList<String>? = mutableListOf(),
+        parametersValues: MutableList<RunnerRunTemplateParameterValue>? = mutableListOf(),
+    ): RunnerUpdateRequest {
 
-    object WorkspaceUtils{
+      return RunnerUpdateRequest(
+          name = name,
+          description = description,
+          tags = tags,
+          runTemplateId = runTemplateId,
+          datasetList = datasetList,
+          runSizing = runSizing,
+          parametersValues = parametersValues,
+          ownerName = ownerName,
+          solutionName = solutionName,
+          runTemplateName = runTemplateName)
+    }
+  }
 
-        @JvmStatic
-        fun createWorkspaceAndReturnId(mvc: MockMvc, organizationId:String,
-                                       workspaceKey:String,
-                                       workspaceName:String,
-                                       solutionId:String): String = JSONObject(
-            mvc
-                .perform(
-                    post("/organizations/$organizationId/workspaces")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(
-                            JSONObject(
-                                constructWorkspaceCreateRequest(
-                                    key = workspaceKey,
-                                    name = workspaceName,
-                                    solutionId = solutionId))
+  object WorkspaceUtils {
+
+    @JvmStatic
+    fun createWorkspaceAndReturnId(
+        mvc: MockMvc,
+        organizationId: String,
+        workspaceKey: String,
+        workspaceName: String,
+        solutionId: String
+    ): String =
+        JSONObject(
+                mvc.perform(
+                        post("/organizations/$organizationId/workspaces")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(
+                                JSONObject(
+                                        constructWorkspaceCreateRequest(
+                                            key = workspaceKey,
+                                            name = workspaceName,
+                                            solutionId = solutionId))
                                     .toString())
                             .accept(MediaType.APPLICATION_JSON)
                             .with(csrf()))

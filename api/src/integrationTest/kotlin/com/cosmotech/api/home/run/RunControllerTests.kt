@@ -14,6 +14,41 @@ import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.createSolutionAn
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.createWorkspaceAndReturnId
 import com.cosmotech.api.home.annotations.WithMockOauth2User
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_DEPENDENCIES
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_ENTRYPOINT
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_ENV_VARS
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_ID
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_IMAGE
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_LABELS
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_NAME
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_NODE_LABEL
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_RUN_ARGS
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CSM_SIMULATION_RUN
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CUSTOM_DATA_QUERY
+import com.cosmotech.api.home.run.RunConstants.RequestContent.CUSTOM_DATA_TABLE_NAME
+import com.cosmotech.api.home.run.RunConstants.RequestContent.DATASET_LIST
+import com.cosmotech.api.home.run.RunConstants.RequestContent.DESCRIPTION
+import com.cosmotech.api.home.run.RunConstants.RequestContent.HOST_NODE_NAME
+import com.cosmotech.api.home.run.RunConstants.RequestContent.NODE_ID
+import com.cosmotech.api.home.run.RunConstants.RequestContent.NODE_LABEL
+import com.cosmotech.api.home.run.RunConstants.RequestContent.NODE_MESSAGE
+import com.cosmotech.api.home.run.RunConstants.RequestContent.NODE_NAME
+import com.cosmotech.api.home.run.RunConstants.RequestContent.NODE_PHASE
+import com.cosmotech.api.home.run.RunConstants.RequestContent.NODE_PROGRESS
+import com.cosmotech.api.home.run.RunConstants.RequestContent.PARAMETER_GROUP_ID
+import com.cosmotech.api.home.run.RunConstants.RequestContent.PARAMETER_LABELS
+import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_COMPUTE_SIZE
+import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_NAME
+import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_PARAMETER_ID
+import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_VALUE
+import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_VAR_TYPE
+import com.cosmotech.api.home.run.RunConstants.RequestContent.TAGS
+import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKFLOW_ID
+import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKFLOW_MESSAGE
+import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKFLOW_NAME
+import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKFLOW_PHASE
+import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKFLOW_PROGRESS
+import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKSPACE_KEY
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
@@ -26,6 +61,8 @@ import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import com.ninjasquad.springmockk.SpykBean
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import java.time.Instant
+import java.util.*
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,203 +78,184 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.time.Instant
-import java.util.*
-
 
 @ActiveProfiles(profiles = ["test"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class RunControllerTests: ControllerTestBase() {
+class RunControllerTests : ControllerTestBase() {
 
-    private lateinit var organizationId: String
-    private lateinit var workspaceId: String
-    private lateinit var solutionId: String
-    private lateinit var runnerId: String
-    private lateinit var runId: String
-    private val logger = LoggerFactory.getLogger(RunControllerTests::class.java)
+  private lateinit var organizationId: String
+  private lateinit var workspaceId: String
+  private lateinit var solutionId: String
+  private lateinit var runnerId: String
+  private lateinit var runId: String
+  private val logger = LoggerFactory.getLogger(RunControllerTests::class.java)
 
-    @Autowired lateinit var runApiService: RunApiServiceInterface
+  @Autowired lateinit var runApiService: RunApiServiceInterface
 
-    @SpykBean
-    @Autowired
-    private lateinit var eventPublisher: CsmEventPublisher
+  @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
 
-    @MockK(relaxed = true) private lateinit var containerFactory: RunContainerFactory
-    @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
+  @MockK(relaxed = true) private lateinit var containerFactory: RunContainerFactory
+  @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
-    @BeforeEach
-    fun beforeEach() {
+  @BeforeEach
+  fun beforeEach() {
 
+    ReflectionTestUtils.setField(runApiService, "containerFactory", containerFactory)
+    ReflectionTestUtils.setField(runApiService, "workflowService", workflowService)
+    ReflectionTestUtils.setField(runApiService, "eventPublisher", eventPublisher)
 
-        ReflectionTestUtils.setField(runApiService, "containerFactory", containerFactory)
-        ReflectionTestUtils.setField(runApiService, "workflowService", workflowService)
-        ReflectionTestUtils.setField(runApiService, "eventPublisher", eventPublisher)
+    val runTemplateRunSizing =
+        RunTemplateResourceSizing(
+            com.cosmotech.solution.domain.ResourceSizeInfo("cpu_requests", "memory_requests"),
+            com.cosmotech.solution.domain.ResourceSizeInfo("cpu_limits", "memory_limits"))
 
-        val tags = mutableListOf("tag1", "tag2")
-        val description = "this_is_a_description"
-        val parameterGroupId = "parameterGroup1"
-        val runTemplateName = "this_is_a_name"
-        val runTemplateComputeSize = "this_is_a_compute_size"
-        val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
-        val runTemplateRunSizing = RunTemplateResourceSizing(
-            com.cosmotech.solution.domain.ResourceSizeInfo(
-                "cpu_requests",
-                "memory_requests"
-            ),
-            com.cosmotech.solution.domain.ResourceSizeInfo(
-                "cpu_limits",
-                "memory_limits"
-            )
-        )
-        val runTemplates = mutableListOf(
+    val runTemplates =
+        mutableListOf(
             RunTemplate(
                 RUNNER_RUN_TEMPLATE,
-                runTemplateName,
-                parameterLabels,
-                description,
-                tags,
-                runTemplateComputeSize,
+                RUN_TEMPLATE_NAME,
+                PARAMETER_LABELS,
+                DESCRIPTION,
+                TAGS,
+                RUN_TEMPLATE_COMPUTE_SIZE,
                 runTemplateRunSizing,
-                mutableListOf(parameterGroupId),
-                10
-            )
-        )
+                mutableListOf(PARAMETER_GROUP_ID),
+                10))
 
+    organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
+    solutionId =
+        createSolutionAndReturnId(
+            mvc, organizationId, constructSolutionCreateRequest(runTemplates = runTemplates))
+    workspaceId =
+        createWorkspaceAndReturnId(
+            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
 
-        organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
-        solutionId = createSolutionAndReturnId(
-            mvc, organizationId,
-            constructSolutionCreateRequest(
-                runTemplates = runTemplates
-            )
-        )
-        workspaceId = createWorkspaceAndReturnId(
-            mvc, organizationId,
-            constructWorkspaceCreateRequest(solutionId = solutionId)
-        )
-
-        runnerId = createRunnerAndReturnId(
+    runnerId =
+        createRunnerAndReturnId(
             mvc,
             organizationId,
             workspaceId,
             constructRunnerObject(
                 solutionId = solutionId,
                 runTemplateId = RUNNER_RUN_TEMPLATE,
-                runSizing = RunnerResourceSizing(
-                    requests = ResourceSizeInfo(
-                        cpu = "1Gi",
-                        memory = "1Gi",
-                    ),
-                    limits = ResourceSizeInfo(
-                        cpu = "1Gi",
-                        memory = "1Gi",
-                    ),
-                )
-            )
-        )
+                runSizing =
+                    RunnerResourceSizing(
+                        requests =
+                            ResourceSizeInfo(
+                                cpu = "1Gi",
+                                memory = "1Gi",
+                            ),
+                        limits =
+                            ResourceSizeInfo(
+                                cpu = "1Gi",
+                                memory = "1Gi",
+                            ),
+                    )))
 
+    every { workflowService.launchRun(any(), any(), any(), any()) } returns
+        mockRun(organizationId, workspaceId, solutionId)
 
-        every { workflowService.launchRun(any(), any(), any(), any()) } returns
-                mockRun(
-                    organizationId,
-                    workspaceId,
-                    solutionId)
+    runId =
+        JSONObject(
+                mvc.perform(
+                        post(
+                                "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/start")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON)
+                            .with(csrf()))
+                    .andExpect(status().is2xxSuccessful)
+                    .andReturn()
+                    .response
+                    .contentAsString)
+            .getString("id")
+  }
 
-        runId = JSONObject(mvc
-            .perform(
-                post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/start")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .with(csrf())
-            )
-            .andExpect(status().is2xxSuccessful).andReturn().response.contentAsString).getString("id")
+  @Test
+  @WithMockOauth2User
+  fun list_runners() {
 
-    }
+    mvc.perform(
+            get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$[0].id").value(runId))
+        .andExpect(jsonPath("$[0].state").value(RunState.Successful.toString()))
+        .andExpect(jsonPath("$[0].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[0].workflowId").value(WORKFLOW_ID))
+        .andExpect(jsonPath("$[0].csmSimulationRun").value(CSM_SIMULATION_RUN))
+        .andExpect(jsonPath("$[0].generateName").value(""))
+        .andExpect(jsonPath("$[0].workflowName").value(WORKFLOW_NAME))
+        .andExpect(jsonPath("$[0].ownerId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$[0].workspaceKey").value(WORKSPACE_KEY))
+        .andExpect(jsonPath("$[0].solutionId").value(""))
+        .andExpect(jsonPath("$[0].runnerId").value(runnerId))
+        .andExpect(jsonPath("$[0].runTemplateId").value(""))
+        .andExpect(jsonPath("$[0].computeSize").value(""))
+        .andExpect(jsonPath("$[0].nodeLabel").value(""))
+        .andExpect(jsonPath("$[0].containers").value(null))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/GET"))
+  }
 
-    @Test
-    @WithMockOauth2User
-    fun list_runners() {
+  @Test
+  @WithMockOauth2User
+  fun get_runner() {
 
-            mvc
-                .perform(
-                    get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .with(csrf())
-                )
-            .andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$[0].id").value(runId))
-            .andExpect(jsonPath("$[0].state").value(RunState.Successful.toString()))
-            .andExpect(jsonPath("$[0].organizationId").value(organizationId))
-            .andExpect(jsonPath("$[0].workflowId").value("a_workflow_id"))
-            .andExpect(jsonPath("$[0].csmSimulationRun").value("a_csm_simulation_run"))
-            .andExpect(jsonPath("$[0].generateName").value(""))
-            .andExpect(jsonPath("$[0].workflowName").value("a_workflow_name"))
-            .andExpect(jsonPath("$[0].ownerId").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$[0].workspaceId").value(workspaceId))
-            .andExpect(jsonPath("$[0].workspaceKey").value("workspaceKey"))
-            .andExpect(jsonPath("$[0].solutionId").value(""))
-            .andExpect(jsonPath("$[0].runnerId").value(runnerId))
-            .andExpect(jsonPath("$[0].runTemplateId").value(""))
-            .andExpect(jsonPath("$[0].computeSize").value(""))
-            .andExpect(jsonPath("$[0].nodeLabel").value(""))
-            .andExpect(jsonPath("$[0].containers").value(null))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/GET"))
-    }
+    mvc.perform(
+            get(
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.state").value(RunState.Successful.toString()))
+        .andExpect(jsonPath("$.organizationId").value(organizationId))
+        .andExpect(jsonPath("$.workflowId").value(WORKFLOW_ID))
+        .andExpect(jsonPath("$.csmSimulationRun").value(CSM_SIMULATION_RUN))
+        .andExpect(jsonPath("$.generateName").value(""))
+        .andExpect(jsonPath("$.workflowName").value(WORKFLOW_NAME))
+        .andExpect(jsonPath("$.ownerId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$.workspaceKey").value(WORKSPACE_KEY))
+        .andExpect(jsonPath("$.solutionId").value(""))
+        .andExpect(jsonPath("$.runnerId").value(runnerId))
+        .andExpect(jsonPath("$.runTemplateId").value(""))
+        .andExpect(jsonPath("$.computeSize").value(""))
+        .andExpect(jsonPath("$.nodeLabel").value(""))
+        .andExpect(jsonPath("$.containers").value(null))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/GET"))
+  }
 
-    @Test
-    @WithMockOauth2User
-    fun get_runner() {
+  @Test
+  @WithMockOauth2User
+  fun delete_runner() {
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$.state").value(RunState.Successful.toString()))
-            .andExpect(jsonPath("$.organizationId").value(organizationId))
-            .andExpect(jsonPath("$.workflowId").value("a_workflow_id"))
-            .andExpect(jsonPath("$.csmSimulationRun").value("a_csm_simulation_run"))
-            .andExpect(jsonPath("$.generateName").value(""))
-            .andExpect(jsonPath("$.workflowName").value("a_workflow_name"))
-            .andExpect(jsonPath("$.ownerId").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$.workspaceId").value(workspaceId))
-            .andExpect(jsonPath("$.workspaceKey").value("workspaceKey"))
-            .andExpect(jsonPath("$.solutionId").value(""))
-            .andExpect(jsonPath("$.runnerId").value(runnerId))
-            .andExpect(jsonPath("$.runTemplateId").value(""))
-            .andExpect(jsonPath("$.computeSize").value(""))
-            .andExpect(jsonPath("$.nodeLabel").value(""))
-            .andExpect(jsonPath("$.containers").value(null))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/GET"))
-    }
+    mvc.perform(
+            delete(
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/DELETE"))
+  }
 
+  @Test
+  @WithMockOauth2User
+  fun send_data_runner() {
 
-    @Test
-    @WithMockOauth2User
-    fun delete_runner() {
-
-        mvc
-            .perform(
-                delete("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .with(csrf())
-            )
-            .andExpect(status().is2xxSuccessful)
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/DELETE"))
-    }
-
-    @Test
-    @WithMockOauth2User
-    fun send_data_runner() {
-
-        val dataToSend = """{
+    val dataToSend =
+        """{
                       "id": "my_table",
                       "data": [
                         {
@@ -252,34 +270,34 @@ class RunControllerTests: ControllerTestBase() {
                         }
                       ]
                     }"""
-            mvc
-                .perform(
-                    post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/data/send")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(dataToSend)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .with(csrf())
-                )
-                .andExpect(status().is2xxSuccessful)
-                .andExpect(jsonPath("$.database_name").value(runId))
-                .andExpect(jsonPath("$.table_name").value("cd_my_table"))
-                .andExpect(jsonPath("$.data[0].additionalProp1").value(""))
-                .andExpect(jsonPath("$.data[0].additionalProp2").value("test"))
-                .andExpect(jsonPath("$.data[0].additionalProp3").value(100))
-                .andExpect(jsonPath("$.data[1].additionalProp1").value(""))
-                .andExpect(jsonPath("$.data[1].additionalProp2").value("test"))
-                .andExpect(jsonPath("$.data[1].additionalProp4").value(1000))
-                .andDo(MockMvcResultHandlers.print())
-                .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/send/POST"))
+    mvc.perform(
+            post(
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/data/send")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(dataToSend)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.database_name").value(runId))
+        .andExpect(jsonPath("$.table_name").value(CUSTOM_DATA_TABLE_NAME))
+        .andExpect(jsonPath("$.data[0].additionalProp1").value(""))
+        .andExpect(jsonPath("$.data[0].additionalProp2").value("test"))
+        .andExpect(jsonPath("$.data[0].additionalProp3").value(100))
+        .andExpect(jsonPath("$.data[1].additionalProp1").value(""))
+        .andExpect(jsonPath("$.data[1].additionalProp2").value("test"))
+        .andExpect(jsonPath("$.data[1].additionalProp4").value(1000))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/send/POST"))
+  }
 
-    }
+  @Test
+  @WithMockOauth2User
+  fun query_data_runner() {
 
-
-    @Test
-    @WithMockOauth2User
-    fun query_data_runner() {
-
-        val dataToSend = """{
+    val dataToSend =
+        """{
                       "id": "my_table",
                       "data": [
                         {
@@ -294,195 +312,187 @@ class RunControllerTests: ControllerTestBase() {
                         }
                       ]
                     }"""
-        mvc
-            .perform(
-                post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/data/send")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(dataToSend)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .with(csrf())
-            )
-            .andExpect(status().is2xxSuccessful)
+    mvc.perform(
+            post(
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/data/send")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(dataToSend)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
 
-        mvc
-            .perform(
-                post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/data/query")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{
-                              "query": "SELECT * FROM cd_my_table"
-                            }"""
-                    )
-                    .accept(MediaType.APPLICATION_JSON)
-                    .with(csrf())
-            )
-            .andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$.result[0].additionalprop1").value(""))
-            .andExpect(jsonPath("$.result[0].additionalprop2").value("test"))
-            .andExpect(jsonPath("$.result[0].additionalprop3").value(100))
-            .andExpect(jsonPath("$.result[1].additionalprop1").value(""))
-            .andExpect(jsonPath("$.result[1].additionalprop2").value("test"))
-            .andExpect(jsonPath("$.result[1].additionalprop4").value(1000))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/query/POST"))
+    mvc.perform(
+            post(
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/data/query")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(CUSTOM_DATA_QUERY)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.result[0].additionalprop1").value(""))
+        .andExpect(jsonPath("$.result[0].additionalprop2").value("test"))
+        .andExpect(jsonPath("$.result[0].additionalprop3").value(100))
+        .andExpect(jsonPath("$.result[1].additionalprop1").value(""))
+        .andExpect(jsonPath("$.result[1].additionalprop2").value("test"))
+        .andExpect(jsonPath("$.result[1].additionalprop4").value(1000))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/query/POST"))
+  }
 
+  @Test
+  @WithMockOauth2User
+  fun get_run_logs() {
 
-    }
+    val lineOne = "This is a log entry"
+    val lineTwo = "This is another log entry"
+    val lineThree = "This is the last log entry"
 
+    every { workflowService.getRunLogs(any()) } returns
+        RunLogs(
+            runId = runId,
+            logs =
+                mutableListOf(
+                    RunLogsEntry(lineOne),
+                    RunLogsEntry(lineTwo),
+                    RunLogsEntry(lineThree),
+                ))
 
-    @Test
-    @WithMockOauth2User
-    fun get_run_logs() {
+    mvc.perform(
+            get(
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/logs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.runId").value(runId))
+        .andExpect(jsonPath("$.logs[0].line").value(lineOne))
+        .andExpect(jsonPath("$.logs[1].line").value(lineTwo))
+        .andExpect(jsonPath("$.logs[2].line").value(lineThree))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs/GET"))
+  }
 
-        every{ workflowService.getRunLogs(any())} returns
-                RunLogs(
-                    runId = runId,
-                    logs = mutableListOf(
-                        RunLogsEntry("This is a log entry"),
-                        RunLogsEntry("This is another log entry"),
-                        RunLogsEntry("This is the last log entry"),
-                        )
-                )
+  @Test
+  @WithMockOauth2User
+  fun get_run_status() {
 
+    val outboundNodes = mutableListOf("nodeId2", "nodeId3")
+    every { workflowService.getRunStatus(any()) } returns
+        RunStatus(
+            id = runId,
+            organizationId = organizationId,
+            workspaceId = workspaceId,
+            runnerId = runnerId,
+            workflowId = WORKFLOW_ID,
+            workflowName = WORKFLOW_NAME,
+            startTime = Date.from(Instant.now()).toString(),
+            endTime = Date.from(Instant.now()).toString(),
+            phase = WORKFLOW_PHASE,
+            progress = WORKFLOW_PROGRESS,
+            message = WORKFLOW_MESSAGE,
+            estimatedDuration = 20,
+            nodes =
+                mutableListOf(
+                    RunStatusNode(
+                        id = NODE_ID,
+                        name = NODE_NAME,
+                        containerName = CONTAINER_NAME,
+                        outboundNodes = outboundNodes,
+                        resourcesDuration = RunResourceRequested(cpu = 1024, memory = 2048),
+                        hostNodeName = HOST_NODE_NAME,
+                        message = NODE_MESSAGE,
+                        phase = NODE_PHASE,
+                        progress = NODE_PROGRESS,
+                        startTime = Date.from(Instant.now()).toString(),
+                        endTime = Date.from(Instant.now()).toString(),
+                    )),
+            state = RunState.Successful)
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/logs")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-            ).andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$.runId").value(runId))
-            .andExpect(jsonPath("$.logs[0].line").value("This is a log entry"))
-            .andExpect(jsonPath("$.logs[1].line").value("This is another log entry"))
-            .andExpect(jsonPath("$.logs[2].line").value("This is the last log entry"))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs/GET"))
-    }
+    mvc.perform(
+            get(
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.id").value(runId))
+        .andExpect(jsonPath("$.organizationId").value(organizationId))
+        .andExpect(jsonPath("$.workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$.runnerId").value(runnerId))
+        .andExpect(jsonPath("$.workflowId").value(WORKFLOW_ID))
+        .andExpect(jsonPath("$.workflowName").value(WORKFLOW_NAME))
+        .andExpect(jsonPath("$.phase").value(WORKFLOW_PHASE))
+        .andExpect(jsonPath("$.progress").value(WORKFLOW_PROGRESS))
+        .andExpect(jsonPath("$.message").value(WORKFLOW_MESSAGE))
+        .andExpect(jsonPath("$.estimatedDuration").value(20))
+        .andExpect(jsonPath("$.nodes[0].id").value(NODE_ID))
+        .andExpect(jsonPath("$.nodes[0].name").value(NODE_NAME))
+        .andExpect(jsonPath("$.nodes[0].containerName").value(CONTAINER_NAME))
+        .andExpect(jsonPath("$.nodes[0].outboundNodes").value(outboundNodes))
+        .andExpect(jsonPath("$.nodes[0].resourcesDuration.cpu").value(1024))
+        .andExpect(jsonPath("$.nodes[0].resourcesDuration.memory").value(2048))
+        .andExpect(jsonPath("$.nodes[0].hostNodeName").value(HOST_NODE_NAME))
+        .andExpect(jsonPath("$.nodes[0].message").value(NODE_MESSAGE))
+        .andExpect(jsonPath("$.nodes[0].phase").value(NODE_PHASE))
+        .andExpect(jsonPath("$.nodes[0].progress").value(NODE_PROGRESS))
+        .andExpect(jsonPath("$.state").value("Successful"))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status/GET"))
+  }
 
-
-    @Test
-    @WithMockOauth2User
-    fun get_run_status() {
-
-        val outboundNodes = mutableListOf("nodeId2", "nodeId3")
-        every{ workflowService.getRunStatus(any())} returns
-                RunStatus(
-                    id = runId,
-                    organizationId = organizationId,
-                    workspaceId = workspaceId,
-                    runnerId = runnerId,
-                    workflowId = "a_workflow_id",
-                    workflowName = "a_workflow_name",
-                    startTime = Date.from(Instant.now()).toString(),
-                    endTime = Date.from(Instant.now()).toString(),
-                    phase = "Succeeded",
-                    progress = "progress",
-                    message = "this_is_a_message",
-                    estimatedDuration = 20,
-                    nodes = mutableListOf(
-                        RunStatusNode(
-                            id = "nodeId1",
-                            name = "nodeName",
-                            containerName = "containerName",
-                            outboundNodes = outboundNodes,
-                            resourcesDuration = RunResourceRequested( cpu = 1024, memory = 2048),
-                            hostNodeName = "hostNodeName",
-                            message = "this_is_a_message",
-                            phase = "Succeeded",
-                            progress = "progress",
-                            startTime = Date.from(Instant.now()).toString(),
-                            endTime = Date.from(Instant.now()).toString(),
-                        )),
-                    state = RunState.Successful
-                )
-
-
-        mvc
-            .perform(
-                get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/status")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-            ).andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$.id").value(runId))
-            .andExpect(jsonPath("$.organizationId").value(organizationId))
-            .andExpect(jsonPath("$.workspaceId").value(workspaceId))
-            .andExpect(jsonPath("$.runnerId").value(runnerId))
-            .andExpect(jsonPath("$.workflowId").value("a_workflow_id"))
-            .andExpect(jsonPath("$.workflowName").value("a_workflow_name"))
-            .andExpect(jsonPath("$.phase").value("Succeeded"))
-            .andExpect(jsonPath("$.progress").value("progress"))
-            .andExpect(jsonPath("$.message").value("this_is_a_message"))
-            .andExpect(jsonPath("$.estimatedDuration").value(20))
-            .andExpect(jsonPath("$.nodes[0].id").value("nodeId1"))
-            .andExpect(jsonPath("$.nodes[0].name").value("nodeName"))
-            .andExpect(jsonPath("$.nodes[0].containerName").value("containerName"))
-            .andExpect(jsonPath("$.nodes[0].outboundNodes").value(outboundNodes))
-            .andExpect(jsonPath("$.nodes[0].resourcesDuration.cpu").value(1024))
-            .andExpect(jsonPath("$.nodes[0].resourcesDuration.memory").value(2048))
-            .andExpect(jsonPath("$.nodes[0].hostNodeName").value("hostNodeName"))
-            .andExpect(jsonPath("$.nodes[0].message").value("this_is_a_message"))
-            .andExpect(jsonPath("$.nodes[0].phase").value("Succeeded"))
-            .andExpect(jsonPath("$.nodes[0].progress").value("progress"))
-            .andExpect(jsonPath("$.state").value("Successful"))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status/GET"))
-    }
-
-
-
-    private fun mockRun(
-        organizationId: String,
-        workspaceId: String,
-        solutionId: String
-    ) = Run(
-        id = "r-idgenerated",
-        state = RunState.Successful,
-        workflowId = "a_workflow_id",
-        workflowName = "a_workflow_name",
-        ownerId = PLATFORM_ADMIN_EMAIL,
-        csmSimulationRun = "a_csm_simulation_run",
-        generateName = "generated_name",
-        organizationId = organizationId,
-        workspaceId = workspaceId,
-        workspaceKey = "workspaceKey",
-        solutionId = solutionId,
-        runTemplateId = RUNNER_RUN_TEMPLATE,
-        computeSize = "this_is_a_compute_size",
-        createdAt = Date.from(Instant.now()).toString(),
-        datasetList = mutableListOf("datasetId1"),
-        parametersValues = mutableListOf(
-            RunTemplateParameterValue(
-                parameterId = "parameterId1",
-                value = "this_is_a_value",
-                varType = "this_is_a_vartype",
-            )
-        ),
-        nodeLabel = "this_is_a_nodeLabel",
-        containers = mutableListOf(
-            RunContainer(
-                id = "containerId",
-                name = "containerName",
-                image = "containerImage",
-                labels = mutableMapOf("fr" to "this_is_a_label"),
-                envVars = mutableMapOf("envvar1" to "envvar1_value"),
-                entrypoint = "this_is_an_entrypoint",
-                runArgs = mutableListOf("runArgs1", "runArgs2"),
-                dependencies = mutableListOf("dependency1", "dependency2"),
-                solutionContainer = true,
-                nodeLabel = "this_is_a_nodeLabel_too",
-                runSizing = ContainerResourceSizing(
-                    requests = ContainerResourceSizeInfo(
-                        cpu = "1Gi",
-                        memory = "1Gi",
-                    ),
-                    limits = ContainerResourceSizeInfo(
-                        cpu = "1Gi",
-                        memory = "1Gi",
-                    )
-                )
-            )
-        ),
-        runnerId = runnerId
-    )
-
-
+  private fun mockRun(organizationId: String, workspaceId: String, solutionId: String) =
+      Run(
+          id = "r-idgenerated",
+          state = RunState.Successful,
+          workflowId = WORKFLOW_ID,
+          workflowName = WORKFLOW_NAME,
+          ownerId = PLATFORM_ADMIN_EMAIL,
+          csmSimulationRun = CSM_SIMULATION_RUN,
+          generateName = "generated_name",
+          organizationId = organizationId,
+          workspaceId = workspaceId,
+          workspaceKey = WORKSPACE_KEY,
+          solutionId = solutionId,
+          runTemplateId = RUNNER_RUN_TEMPLATE,
+          computeSize = RUN_TEMPLATE_COMPUTE_SIZE,
+          createdAt = Date.from(Instant.now()).toString(),
+          datasetList = DATASET_LIST,
+          parametersValues =
+              mutableListOf(
+                  RunTemplateParameterValue(
+                      parameterId = RUN_TEMPLATE_PARAMETER_ID,
+                      value = RUN_TEMPLATE_VALUE,
+                      varType = RUN_TEMPLATE_VAR_TYPE,
+                  )),
+          nodeLabel = NODE_LABEL,
+          containers =
+              mutableListOf(
+                  RunContainer(
+                      id = CONTAINER_ID,
+                      name = CONTAINER_NAME,
+                      image = CONTAINER_IMAGE,
+                      labels = CONTAINER_LABELS,
+                      envVars = CONTAINER_ENV_VARS,
+                      entrypoint = CONTAINER_ENTRYPOINT,
+                      runArgs = CONTAINER_RUN_ARGS,
+                      dependencies = CONTAINER_DEPENDENCIES,
+                      solutionContainer = true,
+                      nodeLabel = CONTAINER_NODE_LABEL,
+                      runSizing =
+                          ContainerResourceSizing(
+                              requests =
+                                  ContainerResourceSizeInfo(
+                                      cpu = "1Gi",
+                                      memory = "1Gi",
+                                  ),
+                              limits =
+                                  ContainerResourceSizeInfo(
+                                      cpu = "1Gi",
+                                      memory = "1Gi",
+                                  )))),
+          runnerId = runnerId)
 }

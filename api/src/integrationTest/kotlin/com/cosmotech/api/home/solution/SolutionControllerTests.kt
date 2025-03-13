@@ -70,31 +70,28 @@ class SolutionControllerTests : ControllerTestBase() {
                 key = secondSolutionKey,
             ))
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/solutions")
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$[0].id").value(firstSolutionId))
-            .andExpect(jsonPath("$[0].key").value(firstSolutionKey))
-            .andExpect(jsonPath("$[0].name").value(firstSolutionName))
-            .andExpect(jsonPath("$[0].ownerId").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$[0].organizationId").value(organizationId))
-            .andExpect(jsonPath("$[0].security.default").value(ROLE_NONE))
-            .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
-            .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$[1].id").value(secondSolutionId))
-            .andExpect(jsonPath("$[1].key").value(secondSolutionKey))
-            .andExpect(jsonPath("$[1].name").value(secondSolutionName))
-            .andExpect(jsonPath("$[1].ownerId").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$[1].organizationId").value(organizationId))
-            .andExpect(jsonPath("$[1].security.default").value(ROLE_NONE))
-            .andExpect(jsonPath("$[1].security.accessControlList[0].role").value(ROLE_ADMIN))
-            .andExpect(jsonPath("$[1].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/solutions/GET"))
-    }
+    mvc.perform(
+            get("/organizations/$organizationId/solutions").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$[0].id").value(firstSolutionId))
+        .andExpect(jsonPath("$[0].key").value(firstSolutionKey))
+        .andExpect(jsonPath("$[0].name").value(firstSolutionName))
+        .andExpect(jsonPath("$[0].ownerId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[0].security.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[1].id").value(secondSolutionId))
+        .andExpect(jsonPath("$[1].key").value(secondSolutionKey))
+        .andExpect(jsonPath("$[1].name").value(secondSolutionName))
+        .andExpect(jsonPath("$[1].ownerId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[1].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[1].security.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$[1].security.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$[1].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(document("organizations/{organization_id}/solutions/GET"))
+  }
 
   @Test
   @WithMockOauth2User
@@ -317,59 +314,61 @@ class SolutionControllerTests : ControllerTestBase() {
 
     val solutionId = createSolutionAndReturnId(mvc, organizationId, solutionCreateRequest)
 
-
-        mvc
-            .perform(
-                get("/organizations/$organizationId/solutions/$solutionId")
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$.id").value(solutionId))
-            .andExpect(jsonPath("$.name").value(SOLUTION_NAME))
-            .andExpect(jsonPath("$.key").value(SOLUTION_KEY))
-            .andExpect(jsonPath("$.ownerId").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$.version").value(SOLUTION_VERSION))
-            .andExpect(jsonPath("$.description").value(description))
-            .andExpect(jsonPath("$.alwaysPull").value(false))
-            .andExpect(jsonPath("$.parameters[0].id").value(parameterId))
-            .andExpect(jsonPath("$.parameters[0].labels").value(parameterLabels))
-            .andExpect(jsonPath("$.parameters[0].varType").value(parameterVarType))
-            .andExpect(jsonPath("$.parameters[0].defaultValue").value(parameterDefaultValue))
-            .andExpect(jsonPath("$.parameters[0].minValue").value(parameterMinValue))
-            .andExpect(jsonPath("$.parameters[0].maxValue").value(parameterMaxValue))
-            .andExpect(jsonPath("$.parameters[0].regexValidation").value(parameterRegexValidation))
-            .andExpect(jsonPath("$.parameters[0].options[\"you_can_put\"]").value("whatever_you_want_here"))
-            .andExpect(jsonPath("$.parameters[0].options[\"even\"][\"object\"]").value("if_you_want"))
-            .andExpect(jsonPath("$.parameterGroups[0].id").value(parameterGroupId))
-            .andExpect(jsonPath("$.parameterGroups[0].labels").value(parameterLabels))
-            .andExpect(jsonPath("$.parameterGroups[0].isTable").value(false))
-            .andExpect(jsonPath("$.parameterGroups[0].parentId").value(parameterGroupParentId))
-            .andExpect(jsonPath("$.parameterGroups[0].parameters").value(mutableListOf(parameterId)))
-            .andExpect(jsonPath("$.parameterGroups[0].options[\"you_can_put\"]").value("whatever_you_want_here"))
-            .andExpect(jsonPath("$.parameterGroups[0].options[\"even\"][\"object\"]").value("if_you_want"))
-            .andExpect(jsonPath("$.runTemplates[0].id").value(runTemplateId))
-            .andExpect(jsonPath("$.runTemplates[0].name").value(runTemplateName))
-            .andExpect(jsonPath("$.runTemplates[0].labels").value(parameterLabels))
-            .andExpect(jsonPath("$.runTemplates[0].description").value(description))
-            .andExpect(jsonPath("$.runTemplates[0].tags").value(tags))
-            .andExpect(jsonPath("$.runTemplates[0].computeSize").value(runTemplateComputeSize))
-            .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.cpu").value("cpu_requests"))
-            .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.memory").value("memory_requests"))
-            .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.cpu").value("cpu_limits"))
-            .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.memory").value("memory_limits"))
-            .andExpect(jsonPath("$.runTemplates[0].parameterGroups").value(mutableListOf(parameterGroupId)))
-            .andExpect(jsonPath("$.runTemplates[0].executionTimeout").value(10))
-            .andExpect(jsonPath("$.url").value(url))
-            .andExpect(jsonPath("$.tags").value(tags))
-            .andExpect(jsonPath("$.organizationId").value(organizationId))
-            .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
-            .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
-            .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$.security.accessControlList[1].role").value(NEW_USER_ROLE))
-            .andExpect(jsonPath("$.security.accessControlList[1].id").value(NEW_USER_ID))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/solutions/{solution_id}/GET"))
-    }
+    mvc.perform(
+            get("/organizations/$organizationId/solutions/$solutionId")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.id").value(solutionId))
+        .andExpect(jsonPath("$.name").value(SOLUTION_NAME))
+        .andExpect(jsonPath("$.key").value(SOLUTION_KEY))
+        .andExpect(jsonPath("$.ownerId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.version").value(SOLUTION_VERSION))
+        .andExpect(jsonPath("$.description").value(description))
+        .andExpect(jsonPath("$.alwaysPull").value(false))
+        .andExpect(jsonPath("$.parameters[0].id").value(parameterId))
+        .andExpect(jsonPath("$.parameters[0].labels").value(parameterLabels))
+        .andExpect(jsonPath("$.parameters[0].varType").value(parameterVarType))
+        .andExpect(jsonPath("$.parameters[0].defaultValue").value(parameterDefaultValue))
+        .andExpect(jsonPath("$.parameters[0].minValue").value(parameterMinValue))
+        .andExpect(jsonPath("$.parameters[0].maxValue").value(parameterMaxValue))
+        .andExpect(jsonPath("$.parameters[0].regexValidation").value(parameterRegexValidation))
+        .andExpect(
+            jsonPath("$.parameters[0].options[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$.parameters[0].options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$.parameterGroups[0].id").value(parameterGroupId))
+        .andExpect(jsonPath("$.parameterGroups[0].labels").value(parameterLabels))
+        .andExpect(jsonPath("$.parameterGroups[0].isTable").value(false))
+        .andExpect(jsonPath("$.parameterGroups[0].parentId").value(parameterGroupParentId))
+        .andExpect(jsonPath("$.parameterGroups[0].parameters").value(mutableListOf(parameterId)))
+        .andExpect(
+            jsonPath("$.parameterGroups[0].options[\"you_can_put\"]")
+                .value("whatever_you_want_here"))
+        .andExpect(
+            jsonPath("$.parameterGroups[0].options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$.runTemplates[0].id").value(runTemplateId))
+        .andExpect(jsonPath("$.runTemplates[0].name").value(runTemplateName))
+        .andExpect(jsonPath("$.runTemplates[0].labels").value(parameterLabels))
+        .andExpect(jsonPath("$.runTemplates[0].description").value(description))
+        .andExpect(jsonPath("$.runTemplates[0].tags").value(tags))
+        .andExpect(jsonPath("$.runTemplates[0].computeSize").value(runTemplateComputeSize))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.cpu").value("cpu_requests"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.memory").value("memory_requests"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.cpu").value("cpu_limits"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.memory").value("memory_limits"))
+        .andExpect(
+            jsonPath("$.runTemplates[0].parameterGroups").value(mutableListOf(parameterGroupId)))
+        .andExpect(jsonPath("$.runTemplates[0].executionTimeout").value(10))
+        .andExpect(jsonPath("$.url").value(url))
+        .andExpect(jsonPath("$.tags").value(tags))
+        .andExpect(jsonPath("$.organizationId").value(organizationId))
+        .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.security.accessControlList[1].role").value(NEW_USER_ROLE))
+        .andExpect(jsonPath("$.security.accessControlList[1].id").value(NEW_USER_ID))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(document("organizations/{organization_id}/solutions/{solution_id}/GET"))
+  }
 
   @Test
   @WithMockOauth2User
@@ -820,17 +819,14 @@ class SolutionControllerTests : ControllerTestBase() {
     val solutionId =
         createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/solutions/$solutionId/security")
-            )
-            .andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$.default").value(ROLE_NONE))
-            .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
-            .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/GET"))
-    }
+    mvc.perform(get("/organizations/$organizationId/solutions/$solutionId/security"))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/GET"))
+  }
 
   @Test
   @WithMockOauth2User
@@ -868,10 +864,9 @@ class SolutionControllerTests : ControllerTestBase() {
     val solutionId =
         createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/solutions/$solutionId/security/access/$PLATFORM_ADMIN_EMAIL")
-            )
+    mvc.perform(
+            get(
+                "/organizations/$organizationId/solutions/$solutionId/security/access/$PLATFORM_ADMIN_EMAIL"))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.id").value(PLATFORM_ADMIN_EMAIL))
@@ -976,16 +971,15 @@ class SolutionControllerTests : ControllerTestBase() {
         createSolutionAndReturnId(
             mvc, organizationId, constructSolutionCreateRequest(security = solutionSecurity))
 
-        mvc
-            .perform(
-                get("/organizations/$organizationId/solutions/$solutionId/security/users")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$[1]").value(NEW_USER_ID))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/solutions/{solution_id}/security/users/GET"))
-    }
+    mvc.perform(
+            get("/organizations/$organizationId/solutions/$solutionId/security/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[1]").value(NEW_USER_ID))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document("organizations/{organization_id}/solutions/{solution_id}/security/users/GET"))
+  }
 }

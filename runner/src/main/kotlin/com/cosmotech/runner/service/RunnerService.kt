@@ -11,8 +11,8 @@ import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
-import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.RolesDefinition
@@ -285,10 +285,8 @@ class RunnerService(
 
     fun setValueFrom(runnerCreateRequest: RunnerCreateRequest): RunnerInstance {
 
-      val security = csmRbac.initSecurity(
-        runnerCreateRequest.security
-          .toGenericSecurity(this.runner.id)
-      )
+      val security =
+          csmRbac.initSecurity(runnerCreateRequest.security.toGenericSecurity(this.runner.id))
 
       this.setRbacSecurity(security)
 
@@ -348,7 +346,6 @@ class RunnerService(
     fun setLastRunId(runInfo: String) {
       this.runner.lastRunId = runInfo
     }
-
 
     fun initParameters(): RunnerInstance = apply {
       val parentId = this.runner.parentId
@@ -569,8 +566,9 @@ class RunnerService(
   }
 }
 
-fun RunnerSecurity?.toGenericSecurity(runnerId: String) = RbacSecurity(
-  runnerId,
-  this?.default ?: ROLE_NONE,
-  this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList() ?: mutableListOf()
-)
+fun RunnerSecurity?.toGenericSecurity(runnerId: String) =
+    RbacSecurity(
+        runnerId,
+        this?.default ?: ROLE_NONE,
+        this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
+            ?: mutableListOf())

@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api.home.runner
+package com.cosmotech.api.home.dataset
 
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
@@ -25,44 +25,39 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-
 @ActiveProfiles(profiles = ["test"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class DatasetControllerTests: ControllerTestBase() {
+class DatasetControllerTests : ControllerTestBase() {
 
-    private lateinit var organizationId:String
+  private lateinit var organizationId: String
 
-    private val logger = LoggerFactory.getLogger(DatasetControllerTests::class.java)
+  private val logger = LoggerFactory.getLogger(DatasetControllerTests::class.java)
 
-    @BeforeEach
-    fun beforeEach() {
-        organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
-    }
+  @BeforeEach
+  fun beforeEach() {
+    organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
+  }
 
+  @Test
+  @WithMockOauth2User
+  fun create_dataset() {
+    mvc.perform(
+            post("/organizations/$organizationId/datasets")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JSONObject(constructDataset()).toString())
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.name").value(DATASET_NAME))
+        .andExpect(jsonPath("$.ownerId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(document("organizations/{organization_id}/datasets/POST"))
+  }
 
-    @Test
-    @WithMockOauth2User
-    fun create_dataset() {
-        mvc
-            .perform(
-                post("/organizations/$organizationId/datasets")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(JSONObject(constructDataset()).toString())
-                    .accept(MediaType.APPLICATION_JSON)
-                    .with(csrf())
-            ).andExpect(status().is2xxSuccessful)
-            .andExpect(jsonPath("$.name").value(DATASET_NAME))
-            .andExpect(jsonPath("$.ownerId").value(PLATFORM_ADMIN_EMAIL))
-            .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
-            .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
-            .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-            .andDo(MockMvcResultHandlers.print())
-            .andDo(document("organizations/{organization_id}/datasets/POST"))
-    }
-
-    fun constructDataset(name : String = DATASET_NAME): Dataset {
-        return Dataset(
-            name = name
-        )
-    }
+  fun constructDataset(name: String = DATASET_NAME): Dataset {
+    return Dataset(name = name)
+  }
 }
