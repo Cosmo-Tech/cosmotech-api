@@ -256,7 +256,7 @@ class ContainerFactoryTests {
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplate()),
-        parameters = mutableListOf(RunTemplateParameter("parameter")),
+        parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
         parameterGroups = mutableListOf(RunTemplateParameterGroup("parameter")),
         organizationId = "Organizationid",
         csmSimulator = "simulator",
