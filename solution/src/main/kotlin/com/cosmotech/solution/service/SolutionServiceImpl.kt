@@ -26,7 +26,9 @@ import com.cosmotech.organization.service.toGenericSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterCreateRequest
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
+import com.cosmotech.solution.domain.RunTemplateParameterUpdateRequest
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionCreateRequest
@@ -102,17 +104,8 @@ class SolutionServiceImpl(
   override fun deleteSolutionParameterGroups(organizationId: String, solutionId: String) {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
 
-    if (!solution.parameterGroups.isNullOrEmpty()) {
+    if (solution.parameterGroups.isNotEmpty()) {
       solution.parameterGroups = mutableListOf()
-      solutionRepository.save(solution)
-    }
-  }
-
-  override fun deleteSolutionParameters(organizationId: String, solutionId: String) {
-    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
-
-    if (!solution.parameters.isNullOrEmpty()) {
-      solution.parameters = mutableListOf()
       solutionRepository.save(solution)
     }
   }
@@ -147,26 +140,6 @@ class SolutionServiceImpl(
     solutionRepository.save(existingSolution)
 
     return runTemplateParameterGroup
-  }
-
-  override fun updateSolutionParameters(
-      organizationId: String,
-      solutionId: String,
-      runTemplateParameter: List<RunTemplateParameter>
-  ): List<RunTemplateParameter> {
-    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
-
-    if (runTemplateParameter.isEmpty()) {
-      return runTemplateParameter
-    }
-
-    val runTemplateParameterMap = existingSolution.parameters.associateBy { it.id }.toMutableMap()
-    runTemplateParameterMap.putAll(
-        runTemplateParameter.filter { it.id.isNotBlank() }.associateBy { it.id })
-    existingSolution.parameters = runTemplateParameterMap.values.toMutableList()
-    solutionRepository.save(existingSolution)
-
-    return runTemplateParameter
   }
 
   override fun updateSolutionRunTemplates(
@@ -222,7 +195,6 @@ class SolutionServiceImpl(
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
-    // TODO Only the owner or an admin should be able to perform this operation
     solutionRepository.delete(solution)
   }
 
@@ -311,6 +283,14 @@ class SolutionServiceImpl(
     return solution.security
   }
 
+  override fun listSolutionParameters(
+      organizationId: String,
+      solutionId: String
+  ): List<RunTemplateParameter> {
+    val solution = getVerifiedSolution(organizationId, solutionId)
+    return solution.parameters
+  }
+
   override fun updateSolutionDefaultSecurity(
       organizationId: String,
       solutionId: String,
@@ -360,6 +340,90 @@ class SolutionServiceImpl(
     val rbacAccessControl =
         csmRbac.getAccessControl(solution.security.toGenericSecurity(solutionId), identityId)
     return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
+  }
+
+  override fun createSolutionParameter(
+      organizationId: String,
+      solutionId: String,
+      runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest
+  ): RunTemplateParameter {
+
+    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
+    val runTemplateParameterId = idGenerator.generate("parameter", prependPrefix = "p-")
+    val parameterToCreate =
+        RunTemplateParameter(
+            id = runTemplateParameterId,
+            name = runTemplateParameterCreateRequest.name,
+            description = runTemplateParameterCreateRequest.description,
+            varType = runTemplateParameterCreateRequest.varType,
+            labels = runTemplateParameterCreateRequest.labels,
+            defaultValue = runTemplateParameterCreateRequest.defaultValue,
+            minValue = runTemplateParameterCreateRequest.minValue,
+            maxValue = runTemplateParameterCreateRequest.maxValue,
+            regexValidation = runTemplateParameterCreateRequest.regexValidation,
+            options = runTemplateParameterCreateRequest.options)
+
+    existingSolution.parameters.add(parameterToCreate)
+    solutionRepository.save(existingSolution)
+
+    return parameterToCreate
+  }
+
+  override fun updateSolutionParameter(
+      organizationId: String,
+      solutionId: String,
+      parameterId: String,
+      runTemplateParameterUpdateRequest: RunTemplateParameterUpdateRequest
+  ): RunTemplateParameter {
+    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
+    existingSolution.parameters
+        .find { it.id == parameterId }
+        ?.apply {
+          name = runTemplateParameterUpdateRequest.name ?: this.name
+          description = runTemplateParameterUpdateRequest.description ?: this.description
+          varType = runTemplateParameterUpdateRequest.varType ?: this.varType
+          labels = runTemplateParameterUpdateRequest.labels ?: this.labels
+          defaultValue = runTemplateParameterUpdateRequest.defaultValue ?: this.defaultValue
+          minValue = runTemplateParameterUpdateRequest.minValue ?: this.minValue
+          maxValue = runTemplateParameterUpdateRequest.maxValue ?: this.maxValue
+          regexValidation =
+              runTemplateParameterUpdateRequest.regexValidation ?: this.regexValidation
+          options = runTemplateParameterUpdateRequest.options ?: this.options
+        }
+        ?: throw CsmResourceNotFoundException(
+            "Solution parameter with id $parameterId does not exist")
+
+    val solutionSaved = solutionRepository.save(existingSolution)
+
+    return solutionSaved.parameters.first { it.id == parameterId }
+  }
+
+  override fun getSolutionParameter(
+      organizationId: String,
+      solutionId: String,
+      parameterId: String
+  ): RunTemplateParameter {
+    val solution = getVerifiedSolution(organizationId, solutionId)
+    val solutionParameter =
+        solution.parameters.firstOrNull { it.id == parameterId }
+            ?: throw CsmResourceNotFoundException(
+                "Solution parameter with id $parameterId does not exist")
+    return solutionParameter
+  }
+
+  override fun deleteSolutionParameter(
+      organizationId: String,
+      solutionId: String,
+      parameterId: String
+  ) {
+    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
+    val solutionParameter =
+        solution.parameters.firstOrNull { it.id == parameterId }
+            ?: throw CsmResourceNotFoundException(
+                "Solution parameter with id $parameterId does not exist")
+
+    solution.parameters.remove(solutionParameter)
+    solutionRepository.save(solution)
   }
 
   override fun updateSolutionAccessControl(

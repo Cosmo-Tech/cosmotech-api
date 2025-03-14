@@ -81,22 +81,25 @@ All URIs are relative to *http://localhost*
 *RunnerApi* | [**updateRunnerDefaultSecurity**](Apis/RunnerApi.md#updaterunnerdefaultsecurity) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/default | Set the Runner default security |
 | *SolutionApi* | [**createSolution**](Apis/SolutionApi.md#createsolution) | **POST** /organizations/{organization_id}/solutions | Create a new solution |
 *SolutionApi* | [**createSolutionAccessControl**](Apis/SolutionApi.md#createsolutionaccesscontrol) | **POST** /organizations/{organization_id}/solutions/{solution_id}/security/access | Create solution access control |
+*SolutionApi* | [**createSolutionParameter**](Apis/SolutionApi.md#createsolutionparameter) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameters | Create solution parameter for a solution |
 *SolutionApi* | [**deleteSolution**](Apis/SolutionApi.md#deletesolution) | **DELETE** /organizations/{organization_id}/solutions/{solution_id} | Delete a solution |
 *SolutionApi* | [**deleteSolutionAccessControl**](Apis/SolutionApi.md#deletesolutionaccesscontrol) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Delete solution access control |
+*SolutionApi* | [**deleteSolutionParameter**](Apis/SolutionApi.md#deletesolutionparameter) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Delete specific parameter from the solution |
 *SolutionApi* | [**deleteSolutionParameterGroups**](Apis/SolutionApi.md#deletesolutionparametergroups) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Delete all parameter groups from the solution |
-*SolutionApi* | [**deleteSolutionParameters**](Apis/SolutionApi.md#deletesolutionparameters) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameters | Delete all parameters from the solution |
 *SolutionApi* | [**deleteSolutionRunTemplate**](Apis/SolutionApi.md#deletesolutionruntemplate) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Delete a specific run template |
 *SolutionApi* | [**deleteSolutionRunTemplates**](Apis/SolutionApi.md#deletesolutionruntemplates) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Delete all run templates from the solution |
 *SolutionApi* | [**getSolution**](Apis/SolutionApi.md#getsolution) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution |
 *SolutionApi* | [**getSolutionAccessControl**](Apis/SolutionApi.md#getsolutionaccesscontrol) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Get solution access control |
+*SolutionApi* | [**getSolutionParameter**](Apis/SolutionApi.md#getsolutionparameter) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Get the details of a solution parameter |
 *SolutionApi* | [**getSolutionSecurity**](Apis/SolutionApi.md#getsolutionsecurity) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security | Get solution security information |
+*SolutionApi* | [**listSolutionParameters**](Apis/SolutionApi.md#listsolutionparameters) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameters | List all solution parameters |
 *SolutionApi* | [**listSolutionSecurityUsers**](Apis/SolutionApi.md#listsolutionsecurityusers) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/users | List solution security users |
 *SolutionApi* | [**listSolutions**](Apis/SolutionApi.md#listsolutions) | **GET** /organizations/{organization_id}/solutions | List all Solutions |
 *SolutionApi* | [**updateSolution**](Apis/SolutionApi.md#updatesolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution |
 *SolutionApi* | [**updateSolutionAccessControl**](Apis/SolutionApi.md#updatesolutionaccesscontrol) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Update solution access control |
 *SolutionApi* | [**updateSolutionDefaultSecurity**](Apis/SolutionApi.md#updatesolutiondefaultsecurity) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/security/default | Update solution default security |
+*SolutionApi* | [**updateSolutionParameter**](Apis/SolutionApi.md#updatesolutionparameter) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Update solution parameter |
 *SolutionApi* | [**updateSolutionParameterGroups**](Apis/SolutionApi.md#updatesolutionparametergroups) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Update solution parameter groups |
-*SolutionApi* | [**updateSolutionParameters**](Apis/SolutionApi.md#updatesolutionparameters) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameters | Update solution parameters |
 *SolutionApi* | [**updateSolutionRunTemplate**](Apis/SolutionApi.md#updatesolutionruntemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update a specific run template |
 *SolutionApi* | [**updateSolutionRunTemplates**](Apis/SolutionApi.md#updatesolutionruntemplates) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Update solution run templates |
 | *WorkspaceApi* | [**createDatasetLink**](Apis/WorkspaceApi.md#createdatasetlink) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/link |  |
@@ -169,7 +172,9 @@ All URIs are relative to *http://localhost*
  - [RunStatusNode](./Models/RunStatusNode.md)
  - [RunTemplate](./Models/RunTemplate.md)
  - [RunTemplateParameter](./Models/RunTemplateParameter.md)
+ - [RunTemplateParameterCreateRequest](./Models/RunTemplateParameterCreateRequest.md)
  - [RunTemplateParameterGroup](./Models/RunTemplateParameterGroup.md)
+ - [RunTemplateParameterUpdateRequest](./Models/RunTemplateParameterUpdateRequest.md)
  - [RunTemplateParameterValue](./Models/RunTemplateParameterValue.md)
  - [RunTemplateResourceSizing](./Models/RunTemplateResourceSizing.md)
  - [Runner](./Models/Runner.md)

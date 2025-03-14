@@ -176,54 +176,123 @@ paths:
         required: true
         schema:
           type: string
-    patch:
-      operationId: updateSolutionParameters
+    get:
+      operationId: listSolutionParameters
       tags:
         - solution
-      summary: Update solution parameters
+      summary: List all solution parameters
+      responses:
+        "200":
+          description: Parameters successfully retrieved
+          content:
+            application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RunTemplateParameter'
+        "400":
+          description: Bad Request
+        "404":
+          description: Solution not found or insufficient access rights
+    post:
+      operationId: createSolutionParameter
+      tags:
+        - solution
+      summary: Create solution parameter for a solution
       requestBody:
-        description: Parameters to update
+        description: Parameter to create
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/RunTemplateParameter"
-            examples:
-              Parameters:
-                $ref: '#/components/examples/Parameters'
+              $ref: "#/components/schemas/RunTemplateParameterCreateRequest"
           application/yaml:
             schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/RunTemplateParameter"
-            examples:
-              Parameters:
-                $ref: '#/components/examples/Parameters'
+              $ref: "#/components/schemas/RunTemplateParameterCreateRequest"
+      responses:
+        "200":
+          description: Parameters successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunTemplateParameter'
+        "400":
+          description: Bad request
+        "404":
+          description: Solution not found or insufficient access rights
+
+  /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+      - name: parameter_id
+        in: path
+        description: the solution parameter identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getSolutionParameter
+      tags:
+        - solution
+      summary: Get the details of a solution parameter
+      responses:
+        "200":
+          description: Parameters successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunTemplateParameter'
+        "400":
+          description: Bad Request
+        "404":
+          description: Solution or parameter not found or insufficient access rights
+    patch:
+      operationId: updateSolutionParameter
+      tags:
+        - solution
+      summary: Update solution parameter
+      requestBody:
+        description: Parameter to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunTemplateParameterUpdateRequest"
+          application/yaml:
+            schema:
+              $ref: "#/components/schemas/RunTemplateParameterUpdateRequest"
       responses:
         "201":
           description: Parameters successfully updated
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RunTemplateParameter'
+                $ref: '#/components/schemas/RunTemplateParameter'
         "400":
-          description: Bad request - Invalid parameters
+          description: Bad request
         "404":
-          description: Solution not found or insufficient access rights
+          description: Solution or parameter not found or insufficient access rights
     delete:
-      operationId: deleteSolutionParameters
+      operationId: deleteSolutionParameter
       tags:
         - solution
-      summary: Delete all parameters from the solution
+      summary: Delete specific parameter from the solution
       responses:
         "204":
-          description: Parameters successfully deleted
+          description: Parameter successfully deleted
         "404":
-          description: Solution not found or insufficient access rights
+          description: Solution or parameter not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/parameterGroups:
     parameters:
@@ -1050,6 +1119,7 @@ components:
       required:
         - id
 
+    # Base RunTemplateParameter object
     RunTemplateParameter:
       type: object
       description: A Run Template Parameter
@@ -1059,11 +1129,20 @@ components:
           description: the Parameter id
           minLength: 1
           maxLength: 50
+        name:
+          type: string
+          description: the Parameter name
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          description: the parameter description
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         varType:
           type: string
           description: the variable type for the parameter. Basic types or special type %DATASETID%
+          minLength: 1
         defaultValue:
           type: string
           description: The default value for this parameter
@@ -1082,6 +1161,81 @@ components:
           additionalProperties: true
       required:
         - id
+        - varType
+
+    RunTemplateParameterCreateRequest:
+      type: object
+      description: A Run Template Parameter for creation
+      properties:
+        name:
+          type: string
+          description: the Parameter name
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          description: the parameter description
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
+        varType:
+          type: string
+          description: the variable type for the parameter. Basic types or special type %DATASETID%
+          minLength: 1
+        defaultValue:
+          type: string
+          description: The default value for this parameter
+        minValue:
+          type: string
+          description: The minimum value for this parameter
+        maxValue:
+          type: string
+          description: The maximum value for this parameter
+        regexValidation:
+          type: string
+          description: A regex to validate the value
+        options:
+          type: object
+          description: Freeform options
+          additionalProperties: true
+      required:
+        - name
+        - varType
+
+    RunTemplateParameterUpdateRequest:
+      type: object
+      description: A Run Template Parameter for update parameter
+      properties:
+        name:
+          type: string
+          description: the Parameter name
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          description: the parameter description
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
+        varType:
+          type: string
+          description: the variable type for the parameter. Basic types or special type %DATASETID%
+          minLength: 1
+        defaultValue:
+          type: string
+          description: The default value for this parameter
+        minValue:
+          type: string
+          description: The minimum value for this parameter
+        maxValue:
+          type: string
+          description: The maximum value for this parameter
+        regexValidation:
+          type: string
+          description: A regex to validate the value
+        options:
+          type: object
+          description: Freeform options
+          additionalProperties: true
+
 
     TranslatedLabels:
       type: object

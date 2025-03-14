@@ -117,6 +117,8 @@ class SolutionControllerTests : ControllerTestBase() {
     val description = "this_is_a_description"
     val tags = mutableListOf("tag1", "tag2")
     val parameterId = "parameter1"
+    val parameterName = "my_parameter_name"
+    val parameterDesc = "my_parameter_desc"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
     val parameterVarType = "this_is_a_vartype"
     val parameterDefaultValue = "this_is_a_default_value"
@@ -131,8 +133,10 @@ class SolutionControllerTests : ControllerTestBase() {
         mutableListOf(
             RunTemplateParameter(
                 parameterId,
-                parameterLabels,
                 parameterVarType,
+                parameterName,
+                parameterDesc,
+                parameterLabels,
                 parameterDefaultValue,
                 parameterMinValue,
                 parameterMaxValue,
@@ -207,6 +211,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.alwaysPull").value(false))
         .andExpect(jsonPath("$.parameters[0].id").value(parameterId))
         .andExpect(jsonPath("$.parameters[0].labels").value(parameterLabels))
+        .andExpect(jsonPath("$.parameters[0].name").value(parameterName))
+        .andExpect(jsonPath("$.parameters[0].description").value(parameterDesc))
         .andExpect(jsonPath("$.parameters[0].varType").value(parameterVarType))
         .andExpect(jsonPath("$.parameters[0].defaultValue").value(parameterDefaultValue))
         .andExpect(jsonPath("$.parameters[0].minValue").value(parameterMinValue))
@@ -252,6 +258,8 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
     val parameterVarType = "this_is_a_vartype"
+    val parameterName = "my_parameter_name"
+    val parameterDesc = "my_parameter_desc"
     val parameterDefaultValue = "this_is_a_default_value"
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
@@ -264,8 +272,10 @@ class SolutionControllerTests : ControllerTestBase() {
         mutableListOf(
             RunTemplateParameter(
                 parameterId,
-                parameterLabels,
                 parameterVarType,
+                parameterName,
+                parameterDesc,
+                parameterLabels,
                 parameterDefaultValue,
                 parameterMinValue,
                 parameterMaxValue,
@@ -341,6 +351,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.alwaysPull").value(false))
         .andExpect(jsonPath("$.parameters[0].id").value(parameterId))
         .andExpect(jsonPath("$.parameters[0].labels").value(parameterLabels))
+        .andExpect(jsonPath("$.parameters[0].name").value(parameterName))
+        .andExpect(jsonPath("$.parameters[0].description").value(parameterDesc))
         .andExpect(jsonPath("$.parameters[0].varType").value(parameterVarType))
         .andExpect(jsonPath("$.parameters[0].defaultValue").value(parameterDefaultValue))
         .andExpect(jsonPath("$.parameters[0].minValue").value(parameterMinValue))
@@ -529,11 +541,12 @@ class SolutionControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
-  fun add_solution_parameters() {
+  fun create_solution_parameter() {
 
-    val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
     val parameterVarType = "this_is_a_vartype"
+    val parameterName = "my_parameter_name"
+    val parameterDesc = "my_parameter_desc"
     val parameterDefaultValue = "this_is_a_default_value"
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
@@ -542,47 +555,109 @@ class SolutionControllerTests : ControllerTestBase() {
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
-    val parameters =
-        mutableListOf(
-            RunTemplateParameter(
-                parameterId,
-                parameterLabels,
+    val parameterCreateRequest =
+            RunTemplateParameterCreateRequest(
+                parameterName,
                 parameterVarType,
+                parameterDesc,
+                parameterLabels,
                 parameterDefaultValue,
                 parameterMinValue,
                 parameterMaxValue,
                 parameterRegexValidation,
-                options))
+                options)
 
     val solutionId =
         createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
 
     mvc.perform(
-            patch("/organizations/$organizationId/solutions/$solutionId/parameters")
+            post("/organizations/$organizationId/solutions/$solutionId/parameters")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(JSONArray(parameters).toString())
+                .content(JSONObject(parameterCreateRequest).toString())
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
-        .andExpect(jsonPath("$[0].id").value(parameterId))
-        .andExpect(jsonPath("$[0].labels").value(parameterLabels))
-        .andExpect(jsonPath("$[0].varType").value(parameterVarType))
-        .andExpect(jsonPath("$[0].defaultValue").value(parameterDefaultValue))
-        .andExpect(jsonPath("$[0].minValue").value(parameterMinValue))
-        .andExpect(jsonPath("$[0].maxValue").value(parameterMaxValue))
-        .andExpect(jsonPath("$[0].regexValidation").value(parameterRegexValidation))
-        .andExpect(jsonPath("$[0].options[\"you_can_put\"]").value("whatever_you_want_here"))
-        .andExpect(jsonPath("$[0].options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$.labels").value(parameterLabels))
+        .andExpect(jsonPath("$.varType").value(parameterVarType))
+        .andExpect(jsonPath("$.description").value(parameterDesc))
+        .andExpect(jsonPath("$.name").value(parameterName))
+        .andExpect(jsonPath("$.defaultValue").value(parameterDefaultValue))
+        .andExpect(jsonPath("$.minValue").value(parameterMinValue))
+        .andExpect(jsonPath("$.maxValue").value(parameterMaxValue))
+        .andExpect(jsonPath("$.regexValidation").value(parameterRegexValidation))
+        .andExpect(jsonPath("$.options[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$.options[\"even\"][\"object\"]").value("if_you_want"))
         .andDo(MockMvcResultHandlers.print())
-        .andDo(document("organizations/{organization_id}/solutions/{solution_id}/parameters/PATCH"))
+        .andDo(document("organizations/{organization_id}/solutions/{solution_id}/parameters/POST"))
   }
 
-  @Test
+    //TODO missing /parameters/{parameter_id}/GET
+    //TODO missing /parameters/{parameter_id}/PATCH
+    //TODO missing /parameters/POST
+
+    @Test
+    @WithMockOauth2User
+    fun list_solution_parameters() {
+
+        val parameterId = "parameter1"
+        val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
+        val parameterVarType = "this_is_a_vartype"
+        val parameterName = "my_parameter_name"
+        val parameterDesc = "my_parameter_desc"
+        val parameterDefaultValue = "this_is_a_default_value"
+        val parameterMinValue = "this_is_a_minimal_value"
+        val parameterMaxValue = "this_is_a_maximal_value"
+        val parameterRegexValidation = "this_is_a_regex_to_validate_value"
+        val options =
+            mutableMapOf(
+                "you_can_put" to "whatever_you_want_here",
+                "even" to JSONObject(mapOf("object" to "if_you_want")))
+        val parameters =
+            mutableListOf(
+                RunTemplateParameter(
+                    parameterId,
+                    parameterVarType,
+                    parameterName,
+                    parameterDesc,
+                    parameterLabels,
+                    parameterDefaultValue,
+                    parameterMinValue,
+                    parameterMaxValue,
+                    parameterRegexValidation,
+                    options))
+        val solutionId =
+            createSolutionAndReturnId(
+                mvc, organizationId, constructSolutionCreateRequest(parameters = parameters))
+        mvc.perform(
+            get("/organizations/$organizationId/solutions/$solutionId/parameters")
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().is2xxSuccessful)
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(jsonPath("$[0].id").value(parameterId))
+            .andExpect(jsonPath("$[0].labels").value(parameterLabels))
+            .andExpect(jsonPath("$[0].varType").value(parameterVarType))
+            .andExpect(jsonPath("$[0].name").value(parameterName))
+            .andExpect(jsonPath("$[0].description").value(parameterDesc))
+            .andExpect(jsonPath("$[0].defaultValue").value(parameterDefaultValue))
+            .andExpect(jsonPath("$[0].minValue").value(parameterMinValue))
+            .andExpect(jsonPath("$[0].maxValue").value(parameterMaxValue))
+            .andExpect(jsonPath("$[0].regexValidation").value(parameterRegexValidation))
+            .andExpect(jsonPath("$[0].options[\"you_can_put\"]").value("whatever_you_want_here"))
+            .andExpect(jsonPath("$[0].options[\"even\"][\"object\"]").value("if_you_want"))
+            .andDo(
+                document("organizations/{organization_id}/solutions/{solution_id}/parameters/GET"))
+    }
+
+
+
+    @Test
   @WithMockOauth2User
   fun delete_solution_parameters() {
 
     val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
     val parameterVarType = "this_is_a_vartype"
+    val parameterName = "my_parameter_name"
+    val parameterDesc = "my_parameter_desc"
     val parameterDefaultValue = "this_is_a_default_value"
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
@@ -595,8 +670,10 @@ class SolutionControllerTests : ControllerTestBase() {
         mutableListOf(
             RunTemplateParameter(
                 parameterId,
-                parameterLabels,
                 parameterVarType,
+                parameterName,
+                parameterDesc,
+                parameterLabels,
                 parameterDefaultValue,
                 parameterMinValue,
                 parameterMaxValue,
@@ -606,13 +683,13 @@ class SolutionControllerTests : ControllerTestBase() {
         createSolutionAndReturnId(
             mvc, organizationId, constructSolutionCreateRequest(parameters = parameters))
     mvc.perform(
-            delete("/organizations/$organizationId/solutions/$solutionId/parameters")
+            delete("/organizations/$organizationId/solutions/$solutionId/parameters/$parameterId")
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
-            document("organizations/{organization_id}/solutions/{solution_id}/parameters/DELETE"))
+            document("organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id}/DELETE"))
   }
 
   @Test
