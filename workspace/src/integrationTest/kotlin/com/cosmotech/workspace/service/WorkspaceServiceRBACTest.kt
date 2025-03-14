@@ -1697,7 +1697,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       SolutionCreateRequest(
           key = UUID.randomUUID().toString(),
           name = "Solution",
-          parameters = mutableListOf(RunTemplateParameter("parameter")),
+          parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
           csmSimulator = "simulator",
           version = "1.0.0",
           repository = "repository",

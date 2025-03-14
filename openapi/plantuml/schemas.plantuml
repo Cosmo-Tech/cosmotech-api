@@ -316,8 +316,22 @@ entity RunTemplate {
 
 entity RunTemplateParameter {
     * id: String
+    name: String
+    description: String
     labels: Map
-    varType: String
+    * varType: String
+    defaultValue: String
+    minValue: String
+    maxValue: String
+    regexValidation: String
+    options: Map
+}
+
+entity RunTemplateParameterCreateRequest {
+    * name: String
+    description: String
+    labels: Map
+    * varType: String
     defaultValue: String
     minValue: String
     maxValue: String
@@ -332,6 +346,18 @@ entity RunTemplateParameterGroup {
     options: Map
     parentId: String
     parameters: List<String>
+}
+
+entity RunTemplateParameterUpdateRequest {
+    name: String
+    description: String
+    labels: Map
+    varType: String
+    defaultValue: String
+    minValue: String
+    maxValue: String
+    regexValidation: String
+    options: Map
 }
 
 entity RunTemplateParameterValue {

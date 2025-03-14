@@ -1158,7 +1158,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
           csmSimulator = "simulator",
           repository = "repository",
           parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
-          parameters = mutableListOf(RunTemplateParameter("parameter")),
+          parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
           version = "1.0.0",
           security =
               SolutionSecurity(

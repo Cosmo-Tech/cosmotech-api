@@ -51,7 +51,9 @@ Models/RunStatus.md
 Models/RunStatusNode.md
 Models/RunTemplate.md
 Models/RunTemplateParameter.md
+Models/RunTemplateParameterCreateRequest.md
 Models/RunTemplateParameterGroup.md
+Models/RunTemplateParameterUpdateRequest.md
 Models/RunTemplateParameterValue.md
 Models/RunTemplateResourceSizing.md
 Models/Runner.md

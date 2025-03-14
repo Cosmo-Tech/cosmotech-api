@@ -4455,7 +4455,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           key = UUID.randomUUID().toString(),
           name = "My solution",
           runTemplates = mutableListOf(RunTemplate("runTemplateId")),
-          parameters = mutableListOf(RunTemplateParameter("parameter")),
+          parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
           repository = "repository",
           csmSimulator = "simulator",
           version = "1.0.0",

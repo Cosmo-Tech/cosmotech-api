@@ -21,15 +21,7 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
-import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateParameter
-import com.cosmotech.solution.domain.RunTemplateParameterGroup
-import com.cosmotech.solution.domain.Solution
-import com.cosmotech.solution.domain.SolutionAccessControl
-import com.cosmotech.solution.domain.SolutionCreateRequest
-import com.cosmotech.solution.domain.SolutionRole
-import com.cosmotech.solution.domain.SolutionSecurity
-import com.cosmotech.solution.domain.SolutionUpdateRequest
+import com.cosmotech.solution.domain.*
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -125,7 +117,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             version = "1.0.0",
             repository = "repository",
             csmSimulator = "simulator",
-            parameters = mutableListOf(RunTemplateParameter("parameter")),
+            parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
             parameterGroups = mutableListOf(),
             security =
                 SolutionSecurity(
@@ -303,33 +295,345 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test Parameter operations on Solution`() {
+  fun `test empty list solution parameters`() {
+    val parameterList =
+        solutionApiService.listSolutionParameters(organizationSaved.id, solutionSaved.id)
+    assertTrue(parameterList.isEmpty())
+  }
 
-    logger.info(
-        "should add 2 new parameters to the solution and assert that the list contains 2 elements")
-    val parameter1 = RunTemplateParameter(id = "parameterId1")
-    val parameter2 = RunTemplateParameter(id = "parameterId2")
-    solutionApiService.updateSolutionParameters(
-        solutionSaved.organizationId, solutionSaved.id, listOf(parameter1, parameter2))
-    val foundSolution =
-        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
-    assertTrue(foundSolution.parameters.size == 2)
+  @Test
+  fun `test list solution parameters with non-existing solution`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.listSolutionParameters(
+              organizationSaved.id, "non-existing-solution-id")
+        }
+    assertEquals(
+        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        exception.message)
+  }
 
-    logger.info("should replace the parameters and assert that the list contains only 1 element")
-    val parameter3 =
-        RunTemplateParameter(id = "parameterId1", labels = mutableMapOf("pkey" to "value"))
-    solutionApiService.updateSolutionParameters(
-        solutionSaved.organizationId, solutionSaved.id, listOf(parameter3))
-    val foundSolutionAfterReplace =
-        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
-    assertTrue(foundSolutionAfterReplace.parameters.size == 2)
-    assertTrue(foundSolutionAfterReplace.parameters.first().labels!!.containsKey("pkey"))
+  @Test
+  fun `test list solution parameters`() {
 
-    logger.info("should remove all parameters and assert that the list is empty")
-    solutionApiService.deleteSolutionParameters(solutionSaved.organizationId, solutionSaved.id)
-    val foundSolutionAfterRemove =
-        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
-    assertTrue(foundSolutionAfterRemove.parameters.isEmpty())
+    val newSolutionWithParameters =
+        makeSolution(
+            organizationSaved.id,
+            parameter =
+                mutableListOf(
+                    RunTemplateParameter(
+                        id = "parameterId",
+                        name = "parameterName",
+                        varType = "int",
+                        defaultValue = "0",
+                        minValue = "0",
+                        maxValue = "100",
+                        regexValidation = "\\d",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        options = mutableMapOf("option1" to "value1", "option2" to 10.0)),
+                    RunTemplateParameter(
+                        id = "parameterId2",
+                        name = "parameterName2",
+                        varType = "int",
+                        defaultValue = "5",
+                        minValue = "0",
+                        maxValue = "1000",
+                        regexValidation = "\\d",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        options = mutableMapOf("option1" to "value1", "option2" to 100.8))))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameters)
+    val parameterList =
+        solutionApiService.listSolutionParameters(organizationSaved.id, newSolution.id)
+
+    assertEquals(2, parameterList.size)
+    val firstParam = parameterList[0]
+    assertEquals("parameterId", firstParam.id)
+    assertEquals("parameterName", firstParam.name)
+    assertEquals("int", firstParam.varType)
+    assertEquals("0", firstParam.defaultValue)
+    assertEquals("0", firstParam.minValue)
+    assertEquals("100", firstParam.maxValue)
+    assertEquals("\\d", firstParam.regexValidation)
+    assertEquals("this_is_a_description", firstParam.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label"), firstParam.labels)
+    assertEquals(2, firstParam.options?.size)
+    assertEquals("value1", firstParam.options?.get("option1"))
+    assertEquals(10.0, firstParam.options?.get("option2"))
+    val secondParam = parameterList[1]
+    assertEquals("parameterId2", secondParam.id)
+    assertEquals("parameterName2", secondParam.name)
+    assertEquals("int", secondParam.varType)
+    assertEquals("5", secondParam.defaultValue)
+    assertEquals("0", secondParam.minValue)
+    assertEquals("1000", secondParam.maxValue)
+    assertEquals("\\d", secondParam.regexValidation)
+    assertEquals("this_is_a_description2", secondParam.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label2"), secondParam.labels)
+    assertEquals(2, secondParam.options?.size)
+    assertEquals("value1", secondParam.options?.get("option1"))
+    assertEquals(100.8, secondParam.options?.get("option2"))
+  }
+
+  @Test
+  fun `test get solution parameter`() {
+    val newSolutionWithParameters =
+        makeSolution(
+            organizationSaved.id,
+            parameter =
+                mutableListOf(
+                    RunTemplateParameter(
+                        id = "parameterId",
+                        name = "parameterName",
+                        varType = "int",
+                        defaultValue = "0",
+                        minValue = "0",
+                        maxValue = "100",
+                        regexValidation = "\\d",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        options = mutableMapOf("option1" to "value1", "option2" to 10.0)),
+                    RunTemplateParameter(
+                        id = "parameterId2",
+                        name = "parameterName2",
+                        varType = "int",
+                        defaultValue = "5",
+                        minValue = "0",
+                        maxValue = "1000",
+                        regexValidation = "\\d",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        options = mutableMapOf("option1" to "value1", "option2" to 100.8))))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameters)
+
+    val solutionParameter =
+        solutionApiService.getSolutionParameter(organizationSaved.id, newSolution.id, "parameterId")
+    assertNotNull(solutionParameter)
+    assertEquals("parameterId", solutionParameter.id)
+    assertEquals("parameterName", solutionParameter.name)
+    assertEquals("int", solutionParameter.varType)
+    assertEquals("0", solutionParameter.defaultValue)
+    assertEquals("0", solutionParameter.minValue)
+    assertEquals("100", solutionParameter.maxValue)
+    assertEquals("\\d", solutionParameter.regexValidation)
+    assertEquals("this_is_a_description", solutionParameter.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label"), solutionParameter.labels)
+    assertEquals(2, solutionParameter.options?.size)
+    assertEquals("value1", solutionParameter.options?.get("option1"))
+    assertEquals(10.0, solutionParameter.options?.get("option2"))
+  }
+
+  @Test
+  fun `test get solution parameter with non-existing parameter`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.getSolutionParameter(
+              organizationSaved.id, solutionSaved.id, "non-existing-solution-parameter-id")
+        }
+    assertEquals(
+        "Solution parameter with id non-existing-solution-parameter-id does not exist",
+        exception.message)
+  }
+
+  @Test
+  fun `test update solution parameter`() {
+    val newSolutionWithParameters =
+        makeSolution(
+            organizationSaved.id,
+            parameter =
+                mutableListOf(
+                    RunTemplateParameter(
+                        id = "parameterId",
+                        name = "parameterName",
+                        varType = "int",
+                        defaultValue = "0",
+                        minValue = "0",
+                        maxValue = "100",
+                        regexValidation = "\\d",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        options = mutableMapOf("option1" to "value1", "option2" to 10.0)),
+                    RunTemplateParameter(
+                        id = "parameterId2",
+                        name = "parameterName2",
+                        varType = "int",
+                        defaultValue = "5",
+                        minValue = "0",
+                        maxValue = "1000",
+                        regexValidation = "\\d",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        options = mutableMapOf("option1" to "value1", "option2" to 100.8))))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameters)
+
+    val solutionParameter =
+        solutionApiService.updateSolutionParameter(
+            organizationSaved.id,
+            newSolution.id,
+            "parameterId",
+            RunTemplateParameterUpdateRequest(
+                name = "newParameterName2",
+                varType = "string",
+                defaultValue = "",
+                minValue = "",
+                maxValue = "",
+                regexValidation = "\\w",
+                description = "new_this_is_a_description2",
+                labels = mutableMapOf("en" to "new_this_is_a_label2"),
+                options = mutableMapOf("option1" to "newvalue1")))
+    assertNotNull(solutionParameter)
+    assertEquals("parameterId", solutionParameter.id)
+    assertEquals("newParameterName2", solutionParameter.name)
+    assertEquals("string", solutionParameter.varType)
+    assertEquals("", solutionParameter.defaultValue)
+    assertEquals("", solutionParameter.minValue)
+    assertEquals("", solutionParameter.maxValue)
+    assertEquals("\\w", solutionParameter.regexValidation)
+    assertEquals("new_this_is_a_description2", solutionParameter.description)
+    assertEquals(mutableMapOf("en" to "new_this_is_a_label2"), solutionParameter.labels)
+    assertEquals(1, solutionParameter.options?.size)
+    assertEquals("newvalue1", solutionParameter.options?.get("option1"))
+  }
+
+  @Test
+  fun `test update solution parameter with non-existing parameter`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.updateSolutionParameter(
+              organizationSaved.id,
+              solutionSaved.id,
+              "non-existing-solution-parameter-id",
+              RunTemplateParameterUpdateRequest())
+        }
+    assertEquals(
+        "Solution parameter with id non-existing-solution-parameter-id does not exist",
+        exception.message)
+  }
+
+  @Test
+  fun `test delete solution parameter`() {
+
+    val newSolutionWithParameters =
+        makeSolution(
+            organizationSaved.id,
+            parameter =
+                mutableListOf(
+                    RunTemplateParameter(
+                        id = "parameterId",
+                        name = "parameterName",
+                        varType = "int",
+                        defaultValue = "0",
+                        minValue = "0",
+                        maxValue = "100",
+                        regexValidation = "\\d",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        options = mutableMapOf("option1" to "value1", "option2" to 10.0)),
+                    RunTemplateParameter(
+                        id = "parameterId2",
+                        name = "parameterName2",
+                        varType = "int",
+                        defaultValue = "5",
+                        minValue = "0",
+                        maxValue = "1000",
+                        regexValidation = "\\d",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        options = mutableMapOf("option1" to "value1", "option2" to 100.8))))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameters)
+
+    var listSolutionParameters =
+        solutionApiService.listSolutionParameters(organizationSaved.id, newSolution.id)
+
+    val parameterIdToDelete = listSolutionParameters[0].id
+    val parameterIdToKeep = listSolutionParameters[1].id
+    solutionApiService.deleteSolutionParameter(
+        organizationSaved.id, newSolution.id, parameterIdToDelete)
+
+    listSolutionParameters =
+        solutionApiService.listSolutionParameters(organizationSaved.id, newSolution.id)
+
+    assertNotNull(listSolutionParameters)
+    assertEquals(1, listSolutionParameters.size)
+    assertEquals(parameterIdToKeep, listSolutionParameters[0].id)
+  }
+
+  @Test
+  fun `test delete solution parameter with non-existing parameter`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.deleteSolutionParameter(
+              organizationSaved.id, solutionSaved.id, "non-existing-solution-parameter-id")
+        }
+    assertEquals(
+        "Solution parameter with id non-existing-solution-parameter-id does not exist",
+        exception.message)
+  }
+
+  @Test
+  fun `test create solution parameter with non-existing parameter`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.createSolutionParameter(
+              organizationSaved.id,
+              "non-existing-solution-id",
+              RunTemplateParameterCreateRequest(
+                  name = "my_parameter_name", varType = "my_vartype_parameter"))
+        }
+    assertEquals(
+        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        exception.message)
+  }
+
+  @Test
+  fun `test create solution parameter `() {
+    val newSolutionWithoutParameters = makeSolution(organizationSaved.id)
+
+    val newSolutionWithEmptyParameters =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithoutParameters)
+
+    assertTrue(newSolutionWithEmptyParameters.parameters.isEmpty())
+
+    val parameterCreateRequest =
+        RunTemplateParameterCreateRequest(
+            name = "parameterName2",
+            varType = "int",
+            defaultValue = "5",
+            minValue = "0",
+            maxValue = "1000",
+            regexValidation = "\\d",
+            description = "this_is_a_description2",
+            labels = mutableMapOf("fr" to "this_is_a_label2"),
+            options = mutableMapOf("option1" to "value1", "option2" to 100.8))
+
+    solutionApiService.createSolutionParameter(
+        organizationSaved.id, newSolutionWithEmptyParameters.id, parameterCreateRequest)
+
+    val newSolutionWithNewParameter =
+        solutionApiService.getSolution(organizationSaved.id, newSolutionWithEmptyParameters.id)
+
+    assertFalse(newSolutionWithNewParameter.parameters.isEmpty())
+    assertEquals(1, newSolutionWithNewParameter.parameters.size)
+    val newParam = newSolutionWithNewParameter.parameters[0]
+    assertEquals("parameterName2", newParam.name)
+    assertEquals("int", newParam.varType)
+    assertEquals("5", newParam.defaultValue)
+    assertEquals("0", newParam.minValue)
+    assertEquals("1000", newParam.maxValue)
+    assertEquals("\\d", newParam.regexValidation)
+    assertEquals("this_is_a_description2", newParam.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label2"), newParam.labels)
+    assertEquals("value1", newParam.options?.get("option1"))
+    assertEquals(100.8, newParam.options?.get("option2"))
   }
 
   @Test
@@ -488,7 +792,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             repository = "repository",
             runTemplates = mutableListOf(RunTemplate("templates")),
             csmSimulator = "simulator",
-            parameters = mutableListOf(RunTemplateParameter("parameter")),
+            parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
             parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
             version = "1.0.0",
             security =
@@ -562,7 +866,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             tags = mutableListOf("tag1", "tag2"),
             url = "url",
             runTemplates = mutableListOf(RunTemplate(id = "template")),
-            parameters = mutableListOf(RunTemplateParameter(id = "parameter")),
+            parameters = mutableListOf(RunTemplateParameter(id = "parameter", "string")),
             parameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group")),
             csmSimulator = "simulator",
             repository = "repository",
@@ -609,7 +913,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             tags = mutableListOf("tag1", "tag2"),
             url = "url",
             runTemplates = mutableListOf(RunTemplate(id = "template")),
-            parameters = mutableListOf(RunTemplateParameter(id = "parameter")),
+            parameters = mutableListOf(RunTemplateParameter(id = "parameter", "string")),
             parameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group")),
             csmSimulator = "simulator",
             repository = "repository",
