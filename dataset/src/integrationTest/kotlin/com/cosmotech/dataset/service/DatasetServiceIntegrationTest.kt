@@ -5,6 +5,7 @@
 package com.cosmotech.dataset.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
@@ -118,6 +119,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @SpykBean @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
   @MockK(relaxUnitFun = true) lateinit var eventPublisher: CsmEventPublisher
+  private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
 
   lateinit var connectorSaved: Connector
   lateinit var dataset: Dataset
@@ -144,6 +146,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     unifiedJedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
     ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", unifiedJedis)
     ReflectionTestUtils.setField(datasetApiService, "eventPublisher", eventPublisher)
+    ReflectionTestUtils.setField(
+        solutionApiService, "containerRegistryService", containerRegistryService)
+    every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
   }
 
   @BeforeEach

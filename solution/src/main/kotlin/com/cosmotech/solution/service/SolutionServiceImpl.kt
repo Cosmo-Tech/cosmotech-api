@@ -3,6 +3,7 @@
 package com.cosmotech.solution.service
 
 import com.cosmotech.api.CsmPhoenixService
+import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmAdmin
@@ -33,6 +34,7 @@ import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.solution.domain.SolutionUpdateRequest
 import com.cosmotech.solution.repository.SolutionRepository
+import kotlin.collections.mutableListOf
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
@@ -44,7 +46,8 @@ class SolutionServiceImpl(
     private val solutionRepository: SolutionRepository,
     private val organizationApiService: OrganizationApiServiceInterface,
     private val csmRbac: CsmRbac,
-    private val csmAdmin: CsmAdmin
+    private val csmAdmin: CsmAdmin,
+    private val containerRegistryService: ContainerRegistryService
 ) : CsmPhoenixService(), SolutionApiServiceInterface {
 
   override fun listSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
@@ -80,12 +83,11 @@ class SolutionServiceImpl(
             solutionRepository.findByOrganizationId(organizationId, pageable).toList()
           }
     }
-    result.forEach { it.security = updateSecurityVisibility(it).security }
-    return result
+    return result.map { fillSdkVersion(updateSecurityVisibility(it)) }
   }
 
   override fun getSolution(organizationId: String, solutionId: String): Solution {
-    return updateSecurityVisibility(getVerifiedSolution(organizationId, solutionId))
+    return fillSdkVersion(updateSecurityVisibility(getVerifiedSolution(organizationId, solutionId)))
   }
 
   override fun deleteSolutionRunTemplates(organizationId: String, solutionId: String) {
@@ -214,9 +216,8 @@ class SolutionServiceImpl(
             url = solutionCreateRequest.url,
             csmSimulator = solutionCreateRequest.csmSimulator,
             alwaysPull = solutionCreateRequest.alwaysPull,
-            sdkVersion = solutionCreateRequest.sdkVersion,
             security = security)
-    return solutionRepository.save(createdSolution)
+    return fillSdkVersion(solutionRepository.save(createdSolution))
   }
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
@@ -260,7 +261,6 @@ class SolutionServiceImpl(
             csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
             alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
             parameters = existingSolution.parameters,
-            sdkVersion = solutionUpdateRequest.sdkVersion ?: existingSolution.sdkVersion,
             parameterGroups = existingSolution.parameterGroups,
             security = existingSolution.security)
 
@@ -272,11 +272,9 @@ class SolutionServiceImpl(
                     arrayOf("ownerId", "runTemplates", "parameters", "parameterGroups"))
             .isNotEmpty()
 
-    return if (hasChanged) {
-      solutionRepository.save(existingSolution)
-    } else {
-      existingSolution
-    }
+    val returnedSolution =
+        if (hasChanged) solutionRepository.save(existingSolution) else existingSolution
+    return fillSdkVersion(returnedSolution)
   }
 
   override fun updateSolutionRunTemplate(
@@ -438,6 +436,12 @@ class SolutionServiceImpl(
     }
     return solution
   }
+
+  fun fillSdkVersion(solution: Solution) =
+      solution.copy(
+          sdkVersion =
+              containerRegistryService.getImageLabel(
+                  solution.repository, solution.version, "com.cosmotech.sdk-version"))
 }
 
 fun SolutionSecurity?.toGenericSecurity(solutionId: String) =

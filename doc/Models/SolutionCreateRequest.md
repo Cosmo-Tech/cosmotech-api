@@ -14,7 +14,6 @@
 | **parameters** | [**List**](RunTemplateParameter.md) | The list of Run Template Parameters | [optional] [default to []] |
 | **parameterGroups** | [**List**](RunTemplateParameterGroup.md) | The list of parameters groups for the Run Templates | [optional] [default to []] |
 | **runTemplates** | [**List**](RunTemplate.md) | List of Run Templates | [optional] [default to []] |
-| **sdkVersion** | **String** | The MAJOR.MINOR version used to build this solution | [optional] [default to null] |
 | **url** | **String** | An optional URL link to solution page | [optional] [default to null] |
 | **security** | [**SolutionSecurity**](SolutionSecurity.md) |  | [optional] [default to null] |
 

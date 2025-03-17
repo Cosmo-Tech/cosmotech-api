@@ -3,6 +3,7 @@
 package com.cosmotech.solution.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -39,6 +40,7 @@ import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.io.InputStream
 import java.util.*
@@ -56,6 +58,7 @@ import org.springframework.core.io.Resource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.util.ReflectionTestUtils
 
 @ActiveProfiles(profiles = ["solution-test"])
 @ExtendWith(MockKExtension::class)
@@ -74,6 +77,8 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
 
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
+  private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
+
   lateinit var organization: OrganizationCreateRequest
   lateinit var solution: SolutionCreateRequest
 
@@ -87,6 +92,9 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    ReflectionTestUtils.setField(
+        solutionApiService, "containerRegistryService", containerRegistryService)
+    every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")

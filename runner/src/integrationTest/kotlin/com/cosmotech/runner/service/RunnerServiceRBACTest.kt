@@ -5,6 +5,7 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -108,6 +109,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var runnerApiService: RunnerApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
+  private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
+
   lateinit var jedis: UnifiedJedis
 
   @BeforeEach
@@ -128,6 +131,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
     jedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
     ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", jedis)
+    ReflectionTestUtils.setField(
+        solutionApiService, "containerRegistryService", containerRegistryService)
+    every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
   }
 
   @TestFactory

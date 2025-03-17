@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home.solution
 
+import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
@@ -15,21 +16,27 @@ import com.cosmotech.api.home.organization.OrganizationConstants.NEW_USER_ROLE
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_KEY
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_NAME
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_REPOSITORY
+import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_SDK_VERSION
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_SIMULATOR
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_VERSION
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
+import io.mockk.every
+import io.mockk.mockk
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -39,10 +46,18 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SolutionControllerTests : ControllerTestBase() {
 
+  @Autowired lateinit var solutionApiService: SolutionApiService
   private lateinit var organizationId: String
+
+  private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
 
   @BeforeEach
   fun beforeEach() {
+    ReflectionTestUtils.setField(
+        solutionApiService, "containerRegistryService", containerRegistryService)
+    every { containerRegistryService.getImageLabel(any(), any(), any()) } returns
+        SOLUTION_SDK_VERSION
+
     organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
   }
 
@@ -78,6 +93,7 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].name").value(firstSolutionName))
         .andExpect(jsonPath("$[0].ownerId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[0].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[0].sdkVersion").value(SOLUTION_SDK_VERSION))
         .andExpect(jsonPath("$[0].security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
@@ -86,6 +102,7 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[1].name").value(secondSolutionName))
         .andExpect(jsonPath("$[1].ownerId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[1].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[1].sdkVersion").value(SOLUTION_SDK_VERSION))
         .andExpect(jsonPath("$[1].security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$[1].security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$[1].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
@@ -152,7 +169,6 @@ class SolutionControllerTests : ControllerTestBase() {
                 mutableListOf(parameterGroupId),
                 10))
 
-    val sdkVersion = "this_is_the_sdk_version"
     val url = "this_is_the_solution_url"
     val security =
         SolutionSecurity(
@@ -174,7 +190,6 @@ class SolutionControllerTests : ControllerTestBase() {
             parameters,
             parameterGroups,
             runTemplates,
-            sdkVersion,
             url,
             security)
 
@@ -218,6 +233,7 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.url").value(url))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
+        .andExpect(jsonPath("$.sdkVersion").value(SOLUTION_SDK_VERSION))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
@@ -286,7 +302,6 @@ class SolutionControllerTests : ControllerTestBase() {
                 mutableListOf(parameterGroupId),
                 10))
 
-    val sdkVersion = "this_is_the_sdk_version"
     val url = "this_is_the_solution_url"
     val security =
         SolutionSecurity(
@@ -308,7 +323,6 @@ class SolutionControllerTests : ControllerTestBase() {
             parameters,
             parameterGroups,
             runTemplates,
-            sdkVersion,
             url,
             security)
 
@@ -361,6 +375,7 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.url").value(url))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
+        .andExpect(jsonPath("$.sdkVersion").value(SOLUTION_SDK_VERSION))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
@@ -394,7 +409,6 @@ class SolutionControllerTests : ControllerTestBase() {
 
     val description = "this_is_a_description"
     val tags = mutableListOf("tag1", "tag2")
-    val sdkVersion = "this_is_the_sdk_version"
     val url = "this_is_the_solution_url"
 
     val solutionUpdateRequest =
@@ -407,7 +421,6 @@ class SolutionControllerTests : ControllerTestBase() {
             description,
             true,
             tags,
-            sdkVersion,
             url)
 
     mvc.perform(
@@ -426,6 +439,7 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.url").value(url))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
+        .andExpect(jsonPath("$.sdkVersion").value(SOLUTION_SDK_VERSION))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))

@@ -85,7 +85,6 @@ class ControllerTestUtils {
         parameters: MutableList<RunTemplateParameter> = mutableListOf(),
         parameterGroups: MutableList<RunTemplateParameterGroup> = mutableListOf(),
         runTemplates: MutableList<RunTemplate> = mutableListOf(),
-        sdkVersion: String = "",
         url: String = "",
         security: SolutionSecurity? = null
     ): SolutionCreateRequest {
@@ -101,7 +100,6 @@ class ControllerTestUtils {
           parameters = parameters,
           parameterGroups = parameterGroups,
           runTemplates = runTemplates,
-          sdkVersion = sdkVersion,
           url = url,
           security = security,
       )
@@ -117,7 +115,6 @@ class ControllerTestUtils {
         description: String = "",
         alwaysPull: Boolean? = null,
         tags: MutableList<String> = mutableListOf(),
-        sdkVersion: String = "",
         url: String = "",
     ): SolutionUpdateRequest {
       return SolutionUpdateRequest(
@@ -129,7 +126,6 @@ class ControllerTestUtils {
           description = description,
           alwaysPull = alwaysPull,
           tags = tags,
-          sdkVersion = sdkVersion,
           url = url)
     }
   }

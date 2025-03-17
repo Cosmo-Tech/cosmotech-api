@@ -3,6 +3,7 @@
 package com.cosmotech.solution.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_ADMIN
@@ -32,13 +33,17 @@ import com.cosmotech.solution.domain.SolutionUpdateRequest
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
@@ -48,6 +53,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.util.ReflectionTestUtils
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_READER_USER = "test.user@cosmotech.com"
@@ -66,6 +72,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
+  private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
+
   lateinit var organization: OrganizationCreateRequest
   lateinit var solution: SolutionCreateRequest
 
@@ -75,6 +83,9 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    ReflectionTestUtils.setField(
+        solutionApiService, "containerRegistryService", containerRegistryService)
+    every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
@@ -155,6 +166,41 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         solutionApiService.listSolutions(organizationSaved.id, null, null)
     assertTrue(solutionsFoundAfterDelete.size == 1)
   }
+
+  @TestFactory
+  fun `sdkVersion on Solution CRUD`() =
+      mapOf(
+              "no image label" to null,
+              "with image label" to "11.3.0-rc1-456.abc",
+          )
+          .map { (name, imageLabel) ->
+            DynamicTest.dynamicTest("sdkVersion on Solution CRUD: $name") {
+              every { containerRegistryService.getImageLabel(any(), any(), any()) } returns
+                  imageLabel
+
+              val solutionCreated =
+                  solutionApiService.createSolution(
+                      organizationSaved.id, makeSolution(organizationSaved.id))
+              assertEquals(imageLabel, solutionCreated.sdkVersion)
+
+              assertEquals(
+                  imageLabel,
+                  solutionApiService
+                      .getSolution(organizationSaved.id, solutionCreated.id)
+                      .sdkVersion)
+
+              val solutions = solutionApiService.listSolutions(organizationSaved.id, null, null)
+              assertFalse(solutions.isEmpty())
+              solutions.forEach { assertEquals(imageLabel, it.sdkVersion) }
+
+              val solutionUpdateRequest = SolutionUpdateRequest(name = "New name")
+              val solutionUpdated =
+                  solutionApiService.updateSolution(
+                      organizationSaved.id, solutionCreated.id, solutionUpdateRequest)
+              assertEquals(solutionUpdateRequest.name, solutionUpdated.name)
+              assertEquals(imageLabel, solutionUpdated.sdkVersion)
+            }
+          }
 
   @Test
   fun `can delete solution when user is not the owner and is Platform Admin`() {
@@ -521,7 +567,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             csmSimulator = "simulator",
             repository = "repository",
             alwaysPull = true,
-            sdkVersion = "1.0.0",
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
@@ -538,7 +583,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             parameterGroups = solutionToCreate.parameterGroups,
             parameters = solutionToCreate.parameters,
             security = solutionToCreate.security,
-            sdkVersion = solutionToCreate.sdkVersion,
             csmSimulator = solutionToCreate.csmSimulator,
             url = solutionToCreate.url,
             alwaysPull = solutionToCreate.alwaysPull,
@@ -570,7 +614,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             csmSimulator = "simulator",
             repository = "repository",
             alwaysPull = true,
-            sdkVersion = "1.0.0",
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
@@ -599,7 +642,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             tags = mutableListOf("newTag1", "newTag2"),
             alwaysPull = false,
             repository = "new_repo",
-            sdkVersion = "2.0.0",
             csmSimulator = "new_simulator",
             url = "new_url",
             version = "2.0.0")
@@ -612,7 +654,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             description = solutionUpdateRequest.description,
             tags = solutionUpdateRequest.tags,
             alwaysPull = solutionUpdateRequest.alwaysPull,
-            sdkVersion = solutionUpdateRequest.sdkVersion,
             csmSimulator = solutionUpdateRequest.csmSimulator!!,
             url = solutionUpdateRequest.url,
             repository = solutionUpdateRequest.repository!!,

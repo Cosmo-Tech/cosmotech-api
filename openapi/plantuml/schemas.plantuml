@@ -470,7 +470,6 @@ entity SolutionCreateRequest {
     parameters: List<RunTemplateParameter>
     parameterGroups: List<RunTemplateParameterGroup>
     runTemplates: List<RunTemplate>
-    sdkVersion: String
     url: String
     security: SolutionSecurity
 }
@@ -492,7 +491,6 @@ entity SolutionUpdateRequest {
     alwaysPull: Boolean
     csmSimulator: String
     version: String
-    sdkVersion: String
     url: String
     tags: List<String>
 }

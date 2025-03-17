@@ -3,6 +3,7 @@
 package com.cosmotech.workspace.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -45,6 +46,7 @@ import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.io.File
 import java.nio.file.Files
@@ -88,9 +90,14 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
+  private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
+
   @BeforeEach
   fun beforeEach() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    ReflectionTestUtils.setField(
+        solutionApiService, "containerRegistryService", containerRegistryService)
+    every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()

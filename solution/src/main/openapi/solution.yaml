@@ -729,8 +729,8 @@ components:
           description: The User id which owns this Solution
         sdkVersion:
           type: string
-          description: The MAJOR.MINOR version used to build this solution
-          example: "2.4"
+          description: The full SDK version used to build this solution, if available
+          example: 11.3.0-39929.27365ede
         url:
           type: string
           description: An optional URL link to solution page
@@ -839,10 +839,6 @@ components:
           description: List of Run Templates
           items:
             $ref: '#/components/schemas/RunTemplate'
-        sdkVersion:
-          type: string
-          description: The MAJOR.MINOR version used to build this solution
-          example: "2.4"
         url:
           type: string
           description: An optional URL link to solution page
@@ -895,10 +891,6 @@ components:
           description: The Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
           minLength: 1
           example: "1.0.0"
-        sdkVersion:
-          type: string
-          description: The MAJOR.MINOR version used to build this solution
-          example: "2.4"
         url:
           type: string
           description: An optional URL link to solution page

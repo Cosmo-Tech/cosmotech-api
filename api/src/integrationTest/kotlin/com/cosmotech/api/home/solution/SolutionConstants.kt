@@ -13,6 +13,7 @@ object SolutionConstants {
   const val SOLUTION_KEY = "my_solution_key"
   const val SOLUTION_REPOSITORY = "solution_repository"
   const val SOLUTION_VERSION = "1.0.0"
+  const val SOLUTION_SDK_VERSION = "11.3.0-45678.abcdef12"
   const val SOLUTION_SIMULATOR = "my_simulator_name"
   const val NEW_USER_ID = "new.user@cosmotech.com"
   const val NEW_USER_ROLE = "editor"

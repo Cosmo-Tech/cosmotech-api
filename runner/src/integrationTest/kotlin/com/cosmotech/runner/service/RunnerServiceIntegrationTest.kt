@@ -5,6 +5,7 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.HasRunningRuns
 import com.cosmotech.api.events.RunStart
@@ -53,6 +54,7 @@ import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.time.Instant
 import java.util.*
@@ -105,6 +107,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
+  private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
+
   lateinit var connector: Connector
   lateinit var dataset: Dataset
   lateinit var solution: SolutionCreateRequest
@@ -142,6 +146,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     jedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
 
     ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", jedis)
+    ReflectionTestUtils.setField(
+        solutionApiService, "containerRegistryService", containerRegistryService)
+    every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
   }
 
   @BeforeEach
