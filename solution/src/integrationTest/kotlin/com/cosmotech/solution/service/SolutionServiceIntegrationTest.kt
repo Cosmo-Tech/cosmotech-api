@@ -321,9 +321,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id,
             parameter =
                 mutableListOf(
-                    RunTemplateParameter(
-                        id = "parameterId",
-                        name = "parameterName",
+                    RunTemplateParameterCreateRequest(
+                        id = "parameterName",
                         varType = "int",
                         defaultValue = "0",
                         minValue = "0",
@@ -332,9 +331,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         options = mutableMapOf("option1" to "value1", "option2" to 10.0)),
-                    RunTemplateParameter(
-                        id = "parameterId2",
-                        name = "parameterName2",
+                    RunTemplateParameterCreateRequest(
+                        id = "parameterName2",
                         varType = "int",
                         defaultValue = "5",
                         minValue = "0",
@@ -351,8 +349,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     assertEquals(2, parameterList.size)
     val firstParam = parameterList[0]
-    assertEquals("parameterId", firstParam.id)
-    assertEquals("parameterName", firstParam.name)
+    assertEquals("parameterName", firstParam.id)
     assertEquals("int", firstParam.varType)
     assertEquals("0", firstParam.defaultValue)
     assertEquals("0", firstParam.minValue)
@@ -364,8 +361,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("value1", firstParam.options?.get("option1"))
     assertEquals(10.0, firstParam.options?.get("option2"))
     val secondParam = parameterList[1]
-    assertEquals("parameterId2", secondParam.id)
-    assertEquals("parameterName2", secondParam.name)
+    assertEquals("parameterName2", secondParam.id)
     assertEquals("int", secondParam.varType)
     assertEquals("5", secondParam.defaultValue)
     assertEquals("0", secondParam.minValue)
@@ -385,9 +381,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id,
             parameter =
                 mutableListOf(
-                    RunTemplateParameter(
-                        id = "parameterId",
-                        name = "parameterName",
+                    RunTemplateParameterCreateRequest(
+                        id = "parameterName",
                         varType = "int",
                         defaultValue = "0",
                         minValue = "0",
@@ -396,9 +391,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         options = mutableMapOf("option1" to "value1", "option2" to 10.0)),
-                    RunTemplateParameter(
-                        id = "parameterId2",
-                        name = "parameterName2",
+                    RunTemplateParameterCreateRequest(
+                        id = "parameterName2",
                         varType = "int",
                         defaultValue = "5",
                         minValue = "0",
@@ -412,10 +406,11 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameters)
 
     val solutionParameter =
-        solutionApiService.getSolutionParameter(organizationSaved.id, newSolution.id, "parameterId")
+        solutionApiService.getSolutionParameter(
+            organizationSaved.id, newSolution.id, newSolution.parameters[0].id)
+
     assertNotNull(solutionParameter)
-    assertEquals("parameterId", solutionParameter.id)
-    assertEquals("parameterName", solutionParameter.name)
+    assertEquals("parameterName", solutionParameter.id)
     assertEquals("int", solutionParameter.varType)
     assertEquals("0", solutionParameter.defaultValue)
     assertEquals("0", solutionParameter.minValue)
@@ -447,9 +442,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id,
             parameter =
                 mutableListOf(
-                    RunTemplateParameter(
-                        id = "parameterId",
-                        name = "parameterName",
+                    RunTemplateParameterCreateRequest(
+                        id = "parameterName",
                         varType = "int",
                         defaultValue = "0",
                         minValue = "0",
@@ -458,9 +452,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         options = mutableMapOf("option1" to "value1", "option2" to 10.0)),
-                    RunTemplateParameter(
-                        id = "parameterId2",
-                        name = "parameterName2",
+                    RunTemplateParameterCreateRequest(
+                        id = "parameterName2",
                         varType = "int",
                         defaultValue = "5",
                         minValue = "0",
@@ -473,13 +466,13 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameters)
 
+    val parameterId = newSolution.parameters[0].id
     val solutionParameter =
         solutionApiService.updateSolutionParameter(
             organizationSaved.id,
             newSolution.id,
-            "parameterId",
+            parameterId,
             RunTemplateParameterUpdateRequest(
-                name = "newParameterName2",
                 varType = "string",
                 defaultValue = "",
                 minValue = "",
@@ -489,8 +482,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 labels = mutableMapOf("en" to "new_this_is_a_label2"),
                 options = mutableMapOf("option1" to "newvalue1")))
     assertNotNull(solutionParameter)
-    assertEquals("parameterId", solutionParameter.id)
-    assertEquals("newParameterName2", solutionParameter.name)
+    assertEquals(parameterId, solutionParameter.id)
     assertEquals("string", solutionParameter.varType)
     assertEquals("", solutionParameter.defaultValue)
     assertEquals("", solutionParameter.minValue)
@@ -525,9 +517,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id,
             parameter =
                 mutableListOf(
-                    RunTemplateParameter(
-                        id = "parameterId",
-                        name = "parameterName",
+                    RunTemplateParameterCreateRequest(
+                        id = "parameterName",
                         varType = "int",
                         defaultValue = "0",
                         minValue = "0",
@@ -536,9 +527,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         options = mutableMapOf("option1" to "value1", "option2" to 10.0)),
-                    RunTemplateParameter(
-                        id = "parameterId2",
-                        name = "parameterName2",
+                    RunTemplateParameterCreateRequest(
+                        id = "parameterName2",
                         varType = "int",
                         defaultValue = "5",
                         minValue = "0",
@@ -587,7 +577,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
               organizationSaved.id,
               "non-existing-solution-id",
               RunTemplateParameterCreateRequest(
-                  name = "my_parameter_name", varType = "my_vartype_parameter"))
+                  id = "my_parameter_name", varType = "my_vartype_parameter"))
         }
     assertEquals(
         "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
@@ -605,7 +595,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     val parameterCreateRequest =
         RunTemplateParameterCreateRequest(
-            name = "parameterName2",
+            id = "parameterName2",
             varType = "int",
             defaultValue = "5",
             minValue = "0",
@@ -624,7 +614,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertFalse(newSolutionWithNewParameter.parameters.isEmpty())
     assertEquals(1, newSolutionWithNewParameter.parameters.size)
     val newParam = newSolutionWithNewParameter.parameters[0]
-    assertEquals("parameterName2", newParam.name)
+    assertEquals("parameterName2", newParam.id)
     assertEquals("int", newParam.varType)
     assertEquals("5", newParam.defaultValue)
     assertEquals("0", newParam.minValue)
@@ -634,6 +624,74 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(mutableMapOf("fr" to "this_is_a_label2"), newParam.labels)
     assertEquals("value1", newParam.options?.get("option1"))
     assertEquals(100.8, newParam.options?.get("option2"))
+  }
+
+  @Test
+  fun `test create solution parameter with already existing parameter id`() {
+    val solutionParameterCreateRequest =
+        RunTemplateParameterCreateRequest(
+            id = "pAramEterName",
+            varType = "int",
+            defaultValue = "5",
+            minValue = "0",
+            maxValue = "1000",
+            regexValidation = "\\d",
+            description = "this_is_a_description2",
+            labels = mutableMapOf("fr" to "this_is_a_label2"),
+            options = mutableMapOf("option1" to "value1", "option2" to 100.8))
+    val newSolutionWithParameter =
+        makeSolution(parameter = mutableListOf(solutionParameterCreateRequest))
+
+    val newSolutionWithEmptyParameters =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameter)
+
+    assertEquals(1, newSolutionWithEmptyParameters.parameters.size)
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.createSolutionParameter(
+              organizationSaved.id,
+              newSolutionWithEmptyParameters.id,
+              solutionParameterCreateRequest)
+        }
+
+    assertEquals("Parameter with id 'pAramEterName' already exists", exception.message)
+  }
+
+  @Test
+  fun `test create solution with several parameters with the same id `() {
+
+    val parametersCreateRequest =
+        mutableListOf(
+            RunTemplateParameterCreateRequest(
+                id = "pAramEterName",
+                varType = "int",
+                defaultValue = "5",
+                minValue = "0",
+                maxValue = "1000",
+                regexValidation = "\\d",
+                description = "this_is_a_description2",
+                labels = mutableMapOf("fr" to "this_is_a_label2"),
+                options = mutableMapOf("option1" to "value1", "option2" to 100.8)),
+            RunTemplateParameterCreateRequest(
+                id = "ParaMeterName",
+                varType = "int",
+                defaultValue = "5",
+                minValue = "0",
+                maxValue = "1000",
+                regexValidation = "\\d",
+                description = "this_is_a_description2",
+                labels = mutableMapOf("fr" to "this_is_a_label2"),
+                options = mutableMapOf("option1" to "value1", "option2" to 100.8)))
+
+    val newSolutionWithoutParameters = makeSolution(parameter = parametersCreateRequest)
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.createSolution(organizationSaved.id, newSolutionWithoutParameters)
+        }
+
+    assertEquals("Several solution parameters have same id!", exception.message)
   }
 
   @Test
@@ -651,7 +709,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info(
         "should replace the first run template and assert that the list contains 2 elements")
-    val labels: MutableMap<String, String>? = mutableMapOf("fr" to "runTemplateName")
+    val labels: MutableMap<String, String> = mutableMapOf("fr" to "runTemplateName")
     val runTemplate3 = RunTemplate(id = "runTemplateId1", labels = labels)
     solutionApiService.updateSolutionRunTemplates(
         solutionSaved.organizationId, solutionSaved.id, listOf(runTemplate3))
@@ -662,7 +720,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         "runTemplateName", foundSolutionAfterReplace.runTemplates.first().labels?.get("fr"))
 
     logger.info("should update the run template and assert that the name has been updated")
-    labels?.set("fr", "runTemplateNameNew")
+    labels["fr"] = "runTemplateNameNew"
     val runTemplate4 = RunTemplate(id = "runTemplateId1", labels = labels)
     solutionApiService.updateSolutionRunTemplate(
         solutionSaved.organizationId, solutionSaved.id, runTemplate4.id, runTemplate4)
@@ -792,7 +850,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             repository = "repository",
             runTemplates = mutableListOf(RunTemplate("templates")),
             csmSimulator = "simulator",
-            parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
+            parameters =
+                mutableListOf(RunTemplateParameterCreateRequest("parameterName", "string")),
             parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
             version = "1.0.0",
             security =
@@ -854,121 +913,302 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `assert createSolution take all infos in considerations`() {
-    val solutionToCreate =
-        Solution(
-            id = "id",
-            organizationId = organizationSaved.id,
-            key = "key",
-            name = "name",
-            ownerId = "ownerId",
-            description = "description",
-            version = "1.0.0",
-            tags = mutableListOf("tag1", "tag2"),
-            url = "url",
-            runTemplates = mutableListOf(RunTemplate(id = "template")),
-            parameters = mutableListOf(RunTemplateParameter(id = "parameter", "string")),
-            parameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group")),
-            csmSimulator = "simulator",
-            repository = "repository",
-            alwaysPull = true,
+    val solutionKey = "key"
+    val solutionName = "name"
+    val solutionDescription = "description"
+    val solutionVersion = "1.0.0"
+    val solutionTags = mutableListOf("tag1", "tag2")
+    val solutionUrl = "url"
+    val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
+    val solutionParameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group"))
+    val csmSimulator = "simulator"
+    val solutionRepository = "repository"
+
+    val solutionCreateRequest =
+        SolutionCreateRequest(
+            key = solutionKey,
+            name = solutionName,
+            description = solutionDescription,
+            version = solutionVersion,
+            tags = solutionTags,
+            repository = solutionRepository,
+            runTemplates = solutionRunTemplates,
+            parameterGroups = solutionParameterGroups,
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
-                    accessControlList = mutableListOf(SolutionAccessControl("id", ROLE_ADMIN))))
-    val solutionCreateRequest =
-        SolutionCreateRequest(
-            key = solutionToCreate.key,
-            name = solutionToCreate.name,
-            description = solutionToCreate.description,
-            version = solutionToCreate.version,
-            tags = solutionToCreate.tags,
-            repository = solutionToCreate.repository,
-            runTemplates = solutionToCreate.runTemplates,
-            parameterGroups = solutionToCreate.parameterGroups,
-            parameters = solutionToCreate.parameters,
-            security = solutionToCreate.security,
-            csmSimulator = solutionToCreate.csmSimulator,
-            url = solutionToCreate.url,
-            alwaysPull = solutionToCreate.alwaysPull,
+                    accessControlList =
+                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+            csmSimulator = csmSimulator,
+            url = solutionUrl,
+            alwaysPull = true,
         )
 
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solutionCreateRequest)
 
-    solutionToCreate.id = solutionSaved.id
-    solutionToCreate.ownerId = solutionSaved.ownerId
-    assertEquals(solutionToCreate, solutionSaved)
+    assertEquals(solutionKey, solutionSaved.key)
+    assertEquals(solutionName, solutionSaved.name)
+    assertEquals(solutionDescription, solutionSaved.description)
+    assertEquals(solutionVersion, solutionSaved.version)
+    assertEquals(solutionTags, solutionSaved.tags)
+    assertEquals(solutionRepository, solutionSaved.repository)
+    assertEquals(solutionRunTemplates, solutionSaved.runTemplates)
+    assertEquals(1, solutionSaved.parameters.size)
+    assertEquals("parameterName", solutionSaved.parameters[0].id)
+    assertEquals("string", solutionSaved.parameters[0].varType)
+    assertEquals(solutionParameterGroups, solutionSaved.parameterGroups)
+    assertNotNull(solutionSaved.sdkVersion)
+    assertEquals(csmSimulator, solutionSaved.csmSimulator)
+    assertEquals(solutionUrl, solutionSaved.url)
+    assertEquals(ROLE_ADMIN, solutionSaved.security.default)
+    assertEquals(1, solutionSaved.security.accessControlList.size)
+    assertEquals("user_id", solutionSaved.security.accessControlList[0].id)
+    assertEquals(ROLE_ADMIN, solutionSaved.security.accessControlList[0].role)
+    assertTrue(solutionSaved.alwaysPull!!)
   }
 
   @Test
   fun `assert updateSolution take all infos in considerations`() {
-    var solutionToCreate =
-        Solution(
-            id = "id",
-            organizationId = organizationSaved.id,
-            key = "key",
-            name = "name",
-            ownerId = "ownerId",
-            description = "description",
-            version = "1.0.0",
-            tags = mutableListOf("tag1", "tag2"),
-            url = "url",
-            runTemplates = mutableListOf(RunTemplate(id = "template")),
-            parameters = mutableListOf(RunTemplateParameter(id = "parameter", "string")),
-            parameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group")),
-            csmSimulator = "simulator",
-            repository = "repository",
-            alwaysPull = true,
+    val solutionKey = "key"
+    val solutionName = "name"
+    val solutionDescription = "description"
+    val solutionVersion = "1.0.0"
+    val solutionTags = mutableListOf("tag1", "tag2")
+    val solutionUrl = "url"
+    val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
+    val solutionParameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group"))
+    val csmSimulator = "simulator"
+    val solutionRepository = "repository"
+
+    val solutionCreateRequest =
+        SolutionCreateRequest(
+            key = solutionKey,
+            name = solutionName,
+            description = solutionDescription,
+            version = solutionVersion,
+            tags = solutionTags,
+            repository = solutionRepository,
+            runTemplates = solutionRunTemplates,
+            parameterGroups = solutionParameterGroups,
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
-                    accessControlList = mutableListOf(SolutionAccessControl("id", ROLE_ADMIN))))
-    val solutionCreateRequest =
-        SolutionCreateRequest(
-            key = solutionToCreate.key,
-            name = solutionToCreate.name,
-            description = solutionToCreate.description,
-            version = solutionToCreate.version,
-            tags = solutionToCreate.tags,
-            repository = solutionToCreate.repository,
-            runTemplates = solutionToCreate.runTemplates,
-            parameterGroups = solutionToCreate.parameterGroups,
-            parameters = solutionToCreate.parameters,
-            csmSimulator = solutionToCreate.csmSimulator,
-            security = solutionToCreate.security,
+                    accessControlList =
+                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+            csmSimulator = csmSimulator,
+            url = solutionUrl,
+            alwaysPull = true,
         )
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solutionCreateRequest)
 
+    val updatedKey = "new key"
+    val updatedName = "new name"
+    val updatedDescription = "new description"
+    val updatedTags = mutableListOf("newTag1", "newTag2")
+    val updatedRepository = "new_repo"
+    val updatedSdkVersion = "2.0.0"
+    val updatedCsmSimulator = "new_simulator"
+    val newUrl = "new_url"
+    val newVersion = "20.0.0"
     val solutionUpdateRequest =
         SolutionUpdateRequest(
-            key = "new key",
-            name = "new name",
-            description = "new description",
-            tags = mutableListOf("newTag1", "newTag2"),
+            key = updatedKey,
+            name = updatedName,
+            description = updatedDescription,
+            tags = updatedTags,
             alwaysPull = false,
-            repository = "new_repo",
-            csmSimulator = "new_simulator",
-            url = "new_url",
-            version = "2.0.0")
-    val solutionUpdated =
-        solutionToCreate.copy(
-            id = solutionSaved.id,
-            key = solutionUpdateRequest.key!!,
-            name = solutionUpdateRequest.name!!,
-            ownerId = solutionSaved.ownerId,
-            description = solutionUpdateRequest.description,
-            tags = solutionUpdateRequest.tags,
-            alwaysPull = solutionUpdateRequest.alwaysPull,
-            csmSimulator = solutionUpdateRequest.csmSimulator!!,
-            url = solutionUpdateRequest.url,
-            repository = solutionUpdateRequest.repository!!,
-            version = solutionUpdateRequest.version!!,
-        )
+            repository = updatedRepository,
+            sdkVersion = updatedSdkVersion,
+            csmSimulator = updatedCsmSimulator,
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(
+                        id = "parameterNameUpdated", varType = "int")),
+            url = newUrl,
+            version = newVersion)
 
     solutionSaved =
         solutionApiService.updateSolution(
             organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
 
-    assertEquals(solutionUpdated, solutionSaved)
+    assertEquals(updatedKey, solutionSaved.key)
+    assertEquals(updatedName, solutionSaved.name)
+    assertEquals(updatedDescription, solutionSaved.description)
+    assertEquals(updatedTags, solutionSaved.tags)
+    assertEquals(updatedRepository, solutionSaved.repository)
+    assertNotNull(solutionSaved.sdkVersion)
+    assertEquals(updatedCsmSimulator, solutionSaved.csmSimulator)
+    assertEquals(solutionRunTemplates, solutionSaved.runTemplates)
+    assertEquals(newUrl, solutionSaved.url)
+    assertEquals(newVersion, solutionSaved.version)
+    assertEquals(1, solutionSaved.parameters.size)
+    assertEquals("parameterNameUpdated", solutionSaved.parameters[0].id)
+    assertEquals("int", solutionSaved.parameters[0].varType)
+    assertEquals(ROLE_ADMIN, solutionSaved.security.default)
+    assertEquals(1, solutionSaved.security.accessControlList.size)
+    assertEquals("user_id", solutionSaved.security.accessControlList[0].id)
+    assertEquals(ROLE_ADMIN, solutionSaved.security.accessControlList[0].role)
+    assertFalse(solutionSaved.alwaysPull!!)
+  }
+
+  @Test
+  fun `assert updateSolution with all information set and empty parameters list in update`() {
+    val solutionKey = "key"
+    val solutionName = "name"
+    val solutionDescription = "description"
+    val solutionVersion = "1.0.0"
+    val solutionTags = mutableListOf("tag1", "tag2")
+    val solutionUrl = "url"
+    val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
+    val solutionParameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group"))
+    val csmSimulator = "simulator"
+    val solutionRepository = "repository"
+
+    val solutionCreateRequest =
+        SolutionCreateRequest(
+            key = solutionKey,
+            name = solutionName,
+            description = solutionDescription,
+            version = solutionVersion,
+            tags = solutionTags,
+            repository = solutionRepository,
+            runTemplates = solutionRunTemplates,
+            parameterGroups = solutionParameterGroups,
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+            security =
+                SolutionSecurity(
+                    default = ROLE_ADMIN,
+                    accessControlList =
+                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+            csmSimulator = csmSimulator,
+            url = solutionUrl,
+            alwaysPull = true,
+        )
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solutionCreateRequest)
+
+    val updatedKey = "new key"
+    val updatedName = "new name"
+    val updatedDescription = "new description"
+    val updatedTags = mutableListOf("newTag1", "newTag2")
+    val updatedRepository = "new_repo"
+    val updatedSdkVersion = "2.0.0"
+    val updatedCsmSimulator = "new_simulator"
+    val newUrl = "new_url"
+    val newVersion = "20.0.0"
+    val solutionUpdateRequest =
+        SolutionUpdateRequest(
+            key = updatedKey,
+            name = updatedName,
+            description = updatedDescription,
+            tags = updatedTags,
+            alwaysPull = false,
+            repository = updatedRepository,
+            sdkVersion = updatedSdkVersion,
+            csmSimulator = updatedCsmSimulator,
+            url = newUrl,
+            version = newVersion)
+
+    solutionSaved =
+        solutionApiService.updateSolution(
+            organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
+
+    assertEquals(updatedKey, solutionSaved.key)
+    assertEquals(updatedName, solutionSaved.name)
+    assertEquals(updatedDescription, solutionSaved.description)
+    assertEquals(updatedTags, solutionSaved.tags)
+    assertEquals(updatedRepository, solutionSaved.repository)
+    assertNotNull(solutionSaved.sdkVersion)
+    assertEquals(updatedCsmSimulator, solutionSaved.csmSimulator)
+    assertEquals(solutionRunTemplates, solutionSaved.runTemplates)
+    assertEquals(newUrl, solutionSaved.url)
+    assertEquals(newVersion, solutionSaved.version)
+    assertEquals(0, solutionSaved.parameters.size)
+    assertEquals(ROLE_ADMIN, solutionSaved.security.default)
+    assertEquals(1, solutionSaved.security.accessControlList.size)
+    assertEquals("user_id", solutionSaved.security.accessControlList[0].id)
+    assertEquals(ROLE_ADMIN, solutionSaved.security.accessControlList[0].role)
+    assertFalse(solutionSaved.alwaysPull!!)
+  }
+
+  @Test
+  fun `assert updateSolution with all information set and duplicate id parameters list in update`() {
+    val solutionKey = "key"
+    val solutionName = "name"
+    val solutionDescription = "description"
+    val solutionVersion = "1.0.0"
+    val solutionTags = mutableListOf("tag1", "tag2")
+    val solutionUrl = "url"
+    val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
+    val solutionParameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group"))
+    val csmSimulator = "simulator"
+    val solutionRepository = "repository"
+    val sdkVersion = "10.0.0"
+
+    val solutionCreateRequest =
+        SolutionCreateRequest(
+            key = solutionKey,
+            name = solutionName,
+            description = solutionDescription,
+            version = solutionVersion,
+            tags = solutionTags,
+            repository = solutionRepository,
+            runTemplates = solutionRunTemplates,
+            parameterGroups = solutionParameterGroups,
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+            security =
+                SolutionSecurity(
+                    default = ROLE_ADMIN,
+                    accessControlList =
+                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+            sdkVersion = sdkVersion,
+            csmSimulator = csmSimulator,
+            url = solutionUrl,
+            alwaysPull = true,
+        )
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solutionCreateRequest)
+
+    val updatedKey = "new key"
+    val updatedName = "new name"
+    val updatedDescription = "new description"
+    val updatedTags = mutableListOf("newTag1", "newTag2")
+    val updatedRepository = "new_repo"
+    val updatedSdkVersion = "2.0.0"
+    val updatedCsmSimulator = "new_simulator"
+    val newUrl = "new_url"
+    val newVersion = "20.0.0"
+    val solutionUpdateRequest =
+        SolutionUpdateRequest(
+            key = updatedKey,
+            name = updatedName,
+            description = updatedDescription,
+            tags = updatedTags,
+            alwaysPull = false,
+            repository = updatedRepository,
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(id = "PaRaMeTeRnAmE", varType = "string"),
+                    RunTemplateParameterCreateRequest(id = "pArAmEtErNaMe", varType = "string")),
+            csmSimulator = updatedCsmSimulator,
+            url = newUrl,
+            version = newVersion)
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.updateSolution(
+              organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
+        }
+
+    assertEquals("Several solution parameters have same id!", exception.message)
   }
 
   fun makeOrganizationCreateRequest(id: String = "organization_id"): OrganizationCreateRequest {
@@ -989,7 +1229,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
       version: String = "1.0.0",
       repository: String = "repository",
       csmSimulator: String = "simulator",
-      parameter: MutableList<RunTemplateParameter> = mutableListOf(),
+      parameter: MutableList<RunTemplateParameterCreateRequest> = mutableListOf(),
       parameterGroup: MutableList<RunTemplateParameterGroup> = mutableListOf(),
       userName: String = CONNECTED_READER_USER,
       role: String = ROLE_VIEWER

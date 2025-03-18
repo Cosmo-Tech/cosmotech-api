@@ -82,7 +82,7 @@ class ControllerTestUtils {
         description: String = "",
         alwaysPull: Boolean? = null,
         tags: MutableList<String> = mutableListOf(),
-        parameters: MutableList<RunTemplateParameter> = mutableListOf(),
+        parameters: MutableList<RunTemplateParameterCreateRequest> = mutableListOf(),
         parameterGroups: MutableList<RunTemplateParameterGroup> = mutableListOf(),
         runTemplates: MutableList<RunTemplate> = mutableListOf(),
         url: String = "",

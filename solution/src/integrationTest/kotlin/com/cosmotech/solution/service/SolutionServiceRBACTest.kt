@@ -27,15 +27,7 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateParameter
-import com.cosmotech.solution.domain.RunTemplateParameterGroup
-import com.cosmotech.solution.domain.Solution
-import com.cosmotech.solution.domain.SolutionAccessControl
-import com.cosmotech.solution.domain.SolutionCreateRequest
-import com.cosmotech.solution.domain.SolutionRole
-import com.cosmotech.solution.domain.SolutionSecurity
-import com.cosmotech.solution.domain.SolutionUpdateRequest
+import com.cosmotech.solution.domain.*
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -1475,7 +1467,9 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           version = "1.0.0",
           repository = "repository",
           parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
-          parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
+          parameters =
+              mutableListOf(
+                  RunTemplateParameterCreateRequest(id = "parameter", varType = "string")),
           security =
               SolutionSecurity(
                   default = ROLE_NONE,
