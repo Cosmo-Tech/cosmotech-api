@@ -895,7 +895,7 @@ components:
           description: The list of Run Template Parameters
           default: []
           items:
-            $ref: '#/components/schemas/RunTemplateParameter'
+            $ref: '#/components/schemas/RunTemplateParameterCreateRequest'
         parameterGroups:
           type: array
           description: The list of parameters groups for the Run Templates
@@ -970,6 +970,12 @@ components:
           items:
             type: string
           example: [ "brewery", "optimization" ]
+        parameters:
+          type: array
+          description: The list of Run Template Parameters
+          default: [ ]
+          items:
+            $ref: '#/components/schemas/RunTemplateParameterCreateRequest'
 
     # Security Objects
     SolutionSecurity:
@@ -1129,11 +1135,6 @@ components:
           description: the Parameter id
           minLength: 1
           maxLength: 50
-        name:
-          type: string
-          description: the Parameter name
-          minLength: 1
-          maxLength: 50
         description:
           type: string
           description: the parameter description
@@ -1167,9 +1168,9 @@ components:
       type: object
       description: A Run Template Parameter for creation
       properties:
-        name:
+        id:
           type: string
-          description: the Parameter name
+          description: the Parameter id
           minLength: 1
           maxLength: 50
         description:
@@ -1198,18 +1199,13 @@ components:
           description: Freeform options
           additionalProperties: true
       required:
-        - name
+        - id
         - varType
 
     RunTemplateParameterUpdateRequest:
       type: object
       description: A Run Template Parameter for update parameter
       properties:
-        name:
-          type: string
-          description: the Parameter name
-          minLength: 1
-          maxLength: 50
         description:
           type: string
           description: the parameter description

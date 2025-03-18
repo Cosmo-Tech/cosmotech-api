@@ -316,7 +316,6 @@ entity RunTemplate {
 
 entity RunTemplateParameter {
     * id: String
-    name: String
     description: String
     labels: Map
     * varType: String
@@ -328,7 +327,7 @@ entity RunTemplateParameter {
 }
 
 entity RunTemplateParameterCreateRequest {
-    * name: String
+    * id: String
     description: String
     labels: Map
     * varType: String
@@ -349,7 +348,6 @@ entity RunTemplateParameterGroup {
 }
 
 entity RunTemplateParameterUpdateRequest {
-    name: String
     description: String
     labels: Map
     varType: String
@@ -493,7 +491,7 @@ entity SolutionCreateRequest {
     alwaysPull: Boolean
     * csmSimulator: String
     tags: List<String>
-    parameters: List<RunTemplateParameter>
+    parameters: List<RunTemplateParameterCreateRequest>
     parameterGroups: List<RunTemplateParameterGroup>
     runTemplates: List<RunTemplate>
     url: String
@@ -519,6 +517,7 @@ entity SolutionUpdateRequest {
     version: String
     url: String
     tags: List<String>
+    parameters: List<RunTemplateParameterCreateRequest>
 }
 
 entity SourceInfo {
@@ -632,10 +631,11 @@ WorkspaceCreateRequest -- WorkspaceSecurity : security
 AboutInfo -- AboutInfoVersion : version
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 RunContainer -- ContainerResourceSizing : runSizing
-SolutionCreateRequest -- "0..*" RunTemplateParameter : parameters
+SolutionCreateRequest -- "0..*" RunTemplateParameterCreateRequest : parameters
 SolutionCreateRequest -- "0..*" RunTemplateParameterGroup : parameterGroups
 SolutionCreateRequest -- "0..*" RunTemplate : runTemplates
 SolutionCreateRequest -- SolutionSecurity : security
+SolutionUpdateRequest -- "0..*" RunTemplateParameterCreateRequest : parameters
 OrganizationCreateRequest -- OrganizationSecurity : security
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing

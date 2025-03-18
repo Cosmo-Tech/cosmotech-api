@@ -172,6 +172,21 @@ class SolutionServiceImpl(
         csmRbac
             .initSecurity(solutionCreateRequest.security.toGenericSecurity(solutionId))
             .toResourceSecurity()
+
+    val hasDuplicateParameterId =
+        solutionCreateRequest.parameters
+            ?.groupBy { it.id.lowercase() }
+            ?.filterValues { it.size > 1 }
+            ?.isNotEmpty() ?: false
+
+    if (hasDuplicateParameterId) {
+      throw IllegalArgumentException("Several solution parameters have same id!")
+    }
+
+    val solutionRunTemplateParameters =
+        solutionCreateRequest.parameters?.map { convertToRunTemplateParameter(it) }?.toMutableList()
+            ?: mutableListOf()
+
     val createdSolution =
         Solution(
             id = solutionId,
@@ -184,12 +199,13 @@ class SolutionServiceImpl(
             tags = solutionCreateRequest.tags,
             organizationId = organizationId,
             runTemplates = solutionCreateRequest.runTemplates!!,
-            parameters = solutionCreateRequest.parameters!!,
+            parameters = solutionRunTemplateParameters,
             parameterGroups = solutionCreateRequest.parameterGroups!!,
             url = solutionCreateRequest.url,
             csmSimulator = solutionCreateRequest.csmSimulator,
             alwaysPull = solutionCreateRequest.alwaysPull,
             security = security)
+
     return fillSdkVersion(solutionRepository.save(createdSolution))
   }
 
@@ -218,6 +234,20 @@ class SolutionServiceImpl(
   ): Solution {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
+    val hasDuplicateParameterId =
+        solutionUpdateRequest.parameters
+            ?.groupBy { it.id.lowercase() }
+            ?.filterValues { it.size > 1 }
+            ?.isNotEmpty() ?: false
+
+    if (hasDuplicateParameterId) {
+      throw IllegalArgumentException("Several solution parameters have same id!")
+    }
+
+    val solutionRunTemplateParameters =
+        solutionUpdateRequest.parameters?.map { convertToRunTemplateParameter(it) }?.toMutableList()
+            ?: mutableListOf()
+
     val updatedSolution =
         Solution(
             id = solutionId,
@@ -232,7 +262,7 @@ class SolutionServiceImpl(
             url = solutionUpdateRequest.url ?: existingSolution.url,
             csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
             alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
-            parameters = existingSolution.parameters,
+            parameters = solutionRunTemplateParameters,
             parameterGroups = existingSolution.parameterGroups,
             security = existingSolution.security)
 
@@ -240,8 +270,7 @@ class SolutionServiceImpl(
         existingSolution
             .compareToAndMutateIfNeeded(
                 updatedSolution,
-                excludedFields =
-                    arrayOf("ownerId", "runTemplates", "parameters", "parameterGroups"))
+                excludedFields = arrayOf("ownerId", "runTemplates", "parameterGroups"))
             .isNotEmpty()
 
     val returnedSolution =
@@ -349,19 +378,18 @@ class SolutionServiceImpl(
   ): RunTemplateParameter {
 
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
-    val runTemplateParameterId = idGenerator.generate("parameter", prependPrefix = "p-")
-    val parameterToCreate =
-        RunTemplateParameter(
-            id = runTemplateParameterId,
-            name = runTemplateParameterCreateRequest.name,
-            description = runTemplateParameterCreateRequest.description,
-            varType = runTemplateParameterCreateRequest.varType,
-            labels = runTemplateParameterCreateRequest.labels,
-            defaultValue = runTemplateParameterCreateRequest.defaultValue,
-            minValue = runTemplateParameterCreateRequest.minValue,
-            maxValue = runTemplateParameterCreateRequest.maxValue,
-            regexValidation = runTemplateParameterCreateRequest.regexValidation,
-            options = runTemplateParameterCreateRequest.options)
+
+    val parameterIdAlreadyExist =
+        existingSolution.parameters
+            .map { it.id.lowercase() }
+            .firstOrNull { it == runTemplateParameterCreateRequest.id.lowercase() }
+
+    if (parameterIdAlreadyExist != null) {
+      throw IllegalArgumentException(
+          "Parameter with id '${runTemplateParameterCreateRequest.id}' already exists")
+    }
+
+    val parameterToCreate = convertToRunTemplateParameter(runTemplateParameterCreateRequest)
 
     existingSolution.parameters.add(parameterToCreate)
     solutionRepository.save(existingSolution)
@@ -375,11 +403,11 @@ class SolutionServiceImpl(
       parameterId: String,
       runTemplateParameterUpdateRequest: RunTemplateParameterUpdateRequest
   ): RunTemplateParameter {
+
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     existingSolution.parameters
         .find { it.id == parameterId }
         ?.apply {
-          name = runTemplateParameterUpdateRequest.name ?: this.name
           description = runTemplateParameterUpdateRequest.description ?: this.description
           varType = runTemplateParameterUpdateRequest.varType ?: this.varType
           labels = runTemplateParameterUpdateRequest.labels ?: this.labels
@@ -506,6 +534,21 @@ class SolutionServiceImpl(
           sdkVersion =
               containerRegistryService.getImageLabel(
                   solution.repository, solution.version, "com.cosmotech.sdk-version"))
+
+  fun convertToRunTemplateParameter(
+      runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest
+  ): RunTemplateParameter {
+    return RunTemplateParameter(
+        id = runTemplateParameterCreateRequest.id,
+        description = runTemplateParameterCreateRequest.description,
+        varType = runTemplateParameterCreateRequest.varType,
+        labels = runTemplateParameterCreateRequest.labels,
+        defaultValue = runTemplateParameterCreateRequest.defaultValue,
+        minValue = runTemplateParameterCreateRequest.minValue,
+        maxValue = runTemplateParameterCreateRequest.maxValue,
+        regexValidation = runTemplateParameterCreateRequest.regexValidation,
+        options = runTemplateParameterCreateRequest.options)
+  }
 }
 
 fun SolutionSecurity?.toGenericSecurity(solutionId: String) =

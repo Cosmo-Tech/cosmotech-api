@@ -4,7 +4,6 @@
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 | **id** | **String** | the Parameter id | [default to null] |
-| **name** | **String** | the Parameter name | [optional] [default to null] |
 | **description** | **String** | the parameter description | [optional] [default to null] |
 | **labels** | **Map** | a translated label with key as ISO 639-1 code | [optional] [default to null] |
 | **varType** | **String** | the variable type for the parameter. Basic types or special type %DATASETID% | [default to null] |
