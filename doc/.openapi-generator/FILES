@@ -53,6 +53,8 @@ Models/RunTemplate.md
 Models/RunTemplateParameter.md
 Models/RunTemplateParameterCreateRequest.md
 Models/RunTemplateParameterGroup.md
+Models/RunTemplateParameterGroupCreateRequest.md
+Models/RunTemplateParameterGroupUpdateRequest.md
 Models/RunTemplateParameterUpdateRequest.md
 Models/RunTemplateParameterValue.md
 Models/RunTemplateResourceSizing.md

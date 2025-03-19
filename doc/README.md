@@ -82,16 +82,19 @@ All URIs are relative to *http://localhost*
 | *SolutionApi* | [**createSolution**](Apis/SolutionApi.md#createsolution) | **POST** /organizations/{organization_id}/solutions | Create a new solution |
 *SolutionApi* | [**createSolutionAccessControl**](Apis/SolutionApi.md#createsolutionaccesscontrol) | **POST** /organizations/{organization_id}/solutions/{solution_id}/security/access | Create solution access control |
 *SolutionApi* | [**createSolutionParameter**](Apis/SolutionApi.md#createsolutionparameter) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameters | Create solution parameter for a solution |
+*SolutionApi* | [**createSolutionParameterGroup**](Apis/SolutionApi.md#createsolutionparametergroup) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Create a solution parameter group |
 *SolutionApi* | [**deleteSolution**](Apis/SolutionApi.md#deletesolution) | **DELETE** /organizations/{organization_id}/solutions/{solution_id} | Delete a solution |
 *SolutionApi* | [**deleteSolutionAccessControl**](Apis/SolutionApi.md#deletesolutionaccesscontrol) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Delete solution access control |
 *SolutionApi* | [**deleteSolutionParameter**](Apis/SolutionApi.md#deletesolutionparameter) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Delete specific parameter from the solution |
-*SolutionApi* | [**deleteSolutionParameterGroups**](Apis/SolutionApi.md#deletesolutionparametergroups) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Delete all parameter groups from the solution |
+*SolutionApi* | [**deleteSolutionParameterGroup**](Apis/SolutionApi.md#deletesolutionparametergroup) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id} | Delete a parameter group from the solution |
 *SolutionApi* | [**deleteSolutionRunTemplate**](Apis/SolutionApi.md#deletesolutionruntemplate) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Delete a specific run template |
 *SolutionApi* | [**deleteSolutionRunTemplates**](Apis/SolutionApi.md#deletesolutionruntemplates) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Delete all run templates from the solution |
 *SolutionApi* | [**getSolution**](Apis/SolutionApi.md#getsolution) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution |
 *SolutionApi* | [**getSolutionAccessControl**](Apis/SolutionApi.md#getsolutionaccesscontrol) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Get solution access control |
 *SolutionApi* | [**getSolutionParameter**](Apis/SolutionApi.md#getsolutionparameter) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Get the details of a solution parameter |
+*SolutionApi* | [**getSolutionParameterGroup**](Apis/SolutionApi.md#getsolutionparametergroup) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id} | Get details of a solution parameter group |
 *SolutionApi* | [**getSolutionSecurity**](Apis/SolutionApi.md#getsolutionsecurity) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security | Get solution security information |
+*SolutionApi* | [**listSolutionParameterGroups**](Apis/SolutionApi.md#listsolutionparametergroups) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | List all solution parameter groups |
 *SolutionApi* | [**listSolutionParameters**](Apis/SolutionApi.md#listsolutionparameters) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameters | List all solution parameters |
 *SolutionApi* | [**listSolutionSecurityUsers**](Apis/SolutionApi.md#listsolutionsecurityusers) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/users | List solution security users |
 *SolutionApi* | [**listSolutions**](Apis/SolutionApi.md#listsolutions) | **GET** /organizations/{organization_id}/solutions | List all Solutions |
@@ -99,7 +102,7 @@ All URIs are relative to *http://localhost*
 *SolutionApi* | [**updateSolutionAccessControl**](Apis/SolutionApi.md#updatesolutionaccesscontrol) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Update solution access control |
 *SolutionApi* | [**updateSolutionDefaultSecurity**](Apis/SolutionApi.md#updatesolutiondefaultsecurity) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/security/default | Update solution default security |
 *SolutionApi* | [**updateSolutionParameter**](Apis/SolutionApi.md#updatesolutionparameter) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Update solution parameter |
-*SolutionApi* | [**updateSolutionParameterGroups**](Apis/SolutionApi.md#updatesolutionparametergroups) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Update solution parameter groups |
+*SolutionApi* | [**updateSolutionParameterGroup**](Apis/SolutionApi.md#updatesolutionparametergroup) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id} | Update a solution parameter group |
 *SolutionApi* | [**updateSolutionRunTemplate**](Apis/SolutionApi.md#updatesolutionruntemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update a specific run template |
 *SolutionApi* | [**updateSolutionRunTemplates**](Apis/SolutionApi.md#updatesolutionruntemplates) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Update solution run templates |
 | *WorkspaceApi* | [**createDatasetLink**](Apis/WorkspaceApi.md#createdatasetlink) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/link |  |
@@ -174,6 +177,8 @@ All URIs are relative to *http://localhost*
  - [RunTemplateParameter](./Models/RunTemplateParameter.md)
  - [RunTemplateParameterCreateRequest](./Models/RunTemplateParameterCreateRequest.md)
  - [RunTemplateParameterGroup](./Models/RunTemplateParameterGroup.md)
+ - [RunTemplateParameterGroupCreateRequest](./Models/RunTemplateParameterGroupCreateRequest.md)
+ - [RunTemplateParameterGroupUpdateRequest](./Models/RunTemplateParameterGroupUpdateRequest.md)
  - [RunTemplateParameterUpdateRequest](./Models/RunTemplateParameterUpdateRequest.md)
  - [RunTemplateParameterValue](./Models/RunTemplateParameterValue.md)
  - [RunTemplateResourceSizing](./Models/RunTemplateResourceSizing.md)

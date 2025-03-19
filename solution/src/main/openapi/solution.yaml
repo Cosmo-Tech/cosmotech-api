@@ -308,34 +308,40 @@ paths:
         required: true
         schema:
           type: string
-    patch:
-      operationId: updateSolutionParameterGroups
+    post:
+      operationId: createSolutionParameterGroup
       tags:
         - solution
-      summary: Update solution parameter groups
+      summary: Create a solution parameter group
       requestBody:
-        description: Parameter groups to update
+        description: Parameter groups to create
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/RunTemplateParameterGroup"
-            examples:
-              ParameterGroups:
-                $ref: '#/components/examples/ParameterGroups'
+              $ref: "#/components/schemas/RunTemplateParameterGroupCreateRequest"
           application/yaml:
             schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/RunTemplateParameterGroup"
-            examples:
-              ParameterGroups:
-                $ref: '#/components/examples/ParameterGroups'
+              $ref: "#/components/schemas/RunTemplateParameterGroupCreateRequest"
       responses:
         "201":
-          description: Parameter groups successfully updated
+          description: Parameter groups successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunTemplateParameterGroup'
+        "400":
+          description: Bad request - Invalid parameter group
+        "404":
+          description: Solution not found or insufficient access rights
+    get:
+      operationId: listSolutionParameterGroups
+      tags:
+        - solution
+      summary: List all solution parameter groups
+      responses:
+        "200":
+          description: Parameter groups successfully listed
           content:
             application/json:
               schema:
@@ -343,19 +349,83 @@ paths:
                 items:
                   $ref: '#/components/schemas/RunTemplateParameterGroup'
         "400":
-          description: Bad request - Invalid parameter groups
+          description: Bad request
         "404":
           description: Solution not found or insufficient access rights
-    delete:
-      operationId: deleteSolutionParameterGroups
+
+
+  /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+      - name: parameter_group_id
+        in: path
+        description: the parameter group identifier
+        required: true
+        schema:
+          type: string
+    patch:
+      operationId: updateSolutionParameterGroup
       tags:
         - solution
-      summary: Delete all parameter groups from the solution
+      summary: Update a solution parameter group
+      requestBody:
+        description: Parameter groups to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunTemplateParameterGroupUpdateRequest"
+          application/yaml:
+            schema:
+              $ref: "#/components/schemas/RunTemplateParameterGroupUpdateRequest"
+      responses:
+        "200":
+          description: Parameter groups successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunTemplateParameterGroup'
+        "400":
+          description: Bad request - Invalid parameter group
+        "404":
+          description: Solution or parameter group not found or insufficient access rights
+    get:
+      operationId: getSolutionParameterGroup
+      tags:
+        - solution
+      summary: Get details of a solution parameter group
+      responses:
+        "200":
+          description: Parameter groups successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunTemplateParameterGroup'
+        "400":
+          description: Bad request
+        "404":
+          description: Solution or parameter group not found or insufficient access rights
+    delete:
+      operationId: deleteSolutionParameterGroup
+      tags:
+        - solution
+      summary: Delete a parameter group from the solution
       responses:
         "204":
-          description: Parameter groups successfully deleted
+          description: Parameter group successfully deleted
         "404":
-          description: Solution not found or insufficient access rights
+          description: Solution or parameter group not found or insufficient access rights
 
   /organizations/{organization_id}/solutions/{solution_id}/runTemplates:
     parameters:
@@ -1104,6 +1174,9 @@ components:
           description: the Parameter Group id
           minLength: 1
           maxLength: 50
+        description:
+          type: string
+          description: A description of the parameter group
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         isTable:
@@ -1124,6 +1197,69 @@ components:
             description: A Run Template Parameter id
       required:
         - id
+
+    RunTemplateParameterGroupCreateRequest:
+      type: object
+      description: A Parameter Group Create Request for a Run Template
+      properties:
+        id:
+          type: string
+          description: the Parameter Group id
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          description: A description of the parameter group
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
+        isTable:
+          type: boolean
+          default: false
+          description: Does the group define a table
+        options:
+          type: object
+          description: Freeform options
+          additionalProperties: true
+        parentId:
+          type: string
+          description: The Run Template Group parent Id
+        parameters:
+          type: array
+          description: An ordered list of Run Template Parameters
+          default: []
+          items:
+            type: string
+            description: A Run Template Parameter id
+      required:
+        - id
+
+    RunTemplateParameterGroupUpdateRequest:
+      type: object
+      description: A Parameter Group Update Request for a Run Template
+      properties:
+        description:
+          type: string
+          description: A description of the parameter group
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
+        isTable:
+          type: boolean
+          default: false
+          description: Does the group define a table
+        options:
+          type: object
+          description: Freeform options
+          additionalProperties: true
+        parentId:
+          type: string
+          description: The Run Template Group parent Id
+        parameters:
+          type: array
+          description: An ordered list of Run Template Parameters
+          default: []
+          items:
+            type: string
+            description: A Run Template Parameter id
 
     # Base RunTemplateParameter object
     RunTemplateParameter:
