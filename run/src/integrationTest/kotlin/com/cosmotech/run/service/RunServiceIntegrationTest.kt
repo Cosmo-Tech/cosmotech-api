@@ -29,6 +29,7 @@ import com.cosmotech.run.config.existTable
 import com.cosmotech.run.config.toDataTableName
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunDataQuery
+import com.cosmotech.run.domain.RunStatus
 import com.cosmotech.run.domain.SendRunDataRequest
 import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
@@ -66,6 +67,7 @@ import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
@@ -73,12 +75,14 @@ import org.postgresql.util.PSQLException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.HttpStatus
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import org.springframework.web.client.RestClientResponseException
 
 @ActiveProfiles(profiles = ["run-test"])
 @ExtendWith(MockKExtension::class)
@@ -104,7 +108,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @SpykBean @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
-  @Autowired lateinit var runApiService: RunApiServiceInterface
+  @SpykBean @Autowired lateinit var runServiceImpl: RunServiceImpl
+  @SpykBean @Autowired lateinit var runApiService: RunApiServiceInterface
   @Autowired lateinit var eventPublisher: com.cosmotech.api.events.CsmEventPublisher
 
   @Autowired lateinit var adminRunStorageTemplate: JdbcTemplate
@@ -394,6 +399,83 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     logger.info("Should throw IllegalArgumentException when size is negative")
     assertThrows<IllegalArgumentException> {
       runApiService.listRuns(organizationSaved.id, workspaceSaved.id, runnerSaved.id, 0, -1)
+    }
+  }
+
+  @Test
+  fun `test get running logs`() {
+    runSavedId =
+        mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, solutionSaved.id)
+    val run = mockk<Run>()
+    every { runApiService.getRun(any(), any(), any(), any()) } returns run
+    every { run.id } returns "id"
+    every { runServiceImpl.getRunStatus(any(), any(), any(), any()) } returns
+        RunStatus(endTime = null)
+    every { workflowService.getRunningLogs(any()) } returns
+        "first line of result" + "|second line of result" + "|third line of result"
+    every { workflowService.getArchivedLogs(any()) } throws Exception()
+
+    assertEquals(
+        "first line of result" + "|second line of result" + "|third line of result",
+        runApiService.getRunLogs(
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id, runSavedId))
+  }
+
+  @Test
+  fun `test get archived logs`() {
+    runSavedId =
+        mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, solutionSaved.id)
+    val run = mockk<Run>()
+    every { runApiService.getRun(any(), any(), any(), any()) } returns run
+    every { run.id } returns "id"
+    every { runServiceImpl.getRunStatus(any(), any(), any(), any()) } returns
+        RunStatus(endTime = "endTime")
+    logger.info("should get archived logs")
+    every { workflowService.getRunningLogs(any()) } throws
+        RestClientResponseException("message", HttpStatus.NOT_FOUND, "statusTest", null, null, null)
+    every { workflowService.getArchivedLogs(any()) } returns
+        "first line of result" + "|second line of result" + "|third line of result"
+    assertEquals(
+        "first line of result" + "|second line of result" + "|third line of result",
+        runApiService.getRunLogs(
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id, runSavedId))
+  }
+
+  @Test
+  fun `test should get archived logs after a status change`() {
+    runSavedId =
+        mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, solutionSaved.id)
+    val run = mockk<Run>()
+    every { runApiService.getRun(any(), any(), any(), any()) } returns run
+    every { run.id } returns "id"
+    every { runServiceImpl.getRunStatus(any(), any(), any(), any()) } returns
+        RunStatus(endTime = null)
+    logger.info("should get logs even with a status change after assertion")
+    every { workflowService.getRunningLogs(any()) } throws
+        RestClientResponseException("message", HttpStatus.NOT_FOUND, "statusTest", null, null, null)
+    every { workflowService.getArchivedLogs(any()) } returns
+        "first line of result" + "|second line of result" + "|third line of result"
+    assertDoesNotThrow {
+      runApiService.getRunLogs(organizationSaved.id, workspaceSaved.id, runnerSaved.id, runSavedId)
+    }
+    assertEquals(
+        "first line of result" + "|second line of result" + "|third line of result",
+        runApiService.getRunLogs(
+            organizationSaved.id, workspaceSaved.id, runnerSaved.id, runSavedId))
+  }
+
+  @Test
+  fun `test should fail after exception other than not_found`() {
+    runSavedId =
+        mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, solutionSaved.id)
+    val run = mockk<Run>()
+    every { runApiService.getRun(any(), any(), any(), any()) } returns run
+    every { runServiceImpl.getRunStatus(any(), any(), any(), any()) } returns
+        RunStatus(endTime = null)
+    logger.info("should throw an error outside of status change error")
+    every { workflowService.getRunningLogs(any()) } throws Exception()
+    assertThrows<Exception> {
+      runApiService.getRunLogs(organizationSaved.id, workspaceSaved.id, runnerSaved.id, runSavedId)
     }
   }
 

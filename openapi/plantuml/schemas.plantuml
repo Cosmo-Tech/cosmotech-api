@@ -253,15 +253,6 @@ entity RunDataQuery {
     * query: String
 }
 
-entity RunLogs {
-    * runId: String
-    * logs: List<RunLogsEntry>
-}
-
-entity RunLogsEntry {
-    * line: String
-}
-
 entity RunResourceRequested {
     cpu: Long
     memory: Long
@@ -668,7 +659,6 @@ DatasetSecurity -- "0..*" DatasetAccessControl : accessControlList
 ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
 SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
-RunLogs -- "0..*" RunLogsEntry : logs
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 WorkspaceCreateRequest -- WorkspaceSolution : solution
 WorkspaceCreateRequest -- WorkspaceWebApp : webApp

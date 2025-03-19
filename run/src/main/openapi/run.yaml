@@ -155,15 +155,9 @@ paths:
         "200":
           description: the run logs details
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/RunLogs'
-              examples:
-                Run:
-                  $ref: '#/components/examples/BreweryRunLogs'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/RunLogs'
+                type: string
               examples:
                 Run:
                   $ref: '#/components/examples/BreweryRunLogs'
@@ -676,32 +670,6 @@ components:
       required:
         - cpu
         - memory
-    RunLogs:
-      type: object
-      description: the output logs of a run
-      properties:
-        runId:
-          type: string
-          readOnly: true
-          description: the Run Id
-        logs:
-          type: array
-          readOnly: true
-          description: run log entries in chronological order
-          items:
-            $ref: "#/components/schemas/RunLogsEntry"
-      required:
-        - runId
-        - logs
-    RunLogsEntry:
-      type: object
-      description: single run log entry
-      properties:
-        line:
-          type: string
-          description: log line data
-      required:
-        - line
     RunDataQuery:
       type: object
       description: a data result query in SQL

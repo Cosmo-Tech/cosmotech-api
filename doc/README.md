@@ -168,8 +168,6 @@ All URIs are relative to *http://localhost*
  - [RunContainer](./Models/RunContainer.md)
  - [RunData](./Models/RunData.md)
  - [RunDataQuery](./Models/RunDataQuery.md)
- - [RunLogs](./Models/RunLogs.md)
- - [RunLogsEntry](./Models/RunLogsEntry.md)
  - [RunResourceRequested](./Models/RunResourceRequested.md)
  - [RunState](./Models/RunState.md)
  - [RunStatus](./Models/RunStatus.md)
