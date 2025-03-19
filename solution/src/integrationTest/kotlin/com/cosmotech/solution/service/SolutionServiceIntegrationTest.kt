@@ -960,7 +960,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("parameterName", solutionSaved.parameters[0].id)
     assertEquals("string", solutionSaved.parameters[0].varType)
     assertEquals(solutionParameterGroups, solutionSaved.parameterGroups)
-    assertNotNull(solutionSaved.sdkVersion)
     assertEquals(csmSimulator, solutionSaved.csmSimulator)
     assertEquals(solutionUrl, solutionSaved.url)
     assertEquals(ROLE_ADMIN, solutionSaved.security.default)
@@ -1012,7 +1011,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val updatedDescription = "new description"
     val updatedTags = mutableListOf("newTag1", "newTag2")
     val updatedRepository = "new_repo"
-    val updatedSdkVersion = "2.0.0"
     val updatedCsmSimulator = "new_simulator"
     val newUrl = "new_url"
     val newVersion = "20.0.0"
@@ -1024,7 +1022,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             tags = updatedTags,
             alwaysPull = false,
             repository = updatedRepository,
-            sdkVersion = updatedSdkVersion,
             csmSimulator = updatedCsmSimulator,
             parameters =
                 mutableListOf(
@@ -1042,7 +1039,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(updatedDescription, solutionSaved.description)
     assertEquals(updatedTags, solutionSaved.tags)
     assertEquals(updatedRepository, solutionSaved.repository)
-    assertNotNull(solutionSaved.sdkVersion)
     assertEquals(updatedCsmSimulator, solutionSaved.csmSimulator)
     assertEquals(solutionRunTemplates, solutionSaved.runTemplates)
     assertEquals(newUrl, solutionSaved.url)
@@ -1099,7 +1095,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val updatedDescription = "new description"
     val updatedTags = mutableListOf("newTag1", "newTag2")
     val updatedRepository = "new_repo"
-    val updatedSdkVersion = "2.0.0"
     val updatedCsmSimulator = "new_simulator"
     val newUrl = "new_url"
     val newVersion = "20.0.0"
@@ -1111,7 +1106,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             tags = updatedTags,
             alwaysPull = false,
             repository = updatedRepository,
-            sdkVersion = updatedSdkVersion,
             csmSimulator = updatedCsmSimulator,
             url = newUrl,
             version = newVersion)
@@ -1125,7 +1119,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(updatedDescription, solutionSaved.description)
     assertEquals(updatedTags, solutionSaved.tags)
     assertEquals(updatedRepository, solutionSaved.repository)
-    assertNotNull(solutionSaved.sdkVersion)
     assertEquals(updatedCsmSimulator, solutionSaved.csmSimulator)
     assertEquals(solutionRunTemplates, solutionSaved.runTemplates)
     assertEquals(newUrl, solutionSaved.url)
@@ -1150,7 +1143,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionParameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group"))
     val csmSimulator = "simulator"
     val solutionRepository = "repository"
-    val sdkVersion = "10.0.0"
 
     val solutionCreateRequest =
         SolutionCreateRequest(
@@ -1170,7 +1162,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                     default = ROLE_ADMIN,
                     accessControlList =
                         mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
-            sdkVersion = sdkVersion,
             csmSimulator = csmSimulator,
             url = solutionUrl,
             alwaysPull = true,
@@ -1182,7 +1173,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val updatedDescription = "new description"
     val updatedTags = mutableListOf("newTag1", "newTag2")
     val updatedRepository = "new_repo"
-    val updatedSdkVersion = "2.0.0"
     val updatedCsmSimulator = "new_simulator"
     val newUrl = "new_url"
     val newVersion = "20.0.0"

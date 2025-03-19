@@ -444,7 +444,7 @@ class SolutionServiceImpl(
       solutionId: String,
       parameterId: String
   ) {
-    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
+    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     val solutionParameter =
         solution.parameters.firstOrNull { it.id == parameterId }
             ?: throw CsmResourceNotFoundException(

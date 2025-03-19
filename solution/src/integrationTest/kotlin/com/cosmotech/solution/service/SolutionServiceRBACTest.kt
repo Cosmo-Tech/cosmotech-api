@@ -1603,7 +1603,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   fun `test RBAC delete solution parameter`() =
       mapOf(
               ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
+              ROLE_EDITOR to false,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1627,7 +1627,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id, solutionSaved.id, "parameter")
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_DELETE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
