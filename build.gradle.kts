@@ -61,7 +61,7 @@ val springWebVersion = "6.2.1"
 
 // Implementation
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
+val cosmotechApiCommonVersion = "2.1.0-SNAPSHOT"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.4.2"
 val redisOmSpringVersion = "0.9.7"
@@ -142,7 +142,6 @@ allprojects {
       }
     }
     maven {
-      mavenLocal()
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj/argo-client-java")
       credentials {
