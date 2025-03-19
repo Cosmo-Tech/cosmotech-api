@@ -7,16 +7,19 @@ All URIs are relative to *http://localhost*
 | [**createSolution**](SolutionApi.md#createSolution) | **POST** /organizations/{organization_id}/solutions | Create a new solution |
 | [**createSolutionAccessControl**](SolutionApi.md#createSolutionAccessControl) | **POST** /organizations/{organization_id}/solutions/{solution_id}/security/access | Create solution access control |
 | [**createSolutionParameter**](SolutionApi.md#createSolutionParameter) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameters | Create solution parameter for a solution |
+| [**createSolutionParameterGroup**](SolutionApi.md#createSolutionParameterGroup) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Create a solution parameter group |
 | [**deleteSolution**](SolutionApi.md#deleteSolution) | **DELETE** /organizations/{organization_id}/solutions/{solution_id} | Delete a solution |
 | [**deleteSolutionAccessControl**](SolutionApi.md#deleteSolutionAccessControl) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Delete solution access control |
 | [**deleteSolutionParameter**](SolutionApi.md#deleteSolutionParameter) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Delete specific parameter from the solution |
-| [**deleteSolutionParameterGroups**](SolutionApi.md#deleteSolutionParameterGroups) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Delete all parameter groups from the solution |
+| [**deleteSolutionParameterGroup**](SolutionApi.md#deleteSolutionParameterGroup) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id} | Delete a parameter group from the solution |
 | [**deleteSolutionRunTemplate**](SolutionApi.md#deleteSolutionRunTemplate) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Delete a specific run template |
 | [**deleteSolutionRunTemplates**](SolutionApi.md#deleteSolutionRunTemplates) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Delete all run templates from the solution |
 | [**getSolution**](SolutionApi.md#getSolution) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution |
 | [**getSolutionAccessControl**](SolutionApi.md#getSolutionAccessControl) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Get solution access control |
 | [**getSolutionParameter**](SolutionApi.md#getSolutionParameter) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Get the details of a solution parameter |
+| [**getSolutionParameterGroup**](SolutionApi.md#getSolutionParameterGroup) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id} | Get details of a solution parameter group |
 | [**getSolutionSecurity**](SolutionApi.md#getSolutionSecurity) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security | Get solution security information |
+| [**listSolutionParameterGroups**](SolutionApi.md#listSolutionParameterGroups) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | List all solution parameter groups |
 | [**listSolutionParameters**](SolutionApi.md#listSolutionParameters) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameters | List all solution parameters |
 | [**listSolutionSecurityUsers**](SolutionApi.md#listSolutionSecurityUsers) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/users | List solution security users |
 | [**listSolutions**](SolutionApi.md#listSolutions) | **GET** /organizations/{organization_id}/solutions | List all Solutions |
@@ -24,7 +27,7 @@ All URIs are relative to *http://localhost*
 | [**updateSolutionAccessControl**](SolutionApi.md#updateSolutionAccessControl) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Update solution access control |
 | [**updateSolutionDefaultSecurity**](SolutionApi.md#updateSolutionDefaultSecurity) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/security/default | Update solution default security |
 | [**updateSolutionParameter**](SolutionApi.md#updateSolutionParameter) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Update solution parameter |
-| [**updateSolutionParameterGroups**](SolutionApi.md#updateSolutionParameterGroups) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Update solution parameter groups |
+| [**updateSolutionParameterGroup**](SolutionApi.md#updateSolutionParameterGroup) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id} | Update a solution parameter group |
 | [**updateSolutionRunTemplate**](SolutionApi.md#updateSolutionRunTemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update a specific run template |
 | [**updateSolutionRunTemplates**](SolutionApi.md#updateSolutionRunTemplates) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Update solution run templates |
 
@@ -99,6 +102,33 @@ Create solution parameter for a solution
 ### Return type
 
 [**RunTemplateParameter**](../Models/RunTemplateParameter.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
+<a name="createSolutionParameterGroup"></a>
+# **createSolutionParameterGroup**
+> RunTemplateParameterGroup createSolutionParameterGroup(organization\_id, solution\_id, RunTemplateParameterGroupCreateRequest)
+
+Create a solution parameter group
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **RunTemplateParameterGroupCreateRequest** | [**RunTemplateParameterGroupCreateRequest**](../Models/RunTemplateParameterGroupCreateRequest.md)| Parameter groups to create | |
+
+### Return type
+
+[**RunTemplateParameterGroup**](../Models/RunTemplateParameterGroup.md)
 
 ### Authorization
 
@@ -189,11 +219,11 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-<a name="deleteSolutionParameterGroups"></a>
-# **deleteSolutionParameterGroups**
-> deleteSolutionParameterGroups(organization\_id, solution\_id)
+<a name="deleteSolutionParameterGroup"></a>
+# **deleteSolutionParameterGroup**
+> deleteSolutionParameterGroup(organization\_id, solution\_id, parameter\_group\_id)
 
-Delete all parameter groups from the solution
+Delete a parameter group from the solution
 
 ### Parameters
 
@@ -201,6 +231,7 @@ Delete all parameter groups from the solution
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **parameter\_group\_id** | **String**| the parameter group identifier | [default to null] |
 
 ### Return type
 
@@ -348,6 +379,33 @@ Get the details of a solution parameter
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
+<a name="getSolutionParameterGroup"></a>
+# **getSolutionParameterGroup**
+> RunTemplateParameterGroup getSolutionParameterGroup(organization\_id, solution\_id, parameter\_group\_id)
+
+Get details of a solution parameter group
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **parameter\_group\_id** | **String**| the parameter group identifier | [default to null] |
+
+### Return type
+
+[**RunTemplateParameterGroup**](../Models/RunTemplateParameterGroup.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
 <a name="getSolutionSecurity"></a>
 # **getSolutionSecurity**
 > SolutionSecurity getSolutionSecurity(organization\_id, solution\_id)
@@ -364,6 +422,32 @@ Get solution security information
 ### Return type
 
 [**SolutionSecurity**](../Models/SolutionSecurity.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="listSolutionParameterGroups"></a>
+# **listSolutionParameterGroups**
+> List listSolutionParameterGroups(organization\_id, solution\_id)
+
+List all solution parameter groups
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+
+### Return type
+
+[**List**](../Models/RunTemplateParameterGroup.md)
 
 ### Authorization
 
@@ -563,11 +647,11 @@ Update solution parameter
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
-<a name="updateSolutionParameterGroups"></a>
-# **updateSolutionParameterGroups**
-> List updateSolutionParameterGroups(organization\_id, solution\_id, RunTemplateParameterGroup)
+<a name="updateSolutionParameterGroup"></a>
+# **updateSolutionParameterGroup**
+> RunTemplateParameterGroup updateSolutionParameterGroup(organization\_id, solution\_id, parameter\_group\_id, RunTemplateParameterGroupUpdateRequest)
 
-Update solution parameter groups
+Update a solution parameter group
 
 ### Parameters
 
@@ -575,11 +659,12 @@ Update solution parameter groups
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **RunTemplateParameterGroup** | [**List**](../Models/RunTemplateParameterGroup.md)| Parameter groups to update | |
+| **parameter\_group\_id** | **String**| the parameter group identifier | [default to null] |
+| **RunTemplateParameterGroupUpdateRequest** | [**RunTemplateParameterGroupUpdateRequest**](../Models/RunTemplateParameterGroupUpdateRequest.md)| Parameter groups to update | |
 
 ### Return type
 
-[**List**](../Models/RunTemplateParameterGroup.md)
+[**RunTemplateParameterGroup**](../Models/RunTemplateParameterGroup.md)
 
 ### Authorization
 

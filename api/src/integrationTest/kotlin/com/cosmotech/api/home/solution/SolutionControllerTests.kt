@@ -121,6 +121,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
     val parameterVarType = "this_is_a_vartype"
     val parameterDefaultValue = "this_is_a_default_value"
+    val parameterGroupDescription = "this_is_a_description"
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
     val parameterRegexValidation = "this_is_a_regex_to_validate_value"
@@ -146,6 +147,7 @@ class SolutionControllerTests : ControllerTestBase() {
         mutableListOf(
             RunTemplateParameterGroup(
                 parameterGroupId,
+                parameterGroupDescription,
                 parameterLabels,
                 false,
                 options,
@@ -278,10 +280,12 @@ class SolutionControllerTests : ControllerTestBase() {
                 options))
     val parameterGroupId = "parameterGroup1"
     val parameterGroupParentId = "this_is_a_parent_id"
+    val parameterGroupDescription = "this_is_a_description"
     val parameterGroups =
         mutableListOf(
             RunTemplateParameterGroup(
                 parameterGroupId,
+                parameterGroupDescription,
                 parameterLabels,
                 false,
                 options,
@@ -468,10 +472,12 @@ class SolutionControllerTests : ControllerTestBase() {
             "even" to JSONObject(mapOf("object" to "if_you_want")))
     val parameterGroupId = "parameterGroup1"
     val parameterGroupParentId = "this_is_a_parent_id"
+    val parameterGroupDescription = "this_is_a_description"
     val parameterGroups =
         mutableListOf(
             RunTemplateParameterGroup(
                 parameterGroupId,
+                parameterGroupDescription,
                 parameterLabels,
                 false,
                 options,
@@ -509,10 +515,12 @@ class SolutionControllerTests : ControllerTestBase() {
             "even" to JSONObject(mapOf("object" to "if_you_want")))
     val parameterGroupId = "parameterGroup1"
     val parameterGroupParentId = "this_is_a_parent_id"
+    val parameterGroupDescription = "this_is_a_description"
     val parameterGroups =
         mutableListOf(
             RunTemplateParameterGroup(
                 parameterGroupId,
+                parameterGroupDescription,
                 parameterLabels,
                 false,
                 options,

@@ -28,6 +28,8 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterCreateRequest
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
+import com.cosmotech.solution.domain.RunTemplateParameterGroupCreateRequest
+import com.cosmotech.solution.domain.RunTemplateParameterGroupUpdateRequest
 import com.cosmotech.solution.domain.RunTemplateParameterUpdateRequest
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
@@ -101,15 +103,6 @@ class SolutionServiceImpl(
     }
   }
 
-  override fun deleteSolutionParameterGroups(organizationId: String, solutionId: String) {
-    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
-
-    if (solution.parameterGroups.isNotEmpty()) {
-      solution.parameterGroups = mutableListOf()
-      solutionRepository.save(solution)
-    }
-  }
-
   override fun isRunTemplateExist(
       organizationId: String,
       workspaceId: String,
@@ -119,27 +112,6 @@ class SolutionServiceImpl(
     val solution = getSolution(organizationId, solutionId)
 
     return solution.runTemplates.any { runTemplateId == it.id }
-  }
-
-  override fun updateSolutionParameterGroups(
-      organizationId: String,
-      solutionId: String,
-      runTemplateParameterGroup: List<RunTemplateParameterGroup>
-  ): List<RunTemplateParameterGroup> {
-    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
-
-    if (runTemplateParameterGroup.isEmpty()) {
-      return runTemplateParameterGroup
-    }
-
-    val runTemplateParameterGroupMap =
-        existingSolution.parameterGroups.associateBy { it.id }.toMutableMap()
-    runTemplateParameterGroupMap.putAll(
-        runTemplateParameterGroup.filter { it.id.isNotBlank() }.associateBy { it.id })
-    existingSolution.parameterGroups = runTemplateParameterGroupMap.values.toMutableList()
-    solutionRepository.save(existingSolution)
-
-    return runTemplateParameterGroup
   }
 
   override fun updateSolutionRunTemplates(
@@ -360,6 +332,91 @@ class SolutionServiceImpl(
     return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
+  override fun listSolutionParameterGroups(
+      organizationId: String,
+      solutionId: String
+  ): List<RunTemplateParameterGroup> {
+    val solution = getVerifiedSolution(organizationId, solutionId)
+    return solution.parameterGroups
+  }
+
+  override fun createSolutionParameterGroup(
+      organizationId: String,
+      solutionId: String,
+      runTemplateParameterGroupCreateRequest: RunTemplateParameterGroupCreateRequest
+  ): RunTemplateParameterGroup {
+    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
+    val parameterIdAlreadyExist =
+        existingSolution.parameterGroups
+            .map { it.id.lowercase() }
+            .firstOrNull { it == runTemplateParameterGroupCreateRequest.id.lowercase() }
+
+    if (parameterIdAlreadyExist != null) {
+      throw IllegalArgumentException(
+          "Parameter Group with id '${runTemplateParameterGroupCreateRequest.id}' already exists")
+    }
+    val parameterGroupToCreate =
+        convertToRunTemplateParameterGroup(runTemplateParameterGroupCreateRequest)
+
+    existingSolution.parameterGroups.add(parameterGroupToCreate)
+    solutionRepository.save(existingSolution)
+
+    return parameterGroupToCreate
+  }
+
+  override fun getSolutionParameterGroup(
+      organizationId: String,
+      solutionId: String,
+      parameterGroupId: String
+  ): RunTemplateParameterGroup {
+    val solution = getVerifiedSolution(organizationId, solutionId)
+    val solutionParameterGroup =
+        solution.parameterGroups.firstOrNull { it.id == parameterGroupId }
+            ?: throw CsmResourceNotFoundException(
+                "Solution parameter group with id $parameterGroupId does not exist")
+    return solutionParameterGroup
+  }
+
+  override fun updateSolutionParameterGroup(
+      organizationId: String,
+      solutionId: String,
+      parameterGroupId: String,
+      runTemplateParameterGroupUpdateRequest: RunTemplateParameterGroupUpdateRequest
+  ): RunTemplateParameterGroup {
+
+    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
+    existingSolution.parameterGroups
+        .find { it.id == parameterGroupId }
+        ?.apply {
+          description = runTemplateParameterGroupUpdateRequest.description ?: this.description
+          labels = runTemplateParameterGroupUpdateRequest.labels ?: this.labels
+          isTable = runTemplateParameterGroupUpdateRequest.isTable ?: this.isTable
+          options = runTemplateParameterGroupUpdateRequest.options ?: this.options
+          parentId = runTemplateParameterGroupUpdateRequest.parentId ?: this.parentId
+          parameters = runTemplateParameterGroupUpdateRequest.parameters ?: this.parameters
+        }
+        ?: throw CsmResourceNotFoundException(
+            "Solution parameter group with id $parameterGroupId does not exist")
+
+    val solutionSaved = solutionRepository.save(existingSolution)
+
+    return solutionSaved.parameterGroups.first { it.id == parameterGroupId }
+  }
+
+  override fun deleteSolutionParameterGroup(
+      organizationId: String,
+      solutionId: String,
+      parameterGroupId: String
+  ) {
+    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
+    val solutionParameterGroup =
+        solution.parameterGroups.firstOrNull { it.id == parameterGroupId }
+            ?: throw CsmResourceNotFoundException(
+                "Solution parameter group with id $parameterGroupId does not exist")
+    solution.parameterGroups.remove(solutionParameterGroup)
+    solutionRepository.save(solution)
+  }
+
   override fun getSolutionAccessControl(
       organizationId: String,
       solutionId: String,
@@ -548,6 +605,19 @@ class SolutionServiceImpl(
         maxValue = runTemplateParameterCreateRequest.maxValue,
         regexValidation = runTemplateParameterCreateRequest.regexValidation,
         options = runTemplateParameterCreateRequest.options)
+  }
+
+  fun convertToRunTemplateParameterGroup(
+      runTemplateParameterGroupCreateRequest: RunTemplateParameterGroupCreateRequest
+  ): RunTemplateParameterGroup {
+    return RunTemplateParameterGroup(
+        id = runTemplateParameterGroupCreateRequest.id,
+        description = runTemplateParameterGroupCreateRequest.description,
+        labels = runTemplateParameterGroupCreateRequest.labels,
+        isTable = runTemplateParameterGroupCreateRequest.isTable,
+        options = runTemplateParameterGroupCreateRequest.options,
+        parentId = runTemplateParameterGroupCreateRequest.parentId,
+        parameters = runTemplateParameterGroupCreateRequest.parameters)
   }
 }
 

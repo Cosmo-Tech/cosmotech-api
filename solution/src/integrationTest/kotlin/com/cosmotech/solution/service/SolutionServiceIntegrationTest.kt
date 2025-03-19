@@ -263,38 +263,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test Parameter Group operations on Solution`() {
-
-    logger.info(
-        "should add 2 new parameter groups to the solution and assert that the list contains 2 elements")
-    val parameterGroup1 = RunTemplateParameterGroup(id = "parameterGroupId1")
-    val parameterGroup2 = RunTemplateParameterGroup(id = "parameterGroupId2")
-    solutionApiService.updateSolutionParameterGroups(
-        solutionSaved.organizationId, solutionSaved.id, listOf(parameterGroup1, parameterGroup2))
-    val foundSolution =
-        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
-    assertTrue(foundSolution.parameterGroups.size == 2)
-
-    logger.info(
-        "should replace the parameter groups and assert that the list contains only 1 element")
-    val parameterGroup3 =
-        RunTemplateParameterGroup(
-            id = "parameterGroupId1", labels = mutableMapOf("pkey" to "value"))
-    solutionApiService.updateSolutionParameterGroups(
-        solutionSaved.organizationId, solutionSaved.id, listOf(parameterGroup3))
-    val foundSolutionAfterReplace =
-        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
-    assertTrue(foundSolutionAfterReplace.parameterGroups.size == 2)
-    assertTrue(foundSolutionAfterReplace.parameterGroups.first().labels!!.containsKey("pkey"))
-
-    logger.info("should remove all parameter groups and assert that the list is empty")
-    solutionApiService.deleteSolutionParameterGroups(solutionSaved.organizationId, solutionSaved.id)
-    val foundSolutionAfterRemove =
-        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
-    assertTrue(foundSolutionAfterRemove.parameterGroups.isEmpty())
-  }
-
-  @Test
   fun `test empty list solution parameters`() {
     val parameterList =
         solutionApiService.listSolutionParameters(organizationSaved.id, solutionSaved.id)
