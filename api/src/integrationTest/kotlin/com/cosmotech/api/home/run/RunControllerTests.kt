@@ -76,6 +76,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -345,30 +346,20 @@ class RunControllerTests : ControllerTestBase() {
   @WithMockOauth2User
   fun get_run_logs() {
 
-    val lineOne = "This is a log entry"
-    val lineTwo = "This is another log entry"
-    val lineThree = "This is the last log entry"
+    val logs =
+        """This is the first line of a log entry
+      |This is the second line of a log entry
+      |This is the third line of a log entry"""
+            .trimMargin()
 
-    every { workflowService.getRunLogs(any()) } returns
-        RunLogs(
-            runId = runId,
-            logs =
-                mutableListOf(
-                    RunLogsEntry(lineOne),
-                    RunLogsEntry(lineTwo),
-                    RunLogsEntry(lineThree),
-                ))
+    every { workflowService.getRunningLogs(any()) } returns logs
 
     mvc.perform(
             get(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/logs")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.TEXT_PLAIN))
         .andExpect(status().is2xxSuccessful)
-        .andExpect(jsonPath("$.runId").value(runId))
-        .andExpect(jsonPath("$.logs[0].line").value(lineOne))
-        .andExpect(jsonPath("$.logs[1].line").value(lineTwo))
-        .andExpect(jsonPath("$.logs[2].line").value(lineThree))
+        .andExpect(content().string(logs))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(

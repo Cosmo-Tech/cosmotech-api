@@ -4,7 +4,6 @@ package com.cosmotech.run.workflow
 
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunContainer
-import com.cosmotech.run.domain.RunLogs
 import com.cosmotech.run.domain.RunStatus
 import org.springframework.boot.actuate.health.HealthIndicator
 
@@ -51,12 +50,20 @@ interface WorkflowService : HealthIndicator {
   fun getRunStatus(run: Run): RunStatus
 
   /**
-   * Get all logs of a Run, as a structured object
+   * Get all logs of an active Run, as a structured object
    *
    * @param run the Run
    * @return the RunLogs object
    */
-  fun getRunLogs(run: Run): RunLogs
+  fun getRunningLogs(run: Run): String
+
+  /**
+   * Get all logs of a finished Run, as a structured object
+   *
+   * @param run the Run
+   * @return the RunLogs object
+   */
+  fun getArchivedLogs(run: Run): String
 
   /**
    * Stop the running workflow

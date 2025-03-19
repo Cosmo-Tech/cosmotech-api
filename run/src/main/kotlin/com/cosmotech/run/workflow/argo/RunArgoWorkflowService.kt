@@ -4,14 +4,11 @@ package com.cosmotech.run.workflow.argo
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.WorkflowStatusRequest
-import com.cosmotech.api.loki.LokiService
 import com.cosmotech.run.CONTAINER_CSM_ORC
 import com.cosmotech.run.ORGANIZATION_ID_LABEL
 import com.cosmotech.run.RUNNER_ID_LABEL
 import com.cosmotech.run.WORKSPACE_ID_LABEL
 import com.cosmotech.run.domain.Run
-import com.cosmotech.run.domain.RunLogs
-import com.cosmotech.run.domain.RunLogsEntry
 import com.cosmotech.run.domain.RunResourceRequested
 import com.cosmotech.run.domain.RunState
 import com.cosmotech.run.domain.RunStatus
@@ -23,6 +20,7 @@ import com.cosmotech.run.workflow.WorkflowStatus
 import io.argoproj.workflow.ApiClient
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
+import io.argoproj.workflow.apis.ArtifactServiceApi
 import io.argoproj.workflow.apis.InfoServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Workflow
@@ -30,16 +28,17 @@ import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowCreateReque
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStatus
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStopRequest
 import java.security.cert.X509Certificate
-import java.time.Instant
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
 import okhttp3.OkHttpClient
+import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestClient
 
 @Service("runArgo")
 @ConditionalOnExpression("#{! '\${csm.platform.argo.base-uri}'.trim().isEmpty()}")
@@ -47,10 +46,10 @@ import org.springframework.stereotype.Service
 internal class RunArgoWorkflowService(
     @Value("\${api.version:?}") private val apiVersion: String,
     private val csmPlatformProperties: CsmPlatformProperties,
-    private val lokiService: LokiService,
 ) : WorkflowService {
 
   private val logger = LoggerFactory.getLogger(RunArgoWorkflowService::class.java)
+  private val argoClient = RestClient.builder().baseUrl(csmPlatformProperties.argo.baseUri).build()
 
   private val unsafeOkHttpClient: OkHttpClient by lazy {
     // Create a trust manager that does not validate certificate chains
@@ -226,25 +225,53 @@ internal class RunArgoWorkflowService(
     return buildRunStatusFromWorkflowStatus(run, workflowStatus)
   }
 
-  override fun getRunLogs(run: Run): RunLogs {
+  override fun getRunningLogs(run: Run): String {
     val workflowName = run.workflowName
-    var containersLogs = listOf<RunLogsEntry>()
+    var result = ""
+    if (workflowName != null) {
+      getActiveWorkflow(workflowName)
+          ?.status
+          ?.nodes
+          ?.firstNotNullOf { (_, v) -> v.takeIf { it.displayName == CONTAINER_CSM_ORC } }
+          ?.let { node ->
+            val podName =
+                node.id.substringBeforeLast("-") +
+                    "-csmorchestrator-" +
+                    node.id.substringAfterLast("-")
+            val lines =
+                argoClient
+                    .get()
+                    .uri(
+                        "/api/v1/workflows/${csmPlatformProperties.argo.workflows.namespace}" +
+                            "/$workflowName/log?podName=${podName}&logOptions.container=main")
+                    .retrieve()
+                    .body(String::class.java)
+            lines?.split("\n")?.forEach {
+              if (it.isNotEmpty()) {
+                result += JSONObject(it).getJSONObject("result").optString("content", "") + "\n"
+              }
+            }
+          }
+    }
+    return result
+  }
+
+  override fun getArchivedLogs(run: Run): String {
+    val workflowName = run.workflowName
+    var result = ""
     if (workflowName != null) {
       getActiveWorkflow(workflowName)
           ?.status
           ?.nodes
           ?.firstNotNullOf { (_, v) -> v.takeIf { it.displayName == CONTAINER_CSM_ORC } }
           ?.let {
-            containersLogs =
-                lokiService
-                    .getPodLogs(
-                        csmPlatformProperties.argo.workflows.namespace,
-                        it.id,
-                        it.startedAt ?: Instant.now())
-                    .map { RunLogsEntry(line = it) }
+            result =
+                newServiceApiInstance<ArtifactServiceApi>(this.apiClient)
+                    .artifactServiceGetOutputArtifactByUID(run.workflowId, it.id, "main-logs")
+                    .readText()
           }
     }
-    return RunLogs(runId = run.id!!, logs = containersLogs)
+    return result
   }
 
   @Suppress("TooGenericExceptionCaught")

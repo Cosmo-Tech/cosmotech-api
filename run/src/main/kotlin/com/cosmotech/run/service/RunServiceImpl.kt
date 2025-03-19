@@ -29,7 +29,6 @@ import com.cosmotech.run.domain.QueryResult
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunData
 import com.cosmotech.run.domain.RunDataQuery
-import com.cosmotech.run.domain.RunLogs
 import com.cosmotech.run.domain.RunState
 import com.cosmotech.run.domain.RunStatus
 import com.cosmotech.run.domain.RunTemplateParameterValue
@@ -53,9 +52,11 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestClientResponseException
 
 internal const val WORKFLOW_TYPE_RUN = "container-run"
 internal const val WORKFLOW_TYPE_TWIN_GRAPH_IMPORT = "twin-graph-import"
@@ -473,8 +474,17 @@ class RunServiceImpl(
       workspaceId: String,
       runnerId: String,
       runId: String
-  ): RunLogs {
-    return workflowService.getRunLogs(getRun(organizationId, workspaceId, runnerId, runId))
+  ): String {
+    val run = getRun(organizationId, workspaceId, runnerId, runId)
+    val status = getRunStatus(run)
+    if (status.endTime.isNullOrEmpty()) {
+      try {
+        return workflowService.getRunningLogs(run)
+      } catch (e: RestClientResponseException) {
+        if (e.statusCode != HttpStatus.NOT_FOUND) throw e
+      }
+    }
+    return workflowService.getArchivedLogs(run)
   }
 
   override fun getRunStatus(

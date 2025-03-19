@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.exceptions
 
+import io.argoproj.workflow.ApiException
 import java.net.URI
 import java.sql.SQLException
 import org.springframework.http.HttpStatus
@@ -20,6 +21,18 @@ class RunExceptionHandling {
     val badRequestError = HttpStatus.BAD_REQUEST
     response.type = URI.create(httpStatusCodeTypePrefix + badRequestError.value())
     response.title = "Bad SQL Request"
+    response.detail = exception.message
+
+    return response
+  }
+
+  @ExceptionHandler(ApiException::class)
+  fun handleApiException(exception: ApiException): ProblemDetail {
+    var response = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    val internalServerError = HttpStatus.INTERNAL_SERVER_ERROR
+    response.type = URI.create(httpStatusCodeTypePrefix + internalServerError.value())
+    response.title =
+        "Argo Workflows has encountered a problem. Please check Argo logs for more details."
     response.detail = exception.message
 
     return response

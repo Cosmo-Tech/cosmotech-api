@@ -43,8 +43,6 @@ Models/Run.md
 Models/RunContainer.md
 Models/RunData.md
 Models/RunDataQuery.md
-Models/RunLogs.md
-Models/RunLogsEntry.md
 Models/RunResourceRequested.md
 Models/RunState.md
 Models/RunStatus.md

@@ -71,7 +71,7 @@ Get the details of a run
 
 <a name="getRunLogs"></a>
 # **getRunLogs**
-> RunLogs getRunLogs(organization\_id, workspace\_id, runner\_id, run\_id)
+> String getRunLogs(organization\_id, workspace\_id, runner\_id, run\_id)
 
 get the logs for the Run
 
@@ -86,7 +86,7 @@ get the logs for the Run
 
 ### Return type
 
-[**RunLogs**](../Models/RunLogs.md)
+**String**
 
 ### Authorization
 
@@ -95,7 +95,7 @@ get the logs for the Run
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json, application/yaml
+- **Accept**: text/plain
 
 <a name="getRunStatus"></a>
 # **getRunStatus**
