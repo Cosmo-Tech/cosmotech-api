@@ -459,90 +459,6 @@ class SolutionControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
-  fun add_solution_parameter_groups() {
-
-    val solutionId =
-        createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
-
-    val parameterId = "parameter1"
-    val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
-    val options =
-        mutableMapOf(
-            "you_can_put" to "whatever_you_want_here",
-            "even" to JSONObject(mapOf("object" to "if_you_want")))
-    val parameterGroupId = "parameterGroup1"
-    val parameterGroupParentId = "this_is_a_parent_id"
-    val parameterGroupDescription = "this_is_a_description"
-    val parameterGroups =
-        mutableListOf(
-            RunTemplateParameterGroup(
-                parameterGroupId,
-                parameterGroupDescription,
-                parameterLabels,
-                false,
-                options,
-                parameterGroupParentId,
-                mutableListOf(parameterId)))
-
-    mvc.perform(
-            patch("/organizations/$organizationId/solutions/$solutionId/parameterGroups")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JSONArray(parameterGroups).toString())
-                .with(csrf()))
-        .andExpect(status().is2xxSuccessful)
-        .andExpect(jsonPath("$[0].id").value(parameterGroupId))
-        .andExpect(jsonPath("$[0].labels").value(parameterLabels))
-        .andExpect(jsonPath("$[0].isTable").value(false))
-        .andExpect(jsonPath("$[0].parentId").value(parameterGroupParentId))
-        .andExpect(jsonPath("$[0].options[\"you_can_put\"]").value("whatever_you_want_here"))
-        .andExpect(jsonPath("$[0].options[\"even\"][\"object\"]").value("if_you_want"))
-        .andExpect(jsonPath("$[0].parameters").value(mutableListOf(parameterId)))
-        .andDo(MockMvcResultHandlers.print())
-        .andDo(
-            document(
-                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/PATCH"))
-  }
-
-  @Test
-  @WithMockOauth2User
-  fun delete_solution_parameter_groups() {
-
-    val parameterId = "parameter1"
-    val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
-    val options =
-        mutableMapOf(
-            "you_can_put" to "whatever_you_want_here",
-            "even" to JSONObject(mapOf("object" to "if_you_want")))
-    val parameterGroupId = "parameterGroup1"
-    val parameterGroupParentId = "this_is_a_parent_id"
-    val parameterGroupDescription = "this_is_a_description"
-    val parameterGroups =
-        mutableListOf(
-            RunTemplateParameterGroupCreateRequest(
-                parameterGroupId,
-                parameterGroupDescription,
-                parameterLabels,
-                false,
-                options,
-                parameterGroupParentId,
-                mutableListOf(parameterId)))
-
-    val solutionId =
-        createSolutionAndReturnId(
-            mvc, organizationId, constructSolutionCreateRequest(parameterGroups = parameterGroups))
-    mvc.perform(
-            delete("/organizations/$organizationId/solutions/$solutionId/parameterGroups")
-                .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf()))
-        .andExpect(status().is2xxSuccessful)
-        .andDo(MockMvcResultHandlers.print())
-        .andDo(
-            document(
-                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/DELETE"))
-  }
-
-  @Test
-  @WithMockOauth2User
   fun create_solution_parameter() {
 
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
@@ -809,6 +725,251 @@ class SolutionControllerTests : ControllerTestBase() {
         .andDo(
             document(
                 "organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id}/DELETE"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun create_solution_parameter_group() {
+
+    val solutionId =
+        createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
+
+    val parameterId = "parameter1"
+    val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
+    val options =
+        mutableMapOf(
+            "you_can_put" to "whatever_you_want_here",
+            "even" to JSONObject(mapOf("object" to "if_you_want")))
+    val parameterGroupId = "parameterGroup1"
+    val parameterGroupParentId = "this_is_a_parent_id"
+    val parameterGroupDescription = "this_is_a_description"
+    val parameterGroup =
+        RunTemplateParameterGroupCreateRequest(
+            parameterGroupId,
+            parameterGroupDescription,
+            parameterLabels,
+            false,
+            options,
+            parameterGroupParentId,
+            mutableListOf(parameterId))
+
+    mvc.perform(
+            post("/organizations/$organizationId/solutions/$solutionId/parameterGroups")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JSONObject(parameterGroup).toString())
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.id").value(parameterGroupId))
+        .andExpect(jsonPath("$.description").value(parameterGroupDescription))
+        .andExpect(jsonPath("$.labels").value(parameterLabels))
+        .andExpect(jsonPath("$.isTable").value(false))
+        .andExpect(jsonPath("$.parentId").value(parameterGroupParentId))
+        .andExpect(jsonPath("$.options[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$.options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$.parameters").value(mutableListOf(parameterId)))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/POST"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun get_solution_parameter_group() {
+    val parameterId = "parameter1"
+    val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
+    val options =
+        mutableMapOf(
+            "you_can_put" to "whatever_you_want_here",
+            "even" to JSONObject(mapOf("object" to "if_you_want")))
+    val parameterGroupId = "parameterGroup1"
+    val parameterGroupParentId = "this_is_a_parent_id"
+    val parameterGroupDescription = "this_is_a_description"
+    val parameterGroup =
+        RunTemplateParameterGroupCreateRequest(
+            parameterGroupId,
+            parameterGroupDescription,
+            parameterLabels,
+            false,
+            options,
+            parameterGroupParentId,
+            mutableListOf(parameterId))
+
+    val solutionId =
+        createSolutionAndReturnId(
+            mvc,
+            organizationId,
+            constructSolutionCreateRequest(parameterGroups = mutableListOf(parameterGroup)))
+
+    mvc.perform(
+            get(
+                    "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.id").value(parameterGroupId))
+        .andExpect(jsonPath("$.description").value(parameterGroupDescription))
+        .andExpect(jsonPath("$.labels").value(parameterLabels))
+        .andExpect(jsonPath("$.isTable").value(false))
+        .andExpect(jsonPath("$.parentId").value(parameterGroupParentId))
+        .andExpect(jsonPath("$.options[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$.options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$.parameters").value(mutableListOf(parameterId)))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id}/GET"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun update_solution_parameter_group() {
+    val parameterId = "parameter1"
+    val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
+    val options =
+        mutableMapOf(
+            "you_can_put" to "whatever_you_want_here",
+            "even" to JSONObject(mapOf("object" to "if_you_want")))
+    val parameterGroupId = "parameterGroup1"
+    val parameterGroupParentId = "this_is_a_parent_id"
+    val parameterGroupDescription = "this_is_a_description"
+    val parameterGroup =
+        RunTemplateParameterGroupCreateRequest(
+            parameterGroupId,
+            parameterGroupDescription,
+            parameterLabels,
+            false,
+            options,
+            parameterGroupParentId,
+            mutableListOf(parameterId))
+
+    val solutionId =
+        createSolutionAndReturnId(
+            mvc,
+            organizationId,
+            constructSolutionCreateRequest(parameterGroups = mutableListOf(parameterGroup)))
+
+    val newParameterLabels = mutableMapOf("fr" to "this_is_a_new_label")
+    val newOptions =
+        mutableMapOf(
+            "you_can_put" to "whatever_you_want_new_here",
+            "even" to JSONObject(mapOf("new_object" to "if_you_want")))
+    val newParameterGroupParentId = "this_is_a_new_parent_id"
+    val newParameterGroupDescription = "this_is_a_new_description"
+    val newParameterId = "parameter2"
+    val newParameterGroup =
+        RunTemplateParameterGroupUpdateRequest(
+            newParameterGroupDescription,
+            newParameterLabels,
+            true,
+            newOptions,
+            newParameterGroupParentId,
+            mutableListOf(newParameterId))
+
+    mvc.perform(
+            patch(
+                    "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId")
+                .content(JSONObject(newParameterGroup).toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.id").value(parameterGroupId))
+        .andExpect(jsonPath("$.description").value(newParameterGroupDescription))
+        .andExpect(jsonPath("$.labels").value(newParameterLabels))
+        .andExpect(jsonPath("$.isTable").value(true))
+        .andExpect(jsonPath("$.parentId").value(newParameterGroupParentId))
+        .andExpect(jsonPath("$.options[\"you_can_put\"]").value("whatever_you_want_new_here"))
+        .andExpect(jsonPath("$.options[\"even\"][\"new_object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$.parameters").value(mutableListOf(newParameterId)))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id}/PATCH"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun list_solution_parameter_groups() {
+
+    val parameterId = "parameter1"
+    val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
+    val options =
+        mutableMapOf(
+            "you_can_put" to "whatever_you_want_here",
+            "even" to JSONObject(mapOf("object" to "if_you_want")))
+    val parameterGroupId = "parameterGroup1"
+    val parameterGroupParentId = "this_is_a_parent_id"
+    val parameterGroupDescription = "this_is_a_description"
+    val parameterGroup =
+        RunTemplateParameterGroupCreateRequest(
+            parameterGroupId,
+            parameterGroupDescription,
+            parameterLabels,
+            false,
+            options,
+            parameterGroupParentId,
+            mutableListOf(parameterId))
+
+    val solutionId =
+        createSolutionAndReturnId(
+            mvc,
+            organizationId,
+            constructSolutionCreateRequest(parameterGroups = mutableListOf(parameterGroup)))
+
+    mvc.perform(
+            get("/organizations/$organizationId/solutions/$solutionId/parameterGroups")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(jsonPath("$[0].id").value(parameterGroupId))
+        .andExpect(jsonPath("$[0].description").value(parameterGroupDescription))
+        .andExpect(jsonPath("$[0].labels").value(parameterLabels))
+        .andExpect(jsonPath("$[0].isTable").value(false))
+        .andExpect(jsonPath("$[0].parentId").value(parameterGroupParentId))
+        .andExpect(jsonPath("$[0].options[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$[0].options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$[0].parameters").value(mutableListOf(parameterId)))
+        .andDo(
+            document("organizations/{organization_id}/solutions/{solution_id}/parameterGroups/GET"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun delete_solution_parameter_group() {
+    val parameterId = "parameter1"
+    val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
+    val options =
+        mutableMapOf(
+            "you_can_put" to "whatever_you_want_here",
+            "even" to JSONObject(mapOf("object" to "if_you_want")))
+    val parameterGroupId = "parameterGroup1"
+    val parameterGroupParentId = "this_is_a_parent_id"
+    val parameterGroupDescription = "this_is_a_description"
+    val parameterGroup =
+        RunTemplateParameterGroupCreateRequest(
+            parameterGroupId,
+            parameterGroupDescription,
+            parameterLabels,
+            false,
+            options,
+            parameterGroupParentId,
+            mutableListOf(parameterId))
+
+    val solutionId =
+        createSolutionAndReturnId(
+            mvc,
+            organizationId,
+            constructSolutionCreateRequest(parameterGroups = mutableListOf(parameterGroup)))
+
+    mvc.perform(
+            delete(
+                    "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_id}/DELETE"))
   }
 
   @Test
