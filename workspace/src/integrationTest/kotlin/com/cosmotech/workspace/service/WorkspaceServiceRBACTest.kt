@@ -1695,7 +1695,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
           csmSimulator = "simulator",
           version = "1.0.0",
           repository = "repository",
-          parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+          parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest("group")),
           runTemplates = mutableListOf(RunTemplate("template")),
           security =
               SolutionSecurity(

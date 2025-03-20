@@ -971,7 +971,7 @@ components:
           description: The list of parameters groups for the Run Templates
           default: []
           items:
-            $ref: '#/components/schemas/RunTemplateParameterGroup'
+            $ref: '#/components/schemas/RunTemplateParameterGroupCreateRequest'
         runTemplates:
           type: array
           default: []
@@ -1046,6 +1046,12 @@ components:
           default: [ ]
           items:
             $ref: '#/components/schemas/RunTemplateParameterCreateRequest'
+        parameterGroups:
+          type: array
+          description: The list of parameters groups for the Run Templates
+          default: []
+          items:
+            $ref: '#/components/schemas/RunTemplateParameterGroupCreateRequest'
 
     # Security Objects
     SolutionSecurity:

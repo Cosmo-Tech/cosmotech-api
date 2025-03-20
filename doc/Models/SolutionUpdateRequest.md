@@ -13,6 +13,7 @@
 | **url** | **String** | An optional URL link to solution page | [optional] [default to null] |
 | **tags** | **List** | The list of tags | [optional] [default to null] |
 | **parameters** | [**List**](RunTemplateParameterCreateRequest.md) | The list of Run Template Parameters | [optional] [default to []] |
+| **parameterGroups** | [**List**](RunTemplateParameterGroupCreateRequest.md) | The list of parameters groups for the Run Templates | [optional] [default to []] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

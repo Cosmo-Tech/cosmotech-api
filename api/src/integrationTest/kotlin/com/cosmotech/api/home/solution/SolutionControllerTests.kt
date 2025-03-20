@@ -145,7 +145,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterGroupParentId = "this_is_a_parent_id"
     val parameterGroups =
         mutableListOf(
-            RunTemplateParameterGroup(
+            RunTemplateParameterGroupCreateRequest(
                 parameterGroupId,
                 parameterGroupDescription,
                 parameterLabels,
@@ -283,7 +283,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterGroupDescription = "this_is_a_description"
     val parameterGroups =
         mutableListOf(
-            RunTemplateParameterGroup(
+            RunTemplateParameterGroupCreateRequest(
                 parameterGroupId,
                 parameterGroupDescription,
                 parameterLabels,
@@ -518,7 +518,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterGroupDescription = "this_is_a_description"
     val parameterGroups =
         mutableListOf(
-            RunTemplateParameterGroup(
+            RunTemplateParameterGroupCreateRequest(
                 parameterGroupId,
                 parameterGroupDescription,
                 parameterLabels,

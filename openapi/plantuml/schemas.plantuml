@@ -512,7 +512,7 @@ entity SolutionCreateRequest {
     * csmSimulator: String
     tags: List<String>
     parameters: List<RunTemplateParameterCreateRequest>
-    parameterGroups: List<RunTemplateParameterGroup>
+    parameterGroups: List<RunTemplateParameterGroupCreateRequest>
     runTemplates: List<RunTemplate>
     url: String
     security: SolutionSecurity
@@ -538,6 +538,7 @@ entity SolutionUpdateRequest {
     url: String
     tags: List<String>
     parameters: List<RunTemplateParameterCreateRequest>
+    parameterGroups: List<RunTemplateParameterGroupCreateRequest>
 }
 
 entity SourceInfo {
@@ -652,10 +653,11 @@ AboutInfo -- AboutInfoVersion : version
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 RunContainer -- ContainerResourceSizing : runSizing
 SolutionCreateRequest -- "0..*" RunTemplateParameterCreateRequest : parameters
-SolutionCreateRequest -- "0..*" RunTemplateParameterGroup : parameterGroups
+SolutionCreateRequest -- "0..*" RunTemplateParameterGroupCreateRequest : parameterGroups
 SolutionCreateRequest -- "0..*" RunTemplate : runTemplates
 SolutionCreateRequest -- SolutionSecurity : security
 SolutionUpdateRequest -- "0..*" RunTemplateParameterCreateRequest : parameters
+SolutionUpdateRequest -- "0..*" RunTemplateParameterGroupCreateRequest : parameterGroups
 OrganizationCreateRequest -- OrganizationSecurity : security
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing

@@ -1065,7 +1065,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         name = "My solution",
         parameterGroups =
             mutableListOf(
-                RunTemplateParameterGroup(
+                RunTemplateParameterGroupCreateRequest(
                     id = "testParameterGroups", parameters = mutableListOf("param1", "param2"))),
         parameters =
             mutableListOf(
