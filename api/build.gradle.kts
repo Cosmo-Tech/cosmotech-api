@@ -176,8 +176,12 @@ tasks.register<GenerateTask>("openApiUmlGenerate") {
   generatorName.set("plantuml")
 }
 
+tasks.register<Delete>("openApiMarkdownClean") {
+  delete("$rootDir/doc/Apis", "$rootDir/doc/Models")
+}
+
 tasks.register<GenerateTask>("openApiMarkdownGenerate") {
-  dependsOn("mergeOpenApiFiles")
+  dependsOn("mergeOpenApiFiles", "openApiMarkdownClean")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
   outputDir.set("$rootDir/doc")
   generatorName.set("markdown")
