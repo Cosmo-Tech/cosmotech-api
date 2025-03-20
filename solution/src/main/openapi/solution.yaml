@@ -314,7 +314,7 @@ paths:
         - solution
       summary: Create a solution parameter group
       requestBody:
-        description: Parameter groups to create
+        description: Parameter group to create
         required: true
         content:
           application/json:
@@ -325,7 +325,7 @@ paths:
               $ref: "#/components/schemas/RunTemplateParameterGroupCreateRequest"
       responses:
         "201":
-          description: Parameter groups successfully created
+          description: Parameter group successfully created
           content:
             application/json:
               schema:
@@ -348,8 +348,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunTemplateParameterGroup'
-        "400":
-          description: Bad request
         "404":
           description: Solution not found or insufficient access rights
 
@@ -412,8 +410,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameterGroup'
-        "400":
-          description: Bad request
         "404":
           description: Solution or parameter group not found or insufficient access rights
     delete:
@@ -814,14 +810,12 @@ components:
         id:
           type: string
           x-field-extra-annotation: "@org.springframework.data.annotation.Id"
-          readOnly: true
           description: The Solution version unique identifier
           pattern: '^sol-\w{10,20}'
           example: "sol-123456aBcDeF"
         organizationId:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: string
-          readOnly: true
           description: The Organization unique identifier
           pattern: '^o-\w{10,20}'
           example: "o-123456aBcDeF"
@@ -863,7 +857,6 @@ components:
           example: "1.0.0"
         ownerId:
           type: string
-          readOnly: true
           minLength: 1
           description: The User id which owns this Solution
         sdkVersion:
@@ -1203,6 +1196,8 @@ components:
             description: A Run Template Parameter id
       required:
         - id
+        - isTable
+        - parameters
 
     RunTemplateParameterGroupCreateRequest:
       type: object
@@ -1250,7 +1245,6 @@ components:
           $ref: '#/components/schemas/TranslatedLabels'
         isTable:
           type: boolean
-          default: false
           description: Does the group define a table
         options:
           type: object
@@ -1262,7 +1256,6 @@ components:
         parameters:
           type: array
           description: An ordered list of Run Template Parameters
-          default: []
           items:
             type: string
             description: A Run Template Parameter id

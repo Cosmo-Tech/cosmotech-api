@@ -659,9 +659,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
           solutionApiService.createSolution(organizationSaved.id, newSolutionWithoutParameters)
         }
 
-    assertEquals(
-        "Several solution parameters or parameter groups or run templates have same id!",
-        exception.message)
+    assertEquals("One or several solution items have same id : parameters", exception.message)
   }
 
   @Test
@@ -1173,9 +1171,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
               organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
         }
 
-    assertEquals(
-        "Several solution parameters or parameter groups or run templates have same id!",
-        exception.message)
+    assertEquals("One or several solution items have same id : parameters", exception.message)
   }
 
   @Test
@@ -1232,7 +1228,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("parameterGroupId", firstParamGroup.id)
     assertEquals("this_is_a_description", firstParamGroup.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label"), firstParamGroup.labels)
-    assertFalse(firstParamGroup.isTable!!)
+    assertFalse(firstParamGroup.isTable)
     assertEquals("value1", firstParamGroup.options?.get("option1"))
     assertEquals(10.0, firstParamGroup.options?.get("option2"))
     assertEquals("this_is_a_parent_id", firstParamGroup.parentId)
@@ -1241,7 +1237,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("parameterGroupId2", secondParamGroup.id)
     assertEquals("this_is_a_description2", secondParamGroup.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label2"), secondParamGroup.labels)
-    assertTrue(secondParamGroup.isTable!!)
+    assertTrue(secondParamGroup.isTable)
     assertEquals("value2", secondParamGroup.options?.get("option2"))
     assertEquals(20.0, secondParamGroup.options?.get("option3"))
     assertEquals("this_is_a_parent_id2", secondParamGroup.parentId)
@@ -1283,7 +1279,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("parameterGroupId", solutionParameterGroup.id)
     assertEquals("this_is_a_description", solutionParameterGroup.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label"), solutionParameterGroup.labels)
-    assertFalse(solutionParameterGroup.isTable!!)
+    assertFalse(solutionParameterGroup.isTable)
     assertEquals(2, solutionParameterGroup.options?.size)
     assertEquals("value1", solutionParameterGroup.options?.get("option1"))
     assertEquals(10.0, solutionParameterGroup.options?.get("option2"))
@@ -1347,7 +1343,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(parameterGroupId, solutionParameterGroup.id)
     assertEquals("this_is_a_description3", solutionParameterGroup.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label3"), solutionParameterGroup.labels)
-    assertTrue(solutionParameterGroup.isTable!!)
+    assertTrue(solutionParameterGroup.isTable)
     assertEquals(1, solutionParameterGroup.options?.size)
     assertEquals("value1", solutionParameterGroup.options?.get("option3"))
     assertEquals("this_is_a_parent_id3", solutionParameterGroup.parentId)
@@ -1470,7 +1466,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("parameterGroupId", newParamGroup.id)
     assertEquals("this_is_a_description", newParamGroup.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label"), newParamGroup.labels)
-    assertFalse(newParamGroup.isTable!!)
+    assertFalse(newParamGroup.isTable)
     assertEquals(2, newParamGroup.options?.size)
     assertEquals("value1", newParamGroup.options?.get("option1"))
     assertEquals(10.0, newParamGroup.options?.get("option2"))
@@ -1537,9 +1533,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
               organizationSaved.id, newSolutionWithParameterGroupsDuplicateIds)
         }
 
-    assertEquals(
-        "Several solution parameters or parameter groups or run templates have same id!",
-        exception.message)
+    assertEquals("One or several solution items have same id : parameterGroups", exception.message)
   }
 
   fun makeOrganizationCreateRequest(id: String = "organization_id"): OrganizationCreateRequest {

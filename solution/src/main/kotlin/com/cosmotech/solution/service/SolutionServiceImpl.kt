@@ -611,10 +611,10 @@ class SolutionServiceImpl(
         id = runTemplateParameterGroupCreateRequest.id,
         description = runTemplateParameterGroupCreateRequest.description,
         labels = runTemplateParameterGroupCreateRequest.labels,
-        isTable = runTemplateParameterGroupCreateRequest.isTable,
+        isTable = runTemplateParameterGroupCreateRequest.isTable!!,
         options = runTemplateParameterGroupCreateRequest.options,
         parentId = runTemplateParameterGroupCreateRequest.parentId,
-        parameters = runTemplateParameterGroupCreateRequest.parameters)
+        parameters = runTemplateParameterGroupCreateRequest.parameters!!)
   }
 
   private fun checkParametersAndRunTemplateUnicity(
@@ -622,21 +622,29 @@ class SolutionServiceImpl(
       parameterGroups: MutableList<RunTemplateParameterGroupCreateRequest>?,
       runTemplates: MutableList<RunTemplate>?
   ) {
-    val hasDuplicateParameterId =
-        parameters?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty()
-            ?: false
 
-    val hasDuplicateParameterGroupId =
-        parameterGroups?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty()
-            ?: false
+    val duplicatedFieldIds = mutableListOf<String>()
 
-    val hasDuplicateRunTemplateId =
-        runTemplates?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty()
-            ?: false
+    if (parameters?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty() ==
+        true) {
+      duplicatedFieldIds.add("parameters")
+    }
 
-    if (hasDuplicateParameterId || hasDuplicateParameterGroupId || hasDuplicateRunTemplateId) {
+    if (parameterGroups
+        ?.groupBy { it.id.lowercase() }
+        ?.filterValues { it.size > 1 }
+        ?.isNotEmpty() == true) {
+      duplicatedFieldIds.add("parameterGroups")
+    }
+
+    if (runTemplates?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty() ==
+        true) {
+      duplicatedFieldIds.add("runTemplates")
+    }
+
+    if (duplicatedFieldIds.isNotEmpty()) {
       throw IllegalArgumentException(
-          "Several solution parameters or parameter groups or run templates have same id!")
+          "One or several solution items have same id : ${duplicatedFieldIds.joinToString(",")}")
     }
   }
 }
