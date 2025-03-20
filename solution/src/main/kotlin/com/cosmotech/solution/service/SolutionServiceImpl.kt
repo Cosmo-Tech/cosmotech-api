@@ -145,19 +145,19 @@ class SolutionServiceImpl(
             .initSecurity(solutionCreateRequest.security.toGenericSecurity(solutionId))
             .toResourceSecurity()
 
-    val hasDuplicateParameterId =
-        solutionCreateRequest.parameters
-            ?.groupBy { it.id.lowercase() }
-            ?.filterValues { it.size > 1 }
-            ?.isNotEmpty() ?: false
-
-    if (hasDuplicateParameterId) {
-      throw IllegalArgumentException("Several solution parameters have same id!")
-    }
+    checkParametersAndRunTemplateUnicity(
+        solutionCreateRequest.parameters,
+        solutionCreateRequest.parameterGroups,
+        solutionCreateRequest.runTemplates)
 
     val solutionRunTemplateParameters =
         solutionCreateRequest.parameters?.map { convertToRunTemplateParameter(it) }?.toMutableList()
             ?: mutableListOf()
+
+    val solutionRunTemplateParameterGroups =
+        solutionCreateRequest.parameterGroups
+            ?.map { convertToRunTemplateParameterGroup(it) }
+            ?.toMutableList() ?: mutableListOf()
 
     val createdSolution =
         Solution(
@@ -172,7 +172,7 @@ class SolutionServiceImpl(
             organizationId = organizationId,
             runTemplates = solutionCreateRequest.runTemplates!!,
             parameters = solutionRunTemplateParameters,
-            parameterGroups = solutionCreateRequest.parameterGroups!!,
+            parameterGroups = solutionRunTemplateParameterGroups,
             url = solutionCreateRequest.url,
             csmSimulator = solutionCreateRequest.csmSimulator,
             alwaysPull = solutionCreateRequest.alwaysPull,
@@ -206,19 +206,17 @@ class SolutionServiceImpl(
   ): Solution {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
-    val hasDuplicateParameterId =
-        solutionUpdateRequest.parameters
-            ?.groupBy { it.id.lowercase() }
-            ?.filterValues { it.size > 1 }
-            ?.isNotEmpty() ?: false
-
-    if (hasDuplicateParameterId) {
-      throw IllegalArgumentException("Several solution parameters have same id!")
-    }
+    checkParametersAndRunTemplateUnicity(
+        solutionUpdateRequest.parameters, solutionUpdateRequest.parameterGroups, null)
 
     val solutionRunTemplateParameters =
         solutionUpdateRequest.parameters?.map { convertToRunTemplateParameter(it) }?.toMutableList()
             ?: mutableListOf()
+
+    val solutionRunTemplateParameterGroups =
+        solutionUpdateRequest.parameterGroups
+            ?.map { convertToRunTemplateParameterGroup(it) }
+            ?.toMutableList() ?: mutableListOf()
 
     val updatedSolution =
         Solution(
@@ -235,14 +233,13 @@ class SolutionServiceImpl(
             csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
             alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
             parameters = solutionRunTemplateParameters,
-            parameterGroups = existingSolution.parameterGroups,
+            parameterGroups = solutionRunTemplateParameterGroups,
             security = existingSolution.security)
 
     val hasChanged =
         existingSolution
             .compareToAndMutateIfNeeded(
-                updatedSolution,
-                excludedFields = arrayOf("ownerId", "runTemplates", "parameterGroups"))
+                updatedSolution, excludedFields = arrayOf("ownerId", "runTemplates"))
             .isNotEmpty()
 
     val returnedSolution =
@@ -618,6 +615,29 @@ class SolutionServiceImpl(
         options = runTemplateParameterGroupCreateRequest.options,
         parentId = runTemplateParameterGroupCreateRequest.parentId,
         parameters = runTemplateParameterGroupCreateRequest.parameters)
+  }
+
+  private fun checkParametersAndRunTemplateUnicity(
+      parameters: MutableList<RunTemplateParameterCreateRequest>?,
+      parameterGroups: MutableList<RunTemplateParameterGroupCreateRequest>?,
+      runTemplates: MutableList<RunTemplate>?
+  ) {
+    val hasDuplicateParameterId =
+        parameters?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty()
+            ?: false
+
+    val hasDuplicateParameterGroupId =
+        parameterGroups?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty()
+            ?: false
+
+    val hasDuplicateRunTemplateId =
+        runTemplates?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty()
+            ?: false
+
+    if (hasDuplicateParameterId || hasDuplicateParameterGroupId || hasDuplicateRunTemplateId) {
+      throw IllegalArgumentException(
+          "Several solution parameters or parameter groups or run templates have same id!")
+    }
   }
 }
 

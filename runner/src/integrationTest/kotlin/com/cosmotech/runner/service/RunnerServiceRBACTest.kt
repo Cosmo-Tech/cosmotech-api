@@ -4453,7 +4453,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           repository = "repository",
           csmSimulator = "simulator",
           version = "1.0.0",
-          parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+          parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest("group")),
           security =
               SolutionSecurity(
                   default = ROLE_NONE,

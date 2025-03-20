@@ -659,7 +659,9 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
           solutionApiService.createSolution(organizationSaved.id, newSolutionWithoutParameters)
         }
 
-    assertEquals("Several solution parameters have same id!", exception.message)
+    assertEquals(
+        "Several solution parameters or parameter groups or run templates have same id!",
+        exception.message)
   }
 
   @Test
@@ -820,7 +822,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             csmSimulator = "simulator",
             parameters =
                 mutableListOf(RunTemplateParameterCreateRequest("parameterName", "string")),
-            parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+            parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest("group")),
             version = "1.0.0",
             security =
                 SolutionSecurity(
@@ -888,7 +890,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionTags = mutableListOf("tag1", "tag2")
     val solutionUrl = "url"
     val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
-    val solutionParameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group"))
+    val solutionParameterGroups =
+        mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
     val csmSimulator = "simulator"
     val solutionRepository = "repository"
 
@@ -927,7 +930,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(1, solutionSaved.parameters.size)
     assertEquals("parameterName", solutionSaved.parameters[0].id)
     assertEquals("string", solutionSaved.parameters[0].varType)
-    assertEquals(solutionParameterGroups, solutionSaved.parameterGroups)
+    assertEquals(1, solutionSaved.parameterGroups.size)
+    assertEquals("group", solutionSaved.parameterGroups[0].id)
     assertEquals(csmSimulator, solutionSaved.csmSimulator)
     assertEquals(solutionUrl, solutionSaved.url)
     assertEquals(ROLE_ADMIN, solutionSaved.security.default)
@@ -946,7 +950,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionTags = mutableListOf("tag1", "tag2")
     val solutionUrl = "url"
     val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
-    val solutionParameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group"))
+    val solutionParameterGroups =
+        mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
     val csmSimulator = "simulator"
     val solutionRepository = "repository"
 
@@ -1030,7 +1035,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionTags = mutableListOf("tag1", "tag2")
     val solutionUrl = "url"
     val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
-    val solutionParameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group"))
+    val solutionParameterGroups =
+        mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
     val csmSimulator = "simulator"
     val solutionRepository = "repository"
 
@@ -1108,7 +1114,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionTags = mutableListOf("tag1", "tag2")
     val solutionUrl = "url"
     val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
-    val solutionParameterGroups = mutableListOf(RunTemplateParameterGroup(id = "group"))
+    val solutionParameterGroups =
+        mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
     val csmSimulator = "simulator"
     val solutionRepository = "repository"
 
@@ -1166,7 +1173,373 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
               organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
         }
 
-    assertEquals("Several solution parameters have same id!", exception.message)
+    assertEquals(
+        "Several solution parameters or parameter groups or run templates have same id!",
+        exception.message)
+  }
+
+  @Test
+  fun `test empty list solution parameter groups`() {
+    val parameterGroupList =
+        solutionApiService.listSolutionParameterGroups(organizationSaved.id, solutionSaved.id)
+    assertTrue(parameterGroupList.isEmpty())
+  }
+
+  @Test
+  fun `test list solution parameter groups with non-existing solution`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.listSolutionParameterGroups(
+              organizationSaved.id, "non-existing-solution-id")
+        }
+    assertEquals(
+        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        exception.message)
+  }
+
+  @Test
+  fun `test list solution parameter groups`() {
+
+    val newSolutionWithParameterGroups =
+        makeSolution(
+            organizationSaved.id,
+            parameterGroup =
+                mutableListOf(
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "parameterGroupId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        isTable = false,
+                        options = mutableMapOf("option1" to "value1", "option2" to 10.0),
+                        parentId = "this_is_a_parent_id",
+                        parameters = mutableListOf("parameterId1", "parameterId2")),
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "parameterGroupId2",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        isTable = true,
+                        options = mutableMapOf("option2" to "value2", "option3" to 20.0),
+                        parentId = "this_is_a_parent_id2",
+                        parameters = mutableListOf("parameterId3", "parameterId4"))))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameterGroups)
+    val parameterGroupList =
+        solutionApiService.listSolutionParameterGroups(organizationSaved.id, newSolution.id)
+
+    assertEquals(2, parameterGroupList.size)
+    val firstParamGroup = parameterGroupList[0]
+    assertEquals("parameterGroupId", firstParamGroup.id)
+    assertEquals("this_is_a_description", firstParamGroup.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label"), firstParamGroup.labels)
+    assertFalse(firstParamGroup.isTable!!)
+    assertEquals("value1", firstParamGroup.options?.get("option1"))
+    assertEquals(10.0, firstParamGroup.options?.get("option2"))
+    assertEquals("this_is_a_parent_id", firstParamGroup.parentId)
+    assertEquals(mutableListOf("parameterId1", "parameterId2"), firstParamGroup.parameters)
+    val secondParamGroup = parameterGroupList[1]
+    assertEquals("parameterGroupId2", secondParamGroup.id)
+    assertEquals("this_is_a_description2", secondParamGroup.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label2"), secondParamGroup.labels)
+    assertTrue(secondParamGroup.isTable!!)
+    assertEquals("value2", secondParamGroup.options?.get("option2"))
+    assertEquals(20.0, secondParamGroup.options?.get("option3"))
+    assertEquals("this_is_a_parent_id2", secondParamGroup.parentId)
+    assertEquals(mutableListOf("parameterId3", "parameterId4"), secondParamGroup.parameters)
+  }
+
+  @Test
+  fun `test get solution parameter group`() {
+    val newSolutionWithParameterGroups =
+        makeSolution(
+            organizationSaved.id,
+            parameterGroup =
+                mutableListOf(
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "parameterGroupId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        isTable = false,
+                        options = mutableMapOf("option1" to "value1", "option2" to 10.0),
+                        parentId = "this_is_a_parent_id",
+                        parameters = mutableListOf("parameterId1", "parameterId2")),
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "parameterGroupId2",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        isTable = true,
+                        options = mutableMapOf("option2" to "value2", "option3" to 20.0),
+                        parentId = "this_is_a_parent_id2",
+                        parameters = mutableListOf("parameterId3", "parameterId4"))))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameterGroups)
+
+    val solutionParameterGroup =
+        solutionApiService.getSolutionParameterGroup(
+            organizationSaved.id, newSolution.id, newSolution.parameterGroups[0].id)
+
+    assertNotNull(solutionParameterGroup)
+    assertEquals("parameterGroupId", solutionParameterGroup.id)
+    assertEquals("this_is_a_description", solutionParameterGroup.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label"), solutionParameterGroup.labels)
+    assertFalse(solutionParameterGroup.isTable!!)
+    assertEquals(2, solutionParameterGroup.options?.size)
+    assertEquals("value1", solutionParameterGroup.options?.get("option1"))
+    assertEquals(10.0, solutionParameterGroup.options?.get("option2"))
+    assertEquals("this_is_a_parent_id", solutionParameterGroup.parentId)
+    assertEquals(mutableListOf("parameterId1", "parameterId2"), solutionParameterGroup.parameters)
+  }
+
+  @Test
+  fun `test get solution parameter group with non-existing parameter group`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.getSolutionParameterGroup(
+              organizationSaved.id, solutionSaved.id, "non-existing-solution-parameter-group-id")
+        }
+    assertEquals(
+        "Solution parameter group with id non-existing-solution-parameter-group-id does not exist",
+        exception.message)
+  }
+
+  @Test
+  fun `test update solution parameter group`() {
+    val newSolutionWithParameterGroups =
+        makeSolution(
+            organizationSaved.id,
+            parameterGroup =
+                mutableListOf(
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "parameterGroupId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        isTable = false,
+                        options = mutableMapOf("option1" to "value1", "option2" to 10.0),
+                        parentId = "this_is_a_parent_id",
+                        parameters = mutableListOf("parameterId1", "parameterId2")),
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "parameterGroupId2",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        isTable = true,
+                        options = mutableMapOf("option2" to "value2", "option3" to 20.0),
+                        parentId = "this_is_a_parent_id2",
+                        parameters = mutableListOf("parameterId3", "parameterId4"))))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameterGroups)
+
+    val parameterGroupId = newSolution.parameterGroups[0].id
+    val solutionParameterGroup =
+        solutionApiService.updateSolutionParameterGroup(
+            organizationSaved.id,
+            newSolution.id,
+            parameterGroupId,
+            RunTemplateParameterGroupUpdateRequest(
+                description = "this_is_a_description3",
+                labels = mutableMapOf("fr" to "this_is_a_label3"),
+                isTable = true,
+                options = mutableMapOf("option3" to "value1"),
+                parentId = "this_is_a_parent_id3",
+                parameters = mutableListOf("parameterId13", "parameterId23")))
+    assertNotNull(solutionParameterGroup)
+    assertEquals(parameterGroupId, solutionParameterGroup.id)
+    assertEquals("this_is_a_description3", solutionParameterGroup.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label3"), solutionParameterGroup.labels)
+    assertTrue(solutionParameterGroup.isTable!!)
+    assertEquals(1, solutionParameterGroup.options?.size)
+    assertEquals("value1", solutionParameterGroup.options?.get("option3"))
+    assertEquals("this_is_a_parent_id3", solutionParameterGroup.parentId)
+    assertEquals(mutableListOf("parameterId13", "parameterId23"), solutionParameterGroup.parameters)
+  }
+
+  @Test
+  fun `test update solution parameter group with non-existing parameter group`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.updateSolutionParameterGroup(
+              organizationSaved.id,
+              solutionSaved.id,
+              "non-existing-solution-parameter-group-id",
+              RunTemplateParameterGroupUpdateRequest())
+        }
+    assertEquals(
+        "Solution parameter group with id non-existing-solution-parameter-group-id does not exist",
+        exception.message)
+  }
+
+  @Test
+  fun `test delete solution parameter group`() {
+
+    val newSolutionWithParameterGroups =
+        makeSolution(
+            organizationSaved.id,
+            parameterGroup =
+                mutableListOf(
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "parameterGroupId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        isTable = false,
+                        options = mutableMapOf("option1" to "value1", "option2" to 10.0),
+                        parentId = "this_is_a_parent_id",
+                        parameters = mutableListOf("parameterId1", "parameterId2")),
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "parameterGroupId2",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        isTable = true,
+                        options = mutableMapOf("option2" to "value2", "option3" to 20.0),
+                        parentId = "this_is_a_parent_id2",
+                        parameters = mutableListOf("parameterId3", "parameterId4"))))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameterGroups)
+
+    var listSolutionParameterGroups =
+        solutionApiService.listSolutionParameterGroups(organizationSaved.id, newSolution.id)
+
+    val parameterGroupIdToDelete = listSolutionParameterGroups[0].id
+    val parameterGroupIdToKeep = listSolutionParameterGroups[1].id
+    solutionApiService.deleteSolutionParameterGroup(
+        organizationSaved.id, newSolution.id, parameterGroupIdToDelete)
+
+    listSolutionParameterGroups =
+        solutionApiService.listSolutionParameterGroups(organizationSaved.id, newSolution.id)
+
+    assertNotNull(listSolutionParameterGroups)
+    assertEquals(1, listSolutionParameterGroups.size)
+    assertEquals(parameterGroupIdToKeep, listSolutionParameterGroups[0].id)
+  }
+
+  @Test
+  fun `test delete solution parameter group with non-existing parameter group`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.deleteSolutionParameterGroup(
+              organizationSaved.id, solutionSaved.id, "non-existing-solution-parameter-group-id")
+        }
+    assertEquals(
+        "Solution parameter group with id non-existing-solution-parameter-group-id does not exist",
+        exception.message)
+  }
+
+  @Test
+  fun `test create solution parameter group with non-existing parameter group`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.createSolutionParameterGroup(
+              organizationSaved.id,
+              "non-existing-solution-id",
+              RunTemplateParameterGroupCreateRequest(id = "my_parameter_group_name"))
+        }
+    assertEquals(
+        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        exception.message)
+  }
+
+  @Test
+  fun `test create solution parameter group`() {
+    val newSolutionWithoutParameterGroups = makeSolution(organizationSaved.id)
+
+    val newSolutionWithEmptyParameterGroups =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithoutParameterGroups)
+
+    assertTrue(newSolutionWithEmptyParameterGroups.parameterGroups.isEmpty())
+
+    val parameterGroupCreateRequest =
+        RunTemplateParameterGroupCreateRequest(
+            id = "parameterGroupId",
+            description = "this_is_a_description",
+            labels = mutableMapOf("fr" to "this_is_a_label"),
+            isTable = false,
+            options = mutableMapOf("option1" to "value1", "option2" to 10.0),
+            parentId = "this_is_a_parent_id",
+            parameters = mutableListOf("parameterId1", "parameterId2"))
+
+    solutionApiService.createSolutionParameterGroup(
+        organizationSaved.id, newSolutionWithEmptyParameterGroups.id, parameterGroupCreateRequest)
+
+    val newSolutionWithNewParameter =
+        solutionApiService.getSolution(organizationSaved.id, newSolutionWithEmptyParameterGroups.id)
+
+    assertFalse(newSolutionWithNewParameter.parameterGroups.isEmpty())
+    assertEquals(1, newSolutionWithNewParameter.parameterGroups.size)
+    val newParamGroup = newSolutionWithNewParameter.parameterGroups[0]
+    assertEquals("parameterGroupId", newParamGroup.id)
+    assertEquals("this_is_a_description", newParamGroup.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label"), newParamGroup.labels)
+    assertFalse(newParamGroup.isTable!!)
+    assertEquals(2, newParamGroup.options?.size)
+    assertEquals("value1", newParamGroup.options?.get("option1"))
+    assertEquals(10.0, newParamGroup.options?.get("option2"))
+    assertEquals("this_is_a_parent_id", newParamGroup.parentId)
+    assertEquals(mutableListOf("parameterId1", "parameterId2"), newParamGroup.parameters)
+  }
+
+  @Test
+  fun `test create solution parameter group with already existing parameter group id`() {
+    val parameterGroupCreateRequest =
+        RunTemplateParameterGroupCreateRequest(
+            id = "parameterGroupId",
+            description = "this_is_a_description",
+            labels = mutableMapOf("fr" to "this_is_a_label"),
+            isTable = false,
+            options = mutableMapOf("option1" to "value1", "option2" to 10.0),
+            parentId = "this_is_a_parent_id",
+            parameters = mutableListOf("parameterId1", "parameterId2"))
+
+    val newSolutionWithParameterGroup =
+        solutionApiService.createSolution(
+            organizationSaved.id,
+            makeSolution(parameterGroup = mutableListOf(parameterGroupCreateRequest)))
+
+    assertEquals(1, newSolutionWithParameterGroup.parameterGroups.size)
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.createSolutionParameterGroup(
+              organizationSaved.id, newSolutionWithParameterGroup.id, parameterGroupCreateRequest)
+        }
+
+    assertEquals("Parameter Group with id 'parameterGroupId' already exists", exception.message)
+  }
+
+  @Test
+  fun `test create solution with several parameters groups with the same id `() {
+
+    val newSolutionWithParameterGroupsDuplicateIds =
+        makeSolution(
+            organizationSaved.id,
+            parameterGroup =
+                mutableListOf(
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "PaRamEtErGrOuPId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        isTable = false,
+                        options = mutableMapOf("option1" to "value1", "option2" to 10.0),
+                        parentId = "this_is_a_parent_id",
+                        parameters = mutableListOf("parameterId1", "parameterId2")),
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "pArAmEtErGrOuPId",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        isTable = true,
+                        options = mutableMapOf("option2" to "value2", "option3" to 20.0),
+                        parentId = "this_is_a_parent_id2",
+                        parameters = mutableListOf("parameterId3", "parameterId4"))))
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.createSolution(
+              organizationSaved.id, newSolutionWithParameterGroupsDuplicateIds)
+        }
+
+    assertEquals(
+        "Several solution parameters or parameter groups or run templates have same id!",
+        exception.message)
   }
 
   fun makeOrganizationCreateRequest(id: String = "organization_id"): OrganizationCreateRequest {
@@ -1188,7 +1561,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
       repository: String = "repository",
       csmSimulator: String = "simulator",
       parameter: MutableList<RunTemplateParameterCreateRequest> = mutableListOf(),
-      parameterGroup: MutableList<RunTemplateParameterGroup> = mutableListOf(),
+      parameterGroup: MutableList<RunTemplateParameterGroupCreateRequest> = mutableListOf(),
       userName: String = CONNECTED_READER_USER,
       role: String = ROLE_VIEWER
   ) =

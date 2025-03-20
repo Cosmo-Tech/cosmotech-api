@@ -47,13 +47,7 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
-import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateParameterCreateRequest
-import com.cosmotech.solution.domain.RunTemplateParameterGroup
-import com.cosmotech.solution.domain.Solution
-import com.cosmotech.solution.domain.SolutionAccessControl
-import com.cosmotech.solution.domain.SolutionCreateRequest
-import com.cosmotech.solution.domain.SolutionSecurity
+import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
@@ -1157,7 +1151,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
           runTemplates = mutableListOf(RunTemplate("template")),
           csmSimulator = "simulator",
           repository = "repository",
-          parameterGroups = mutableListOf(RunTemplateParameterGroup("group")),
+          parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest("group")),
           parameters = mutableListOf(RunTemplateParameterCreateRequest("parameter", "string")),
           version = "1.0.0",
           security =
