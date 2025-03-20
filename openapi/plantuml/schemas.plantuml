@@ -342,10 +342,10 @@ entity RunTemplateParameterGroup {
     * id: String
     description: String
     labels: Map
-    isTable: Boolean
+    * isTable: Boolean
     options: Map
     parentId: String
-    parameters: List<String>
+    * parameters: List<String>
 }
 
 entity RunTemplateParameterGroupCreateRequest {

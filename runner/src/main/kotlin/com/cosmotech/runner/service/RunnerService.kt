@@ -504,7 +504,7 @@ class RunnerService(
               ?.filter { parameterGroup ->
                 runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
               }
-              ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
+              ?.flatMap { parameterGroup -> parameterGroup.parameters }
 
       if (!runTemplateParametersIds.isNullOrEmpty()) {
         val parentParameters = parent.parametersValues.associate { it.parameterId to it }

@@ -124,7 +124,7 @@ Create a solution parameter group
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **RunTemplateParameterGroupCreateRequest** | [**RunTemplateParameterGroupCreateRequest**](../Models/RunTemplateParameterGroupCreateRequest.md)| Parameter groups to create | |
+| **RunTemplateParameterGroupCreateRequest** | [**RunTemplateParameterGroupCreateRequest**](../Models/RunTemplateParameterGroupCreateRequest.md)| Parameter group to create | |
 
 ### Return type
 

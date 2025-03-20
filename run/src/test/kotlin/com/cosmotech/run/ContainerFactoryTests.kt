@@ -257,7 +257,10 @@ class ContainerFactoryTests {
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplate()),
         parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
-        parameterGroups = mutableListOf(RunTemplateParameterGroup("parameter")),
+        parameterGroups =
+            mutableListOf(
+                RunTemplateParameterGroup(
+                    id = "parameter", isTable = false, parameters = mutableListOf())),
         organizationId = "Organizationid",
         csmSimulator = "simulator",
         security = SolutionSecurity(ROLE_ADMIN, mutableListOf()),
