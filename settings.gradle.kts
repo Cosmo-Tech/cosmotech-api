@@ -1,5 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+// no-import
 
 // Gradle 7.0 feature previews
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

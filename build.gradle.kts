@@ -162,7 +162,7 @@ allprojects {
         """
         // Copyright (c) Cosmo Tech.
         // Licensed under the MIT license.
-      """
+        """
             .trimIndent()
 
     java {
@@ -178,7 +178,7 @@ allprojects {
     kotlinGradle {
       ktfmt()
       target("**/*.kts")
-      //      licenseHeader(licenseHeaderComment, "import")
+      licenseHeader(licenseHeaderComment, "(import |// no-import)")
     }
   }
 
