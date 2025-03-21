@@ -973,6 +973,56 @@ class SolutionControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
+  fun list_solution_runTemplate() {
+    val runTemplateId = "runtemplate1"
+
+    val runTemplateName = "this_is_a_name"
+    val runTemplateLabels = mutableMapOf("fr" to "this_is_a_label")
+    val runTemplateDescription = "this_is_a_description"
+    val runTemplateTags = mutableListOf("tag1", "tag2")
+    val runTemplateComputeSize = "this_is_a_compute_size"
+    val runTemplateParameterGroups = mutableListOf("parameterGroup1")
+    val runTemplates =
+        mutableListOf(
+            RunTemplateCreateRequest(
+                runTemplateId,
+                runTemplateName,
+                runTemplateLabels,
+                runTemplateDescription,
+                runTemplateTags,
+                runTemplateComputeSize,
+                RunTemplateResourceSizing(
+                    ResourceSizeInfo("cpu_requests", "memory_requests"),
+                    ResourceSizeInfo("cpu_limits", "memory_limits")),
+                runTemplateParameterGroups,
+                10))
+
+    val solutionId =
+        createSolutionAndReturnId(
+            mvc, organizationId, constructSolutionCreateRequest(runTemplates = runTemplates))
+
+    mvc.perform(
+            get("/organizations/$organizationId/solutions/$solutionId/runTemplates")
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$[0].id").value(runTemplateId))
+        .andExpect(jsonPath("$[0].name").value(runTemplateName))
+        .andExpect(jsonPath("$[0].labels").value(runTemplateLabels))
+        .andExpect(jsonPath("$[0].description").value(runTemplateDescription))
+        .andExpect(jsonPath("$[0].tags").value(runTemplateTags))
+        .andExpect(jsonPath("$[0].computeSize").value(runTemplateComputeSize))
+        .andExpect(jsonPath("$[0].runSizing.requests.cpu").value("cpu_requests"))
+        .andExpect(jsonPath("$[0].runSizing.requests.memory").value("memory_requests"))
+        .andExpect(jsonPath("$[0].runSizing.limits.cpu").value("cpu_limits"))
+        .andExpect(jsonPath("$[0].runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$[0].parameterGroups").value(runTemplateParameterGroups))
+        .andExpect(jsonPath("$[0].executionTimeout").value(10))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(document("organizations/{organization_id}/solutions/{solution_id}/runTemplates/GET"))
+  }
+
+  @Test
+  @WithMockOauth2User
   fun create_solution_runTemplate() {
 
     val description = "this_is_a_description"
@@ -1026,30 +1076,28 @@ class SolutionControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
-  fun delete_solution_runTemplate() {
-
-    val description = "this_is_a_description"
-    val tags = mutableListOf("tag1", "tag2")
-    val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
-    val parameterGroupId = "parameterGroup1"
+  fun get_solution_runTemplate() {
     val runTemplateId = "runtemplate1"
+
     val runTemplateName = "this_is_a_name"
+    val runTemplateLabels = mutableMapOf("fr" to "this_is_a_label")
+    val runTemplateDescription = "this_is_a_description"
+    val runTemplateTags = mutableListOf("tag1", "tag2")
     val runTemplateComputeSize = "this_is_a_compute_size"
-    val runTemplateRunSizing =
-        RunTemplateResourceSizing(
-            ResourceSizeInfo("cpu_requests", "memory_requests"),
-            ResourceSizeInfo("cpu_limits", "memory_limits"))
+    val runTemplateParameterGroups = mutableListOf("parameterGroup1")
     val runTemplates =
         mutableListOf(
             RunTemplateCreateRequest(
                 runTemplateId,
                 runTemplateName,
-                parameterLabels,
-                description,
-                tags,
+                runTemplateLabels,
+                runTemplateDescription,
+                runTemplateTags,
                 runTemplateComputeSize,
-                runTemplateRunSizing,
-                mutableListOf(parameterGroupId),
+                RunTemplateResourceSizing(
+                    ResourceSizeInfo("cpu_requests", "memory_requests"),
+                    ResourceSizeInfo("cpu_limits", "memory_limits")),
+                runTemplateParameterGroups,
                 10))
 
     val solutionId =
@@ -1057,15 +1105,25 @@ class SolutionControllerTests : ControllerTestBase() {
             mvc, organizationId, constructSolutionCreateRequest(runTemplates = runTemplates))
 
     mvc.perform(
-            delete(
-                    "/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId")
-                .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+            get("/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId")
+                .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.id").value(runTemplateId))
+        .andExpect(jsonPath("$.name").value(runTemplateName))
+        .andExpect(jsonPath("$.labels").value(runTemplateLabels))
+        .andExpect(jsonPath("$.description").value(runTemplateDescription))
+        .andExpect(jsonPath("$.tags").value(runTemplateTags))
+        .andExpect(jsonPath("$.computeSize").value(runTemplateComputeSize))
+        .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
+        .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
+        .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits"))
+        .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$.parameterGroups").value(runTemplateParameterGroups))
+        .andExpect(jsonPath("$.executionTimeout").value(10))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}/DELETE"))
+                "organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}/GET"))
   }
 
   @Test
@@ -1120,22 +1178,66 @@ class SolutionControllerTests : ControllerTestBase() {
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
-        .andExpect(jsonPath("$[0].id").value(runTemplateId))
-        .andExpect(jsonPath("$[0].name").value(runTemplateName))
-        .andExpect(jsonPath("$[0].labels").value(parameterLabels))
-        .andExpect(jsonPath("$[0].description").value(description))
-        .andExpect(jsonPath("$[0].tags").value(tags))
-        .andExpect(jsonPath("$[0].computeSize").value(runTemplateComputeSize))
-        .andExpect(jsonPath("$[0].runSizing.requests.cpu").value("cpu_requests2"))
-        .andExpect(jsonPath("$[0].runSizing.requests.memory").value("memory_requests2"))
-        .andExpect(jsonPath("$[0].runSizing.limits.cpu").value("cpu_limits2"))
-        .andExpect(jsonPath("$[0].runSizing.limits.memory").value("memory_limits2"))
-        .andExpect(jsonPath("$[0].parameterGroups").value(mutableListOf(parameterGroupId)))
-        .andExpect(jsonPath("$[0].executionTimeout").value(100))
+        .andExpect(jsonPath("$.id").value(runTemplateId))
+        .andExpect(jsonPath("$.name").value(runTemplateName))
+        .andExpect(jsonPath("$.labels").value(parameterLabels))
+        .andExpect(jsonPath("$.description").value(description))
+        .andExpect(jsonPath("$.tags").value(tags))
+        .andExpect(jsonPath("$.computeSize").value(runTemplateComputeSize))
+        .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests2"))
+        .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests2"))
+        .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits2"))
+        .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits2"))
+        .andExpect(jsonPath("$.parameterGroups").value(mutableListOf(parameterGroupId)))
+        .andExpect(jsonPath("$.executionTimeout").value(100))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
                 "organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}/PATCH"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun delete_solution_runTemplate() {
+
+    val description = "this_is_a_description"
+    val tags = mutableListOf("tag1", "tag2")
+    val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
+    val parameterGroupId = "parameterGroup1"
+    val runTemplateId = "runtemplate1"
+    val runTemplateName = "this_is_a_name"
+    val runTemplateComputeSize = "this_is_a_compute_size"
+    val runTemplateRunSizing =
+        RunTemplateResourceSizing(
+            ResourceSizeInfo("cpu_requests", "memory_requests"),
+            ResourceSizeInfo("cpu_limits", "memory_limits"))
+    val runTemplates =
+        mutableListOf(
+            RunTemplateCreateRequest(
+                runTemplateId,
+                runTemplateName,
+                parameterLabels,
+                description,
+                tags,
+                runTemplateComputeSize,
+                runTemplateRunSizing,
+                mutableListOf(parameterGroupId),
+                10))
+
+    val solutionId =
+        createSolutionAndReturnId(
+            mvc, organizationId, constructSolutionCreateRequest(runTemplates = runTemplates))
+
+    mvc.perform(
+            delete(
+                    "/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}/DELETE"))
   }
 
   @Test
