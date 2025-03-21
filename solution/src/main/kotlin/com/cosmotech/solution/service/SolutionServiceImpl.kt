@@ -235,7 +235,7 @@ class SolutionServiceImpl(
       solutionId: String,
       runTemplateId: String
   ) {
-    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
+    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
     if (!existingSolution.runTemplates.removeIf { it.id == runTemplateId }) {
       throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
