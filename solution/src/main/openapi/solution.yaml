@@ -505,6 +505,11 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunTemplate'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RunTemplate'
         "404":
           description: Solution not found or insufficient access rights
     post:
@@ -527,6 +532,9 @@ paths:
           description: Run template successfully created
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/RunTemplate'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplate'
         "400":
@@ -567,6 +575,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplate'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/RunTemplate'
         "404":
           description: Solution not found or insufficient access rights
     patch:
@@ -589,6 +600,9 @@ paths:
           description: Run template successfully updated
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/RunTemplate'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplate'
         "400":
