@@ -211,7 +211,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
           name = "My solution",
           runTemplates =
               mutableListOf(
-                  RunTemplate(
+                  RunTemplateCreateRequest(
                       id = UUID.randomUUID().toString(),
                       name = "RunTemplate1",
                       description = "RunTemplate1 description")),

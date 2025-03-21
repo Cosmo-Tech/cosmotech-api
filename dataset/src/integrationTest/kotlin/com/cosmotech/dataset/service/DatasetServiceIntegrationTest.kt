@@ -1148,7 +1148,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       SolutionCreateRequest(
           key = UUID.randomUUID().toString(),
           name = "My solution",
-          runTemplates = mutableListOf(RunTemplate("template")),
+          runTemplates = mutableListOf(RunTemplateCreateRequest("template")),
           csmSimulator = "simulator",
           repository = "repository",
           parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest("group")),

@@ -13,7 +13,7 @@
 | **tags** | **List** | The list of tags | [optional] [default to null] |
 | **parameters** | [**List**](RunTemplateParameterCreateRequest.md) | The list of Run Template Parameters | [optional] [default to []] |
 | **parameterGroups** | [**List**](RunTemplateParameterGroupCreateRequest.md) | The list of parameters groups for the Run Templates | [optional] [default to []] |
-| **runTemplates** | [**List**](RunTemplate.md) | List of Run Templates | [optional] [default to []] |
+| **runTemplates** | [**List**](RunTemplateCreateRequest.md) | List of Run Templates | [optional] [default to []] |
 | **url** | **String** | An optional URL link to solution page | [optional] [default to null] |
 | **security** | [**SolutionSecurity**](SolutionSecurity.md) |  | [optional] [default to null] |
 

@@ -804,166 +804,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Organization RBAC updateSolutionRunTemplates`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Organization RBAC updateSolutionRunTemplates : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
-              organizationSaved = organizationApiService.createOrganization(organization)
-              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-
-              val runTemplate = RunTemplate("id")
-
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.updateSolutionRunTemplates(
-                          organizationSaved.id, solutionSaved.id, listOf(runTemplate))
-                    }
-                assertEquals(
-                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  solutionApiService.updateSolutionRunTemplates(
-                      organizationSaved.id, solutionSaved.id, listOf(runTemplate))
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test Solution RBAC updateSolutionRunTemplates`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Solution RBAC updateSolutionRunTemplates : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              organizationSaved = organizationApiService.createOrganization(organization)
-              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-
-              val runTemplate = RunTemplate("id")
-
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.updateSolutionRunTemplates(
-                          organizationSaved.id, solutionSaved.id, listOf(runTemplate))
-                    }
-
-                assertEquals(
-                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  solutionApiService.updateSolutionRunTemplates(
-                      organizationSaved.id, solutionSaved.id, listOf(runTemplate))
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test Organization RBAC deleteSolutionRunTemplates`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Organization RBAC updateSolutionRunTemplates : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
-              organizationSaved = organizationApiService.createOrganization(organization)
-              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.deleteSolutionRunTemplates(
-                          organizationSaved.id, solutionSaved.id)
-                    }
-                assertEquals(
-                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  solutionApiService.deleteSolutionRunTemplates(
-                      organizationSaved.id, solutionSaved.id)
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test Solution RBAC deleteSolutionRunTemplates`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Solution RBAC updateSolutionRunTemplates : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              organizationSaved = organizationApiService.createOrganization(organization)
-              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.deleteSolutionRunTemplates(
-                          organizationSaved.id, solutionSaved.id)
-                    }
-
-                assertEquals(
-                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_DELETE",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  solutionApiService.deleteSolutionRunTemplates(
-                      organizationSaved.id, solutionSaved.id)
-                }
-              }
-            }
-          }
-
-  @TestFactory
   fun `test Organization RBAC deleteSolutionRunTemplate`() =
       mapOf(
               ROLE_VIEWER to false,
@@ -1058,7 +898,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-              val runTemplate = RunTemplate("runTemplate", "name")
+              val runTemplate = RunTemplateUpdateRequest(name = "name")
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1099,7 +939,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-              val runTemplate = RunTemplate("runTemplate", "name")
+              val runTemplate = RunTemplateUpdateRequest(name = "name")
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1698,7 +1538,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       SolutionCreateRequest(
           key = UUID.randomUUID().toString(),
           name = "My solution",
-          runTemplates = mutableListOf(RunTemplate("runTemplate")),
+          runTemplates = mutableListOf(RunTemplateCreateRequest(id = "runTemplate")),
           csmSimulator = "simulator",
           version = "1.0.0",
           repository = "repository",

@@ -25,12 +25,14 @@ import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.toGenericSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateCreateRequest
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterCreateRequest
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.RunTemplateParameterGroupCreateRequest
 import com.cosmotech.solution.domain.RunTemplateParameterGroupUpdateRequest
 import com.cosmotech.solution.domain.RunTemplateParameterUpdateRequest
+import com.cosmotech.solution.domain.RunTemplateUpdateRequest
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionCreateRequest
@@ -94,15 +96,6 @@ class SolutionServiceImpl(
     return fillSdkVersion(updateSecurityVisibility(getVerifiedSolution(organizationId, solutionId)))
   }
 
-  override fun deleteSolutionRunTemplates(organizationId: String, solutionId: String) {
-    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
-
-    if (solution.runTemplates.isNotEmpty()) {
-      solution.runTemplates = mutableListOf()
-      solutionRepository.save(solution)
-    }
-  }
-
   override fun isRunTemplateExist(
       organizationId: String,
       workspaceId: String,
@@ -112,25 +105,6 @@ class SolutionServiceImpl(
     val solution = getSolution(organizationId, solutionId)
 
     return solution.runTemplates.any { runTemplateId == it.id }
-  }
-
-  override fun updateSolutionRunTemplates(
-      organizationId: String,
-      solutionId: String,
-      runTemplate: List<RunTemplate>
-  ): List<RunTemplate> {
-    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
-
-    if (runTemplate.isEmpty()) {
-      return runTemplate
-    }
-
-    val runTemplateMap = existingSolution.runTemplates.associateBy { it.id }.toMutableMap()
-    runTemplateMap.putAll(runTemplate.filter { it.id.isNotBlank() }.associateBy { it.id })
-    existingSolution.runTemplates = runTemplateMap.values.toMutableList()
-    solutionRepository.save(existingSolution)
-
-    return runTemplate
   }
 
   override fun createSolution(
@@ -159,6 +133,10 @@ class SolutionServiceImpl(
             ?.map { convertToRunTemplateParameterGroup(it) }
             ?.toMutableList() ?: mutableListOf()
 
+    val solutionRunTemplates =
+        solutionCreateRequest.runTemplates?.map { convertToRunTemplate(it) }?.toMutableList()
+            ?: mutableListOf()
+
     val createdSolution =
         Solution(
             id = solutionId,
@@ -170,7 +148,7 @@ class SolutionServiceImpl(
             version = solutionCreateRequest.version,
             tags = solutionCreateRequest.tags,
             organizationId = organizationId,
-            runTemplates = solutionCreateRequest.runTemplates!!,
+            runTemplates = solutionRunTemplates,
             parameters = solutionRunTemplateParameters,
             parameterGroups = solutionRunTemplateParameterGroups,
             url = solutionCreateRequest.url,
@@ -184,6 +162,72 @@ class SolutionServiceImpl(
   override fun deleteSolution(organizationId: String, solutionId: String) {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_DELETE)
     solutionRepository.delete(solution)
+  }
+
+  override fun listRunTemplates(organizationId: String, solutionId: String): List<RunTemplate> {
+    val existingSolution = getVerifiedSolution(organizationId, solutionId)
+    return existingSolution.runTemplates
+  }
+
+  override fun createSolutionRunTemplate(
+      organizationId: String,
+      solutionId: String,
+      runTemplateCreateRequest: RunTemplateCreateRequest
+  ): RunTemplate {
+    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
+    val runTemplateIdAlreadyExist =
+        existingSolution.runTemplates
+            .map { it.id.lowercase() }
+            .firstOrNull { it == runTemplateCreateRequest.id.lowercase() }
+
+    if (runTemplateIdAlreadyExist != null) {
+      throw IllegalArgumentException(
+          "Run template with id '${runTemplateCreateRequest.id}' already exists")
+    }
+    val runTemplateToCreate = convertToRunTemplate(runTemplateCreateRequest)
+
+    existingSolution.runTemplates.add(runTemplateToCreate)
+    solutionRepository.save(existingSolution)
+
+    return runTemplateToCreate
+  }
+
+  override fun getRunTemplate(
+      organizationId: String,
+      solutionId: String,
+      runTemplateId: String
+  ): RunTemplate {
+    val solution = getVerifiedSolution(organizationId, solutionId)
+    val solutionRunTemplate =
+        solution.runTemplates.firstOrNull { it.id == runTemplateId }
+            ?: throw CsmResourceNotFoundException(
+                "Solution run template with id $runTemplateId does not exist")
+    return solutionRunTemplate
+  }
+
+  override fun updateSolutionRunTemplate(
+      organizationId: String,
+      solutionId: String,
+      runTemplateId: String,
+      runTemplateUpdateRequest: RunTemplateUpdateRequest
+  ): RunTemplate {
+    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
+    existingSolution.runTemplates
+        .find { it.id == runTemplateId }
+        ?.apply {
+          name = runTemplateUpdateRequest.name ?: this.name
+          description = runTemplateUpdateRequest.description ?: this.description
+          tags = runTemplateUpdateRequest.tags ?: this.tags
+          labels = runTemplateUpdateRequest.labels ?: this.labels
+          runSizing = runTemplateUpdateRequest.runSizing ?: this.runSizing
+          computeSize = runTemplateUpdateRequest.computeSize ?: this.computeSize
+          parameterGroups = runTemplateUpdateRequest.parameterGroups ?: this.parameterGroups
+          executionTimeout = runTemplateUpdateRequest.executionTimeout ?: this.executionTimeout
+        } ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
+
+    val solutionSaved = solutionRepository.save(existingSolution)
+
+    return solutionSaved.runTemplates.first { it.id == runTemplateId }
   }
 
   override fun deleteSolutionRunTemplate(
@@ -238,30 +282,12 @@ class SolutionServiceImpl(
 
     val hasChanged =
         existingSolution
-            .compareToAndMutateIfNeeded(
-                updatedSolution, excludedFields = arrayOf("ownerId", "runTemplates"))
+            .compareToAndMutateIfNeeded(updatedSolution, excludedFields = arrayOf("ownerId"))
             .isNotEmpty()
 
     val returnedSolution =
         if (hasChanged) solutionRepository.save(existingSolution) else existingSolution
     return fillSdkVersion(returnedSolution)
-  }
-
-  override fun updateSolutionRunTemplate(
-      organizationId: String,
-      solutionId: String,
-      runTemplateId: String,
-      runTemplate: RunTemplate
-  ): List<RunTemplate> {
-    val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
-    val runTemplateToChange =
-        existingSolution.runTemplates.firstOrNull { it.id == runTemplateId }
-            ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
-
-    runTemplateToChange.compareToAndMutateIfNeeded(runTemplate).isNotEmpty()
-    solutionRepository.save(existingSolution)
-
-    return existingSolution.runTemplates.toList()
   }
 
   @EventListener(OrganizationUnregistered::class)
@@ -617,10 +643,23 @@ class SolutionServiceImpl(
         parameters = runTemplateParameterGroupCreateRequest.parameters!!)
   }
 
+  fun convertToRunTemplate(runTemplateCreateRequest: RunTemplateCreateRequest): RunTemplate {
+    return RunTemplate(
+        id = runTemplateCreateRequest.id,
+        parameterGroups = runTemplateCreateRequest.parameterGroups!!,
+        name = runTemplateCreateRequest.name,
+        labels = runTemplateCreateRequest.labels,
+        description = runTemplateCreateRequest.description,
+        tags = runTemplateCreateRequest.tags,
+        computeSize = runTemplateCreateRequest.computeSize,
+        runSizing = runTemplateCreateRequest.runSizing,
+        executionTimeout = runTemplateCreateRequest.executionTimeout)
+  }
+
   private fun checkParametersAndRunTemplateUnicity(
       parameters: MutableList<RunTemplateParameterCreateRequest>?,
       parameterGroups: MutableList<RunTemplateParameterGroupCreateRequest>?,
-      runTemplates: MutableList<RunTemplate>?
+      runTemplates: MutableList<RunTemplateCreateRequest>?
   ) {
 
     val duplicatedFieldIds = mutableListOf<String>()

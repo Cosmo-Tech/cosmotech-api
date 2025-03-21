@@ -95,37 +95,26 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test verify updateRunTemplate works as intended`() {
     val solution =
-        makeSolution(runTemplates = mutableListOf(RunTemplate(id = "one"), RunTemplate(id = "two")))
+        makeSolution(
+            runTemplates =
+                mutableListOf(
+                    RunTemplateCreateRequest(id = "one", parameterGroups = mutableListOf()),
+                    RunTemplateCreateRequest(id = "two", parameterGroups = mutableListOf())))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-    val endTemplates =
+    val runTemplateUpdated =
         solutionApiService.updateSolutionRunTemplate(
             organizationSaved.id,
             solutionSaved.id,
             "one",
-            RunTemplate(id = "one", name = "name_one"))
+            RunTemplateUpdateRequest(name = "name_one"))
 
-    val expectedSolution =
-        Solution(
-            id = solutionSaved.id,
-            ownerId = solutionSaved.ownerId,
-            organizationId = solutionSaved.organizationId,
-            key = "key",
-            name = "name",
-            runTemplates =
-                mutableListOf(RunTemplate(id = "one", name = "name_one"), RunTemplate(id = "two")),
-            version = "1.0.0",
-            repository = "repository",
-            csmSimulator = "simulator",
-            parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
-            parameterGroups = mutableListOf(),
-            security =
-                SolutionSecurity(
-                    ROLE_ADMIN,
-                    mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+    val solutionUpdated = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
     // Assert that no runTemplate were deleted
-    assertEquals(expectedSolution.runTemplates.size, endTemplates.size)
-    assertEquals(expectedSolution.runTemplates, endTemplates)
+    assertEquals(2, solutionUpdated.runTemplates.size)
+    val oneRunTemplate = solutionUpdated.runTemplates.first { it.id == "one" }
+    assertEquals("one", oneRunTemplate.id)
+    assertEquals("name_one", runTemplateUpdated.name)
   }
 
   @Test
@@ -663,48 +652,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test RunTemplate operations on Solution`() {
-
-    logger.info(
-        "should add 2 new run templates to the solution and assert that the list contains 2 elements")
-    val runTemplate1 = RunTemplate(id = "runTemplateId1")
-    val runTemplate2 = RunTemplate(id = "runTemplateId2")
-    solutionApiService.updateSolutionRunTemplates(
-        solutionSaved.organizationId, solutionSaved.id, listOf(runTemplate1, runTemplate2))
-    val foundSolution =
-        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
-    assertEquals(2, foundSolution.runTemplates.size)
-
-    logger.info(
-        "should replace the first run template and assert that the list contains 2 elements")
-    val labels: MutableMap<String, String> = mutableMapOf("fr" to "runTemplateName")
-    val runTemplate3 = RunTemplate(id = "runTemplateId1", labels = labels)
-    solutionApiService.updateSolutionRunTemplates(
-        solutionSaved.organizationId, solutionSaved.id, listOf(runTemplate3))
-    val foundSolutionAfterReplace =
-        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
-    assertEquals(2, foundSolutionAfterReplace.runTemplates.size)
-    assertEquals(
-        "runTemplateName", foundSolutionAfterReplace.runTemplates.first().labels?.get("fr"))
-
-    logger.info("should update the run template and assert that the name has been updated")
-    labels["fr"] = "runTemplateNameNew"
-    val runTemplate4 = RunTemplate(id = "runTemplateId1", labels = labels)
-    solutionApiService.updateSolutionRunTemplate(
-        solutionSaved.organizationId, solutionSaved.id, runTemplate4.id, runTemplate4)
-    val foundSolutionAfterUpdate =
-        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
-    assertEquals(
-        "runTemplateNameNew", foundSolutionAfterUpdate.runTemplates.first().labels?.get("fr"))
-
-    logger.info("should remove all run templates and assert that the list is empty")
-    solutionApiService.deleteSolutionRunTemplates(solutionSaved.organizationId, solutionSaved.id)
-    val foundSolutionAfterRemove =
-        solutionApiService.getSolution(solutionSaved.organizationId, solutionSaved.id)
-    assertTrue(foundSolutionAfterRemove.runTemplates.isEmpty())
-  }
-
-  @Test
   fun `test find All Solutions with different pagination params`() {
     val numberOfSolutions = 20
     val defaultPageSize = csmPlatformProperties.twincache.solution.defaultPageSize
@@ -784,7 +731,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
               organizationSaved.id,
               baseSolutionSaved.id,
               "WrongRunTemplateId",
-              RunTemplate(id = "FakeRunTemplateId"))
+              RunTemplateUpdateRequest())
         }
     assertEquals("Run Template 'WrongRunTemplateId' *not* found", assertThrows.message)
   }
@@ -816,7 +763,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             name = "solution",
             key = "key",
             repository = "repository",
-            runTemplates = mutableListOf(RunTemplate("templates")),
+            runTemplates = mutableListOf(RunTemplateCreateRequest(id = "templates")),
             csmSimulator = "simulator",
             parameters =
                 mutableListOf(RunTemplateParameterCreateRequest("parameterName", "string")),
@@ -887,7 +834,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionVersion = "1.0.0"
     val solutionTags = mutableListOf("tag1", "tag2")
     val solutionUrl = "url"
-    val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
+    val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
     val csmSimulator = "simulator"
@@ -924,7 +871,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(solutionVersion, solutionSaved.version)
     assertEquals(solutionTags, solutionSaved.tags)
     assertEquals(solutionRepository, solutionSaved.repository)
-    assertEquals(solutionRunTemplates, solutionSaved.runTemplates)
+    assertEquals(solutionRunTemplates.size, solutionSaved.runTemplates.size)
+    assertEquals("template", solutionSaved.runTemplates[0].id)
     assertEquals(1, solutionSaved.parameters.size)
     assertEquals("parameterName", solutionSaved.parameters[0].id)
     assertEquals("string", solutionSaved.parameters[0].varType)
@@ -947,7 +895,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionVersion = "1.0.0"
     val solutionTags = mutableListOf("tag1", "tag2")
     val solutionUrl = "url"
-    val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
+    val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
     val csmSimulator = "simulator"
@@ -1011,7 +959,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(updatedTags, solutionSaved.tags)
     assertEquals(updatedRepository, solutionSaved.repository)
     assertEquals(updatedCsmSimulator, solutionSaved.csmSimulator)
-    assertEquals(solutionRunTemplates, solutionSaved.runTemplates)
+    assertEquals(solutionRunTemplates.size, solutionSaved.runTemplates.size)
+    assertEquals("template", solutionSaved.runTemplates[0].id)
     assertEquals(newUrl, solutionSaved.url)
     assertEquals(newVersion, solutionSaved.version)
     assertEquals(1, solutionSaved.parameters.size)
@@ -1032,7 +981,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionVersion = "1.0.0"
     val solutionTags = mutableListOf("tag1", "tag2")
     val solutionUrl = "url"
-    val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
+    val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
     val csmSimulator = "simulator"
@@ -1092,7 +1041,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(updatedTags, solutionSaved.tags)
     assertEquals(updatedRepository, solutionSaved.repository)
     assertEquals(updatedCsmSimulator, solutionSaved.csmSimulator)
-    assertEquals(solutionRunTemplates, solutionSaved.runTemplates)
+    assertEquals(solutionRunTemplates.size, solutionSaved.runTemplates.size)
+    assertEquals("template", solutionSaved.runTemplates[0].id)
     assertEquals(newUrl, solutionSaved.url)
     assertEquals(newVersion, solutionSaved.version)
     assertEquals(0, solutionSaved.parameters.size)
@@ -1111,7 +1061,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionVersion = "1.0.0"
     val solutionTags = mutableListOf("tag1", "tag2")
     val solutionUrl = "url"
-    val solutionRunTemplates = mutableListOf(RunTemplate(id = "template"))
+    val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
     val csmSimulator = "simulator"
@@ -1550,7 +1500,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
   fun makeSolution(
       organizationId: String = organizationSaved.id,
-      runTemplates: MutableList<RunTemplate> = mutableListOf(),
+      runTemplates: MutableList<RunTemplateCreateRequest> = mutableListOf(),
       version: String = "1.0.0",
       repository: String = "repository",
       csmSimulator: String = "simulator",
