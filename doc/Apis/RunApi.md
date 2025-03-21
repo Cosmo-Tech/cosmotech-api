@@ -67,7 +67,7 @@ Get the details of a run
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getRunLogs"></a>
 # **getRunLogs**
@@ -95,7 +95,7 @@ get the logs for the Run
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getRunStatus"></a>
 # **getRunStatus**
@@ -123,7 +123,7 @@ get the status for the Run
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listRuns"></a>
 # **listRuns**
@@ -152,7 +152,7 @@ get the list of Runs for the Runner
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="queryRunData"></a>
 # **queryRunData**
@@ -180,12 +180,12 @@ query the run data
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 
 <a name="sendRunData"></a>
 # **sendRunData**
-> RunData sendRunData(organization\_id, workspace\_id, runner\_id, run\_id, sendRunData\_request)
+> RunData sendRunData(organization\_id, workspace\_id, runner\_id, run\_id, SendRunDataRequest)
 
 Send data associated to a run
 
@@ -197,7 +197,7 @@ Send data associated to a run
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **runner\_id** | **String**| the Runner identifier | [default to null] |
 | **run\_id** | **String**| the Run identifier | [default to null] |
-| **sendRunData\_request** | [**sendRunData_request**](../Models/sendRunData_request.md)| Custom data to register | |
+| **SendRunDataRequest** | [**SendRunDataRequest**](../Models/SendRunDataRequest.md)| Custom data to register | |
 
 ### Return type
 
@@ -209,6 +209,6 @@ Send data associated to a run
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 

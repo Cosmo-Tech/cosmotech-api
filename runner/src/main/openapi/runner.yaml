@@ -45,8 +45,7 @@ paths:
                 $ref: '#/components/examples/BreweryChildRunnerIn'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/RunnerCreateRequest'
             examples:
               MasterRunner:
                 $ref: '#/components/examples/BreweryRunnerIn'
@@ -57,6 +56,12 @@ paths:
           description: the runner details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Runner'
+              examples:
+                Runner:
+                  $ref: '#/components/examples/BreweryRunner'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Runner'
               examples:
@@ -87,6 +92,14 @@ paths:
           description: the list of Runners
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Runner'
+              examples:
+                ThreeRunner:
+                  $ref: '#/components/examples/ThreeRunners'
+            application/yaml:
               schema:
                 type: array
                 items:
@@ -130,6 +143,12 @@ paths:
               examples:
                 Runner:
                   $ref: '#/components/examples/BreweryRunner'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/Runner'
+              examples:
+                Runner:
+                  $ref: '#/components/examples/BreweryRunner'
         "404":
           description: the Runner specified is unknown or you don't have access to it
     patch:
@@ -149,8 +168,7 @@ paths:
                 $ref: '#/components/examples/BreweryRunnerUpdate'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/RunnerUpdateRequest'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryRunnerUpdate'
@@ -159,6 +177,12 @@ paths:
           description: the runner details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Runner'
+              examples:
+                BreweryUpdated:
+                  $ref: '#/components/examples/BreweryRunnerUpdated'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Runner'
               examples:
@@ -209,6 +233,9 @@ paths:
           description: the newly created Run info
           content:
             application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedRun"
+            application/yaml:
               schema:
                 $ref: "#/components/schemas/CreatedRun"
         "404":
@@ -286,9 +313,16 @@ paths:
                 items:
                   type: string
                 example:
-                  - "delete"
-                  - "write"
-                  - "createchildren"
+                  RunnerRolePermissions:
+                    $ref: '#/components/examples/RunnerRolePermissions'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  RunnerRolePermissions:
+                    $ref: '#/components/examples/RunnerRolePermissions'
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security:
     parameters:
@@ -320,6 +354,12 @@ paths:
           description: The Runner security
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/RunnerSecurity'
+              examples:
+                RunnerSecurity:
+                  $ref: '#/components/examples/BreweryRunnerSecurity'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/RunnerSecurity'
               examples:
@@ -367,8 +407,7 @@ paths:
                 $ref: '#/components/examples/BreweryRunnerRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/RunnerRole'
             examples:
               BreweryRunnerRole:
                 $ref: '#/components/examples/BreweryRunnerRole'
@@ -377,6 +416,14 @@ paths:
           description: The Runner default visibility
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/RunnerSecurity'
+              examples:
+                NoneRunnerSecurity:
+                  $ref: '#/components/examples/BreweryDefaultSecurityRoleNone'
+                WriterRunnerSecurity:
+                  $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/RunnerSecurity'
               examples:
@@ -424,8 +471,7 @@ paths:
                 $ref: '#/components/examples/BreweryRunnerAccessControl'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/RunnerAccessControl'
             examples:
               RunnerAccess:
                 $ref: '#/components/examples/BreweryRunnerAccessControl'
@@ -434,6 +480,12 @@ paths:
           description: The Runner access
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/RunnerAccessControl'
+              examples:
+                RunnerAccessControl:
+                  $ref: '#/components/examples/BreweryRunnerAccessControl'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/RunnerAccessControl'
               examples:
@@ -483,6 +535,12 @@ paths:
               examples:
                 RunnerAccessControl:
                   $ref: '#/components/examples/BreweryRunnerAccessControl'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/RunnerAccessControl'
+              examples:
+                RunnerAccessControl:
+                  $ref: '#/components/examples/BreweryRunnerAccessControl'
         "404":
           description: the Runner or user specified is unknown or you don't have access to it
     patch:
@@ -500,11 +558,23 @@ paths:
             examples:
               BreweryRunnerRole:
                 $ref: '#/components/examples/BreweryRunnerRole'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/RunnerRole'
+            examples:
+              BreweryRunnerRole:
+                $ref: '#/components/examples/BreweryRunnerRole'
       responses:
         "200":
           description: The Runner access
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/RunnerAccessControl'
+              examples:
+                RunnerAccessControl:
+                  $ref: '#/components/examples/BreweryRunnerAccessControl'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/RunnerAccessControl'
               examples:
@@ -553,6 +623,14 @@ paths:
           description: The Runner security users list
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - alice@mycompany.com
+                  - bob@mycompany.com
+            application/yaml:
               schema:
                 type: array
                 items:
@@ -1234,3 +1312,10 @@ components:
       value:
         id: "bob.doe@cosmotech.com"
         role: "editor"
+    RunnerRolePermissions:
+      summary: List of permissions for a role
+      description: Example of permissions for a given role
+      value:
+        - "delete"
+        - "write"
+        - "createchildren"

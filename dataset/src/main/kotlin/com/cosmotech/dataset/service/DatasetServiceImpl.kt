@@ -419,10 +419,10 @@ class DatasetServiceImpl(
   override fun getDatasetTwingraphStatus(
       organizationId: String,
       datasetId: String,
-  ): String {
+  ): IngestionStatusEnum {
     val dataset = getVerifiedDataset(organizationId, datasetId)
     return when (dataset.sourceType) {
-      null -> IngestionStatusEnum.NONE.value
+      null -> IngestionStatusEnum.NONE
       DatasetSourceType.None -> {
         var twincacheStatus = TwincacheStatusEnum.EMPTY
         if (useGraphModule && unifiedJedis.exists(dataset.twingraphId!!)) {
@@ -430,16 +430,16 @@ class DatasetServiceImpl(
         }
         datasetRepository.apply { dataset.twincacheStatus = twincacheStatus }
 
-        dataset.ingestionStatus!!.value
+        dataset.ingestionStatus!!
       }
       DatasetSourceType.File -> {
         if (dataset.ingestionStatus == IngestionStatusEnum.NONE) {
-          return IngestionStatusEnum.NONE.value
+          return IngestionStatusEnum.NONE
         }
         if (dataset.ingestionStatus == IngestionStatusEnum.ERROR) {
-          return IngestionStatusEnum.ERROR.value
+          return IngestionStatusEnum.ERROR
         } else if (useGraphModule && !unifiedJedis.exists(dataset.twingraphId!!)) {
-          IngestionStatusEnum.PENDING.value
+          IngestionStatusEnum.PENDING
         } else {
           dataset
               .takeIf { it.ingestionStatus == IngestionStatusEnum.PENDING }
@@ -448,15 +448,14 @@ class DatasetServiceImpl(
                 twincacheStatus = TwincacheStatusEnum.FULL
               }
           datasetRepository.save(dataset)
-          IngestionStatusEnum.SUCCESS.value
+          IngestionStatusEnum.SUCCESS
         }
       }
       DatasetSourceType.ADT,
       DatasetSourceType.Twincache,
       DatasetSourceType.AzureStorage -> {
         if (dataset.ingestionStatus == IngestionStatusEnum.PENDING) {
-          dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() }
-              ?: return dataset.ingestionStatus!!.value
+          dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() } ?: return dataset.ingestionStatus!!
 
           val twingraphImportJobInfoRequest =
               sendTwingraphImportJobInfoRequestEvent(dataset, organizationId)
@@ -473,12 +472,11 @@ class DatasetServiceImpl(
             datasetRepository.save(this)
           }
         }
-        return dataset.ingestionStatus!!.value
+        return dataset.ingestionStatus!!
       }
       DatasetSourceType.ETL -> {
         if (dataset.ingestionStatus == IngestionStatusEnum.PENDING) {
-          dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() }
-              ?: return dataset.ingestionStatus!!.value
+          dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() } ?: return dataset.ingestionStatus!!
 
           val askRunStatusEvent =
               AskRunStatusEvent(
@@ -502,7 +500,7 @@ class DatasetServiceImpl(
             datasetRepository.save(this)
           }
         }
-        return dataset.ingestionStatus!!.value
+        return dataset.ingestionStatus!!
       }
     }
   }
@@ -557,7 +555,7 @@ class DatasetServiceImpl(
     var dataset = getVerifiedDataset(organizationId, datasetId, PERMISSION_WRITE)
 
     val status = getDatasetTwingraphStatus(organizationId, datasetId)
-    if (status != IngestionStatusEnum.ERROR.value) {
+    if (status != IngestionStatusEnum.ERROR) {
       throw IllegalArgumentException("The dataset hasn't failed and can't be rolled back")
     }
 
@@ -785,8 +783,7 @@ class DatasetServiceImpl(
         ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
     status?.let {
       dataset.ingestionStatus?.takeIf { it == status }
-          ?: throw CsmClientException(
-              "Dataset status is ${dataset.ingestionStatus?.value}, not $status")
+          ?: throw CsmClientException("Dataset status is ${dataset.ingestionStatus}, not $status")
     }
     return dataset
   }

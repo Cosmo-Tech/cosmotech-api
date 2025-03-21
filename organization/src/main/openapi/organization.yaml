@@ -31,8 +31,7 @@ paths:
                 $ref: '#/components/examples/NewOrganizationIn'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/OrganizationCreateRequest'
             examples:
               NewOrganizationIn:
                 $ref: '#/components/examples/NewOrganizationIn'
@@ -41,6 +40,12 @@ paths:
           description: the Organization details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+              examples:
+                CosmoOrganization:
+                  $ref: '#/components/examples/CosmoOrganization'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Organization'
               examples:
@@ -78,6 +83,14 @@ paths:
               examples:
                 TwoOrganizations:
                   $ref: '#/components/examples/TwoOrganizations'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organization'
+              examples:
+                TwoOrganizations:
+                  $ref: '#/components/examples/TwoOrganizations'
 
   /organizations/{organization_id}:
     parameters:
@@ -102,6 +115,12 @@ paths:
               examples:
                 CosmoOrganization:
                   $ref: '#/components/examples/CosmoOrganization'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/Organization'
+              examples:
+                CosmoOrganization:
+                  $ref: '#/components/examples/CosmoOrganization'
         "404":
           description: the Organization specified is unknown or you don't have access to it
     patch:
@@ -117,26 +136,25 @@ paths:
             schema:
               $ref: '#/components/schemas/OrganizationUpdateRequest'
             examples:
-              ChangeName:
-                summary: Change Name of Organization
-                description: Change the name of an organization
-                value:
-                  name: "Digital Twin Solutions"
+              ChangeOrganizationName:
+                $ref: '#/components/examples/ChangeOrganizationName'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/OrganizationUpdateRequest'
             examples:
-              ChangeName:
-                summary: Change Name of Organization
-                description: Change the name of an organization
-                value:
-                  name: "Digital Twin Solutions"
+              ChangeOrganizationName:
+                $ref: '#/components/examples/ChangeOrganizationName'
       responses:
         "200":
           description: the organization details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+              examples:
+                UpdatedOrganization:
+                  $ref: '#/components/examples/UpdatedOrganization'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Organization'
               examples:
@@ -175,6 +193,14 @@ paths:
               examples:
                 permissions:
                   $ref: '#/components/examples/Permissions'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComponentRolePermissions'
+              examples:
+                permissions:
+                  $ref: '#/components/examples/Permissions'
 
   /organizations/{organization_id}/permissions/{role}:
     parameters:
@@ -204,10 +230,15 @@ paths:
                 type: array
                 items:
                   type: string
-                example:
-                  - "read"
-                  - "read_security"
-                  - "create_children"
+              example:
+                $ref: '#/components/examples/OrganizationRolePermissions'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  type: string
+              example:
+                $ref: '#/components/examples/OrganizationRolePermissions'
 
   /organizations/{organization_id}/security:
     parameters:
@@ -227,6 +258,12 @@ paths:
           description: The Organization security
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationSecurity'
+              examples:
+                OrganizationSecurity:
+                  $ref: '#/components/examples/OrganizationSecurity'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/OrganizationSecurity'
               examples:
@@ -262,8 +299,7 @@ paths:
                 $ref: '#/components/examples/DefaultRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/OrganizationRole'
             examples:
               DefaultRole:
                 $ref: '#/components/examples/DefaultRole'
@@ -272,6 +308,12 @@ paths:
           description: The Organization default visibility
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationSecurity'
+              examples:
+                UpdatedSecurity:
+                  $ref: '#/components/examples/UpdatedSecurity'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/OrganizationSecurity'
               examples:
@@ -305,8 +347,7 @@ paths:
                 $ref: '#/components/examples/OrganizationAccess'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/OrganizationAccessControl'
             examples:
               OrganizationAccess:
                 $ref: '#/components/examples/OrganizationAccess'
@@ -315,6 +356,12 @@ paths:
           description: The Organization access
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAccessControl'
+              examples:
+                OrganizationAccessControl:
+                  $ref: '#/components/examples/OrganizationAccessControl'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/OrganizationAccessControl'
               examples:
@@ -352,6 +399,12 @@ paths:
               examples:
                 OrganizationAccessControl:
                   $ref: '#/components/examples/OrganizationAccessControl'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/OrganizationAccessControl'
+              examples:
+                OrganizationAccessControl:
+                  $ref: '#/components/examples/OrganizationAccessControl'
         "404":
           description: The Organization or user specified is unknown or you don't have access to it
     patch:
@@ -369,11 +422,23 @@ paths:
             examples:
               UpdateRole:
                 $ref: '#/components/examples/UpdateRole'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/OrganizationRole'
+            examples:
+              UpdateRole:
+                $ref: '#/components/examples/UpdateRole'
       responses:
         "200":
           description: The Organization access
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAccessControl'
+              examples:
+                UpdatedAccessControl:
+                  $ref: '#/components/examples/UpdatedAccessControl'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/OrganizationAccessControl'
               examples:
@@ -410,6 +475,14 @@ paths:
           description: The Organization security users list
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - "alice@mycompany.com"
+                  - "bob@mycompany.com"
+            application/yaml:
               schema:
                 type: array
                 items:
@@ -576,6 +649,12 @@ components:
             - id: "editor@company.com"
               role: "editor"
 
+    ChangeOrganizationName:
+      summary: Change Name of Organization
+      description: Change the name of an organization
+      value:
+        name: "Digital Twin Solutions"
+
     UpdatedOrganization:
       summary: Updated organization example
       description: Example of an organization after update
@@ -611,6 +690,14 @@ components:
             accessControlList:
               - id: "manager@company.com"
                 role: "admin"
+
+    OrganizationRolePermissions:
+      summary: List of permissions for a role
+      description: Example of permissions for a given role
+      value:
+        - "read"
+        - "read_security"
+        - "create_children"
 
     OrganizationSecurity:
       summary: Organization security example

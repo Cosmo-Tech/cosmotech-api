@@ -191,6 +191,7 @@ All URIs are relative to *http://localhost*
  - [RunnerSecurity](./Models/RunnerSecurity.md)
  - [RunnerUpdateRequest](./Models/RunnerUpdateRequest.md)
  - [RunnerValidationStatus](./Models/RunnerValidationStatus.md)
+ - [SendRunDataRequest](./Models/SendRunDataRequest.md)
  - [Solution](./Models/Solution.md)
  - [SolutionAccessControl](./Models/SolutionAccessControl.md)
  - [SolutionCreateRequest](./Models/SolutionCreateRequest.md)
@@ -211,7 +212,6 @@ All URIs are relative to *http://localhost*
  - [WorkspaceUpdateRequest](./Models/WorkspaceUpdateRequest.md)
  - [WorkspaceWebApp](./Models/WorkspaceWebApp.md)
  - [ioTypesEnum](./Models/ioTypesEnum.md)
- - [sendRunData_request](./Models/sendRunData_request.md)
 
 
 <a name="documentation-for-authorization"></a>

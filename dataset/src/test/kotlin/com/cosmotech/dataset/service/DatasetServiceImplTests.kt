@@ -349,7 +349,7 @@ class DatasetServiceImplTests {
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { unifiedJedis.exists(any<String>()) } returns false
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
-    assertEquals(IngestionStatusEnum.NONE.value, result)
+    assertEquals(IngestionStatusEnum.NONE, result)
   }
 
   @Test
@@ -366,7 +366,7 @@ class DatasetServiceImplTests {
     every { unifiedJedis.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returns mockk()
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
-    assertEquals(IngestionStatusEnum.SUCCESS.value, result)
+    assertEquals(IngestionStatusEnum.SUCCESS, result)
   }
 
   @Test
@@ -388,7 +388,7 @@ class DatasetServiceImplTests {
 
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
 
-    assertEquals(IngestionStatusEnum.SUCCESS.value, result)
+    assertEquals(IngestionStatusEnum.SUCCESS, result)
   }
 
   @Test

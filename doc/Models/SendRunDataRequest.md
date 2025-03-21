@@ -1,4 +1,4 @@
-# sendRunData_request
+# SendRunDataRequest
 ## Properties
 
 | Name | Type | Description | Notes |

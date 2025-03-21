@@ -56,7 +56,7 @@ Create a new solution
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="createSolutionAccessControl"></a>
 # **createSolutionAccessControl**
@@ -83,7 +83,7 @@ Create solution access control
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="createSolutionParameter"></a>
 # **createSolutionParameter**
@@ -110,7 +110,7 @@ Create solution parameter for a solution
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="createSolutionParameterGroup"></a>
 # **createSolutionParameterGroup**
@@ -137,7 +137,7 @@ Create a solution parameter group
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="deleteSolution"></a>
 # **deleteSolution**
@@ -323,7 +323,7 @@ Get the details of a solution
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getSolutionAccessControl"></a>
 # **getSolutionAccessControl**
@@ -350,7 +350,7 @@ Get solution access control
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getSolutionParameter"></a>
 # **getSolutionParameter**
@@ -377,7 +377,7 @@ Get the details of a solution parameter
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getSolutionParameterGroup"></a>
 # **getSolutionParameterGroup**
@@ -404,7 +404,7 @@ Get details of a solution parameter group
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getSolutionSecurity"></a>
 # **getSolutionSecurity**
@@ -430,7 +430,7 @@ Get solution security information
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listSolutionParameterGroups"></a>
 # **listSolutionParameterGroups**
@@ -456,7 +456,7 @@ List all solution parameter groups
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listSolutionParameters"></a>
 # **listSolutionParameters**
@@ -482,7 +482,7 @@ List all solution parameters
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listSolutionSecurityUsers"></a>
 # **listSolutionSecurityUsers**
@@ -508,7 +508,7 @@ List solution security users
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listSolutions"></a>
 # **listSolutions**
@@ -535,7 +535,7 @@ List all Solutions
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateSolution"></a>
 # **updateSolution**
@@ -562,7 +562,7 @@ Update a solution
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateSolutionAccessControl"></a>
 # **updateSolutionAccessControl**
@@ -590,7 +590,7 @@ Update solution access control
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateSolutionDefaultSecurity"></a>
 # **updateSolutionDefaultSecurity**
@@ -617,7 +617,7 @@ Update solution default security
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateSolutionParameter"></a>
 # **updateSolutionParameter**
@@ -645,7 +645,7 @@ Update solution parameter
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateSolutionParameterGroup"></a>
 # **updateSolutionParameterGroup**
@@ -673,7 +673,7 @@ Update a solution parameter group
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateSolutionRunTemplate"></a>
 # **updateSolutionRunTemplate**
@@ -701,7 +701,7 @@ Update a specific run template
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateSolutionRunTemplates"></a>
 # **updateSolutionRunTemplates**
@@ -728,5 +728,5 @@ Update solution run templates
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 

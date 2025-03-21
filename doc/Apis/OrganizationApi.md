@@ -43,7 +43,7 @@ Create a new organization
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="createOrganizationAccessControl"></a>
 # **createOrganizationAccessControl**
@@ -69,7 +69,7 @@ Add a control access to the Organization
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="deleteOrganization"></a>
 # **deleteOrganization**
@@ -145,7 +145,7 @@ Get the details of an Organization
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getOrganizationAccessControl"></a>
 # **getOrganizationAccessControl**
@@ -171,7 +171,7 @@ Get a control access for the Organization
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getOrganizationPermissions"></a>
 # **getOrganizationPermissions**
@@ -197,7 +197,7 @@ Get the Organization permissions by given role
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getOrganizationSecurity"></a>
 # **getOrganizationSecurity**
@@ -222,7 +222,7 @@ Get the Organization security information
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listOrganizationSecurityUsers"></a>
 # **listOrganizationSecurityUsers**
@@ -247,7 +247,7 @@ Get the Organization security users list
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listOrganizations"></a>
 # **listOrganizations**
@@ -273,7 +273,7 @@ List all Organizations
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listPermissions"></a>
 # **listPermissions**
@@ -295,7 +295,7 @@ This endpoint does not need any parameter.
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateOrganization"></a>
 # **updateOrganization**
@@ -321,7 +321,7 @@ Update an Organization
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateOrganizationAccessControl"></a>
 # **updateOrganizationAccessControl**
@@ -347,8 +347,8 @@ Update the specified access to User for an Organization
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 
 <a name="updateOrganizationDefaultSecurity"></a>
 # **updateOrganizationDefaultSecurity**
@@ -374,5 +374,5 @@ Update the Organization default security
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 

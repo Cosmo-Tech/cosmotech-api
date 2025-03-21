@@ -67,6 +67,7 @@ Models/RunnerRunTemplateParameterValue.md
 Models/RunnerSecurity.md
 Models/RunnerUpdateRequest.md
 Models/RunnerValidationStatus.md
+Models/SendRunDataRequest.md
 Models/Solution.md
 Models/SolutionAccessControl.md
 Models/SolutionCreateRequest.md
@@ -87,5 +88,4 @@ Models/WorkspaceSolution.md
 Models/WorkspaceUpdateRequest.md
 Models/WorkspaceWebApp.md
 Models/ioTypesEnum.md
-Models/sendRunData_request.md
 README.md

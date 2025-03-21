@@ -37,20 +37,21 @@ paths:
                 $ref: '#/components/examples/BreweryADT'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Dataset'
             examples:
               BreweryADT:
                 $ref: '#/components/examples/BreweryADT'
-              RunJobImportWithADT:
-                $ref: '#/components/examples/DatasetWithADT'
-              RunJobImportWithStorage:
-                $ref: '#/components/examples/DatasetWithStorage'
       responses:
         "201":
           description: the dataset details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryADT'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Dataset'
               examples:
@@ -81,6 +82,14 @@ paths:
           description: the list of Datasets
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dataset'
+              examples:
+                Two:
+                  $ref: '#/components/examples/TwoDatasets'
+            application/yaml:
               schema:
                 type: array
                 items:
@@ -126,8 +135,7 @@ paths:
                 $ref: '#/components/examples/DatasetSearch'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/DatasetSearch'
             examples:
               DatasetSearch:
                 $ref: '#/components/examples/DatasetSearch'
@@ -136,6 +144,14 @@ paths:
           description: the list of Datasets
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dataset'
+              examples:
+                Two:
+                  $ref: '#/components/examples/TwoDatasets'
+            application/yaml:
               schema:
                 type: array
                 items:
@@ -169,8 +185,7 @@ paths:
                 $ref: '#/components/examples/BreweryDatasetCopyParameters'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/DatasetCopyParameters'
             examples:
               BreweryDatasetCopyParameters:
                 $ref: '#/components/examples/BreweryDatasetCopyParameters'
@@ -179,6 +194,12 @@ paths:
           description: the Dataset copy operation parameters
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetCopyParameters'
+              examples:
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryDatasetCopyParameters'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetCopyParameters'
               examples:
@@ -217,6 +238,12 @@ paths:
               examples:
                 BreweryADT:
                   $ref: '#/components/examples/BreweryADT'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryADT'
         "404":
           description: the Dataset specified is unknown or you don't have access to it
     patch:
@@ -236,8 +263,7 @@ paths:
                 $ref: '#/components/examples/BreweryADTUpdate'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Dataset'
             examples:
               BreweryADTUpdate:
                 $ref: '#/components/examples/BreweryADTUpdate'
@@ -246,6 +272,12 @@ paths:
           description: the dataset details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BreweryADTUpdated:
+                  $ref: '#/components/examples/BreweryADTUpdated'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Dataset'
               examples:
@@ -303,6 +335,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FileUploadValidation'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/FileUploadValidation'
     delete:
       operationId: deleteDataset
       tags:
@@ -345,11 +380,23 @@ paths:
             examples:
               BreweryADT:
                 $ref: '#/components/examples/BreweryADT'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/SubDatasetGraphQuery'
+            examples:
+              BreweryADT:
+                $ref: '#/components/examples/BreweryADT'
       responses:
         '200':
           description: Successful response
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryADT'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Dataset'
               examples:
@@ -394,6 +441,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetTwinGraphInfo'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/DatasetTwinGraphInfo'
   /organizations/{organization_id}/datasets/{dataset_id}/refresh/rollback:
     parameters:
       - name: organization_id
@@ -421,6 +471,12 @@ paths:
           description: Successful response
           content:
             application/json:
+              schema:
+                type: string
+              examples:
+                SuccessfulResponse:
+                  $ref: '#/components/examples/SuccessfulRollback'
+            application/yaml:
               schema:
                 type: string
               examples:
@@ -454,6 +510,12 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetTwinGraphQuery'
+            examples:
+              GetAllNodes:
+                $ref: '#/components/examples/TwinGraphGetAllNodes'
+          application/yaml:
             schema:
               $ref: '#/components/schemas/DatasetTwinGraphQuery'
             examples:
@@ -497,7 +559,7 @@ paths:
       tags:
         - dataset
       summary: Create new entities in a graph instance
-      description: | 
+      description: |
         Create new entities in a graph instance
         Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       requestBody:
@@ -505,6 +567,14 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GraphProperties'
+            examples:
+              QueryEntities:
+                $ref: '#/components/examples/QueryEntities'
+          application/yaml:
             schema:
               type: array
               items:
@@ -550,12 +620,20 @@ paths:
       summary: Update entities in a graph instance
       description: update entities in a graph instance
       requestBody:
-        description: | 
+        description: |
           The entities to update
           Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
         required: true
         content:
           application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GraphProperties'
+            examples:
+              QueryEntities:
+                $ref: '#/components/examples/QueryEntities'
+          application/yaml:
             schema:
               type: array
               items:
@@ -575,7 +653,7 @@ paths:
       tags:
         - dataset
       summary: Delete entities in a graph instance
-      description: | 
+      description: |
         Delete entities in a graph instance
         Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       parameters:
@@ -644,7 +722,7 @@ paths:
         - dataset
       summary: "Async batch update by loading a CSV file on a graph instance "
       description: |
-        Async batch update by loading a CSV file on a graph instance 
+        Async batch update by loading a CSV file on a graph instance
         Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
       requestBody:
         required: true
@@ -673,6 +751,9 @@ paths:
           description: csv file processed
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/TwinGraphBatchResult'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/TwinGraphBatchResult'
         "400":
@@ -710,11 +791,20 @@ paths:
             examples:
               GetAllNodes:
                 $ref: '#/components/examples/GetAllNodes'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/DatasetTwinGraphQuery'
+            examples:
+              GetAllNodes:
+                $ref: '#/components/examples/GetAllNodes'
       responses:
         '200':
           description: Successful response
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetTwinGraphHash'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetTwinGraphHash'
   /organizations/{organization_id}/datasets/twingraph/download/{hash}:
@@ -772,15 +862,12 @@ paths:
         '200':
           description: Successful response
           content:
-            application/yaml:
-              schema:
-                type: string
             application/json:
               schema:
-                type: string
-                enum:
-                  - PENDING
-                  - COMPLETED
+                $ref: '#/components/schemas/IngestionStatusEnum'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/IngestionStatusEnum'
   /organizations/{organization_id}/datasets/{dataset_id}/compatibility:
     parameters:
       - name: organization_id
@@ -818,11 +905,39 @@ paths:
                       minimumVersion: "1.0.0"
                     - solutionKey: Brewery Solution
                       minimumVersion: "1.0.1"
+          application/yaml:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/DatasetCompatibility"
+              example:
+                TwoDatasetCompatibility:
+                  summary: 2 Dataset Compatibilities
+                  description: 2 Dataset Compatibilities
+                  value:
+                    - solutionKey: Brewery Solution
+                      minimumVersion: "1.0.0"
+                    - solutionKey: Brewery Solution
+                      minimumVersion: "1.0.1"
       responses:
         "201":
           description: the Dataset Compatibility elements
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DatasetCompatibility'
+              examples:
+                TwoDatasetCompatibility:
+                  summary: 2 Dataset Compatibilities
+                  description: 2 Dataset Compatibilities
+                  value:
+                    - solutionKey: Brewery Solution
+                      minimumVersion: "1.0.0"
+                    - solutionKey: Brewery Solution
+                      minimumVersion: "1.0.1"
+            application/yaml:
               schema:
                 type: array
                 items:
@@ -876,6 +991,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetSecurity'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/DatasetSecurity'
         "404":
           description: the Dataset specified is unknown or you don't have access to it
   /organizations/{organization_id}/datasets/{dataset_id}/security/default:
@@ -911,8 +1029,7 @@ paths:
                 $ref: '#/components/examples/BreweryDatasetRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/DatasetRole'
             examples:
               BreweryDatasetRole:
                 $ref: '#/components/examples/BreweryDatasetRole'
@@ -921,6 +1038,9 @@ paths:
           description: The Dataset default visibility
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetSecurity'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetSecurity'
         "404":
@@ -956,8 +1076,7 @@ paths:
                 $ref: '#/components/examples/BreweryDatasetAccessControl'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/DatasetAccessControl'
             examples:
               DatasetAccess:
                 $ref: '#/components/examples/BreweryDatasetAccessControl'
@@ -966,6 +1085,12 @@ paths:
           description: The Dataset access
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetAccessControl'
+              examples:
+                DatasetAccessControl:
+                  $ref: '#/components/examples/BreweryDatasetAccessControl'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
               examples:
@@ -1008,6 +1133,12 @@ paths:
               examples:
                 DatasetAccessControl:
                   $ref: '#/components/examples/BreweryDatasetAccessControl'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/DatasetAccessControl'
+              examples:
+                DatasetAccessControl:
+                  $ref: '#/components/examples/BreweryDatasetAccessControl'
         "404":
           description: The Dataset or user specified is unknown or you don't have access to it
     patch:
@@ -1025,11 +1156,23 @@ paths:
             examples:
               BreweryDatasetRole:
                 $ref: '#/components/examples/BreweryDatasetRole'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/DatasetRole'
+            examples:
+              BreweryDatasetRole:
+                $ref: '#/components/examples/BreweryDatasetRole'
       responses:
         "200":
           description: The Dataset access
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetAccessControl'
+              examples:
+                DatasetAccessControl:
+                  $ref: '#/components/examples/BreweryDatasetAccessControl'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
               examples:
@@ -1079,6 +1222,14 @@ paths:
                 example:
                   - alice@mycompany.com
                   - bob@mycompany.com
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - alice@mycompany.com
+                  - bob@mycompany.com
         "404":
           description: the Dataset or the User specified is unknown or you don't have access to them
 
@@ -1112,6 +1263,12 @@ paths:
           description: the dataset details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BreweryADTUpdated:
+                  $ref: '#/components/examples/BreweryADTWithLink'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Dataset'
               examples:
@@ -1152,6 +1309,12 @@ paths:
           description: the dataset details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryADT'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Dataset'
               examples:
@@ -1853,32 +2016,6 @@ components:
       value:
         datasetTags:
           - dataset
-    DatasetWithADT:
-      summary: Dataset creation with ADT as source
-      description: Dataset creation with ADT as source
-      value:
-        name: "My Amazing ADT Dataset"
-        description: "Description about my data"
-        sourceType: "ADT"
-        tags:
-          - adt
-          - data
-        source:
-          location: "https://my-adt-name-instance.api.weu.digitaltwins.azure.net"
-    DatasetWithStorage:
-      summary: Dataset creation with Storage as source
-      description: Dataset creation with Storage as source
-      value:
-        name: "My Amazing Storage Dataset"
-        description: "Description about my data from Azure Storage"
-        sourceType: "Storage"
-        tags:
-          - storage
-          - file
-        source:
-          name: "my-storage-account-name"
-          location: "my-container-name"
-          path: "my-data-folder"
     TwinGraphGetAllNodes:
       summary: Get all nodes query
       description: Get all nodes query (be careful if you want to query large graph)

@@ -46,7 +46,7 @@ Create a new Runner
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="createRunnerAccessControl"></a>
 # **createRunnerAccessControl**
@@ -74,7 +74,7 @@ Add a control access to the Runner
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="deleteRunner"></a>
 # **deleteRunner**
@@ -156,7 +156,7 @@ Get the details of an runner
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getRunnerAccessControl"></a>
 # **getRunnerAccessControl**
@@ -184,7 +184,7 @@ Get a control access for the Runner
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getRunnerSecurity"></a>
 # **getRunnerSecurity**
@@ -211,7 +211,7 @@ Get the Runner security information
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listRunnerPermissions"></a>
 # **listRunnerPermissions**
@@ -239,7 +239,7 @@ Get the Runner permission by given role
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listRunnerSecurityUsers"></a>
 # **listRunnerSecurityUsers**
@@ -266,7 +266,7 @@ Get the Runner security users list
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listRunners"></a>
 # **listRunners**
@@ -294,7 +294,7 @@ List all Runners
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="startRun"></a>
 # **startRun**
@@ -321,7 +321,7 @@ Start a run with runner parameters
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="stopRun"></a>
 # **stopRun**
@@ -376,7 +376,7 @@ Update a runner
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateRunnerAccessControl"></a>
 # **updateRunnerAccessControl**
@@ -404,8 +404,8 @@ Update the specified access to User for a Runner
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 
 <a name="updateRunnerDefaultSecurity"></a>
 # **updateRunnerDefaultSecurity**
@@ -433,5 +433,5 @@ Set the Runner default security
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 

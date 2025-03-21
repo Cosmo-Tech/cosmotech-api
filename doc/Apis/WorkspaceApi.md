@@ -104,7 +104,7 @@ Add a control access to the Workspace
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="createWorkspaceFile"></a>
 # **createWorkspaceFile**
@@ -319,7 +319,7 @@ Get a control access for the Workspace
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getWorkspaceFile"></a>
 # **getWorkspaceFile**
@@ -451,7 +451,7 @@ Get the Workspace security users list
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listWorkspaces"></a>
 # **listWorkspaces**
@@ -532,8 +532,8 @@ Update the specified access to User for a Workspace
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 
 <a name="updateWorkspaceDefaultSecurity"></a>
 # **updateWorkspaceDefaultSecurity**

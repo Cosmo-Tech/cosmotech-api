@@ -34,7 +34,7 @@ List all Connectors
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="findConnectorById"></a>
 # **findConnectorById**
@@ -59,7 +59,7 @@ Get the details of a connector
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="registerConnector"></a>
 # **registerConnector**
@@ -84,7 +84,7 @@ Register a new connector
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="unregisterConnector"></a>
 # **unregisterConnector**

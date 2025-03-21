@@ -53,6 +53,12 @@ paths:
               examples:
                 Run:
                   $ref: '#/components/examples/BreweryRun'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/Run'
+              examples:
+                Run:
+                  $ref: '#/components/examples/BreweryRun'
         "404":
           description: the Run specified is unknown or you don't have access to it
     delete:
@@ -108,6 +114,12 @@ paths:
               examples:
                 Run:
                   $ref: '#/components/examples/BreweryRunStatus'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/RunStatus'
+              examples:
+                Run:
+                  $ref: '#/components/examples/BreweryRunStatus'
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs:
     parameters:
       - name: organization_id
@@ -144,6 +156,12 @@ paths:
           description: the run logs details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/RunLogs'
+              examples:
+                Run:
+                  $ref: '#/components/examples/BreweryRunLogs'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/RunLogs'
               examples:
@@ -186,19 +204,21 @@ paths:
         content:
           application/json:
             schema:
-              properties:
-                id:
-                  type: string
-                data:
-                  type: array
-                  items:
-                    type: object
-                    additionalProperties: true
+              $ref: '#/components/schemas/SendRunDataRequest'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/SendRunDataRequest'
       responses:
         "201":
           description: Data stored
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/RunData'
+              examples:
+                Run:
+                  $ref: '#/components/examples/DefaultRunData'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/RunData'
               examples:
@@ -247,11 +267,23 @@ paths:
             examples:
               GetAllRunDataInTable:
                 $ref: '#/components/examples/RunDataQueryExample'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/RunDataQuery'
+            examples:
+              GetAllRunDataInTable:
+                $ref: '#/components/examples/RunDataQueryExample'
       responses:
         "200":
           description: the query response
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResult'
+              examples:
+                MultipleResults:
+                  $ref: '#/components/examples/QueryResultExample'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/QueryResult'
               examples:
@@ -307,6 +339,14 @@ paths:
               examples:
                 OneRun:
                   $ref: '#/components/examples/OneRun'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Run'
+              examples:
+                OneRun:
+                  $ref: '#/components/examples/OneRun'
 
 components:
   securitySchemes:
@@ -321,7 +361,7 @@ components:
   schemas:
     RunData:
       type: object
-      description: Run Data to send
+      description: Run Data stored
       properties:
         database_name:
           type: string
@@ -329,6 +369,17 @@ components:
         table_name:
           type: string
           description: Table name
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    SendRunDataRequest:
+      type: object
+      description: Run Data to send
+      properties:
+        id:
+          type: string
         data:
           type: array
           items:

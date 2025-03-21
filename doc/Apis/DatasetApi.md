@@ -62,7 +62,7 @@ Add a control access to the Dataset
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="addOrReplaceDatasetCompatibilityElements"></a>
 # **addOrReplaceDatasetCompatibilityElements**
@@ -88,8 +88,8 @@ Add Dataset Compatibility elements.
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 
 <a name="copyDataset"></a>
 # **copyDataset**
@@ -117,7 +117,7 @@ Copy a Dataset to another Dataset.
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="createDataset"></a>
 # **createDataset**
@@ -143,7 +143,7 @@ Create a new Dataset
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="createSubDataset"></a>
 # **createSubDataset**
@@ -171,8 +171,8 @@ Create a sub-dataset from the dataset in parameter
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 
 <a name="createTwingraphEntities"></a>
 # **createTwingraphEntities**
@@ -201,7 +201,7 @@ Create new entities in a graph instance
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="deleteDataset"></a>
@@ -313,7 +313,7 @@ List all Datasets
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="findDatasetById"></a>
 # **findDatasetById**
@@ -339,7 +339,7 @@ Get the details of a Dataset
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getDatasetAccessControl"></a>
 # **getDatasetAccessControl**
@@ -366,7 +366,7 @@ Get a control access for the Dataset
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getDatasetSecurity"></a>
 # **getDatasetSecurity**
@@ -392,7 +392,7 @@ Get the Dataset security information
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getDatasetSecurityUsers"></a>
 # **getDatasetSecurityUsers**
@@ -418,11 +418,11 @@ Get the Dataset security users list
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getDatasetTwingraphStatus"></a>
 # **getDatasetTwingraphStatus**
-> String getDatasetTwingraphStatus(organization\_id, dataset\_id)
+> IngestionStatusEnum getDatasetTwingraphStatus(organization\_id, dataset\_id)
 
 Get the dataset&#39;s refresh job status
 
@@ -437,7 +437,7 @@ Get the dataset&#39;s refresh job status
 
 ### Return type
 
-**String**
+[**IngestionStatusEnum**](../Models/IngestionStatusEnum.md)
 
 ### Authorization
 
@@ -446,7 +446,7 @@ Get the dataset&#39;s refresh job status
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/yaml, application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getTwingraphEntities"></a>
 # **getTwingraphEntities**
@@ -503,7 +503,7 @@ Get entities in a graph instance
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="refreshDataset"></a>
 # **refreshDataset**
@@ -531,7 +531,7 @@ Refresh data on dataset from dataset&#39;s source
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="removeAllDatasetCompatibilityElements"></a>
 # **removeAllDatasetCompatibilityElements**
@@ -612,7 +612,7 @@ Rollback the dataset after a failed refresh
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="searchDatasets"></a>
 # **searchDatasets**
@@ -640,7 +640,7 @@ Search Datasets by tags
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="setDatasetDefaultSecurity"></a>
 # **setDatasetDefaultSecurity**
@@ -667,7 +667,7 @@ Set the Dataset default security
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="twingraphBatchQuery"></a>
 # **twingraphBatchQuery**
@@ -695,8 +695,8 @@ Run a query on a graph instance and return the result as a zip file in async mod
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 
 <a name="twingraphBatchUpdate"></a>
 # **twingraphBatchUpdate**
@@ -704,7 +704,7 @@ Run a query on a graph instance and return the result as a zip file in async mod
 
 Async batch update by loading a CSV file on a graph instance 
 
-    Async batch update by loading a CSV file on a graph instance  Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
+    Async batch update by loading a CSV file on a graph instance Note: This endpoint is activated only if &#x60;csm.platform.twincache.useGraphModule&#x60; property is set to true 
 
 ### Parameters
 
@@ -726,7 +726,7 @@ Async batch update by loading a CSV file on a graph instance
 ### HTTP request headers
 
 - **Content-Type**: text/csv, application/octet-stream
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="twingraphQuery"></a>
 # **twingraphQuery**
@@ -754,7 +754,7 @@ Return the result of a query made on the graph instance as a json
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="unlinkWorkspace"></a>
@@ -782,7 +782,7 @@ Return the result of a query made on the graph instance as a json
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateDataset"></a>
 # **updateDataset**
@@ -809,7 +809,7 @@ Update a dataset
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateDatasetAccessControl"></a>
 # **updateDatasetAccessControl**
@@ -836,8 +836,8 @@ Update the specified access to User for a Dataset
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 
 <a name="updateTwingraphEntities"></a>
 # **updateTwingraphEntities**
@@ -866,7 +866,7 @@ Update entities in a graph instance
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="uploadTwingraph"></a>
@@ -896,5 +896,5 @@ Upload data from zip file to dataset&#39;s twingraph
 ### HTTP request headers
 
 - **Content-Type**: application/octet-stream
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 

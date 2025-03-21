@@ -530,8 +530,7 @@ paths:
                 $ref: '#/components/examples/BreweryWorkspaceAccessControl'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/WorkspaceAccessControl'
             examples:
               WorkspaceAccess:
                 $ref: '#/components/examples/BreweryWorkspaceAccessControl'
@@ -540,6 +539,12 @@ paths:
           description: The Workspace access
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceAccessControl'
+              examples:
+                WorkspaceAccessControl:
+                  $ref: '#/components/examples/BreweryWorkspaceAccessControl'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
@@ -583,6 +588,12 @@ paths:
               examples:
                 WorkspaceAccessControl:
                   $ref: '#/components/examples/BreweryWorkspaceAccessControl'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/WorkspaceAccessControl'
+              examples:
+                WorkspaceAccessControl:
+                  $ref: '#/components/examples/BreweryWorkspaceAccessControl'
         "404":
           description: The Workspace or user specified is unknown or you don't have access to it
     patch:
@@ -600,11 +611,23 @@ paths:
             examples:
               BreweryWorkspaceRole:
                 $ref: '#/components/examples/BreweryWorkspaceRole'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/WorkspaceRole'
+            examples:
+              BreweryWorkspaceRole:
+                $ref: '#/components/examples/BreweryWorkspaceRole'
       responses:
         "200":
           description: The Workspace access
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceAccessControl'
+              examples:
+                WorkspaceAccessControl:
+                  $ref: '#/components/examples/BreweryWorkspaceAccessControl'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
@@ -647,6 +670,9 @@ paths:
           description: The Workspace security users list
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceUsersList'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceUsersList'
         "404":

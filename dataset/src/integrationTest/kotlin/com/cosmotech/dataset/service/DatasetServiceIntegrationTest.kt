@@ -531,7 +531,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     // add timout for while loop
     val timeout = Instant.now()
     while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!) !=
-        IngestionStatusEnum.SUCCESS.value) {
+        IngestionStatusEnum.SUCCESS) {
       if (Instant.now().minusSeconds(10).isAfter(timeout)) {
         throw Exception("Timeout while waiting for dataset twingraph to be ready")
       }
@@ -542,7 +542,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       Thread.sleep(50L)
       val datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
-    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING)
     assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
     assertEquals(5, countEntities(datasetSaved.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
 
@@ -559,7 +559,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       Thread.sleep(50L)
       val datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, subDataset.id!!)
-    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING)
 
     assertEquals("subDataset", subDataset.name)
     assertEquals("subDataset description", subDataset.description)
@@ -581,7 +581,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       val datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(
               organizationSaved.id, subDatasetWithQuery.id!!)
-    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING)
 
     assertEquals("subDatasetWithQuery", subDatasetWithQuery.name)
     assertEquals("subDatasetWithQuery description", subDatasetWithQuery.description)
@@ -723,18 +723,18 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     datasetApiService.uploadTwingraph(organizationSaved.id, datasetSaved.id!!, resource)
 
-    var datasetStatus: String
+    var datasetStatus: IngestionStatusEnum
     do {
       Thread.sleep(50L)
       datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
-    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING)
 
-    assertEquals(IngestionStatusEnum.SUCCESS.value, datasetStatus)
+    assertEquals(IngestionStatusEnum.SUCCESS, datasetStatus)
 
     val modifiedDataset = datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
-    assertEquals(IngestionStatusEnum.SUCCESS.value, modifiedDataset.ingestionStatus!!.value)
-    assertEquals(TwincacheStatusEnum.FULL.value, modifiedDataset.twincacheStatus!!.value)
+    assertEquals(IngestionStatusEnum.SUCCESS, modifiedDataset.ingestionStatus!!)
+    assertEquals(TwincacheStatusEnum.FULL, modifiedDataset.twincacheStatus!!)
   }
 
   @Test
@@ -747,18 +747,18 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     datasetApiService.uploadTwingraph(organizationSaved.id, datasetSaved.id!!, resource)
 
-    var datasetStatus: String
+    var datasetStatus: IngestionStatusEnum
     do {
       Thread.sleep(50L)
       datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
-    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING)
 
-    assertEquals(IngestionStatusEnum.ERROR.value, datasetStatus)
+    assertEquals(IngestionStatusEnum.ERROR, datasetStatus)
 
     val modifiedDataset = datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
-    assertEquals(IngestionStatusEnum.ERROR.value, modifiedDataset.ingestionStatus!!.value)
-    assertEquals(TwincacheStatusEnum.EMPTY.value, modifiedDataset.twincacheStatus!!.value)
+    assertEquals(IngestionStatusEnum.ERROR, modifiedDataset.ingestionStatus!!)
+    assertEquals(TwincacheStatusEnum.EMPTY, modifiedDataset.twincacheStatus!!)
   }
 
   @Test
@@ -809,7 +809,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     do {
       Thread.sleep(50L)
     } while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!) ==
-        IngestionStatusEnum.PENDING.value)
+        IngestionStatusEnum.PENDING)
 
     datasetApiService.createTwingraphEntities(
         organizationSaved.id,
@@ -824,7 +824,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     do {
       Thread.sleep(50L)
     } while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!) ==
-        IngestionStatusEnum.PENDING.value)
+        IngestionStatusEnum.PENDING)
 
     val secondQueryResult =
         datasetApiService.twingraphQuery(
@@ -875,7 +875,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
     var datasetStatus =
         datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
-    assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
+    assertEquals(IngestionStatusEnum.NONE, datasetStatus)
 
     every { datasetApiService.query(any(), any()) } returns mockk()
     val fileName = this::class.java.getResource("/integrationTest.zip")?.file
@@ -886,12 +886,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       Thread.sleep(50L)
       datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
-    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING)
     datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.ERROR })
     datasetApiService.rollbackRefresh(organizationSaved.id, datasetSaved.id!!)
     datasetStatus =
         datasetApiService.getDatasetTwingraphStatus(organizationSaved.id, datasetSaved.id!!)
-    assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
+    assertEquals(IngestionStatusEnum.NONE, datasetStatus)
   }
 
   @TestFactory

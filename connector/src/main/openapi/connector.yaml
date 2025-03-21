@@ -30,8 +30,7 @@ paths:
                 $ref: '#/components/examples/ADTConnector'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/Connector'
             examples:
               ADTConnector:
                 $ref: '#/components/examples/ADTConnector'
@@ -40,6 +39,12 @@ paths:
           description: the connector details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Connector'
+              examples:
+                ADTConnector:
+                  $ref: '#/components/examples/ADTConnector'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Connector'
               examples:
@@ -77,6 +82,14 @@ paths:
               examples:
                 OneConnector:
                   $ref: '#/components/examples/OneConnector'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Connector'
+              examples:
+                OneConnector:
+                  $ref: '#/components/examples/OneConnector'
 
   /connectors/{connector_id}:
     parameters:
@@ -96,6 +109,12 @@ paths:
           description: the Connector details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Connector'
+              examples:
+                ADTConnector:
+                  $ref: '#/components/examples/ADTConnector'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Connector'
               examples:
