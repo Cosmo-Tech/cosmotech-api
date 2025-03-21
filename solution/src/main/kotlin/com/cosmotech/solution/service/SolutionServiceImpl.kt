@@ -223,7 +223,9 @@ class SolutionServiceImpl(
           computeSize = runTemplateUpdateRequest.computeSize ?: this.computeSize
           parameterGroups = runTemplateUpdateRequest.parameterGroups ?: this.parameterGroups
           executionTimeout = runTemplateUpdateRequest.executionTimeout ?: this.executionTimeout
-        } ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
+        }
+        ?: throw CsmResourceNotFoundException(
+            "Solution run template with id $runTemplateId does not exist")
 
     val solutionSaved = solutionRepository.save(existingSolution)
 
@@ -238,7 +240,8 @@ class SolutionServiceImpl(
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
     if (!existingSolution.runTemplates.removeIf { it.id == runTemplateId }) {
-      throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
+      throw CsmResourceNotFoundException(
+          "Solution run template with id $runTemplateId does not exist")
     }
     solutionRepository.save(existingSolution)
   }
@@ -251,7 +254,9 @@ class SolutionServiceImpl(
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
     checkParametersAndRunTemplateUnicity(
-        solutionUpdateRequest.parameters, solutionUpdateRequest.parameterGroups, null)
+        solutionUpdateRequest.parameters,
+        solutionUpdateRequest.parameterGroups,
+        solutionUpdateRequest.runTemplates)
 
     val solutionRunTemplateParameters =
         solutionUpdateRequest.parameters?.map { convertToRunTemplateParameter(it) }?.toMutableList()
@@ -261,6 +266,10 @@ class SolutionServiceImpl(
         solutionUpdateRequest.parameterGroups
             ?.map { convertToRunTemplateParameterGroup(it) }
             ?.toMutableList() ?: mutableListOf()
+
+    val solutionRunTemplates =
+        solutionUpdateRequest.runTemplates?.map { convertToRunTemplate(it) }?.toMutableList()
+            ?: mutableListOf()
 
     val updatedSolution =
         Solution(
@@ -278,6 +287,7 @@ class SolutionServiceImpl(
             alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
             parameters = solutionRunTemplateParameters,
             parameterGroups = solutionRunTemplateParameterGroups,
+            runTemplates = solutionRunTemplates,
             security = existingSolution.security)
 
     val hasChanged =

@@ -733,7 +733,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
               "WrongRunTemplateId",
               RunTemplateUpdateRequest())
         }
-    assertEquals("Run Template 'WrongRunTemplateId' *not* found", assertThrows.message)
+    assertEquals(
+        "Solution run template with id WrongRunTemplateId does not exist", assertThrows.message)
   }
 
   @Test
@@ -942,6 +943,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             alwaysPull = false,
             repository = updatedRepository,
             csmSimulator = updatedCsmSimulator,
+            runTemplates = solutionRunTemplates,
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
@@ -1024,6 +1026,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             key = updatedKey,
             name = updatedName,
             description = updatedDescription,
+            runTemplates = solutionRunTemplates,
             tags = updatedTags,
             alwaysPull = false,
             repository = updatedRepository,
@@ -1122,6 +1125,157 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         }
 
     assertEquals("One or several solution items have same id : parameters", exception.message)
+  }
+
+  @Test
+  fun `assert updateSolution with all information set and empty run template list in update`() {
+    val solutionKey = "key"
+    val solutionName = "name"
+    val solutionDescription = "description"
+    val solutionVersion = "1.0.0"
+    val solutionTags = mutableListOf("tag1", "tag2")
+    val solutionUrl = "url"
+    val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
+    val solutionParameterGroups =
+        mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
+    val csmSimulator = "simulator"
+    val solutionRepository = "repository"
+
+    val solutionCreateRequest =
+        SolutionCreateRequest(
+            key = solutionKey,
+            name = solutionName,
+            description = solutionDescription,
+            version = solutionVersion,
+            tags = solutionTags,
+            repository = solutionRepository,
+            runTemplates = solutionRunTemplates,
+            parameterGroups = solutionParameterGroups,
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+            security =
+                SolutionSecurity(
+                    default = ROLE_ADMIN,
+                    accessControlList =
+                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+            csmSimulator = csmSimulator,
+            url = solutionUrl,
+            alwaysPull = true,
+        )
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solutionCreateRequest)
+
+    val updatedKey = "new key"
+    val updatedName = "new name"
+    val updatedDescription = "new description"
+    val updatedTags = mutableListOf("newTag1", "newTag2")
+    val updatedRepository = "new_repo"
+    val updatedCsmSimulator = "new_simulator"
+    val newUrl = "new_url"
+    val newVersion = "20.0.0"
+    val solutionUpdateRequest =
+        SolutionUpdateRequest(
+            key = updatedKey,
+            name = updatedName,
+            description = updatedDescription,
+            tags = updatedTags,
+            alwaysPull = false,
+            repository = updatedRepository,
+            csmSimulator = updatedCsmSimulator,
+            url = newUrl,
+            version = newVersion)
+
+    solutionSaved =
+        solutionApiService.updateSolution(
+            organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
+
+    assertEquals(updatedKey, solutionSaved.key)
+    assertEquals(updatedName, solutionSaved.name)
+    assertEquals(updatedDescription, solutionSaved.description)
+    assertEquals(updatedTags, solutionSaved.tags)
+    assertEquals(updatedRepository, solutionSaved.repository)
+    assertEquals(updatedCsmSimulator, solutionSaved.csmSimulator)
+    assertEquals(0, solutionSaved.runTemplates.size)
+    assertEquals(newUrl, solutionSaved.url)
+    assertEquals(newVersion, solutionSaved.version)
+    assertEquals(0, solutionSaved.parameters.size)
+    assertEquals(ROLE_ADMIN, solutionSaved.security.default)
+    assertEquals(1, solutionSaved.security.accessControlList.size)
+    assertEquals("user_id", solutionSaved.security.accessControlList[0].id)
+    assertEquals(ROLE_ADMIN, solutionSaved.security.accessControlList[0].role)
+    assertFalse(solutionSaved.alwaysPull!!)
+  }
+
+  @Test
+  fun `assert updateSolution with all information set and duplicate id run templates list in update`() {
+    val solutionKey = "key"
+    val solutionName = "name"
+    val solutionDescription = "description"
+    val solutionVersion = "1.0.0"
+    val solutionTags = mutableListOf("tag1", "tag2")
+    val solutionUrl = "url"
+    val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
+    val solutionParameterGroups =
+        mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
+    val csmSimulator = "simulator"
+    val solutionRepository = "repository"
+
+    val solutionCreateRequest =
+        SolutionCreateRequest(
+            key = solutionKey,
+            name = solutionName,
+            description = solutionDescription,
+            version = solutionVersion,
+            tags = solutionTags,
+            repository = solutionRepository,
+            runTemplates = solutionRunTemplates,
+            parameterGroups = solutionParameterGroups,
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+            security =
+                SolutionSecurity(
+                    default = ROLE_ADMIN,
+                    accessControlList =
+                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+            csmSimulator = csmSimulator,
+            url = solutionUrl,
+            alwaysPull = true,
+        )
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solutionCreateRequest)
+
+    val updatedKey = "new key"
+    val updatedName = "new name"
+    val updatedDescription = "new description"
+    val updatedTags = mutableListOf("newTag1", "newTag2")
+    val updatedRepository = "new_repo"
+    val updatedCsmSimulator = "new_simulator"
+    val newUrl = "new_url"
+    val newVersion = "20.0.0"
+    val solutionUpdateRequest =
+        SolutionUpdateRequest(
+            key = updatedKey,
+            name = updatedName,
+            description = updatedDescription,
+            tags = updatedTags,
+            alwaysPull = false,
+            repository = updatedRepository,
+            parameterGroups = solutionParameterGroups,
+            runTemplates =
+                mutableListOf(
+                    RunTemplateCreateRequest(id = "PaRaMeTeRnAmE"),
+                    RunTemplateCreateRequest(id = "pArAmEtErNaMe")),
+            csmSimulator = updatedCsmSimulator,
+            url = newUrl,
+            version = newVersion)
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.updateSolution(
+              organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
+        }
+
+    assertEquals("One or several solution items have same id : runTemplates", exception.message)
   }
 
   @Test
@@ -1484,6 +1638,462 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         }
 
     assertEquals("One or several solution items have same id : parameterGroups", exception.message)
+  }
+
+  @Test
+  fun `test empty list solution run templates`() {
+    val runTemplateList =
+        solutionApiService.listRunTemplates(organizationSaved.id, solutionSaved.id)
+    assertTrue(runTemplateList.isEmpty())
+  }
+
+  @Test
+  fun `test list run templates with non-existing solution`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.listRunTemplates(organizationSaved.id, "non-existing-solution-id")
+        }
+    assertEquals(
+        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        exception.message)
+  }
+
+  @Test
+  fun `test list run templates`() {
+
+    val newSolutionWithRunTemplates =
+        makeSolution(
+            organizationSaved.id,
+            runTemplates =
+                mutableListOf(
+                    RunTemplateCreateRequest(
+                        id = "runTemplateId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        name = "runTemplateName1",
+                        tags = mutableListOf("runTemplateTag1", "runTemplateTag2"),
+                        computeSize = "this_is_a_computeSize",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                                limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
+                        executionTimeout = 10),
+                    RunTemplateCreateRequest(
+                        id = "runTemplateId2",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        name = "runTemplateName2",
+                        tags = mutableListOf("runTemplateTag3", "runTemplateTag4"),
+                        computeSize = "this_is_a_computeSize2",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
+                                limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
+                        executionTimeout = 20)))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithRunTemplates)
+    val runTemplateList = solutionApiService.listRunTemplates(organizationSaved.id, newSolution.id)
+
+    assertEquals(2, runTemplateList.size)
+    val firstRunTemplate = runTemplateList[0]
+    assertEquals("runTemplateId", firstRunTemplate.id)
+    assertEquals("this_is_a_description", firstRunTemplate.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label"), firstRunTemplate.labels)
+    assertEquals("runTemplateName1", firstRunTemplate.name)
+    assertEquals(mutableListOf("runTemplateTag1", "runTemplateTag2"), firstRunTemplate.tags)
+    assertEquals("this_is_a_computeSize", firstRunTemplate.computeSize)
+    assertEquals(
+        mutableListOf("parameterGroup1", "parameterGroup2"), firstRunTemplate.parameterGroups)
+    assertEquals(10, firstRunTemplate.executionTimeout!!)
+    assertEquals("1Go", firstRunTemplate.runSizing?.requests?.cpu)
+    assertEquals("1Go", firstRunTemplate.runSizing?.requests?.memory)
+    assertEquals("2Go", firstRunTemplate.runSizing?.limits?.cpu)
+    assertEquals("2Go", firstRunTemplate.runSizing?.limits?.memory)
+    val secondRunTemplate = runTemplateList[1]
+    assertEquals("runTemplateId2", secondRunTemplate.id)
+    assertEquals("this_is_a_description2", secondRunTemplate.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label2"), secondRunTemplate.labels)
+    assertEquals("runTemplateName2", secondRunTemplate.name)
+    assertEquals(mutableListOf("runTemplateTag3", "runTemplateTag4"), secondRunTemplate.tags)
+    assertEquals("this_is_a_computeSize2", secondRunTemplate.computeSize)
+    assertEquals(
+        mutableListOf("parameterGroup3", "parameterGroup4"), secondRunTemplate.parameterGroups)
+    assertEquals(20, secondRunTemplate.executionTimeout!!)
+    assertEquals("3Go", secondRunTemplate.runSizing?.requests?.cpu)
+    assertEquals("3Go", secondRunTemplate.runSizing?.requests?.memory)
+    assertEquals("4Go", secondRunTemplate.runSizing?.limits?.cpu)
+    assertEquals("4Go", secondRunTemplate.runSizing?.limits?.memory)
+  }
+
+  @Test
+  fun `test get solution run template`() {
+    val newSolutionWithRunTemplates =
+        makeSolution(
+            organizationSaved.id,
+            runTemplates =
+                mutableListOf(
+                    RunTemplateCreateRequest(
+                        id = "runTemplateId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        name = "runTemplateName1",
+                        tags = mutableListOf("runTemplateTag1", "runTemplateTag2"),
+                        computeSize = "this_is_a_computeSize",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                                limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
+                        executionTimeout = 10),
+                    RunTemplateCreateRequest(
+                        id = "runTemplateId2",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        name = "runTemplateName2",
+                        tags = mutableListOf("runTemplateTag3", "runTemplateTag4"),
+                        computeSize = "this_is_a_computeSize2",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
+                                limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
+                        executionTimeout = 20)))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithRunTemplates)
+
+    val runTemplate =
+        solutionApiService.getRunTemplate(
+            organizationSaved.id, newSolution.id, newSolution.runTemplates[0].id)
+
+    assertNotNull(runTemplate)
+    assertEquals("runTemplateId", runTemplate.id)
+    assertEquals("this_is_a_description", runTemplate.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label"), runTemplate.labels)
+    assertEquals("runTemplateName1", runTemplate.name)
+    assertEquals(mutableListOf("runTemplateTag1", "runTemplateTag2"), runTemplate.tags)
+    assertEquals("this_is_a_computeSize", runTemplate.computeSize)
+    assertEquals(mutableListOf("parameterGroup1", "parameterGroup2"), runTemplate.parameterGroups)
+    assertEquals(10, runTemplate.executionTimeout!!)
+    assertEquals("1Go", runTemplate.runSizing?.requests?.cpu)
+    assertEquals("1Go", runTemplate.runSizing?.requests?.memory)
+    assertEquals("2Go", runTemplate.runSizing?.limits?.cpu)
+    assertEquals("2Go", runTemplate.runSizing?.limits?.memory)
+  }
+
+  @Test
+  fun `test get solution run template with non-existing run template id`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.getRunTemplate(
+              organizationSaved.id, solutionSaved.id, "non-existing-solution-run-template-id")
+        }
+    assertEquals(
+        "Solution run template with id non-existing-solution-run-template-id does not exist",
+        exception.message)
+  }
+
+  @Test
+  fun `test update solution run template`() {
+    val newSolutionWithRunTemplates =
+        makeSolution(
+            organizationSaved.id,
+            runTemplates =
+                mutableListOf(
+                    RunTemplateCreateRequest(
+                        id = "runTemplateId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        name = "runTemplateName1",
+                        tags = mutableListOf("runTemplateTag1", "runTemplateTag2"),
+                        computeSize = "this_is_a_computeSize",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                                limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
+                        executionTimeout = 10),
+                    RunTemplateCreateRequest(
+                        id = "runTemplateId2",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        name = "runTemplateName2",
+                        tags = mutableListOf("runTemplateTag3", "runTemplateTag4"),
+                        computeSize = "this_is_a_computeSize2",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
+                                limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
+                        executionTimeout = 20)))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithRunTemplates)
+
+    val runTemplateId = newSolution.runTemplates[0].id
+    val runTemplate =
+        solutionApiService.updateSolutionRunTemplate(
+            organizationSaved.id,
+            newSolution.id,
+            runTemplateId,
+            RunTemplateUpdateRequest(
+                description = "this_is_a_description3",
+                labels = mutableMapOf("fr" to "this_is_a_label3"),
+                name = "runTemplateName3",
+                tags = mutableListOf("runTemplateTag5"),
+                computeSize = "this_is_a_computeSize3",
+                runSizing =
+                    RunTemplateResourceSizing(
+                        requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                        limits = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                    ),
+                parameterGroups = mutableListOf("parameterGroup5"),
+                executionTimeout = 5))
+    assertNotNull(runTemplate)
+    assertEquals("runTemplateId", runTemplate.id)
+    assertEquals("this_is_a_description3", runTemplate.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label3"), runTemplate.labels)
+    assertEquals("runTemplateName3", runTemplate.name)
+    assertEquals(mutableListOf("runTemplateTag5"), runTemplate.tags)
+    assertEquals("this_is_a_computeSize3", runTemplate.computeSize)
+    assertEquals(mutableListOf("parameterGroup5"), runTemplate.parameterGroups)
+    assertEquals(5, runTemplate.executionTimeout!!)
+    assertEquals("1Go", runTemplate.runSizing?.requests?.cpu)
+    assertEquals("1Go", runTemplate.runSizing?.requests?.memory)
+    assertEquals("1Go", runTemplate.runSizing?.limits?.cpu)
+    assertEquals("1Go", runTemplate.runSizing?.limits?.memory)
+  }
+
+  @Test
+  fun `test update run template with non-existing run template id`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.updateSolutionRunTemplate(
+              organizationSaved.id,
+              solutionSaved.id,
+              "non-existing-solution-run-template-id",
+              RunTemplateUpdateRequest())
+        }
+    assertEquals(
+        "Solution run template with id non-existing-solution-run-template-id does not exist",
+        exception.message)
+  }
+
+  @Test
+  fun `test delete solution run template`() {
+
+    val newSolutionWithRunTemplates =
+        makeSolution(
+            organizationSaved.id,
+            runTemplates =
+                mutableListOf(
+                    RunTemplateCreateRequest(
+                        id = "runTemplateId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        name = "runTemplateName1",
+                        tags = mutableListOf("runTemplateTag1", "runTemplateTag2"),
+                        computeSize = "this_is_a_computeSize",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                                limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
+                        executionTimeout = 10),
+                    RunTemplateCreateRequest(
+                        id = "runTemplateId2",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        name = "runTemplateName2",
+                        tags = mutableListOf("runTemplateTag3", "runTemplateTag4"),
+                        computeSize = "this_is_a_computeSize2",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
+                                limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
+                        executionTimeout = 20)))
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithRunTemplates)
+
+    var listRunTemplates = solutionApiService.listRunTemplates(organizationSaved.id, newSolution.id)
+
+    val runTemplateIdToDelete = listRunTemplates[0].id
+    val runTemplateIdToKeep = listRunTemplates[1].id
+    solutionApiService.deleteSolutionRunTemplate(
+        organizationSaved.id, newSolution.id, runTemplateIdToDelete)
+
+    listRunTemplates = solutionApiService.listRunTemplates(organizationSaved.id, newSolution.id)
+
+    assertNotNull(listRunTemplates)
+    assertEquals(1, listRunTemplates.size)
+    assertEquals(runTemplateIdToKeep, listRunTemplates[0].id)
+  }
+
+  @Test
+  fun `test delete solution run template with non-existing run template id`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.deleteSolutionRunTemplate(
+              organizationSaved.id, solutionSaved.id, "non-existing-solution-run-template-id")
+        }
+    assertEquals(
+        "Solution run template with id non-existing-solution-run-template-id does not exist",
+        exception.message)
+  }
+
+  @Test
+  fun `test create solution run template with non-existing solution id`() {
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.createSolutionRunTemplate(
+              organizationSaved.id,
+              "non-existing-solution-id",
+              RunTemplateCreateRequest(id = "my_run_template_id"))
+        }
+    assertEquals(
+        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        exception.message)
+  }
+
+  @Test
+  fun `test create solution run template`() {
+    val newSolutionWithoutRunTemplates = makeSolution(organizationSaved.id)
+
+    val newSolutionWithEmptyRunTemplates =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithoutRunTemplates)
+
+    assertTrue(newSolutionWithEmptyRunTemplates.parameterGroups.isEmpty())
+
+    val runTemplateCreateRequest =
+        RunTemplateCreateRequest(
+            id = "runTemplateId",
+            description = "this_is_a_description",
+            labels = mutableMapOf("fr" to "this_is_a_label"),
+            name = "runTemplateName1",
+            tags = mutableListOf("runTemplateTag1", "runTemplateTag2"),
+            computeSize = "this_is_a_computeSize",
+            runSizing =
+                RunTemplateResourceSizing(
+                    requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                    limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                ),
+            parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
+            executionTimeout = 10)
+
+    solutionApiService.createSolutionRunTemplate(
+        organizationSaved.id, newSolutionWithEmptyRunTemplates.id, runTemplateCreateRequest)
+
+    val newSolutionWithNewRunTemplate =
+        solutionApiService.getSolution(organizationSaved.id, newSolutionWithEmptyRunTemplates.id)
+
+    assertFalse(newSolutionWithNewRunTemplate.runTemplates.isEmpty())
+    assertEquals(1, newSolutionWithNewRunTemplate.runTemplates.size)
+    val newRunTemplate = newSolutionWithNewRunTemplate.runTemplates[0]
+    assertEquals("runTemplateId", newRunTemplate.id)
+    assertEquals("this_is_a_description", newRunTemplate.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label"), newRunTemplate.labels)
+    assertEquals("runTemplateName1", newRunTemplate.name)
+    assertEquals(mutableListOf("runTemplateTag1", "runTemplateTag2"), newRunTemplate.tags)
+    assertEquals("this_is_a_computeSize", newRunTemplate.computeSize)
+    assertEquals(
+        mutableListOf("parameterGroup1", "parameterGroup2"), newRunTemplate.parameterGroups)
+    assertEquals(10, newRunTemplate.executionTimeout!!)
+    assertEquals("1Go", newRunTemplate.runSizing?.requests?.cpu)
+    assertEquals("1Go", newRunTemplate.runSizing?.requests?.memory)
+    assertEquals("2Go", newRunTemplate.runSizing?.limits?.cpu)
+    assertEquals("2Go", newRunTemplate.runSizing?.limits?.memory)
+  }
+
+  @Test
+  fun `test create solution run template with already existing run template id`() {
+    val runTemplateCreateRequest =
+        RunTemplateCreateRequest(
+            id = "runTemplateId",
+            description = "this_is_a_description",
+            labels = mutableMapOf("fr" to "this_is_a_label"),
+            name = "runTemplateName1",
+            tags = mutableListOf("runTemplateTag1", "runTemplateTag2"),
+            computeSize = "this_is_a_computeSize",
+            runSizing =
+                RunTemplateResourceSizing(
+                    requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                    limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                ),
+            parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
+            executionTimeout = 10)
+
+    val newSolutionWithRunTemplate =
+        solutionApiService.createSolution(
+            organizationSaved.id,
+            makeSolution(runTemplates = mutableListOf(runTemplateCreateRequest)))
+
+    assertEquals(1, newSolutionWithRunTemplate.runTemplates.size)
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.createSolutionRunTemplate(
+              organizationSaved.id, newSolutionWithRunTemplate.id, runTemplateCreateRequest)
+        }
+
+    assertEquals("Run template with id 'runTemplateId' already exists", exception.message)
+  }
+
+  @Test
+  fun `test create solution with several run template with the same id `() {
+
+    val newSolutionWithRunTemplates =
+        makeSolution(
+            organizationSaved.id,
+            runTemplates =
+                mutableListOf(
+                    RunTemplateCreateRequest(
+                        id = "rUnTeMpLaTeId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        name = "runTemplateName1",
+                        tags = mutableListOf("runTemplateTag1", "runTemplateTag2"),
+                        computeSize = "this_is_a_computeSize",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                                limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
+                        executionTimeout = 10),
+                    RunTemplateCreateRequest(
+                        id = "RuNtEmPlAtEId",
+                        description = "this_is_a_description2",
+                        labels = mutableMapOf("fr" to "this_is_a_label2"),
+                        name = "runTemplateName2",
+                        tags = mutableListOf("runTemplateTag3", "runTemplateTag4"),
+                        computeSize = "this_is_a_computeSize2",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
+                                limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
+                        executionTimeout = 20)))
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.createSolution(organizationSaved.id, newSolutionWithRunTemplates)
+        }
+
+    assertEquals("One or several solution items have same id : runTemplates", exception.message)
   }
 
   fun makeOrganizationCreateRequest(id: String = "organization_id"): OrganizationCreateRequest {
