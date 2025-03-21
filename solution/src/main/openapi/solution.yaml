@@ -491,59 +491,49 @@ paths:
         required: true
         schema:
           type: string
-    patch:
-      operationId: updateSolutionRunTemplates
+    get:
+      operationId: listRunTemplates
       tags:
         - solution
-      summary: Update solution run templates
-      requestBody:
-        description: Run templates to update
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/RunTemplate"
-            examples:
-              RunTemplates:
-                $ref: '#/components/examples/RunTemplates'
-          application/yaml:
-            schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/RunTemplate"
-            examples:
-              RunTemplates:
-                $ref: '#/components/examples/RunTemplates'
+      summary: List all solution run templates
       responses:
-        "201":
-          description: Run templates successfully updated
+        "200":
+          description: Run templates successfully listed
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunTemplate'
-            application/yaml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RunTemplate'
-        "400":
-          description: Bad request - Invalid run templates
         "404":
           description: Solution not found or insufficient access rights
-    delete:
-      operationId: deleteSolutionRunTemplates
+    post:
+      operationId: createSolutionRunTemplate
       tags:
         - solution
-      summary: Delete all run templates from the solution
+      summary: Create a solution run template
+      requestBody:
+        description: Run template to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunTemplateCreateRequest"
+          application/yaml:
+            schema:
+              $ref: "#/components/schemas/RunTemplateCreateRequest"
       responses:
-        "204":
-          description: Run templates successfully deleted
+        "201":
+          description: Run template successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunTemplate'
+        "400":
+          description: Bad request - Invalid run template
         "404":
           description: Solution not found or insufficient access rights
+
 
   /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}:
     parameters:
@@ -565,6 +555,20 @@ paths:
         required: true
         schema:
           type: string
+    get:
+      operationId: getRunTemplate
+      tags:
+        - solution
+      summary: Retrieve a solution run templates
+      responses:
+        "200":
+          description: Run template successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunTemplate'
+        "404":
+          description: Solution not found or insufficient access rights
     patch:
       operationId: updateSolutionRunTemplate
       tags:
@@ -576,30 +580,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RunTemplate"
-            examples:
-              RunTemplate:
-                $ref: '#/components/examples/RunTemplate'
+              $ref: "#/components/schemas/RunTemplateUpdateRequest"
           application/yaml:
             schema:
-              $ref: "#/components/schemas/RunTemplate"
-            examples:
-              RunTemplate:
-                $ref: '#/components/examples/RunTemplate'
+              $ref: "#/components/schemas/RunTemplateUpdateRequest"
       responses:
         "200":
           description: Run template successfully updated
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RunTemplate'
-            application/yaml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RunTemplate'
+                $ref: '#/components/schemas/RunTemplate'
         "400":
           description: Bad request - Invalid run template updates
         "404":
@@ -1066,7 +1057,7 @@ components:
           default: []
           description: List of Run Templates
           items:
-            $ref: '#/components/schemas/RunTemplate'
+            $ref: '#/components/schemas/RunTemplateCreateRequest'
         url:
           type: string
           description: An optional URL link to solution page
@@ -1132,15 +1123,18 @@ components:
         parameters:
           type: array
           description: The list of Run Template Parameters
-          default: [ ]
           items:
             $ref: '#/components/schemas/RunTemplateParameterCreateRequest'
         parameterGroups:
           type: array
           description: The list of parameters groups for the Run Templates
-          default: []
           items:
             $ref: '#/components/schemas/RunTemplateParameterGroupCreateRequest'
+        runTemplates:
+          type: array
+          description: List of Run Templates
+          items:
+            $ref: '#/components/schemas/RunTemplateCreateRequest'
 
     # Security Objects
     SolutionSecurity:
@@ -1233,6 +1227,86 @@ components:
           description: An optional duration in seconds in which a workflow is allowed to run
       required:
         - id
+        - parameterGroups
+
+    RunTemplateCreateRequest:
+      type: object
+      description: A Solution Run Template Create Request
+      properties:
+        id:
+          type: string
+          description: The Solution Run Template id
+          minLength: 1
+          maxLength: 50
+          example: "template-123"
+        name:
+          type: string
+          description: The Run Template name
+          minLength: 1
+          maxLength: 50
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
+        description:
+          type: string
+          description: The Run Template description
+        tags:
+          type: array
+          description: The list of Run Template tags
+          items:
+            type: string
+        computeSize:
+          type: string
+          description: The compute size needed for this Run Template
+        runSizing:
+          description: Definition of resources needed for the scenario run
+          $ref: "#/components/schemas/RunTemplateResourceSizing"
+        parameterGroups:
+          type: array
+          default: []
+          description: The ordered list of parameters groups for the Run Template
+          items:
+            type: string
+            description: A Run Template Group Parameter id
+        executionTimeout:
+          type: integer
+          description: An optional duration in seconds in which a workflow is allowed to run
+      required:
+        - id
+
+    RunTemplateUpdateRequest:
+      type: object
+      description: A Solution Run Template Create Request
+      properties:
+        name:
+          type: string
+          description: The Run Template name
+          minLength: 1
+          maxLength: 50
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
+        description:
+          type: string
+          description: The Run Template description
+        tags:
+          type: array
+          description: The list of Run Template tags
+          items:
+            type: string
+        computeSize:
+          type: string
+          description: The compute size needed for this Run Template
+        runSizing:
+          description: Definition of resources needed for the scenario run
+          $ref: "#/components/schemas/RunTemplateResourceSizing"
+        parameterGroups:
+          type: array
+          description: The ordered list of parameters groups for the Run Template
+          items:
+            type: string
+            description: A Run Template Group Parameter id
+        executionTimeout:
+          type: integer
+          description: An optional duration in seconds in which a workflow is allowed to run
 
     RunTemplateResourceSizing:
       type: object

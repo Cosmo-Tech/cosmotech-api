@@ -28,7 +28,7 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.runner.domain.*
 import com.cosmotech.runner.domain.ResourceSizeInfo
-import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import com.ninjasquad.springmockk.SpykBean
 import io.mockk.every
@@ -73,7 +73,7 @@ class RunnerControllerTests : ControllerTestBase() {
             com.cosmotech.solution.domain.ResourceSizeInfo("cpu_limits", "memory_limits"))
     val runTemplates =
         mutableListOf(
-            RunTemplate(
+            RunTemplateCreateRequest(
                 RUNNER_RUN_TEMPLATE,
                 runTemplateName,
                 parameterLabels,

@@ -26,7 +26,6 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
 import io.mockk.every
 import io.mockk.mockk
-import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -162,7 +161,7 @@ class SolutionControllerTests : ControllerTestBase() {
             ResourceSizeInfo("cpu_limits", "memory_limits"))
     val runTemplates =
         mutableListOf(
-            RunTemplate(
+            RunTemplateCreateRequest(
                 runTemplateId,
                 runTemplateName,
                 parameterLabels,
@@ -300,7 +299,7 @@ class SolutionControllerTests : ControllerTestBase() {
             ResourceSizeInfo("cpu_limits", "memory_limits"))
     val runTemplates =
         mutableListOf(
-            RunTemplate(
+            RunTemplateCreateRequest(
                 runTemplateId,
                 runTemplateName,
                 parameterLabels,
@@ -974,7 +973,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
-  fun add_solution_runTemplates() {
+  fun create_solution_runTemplate() {
 
     val description = "this_is_a_description"
     val tags = mutableListOf("tag1", "tag2")
@@ -987,85 +986,42 @@ class SolutionControllerTests : ControllerTestBase() {
         RunTemplateResourceSizing(
             ResourceSizeInfo("cpu_requests", "memory_requests"),
             ResourceSizeInfo("cpu_limits", "memory_limits"))
-    val runTemplates =
-        mutableListOf(
-            RunTemplate(
-                runTemplateId,
-                runTemplateName,
-                parameterLabels,
-                description,
-                tags,
-                runTemplateComputeSize,
-                runTemplateRunSizing,
-                mutableListOf(parameterGroupId),
-                10))
+    val runTemplate =
+        RunTemplateCreateRequest(
+            runTemplateId,
+            runTemplateName,
+            parameterLabels,
+            description,
+            tags,
+            runTemplateComputeSize,
+            runTemplateRunSizing,
+            mutableListOf(parameterGroupId),
+            10)
 
     val solutionId =
         createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
 
     mvc.perform(
-            patch("/organizations/$organizationId/solutions/$solutionId/runTemplates")
+            post("/organizations/$organizationId/solutions/$solutionId/runTemplates")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(JSONArray(runTemplates).toString())
+                .content(JSONObject(runTemplate).toString())
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
-        .andExpect(jsonPath("$[0].id").value(runTemplateId))
-        .andExpect(jsonPath("$[0].name").value(runTemplateName))
-        .andExpect(jsonPath("$[0].labels").value(parameterLabels))
-        .andExpect(jsonPath("$[0].description").value(description))
-        .andExpect(jsonPath("$[0].tags").value(tags))
-        .andExpect(jsonPath("$[0].computeSize").value(runTemplateComputeSize))
-        .andExpect(jsonPath("$[0].runSizing.requests.cpu").value("cpu_requests"))
-        .andExpect(jsonPath("$[0].runSizing.requests.memory").value("memory_requests"))
-        .andExpect(jsonPath("$[0].runSizing.limits.cpu").value("cpu_limits"))
-        .andExpect(jsonPath("$[0].runSizing.limits.memory").value("memory_limits"))
-        .andExpect(jsonPath("$[0].parameterGroups").value(mutableListOf(parameterGroupId)))
-        .andExpect(jsonPath("$[0].executionTimeout").value(10))
+        .andExpect(jsonPath("$.id").value(runTemplateId))
+        .andExpect(jsonPath("$.name").value(runTemplateName))
+        .andExpect(jsonPath("$.labels").value(parameterLabels))
+        .andExpect(jsonPath("$.description").value(description))
+        .andExpect(jsonPath("$.tags").value(tags))
+        .andExpect(jsonPath("$.computeSize").value(runTemplateComputeSize))
+        .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
+        .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
+        .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits"))
+        .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$.parameterGroups").value(mutableListOf(parameterGroupId)))
+        .andExpect(jsonPath("$.executionTimeout").value(10))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
-            document("organizations/{organization_id}/solutions/{solution_id}/runTemplates/PATCH"))
-  }
-
-  @Test
-  @WithMockOauth2User
-  fun delete_solution_runTemplates() {
-
-    val description = "this_is_a_description"
-    val tags = mutableListOf("tag1", "tag2")
-    val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
-    val parameterGroupId = "parameterGroup1"
-    val runTemplateId = "runtemplate1"
-    val runTemplateName = "this_is_a_name"
-    val runTemplateComputeSize = "this_is_a_compute_size"
-    val runTemplateRunSizing =
-        RunTemplateResourceSizing(
-            ResourceSizeInfo("cpu_requests", "memory_requests"),
-            ResourceSizeInfo("cpu_limits", "memory_limits"))
-    val runTemplates =
-        mutableListOf(
-            RunTemplate(
-                runTemplateId,
-                runTemplateName,
-                parameterLabels,
-                description,
-                tags,
-                runTemplateComputeSize,
-                runTemplateRunSizing,
-                mutableListOf(parameterGroupId),
-                10))
-
-    val solutionId =
-        createSolutionAndReturnId(
-            mvc, organizationId, constructSolutionCreateRequest(runTemplates = runTemplates))
-
-    mvc.perform(
-            delete("/organizations/$organizationId/solutions/$solutionId/runTemplates")
-                .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf()))
-        .andExpect(status().is2xxSuccessful)
-        .andDo(MockMvcResultHandlers.print())
-        .andDo(
-            document("organizations/{organization_id}/solutions/{solution_id}/runTemplates/DELETE"))
+            document("organizations/{organization_id}/solutions/{solution_id}/runTemplates/POST"))
   }
 
   @Test
@@ -1085,7 +1041,7 @@ class SolutionControllerTests : ControllerTestBase() {
             ResourceSizeInfo("cpu_limits", "memory_limits"))
     val runTemplates =
         mutableListOf(
-            RunTemplate(
+            RunTemplateCreateRequest(
                 runTemplateId,
                 runTemplateName,
                 parameterLabels,
@@ -1119,7 +1075,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     val runTemplates =
         mutableListOf(
-            RunTemplate(
+            RunTemplateCreateRequest(
                 runTemplateId,
                 "this_is_a_name",
                 mutableMapOf("fr" to "this_is_a_label"),
@@ -1147,8 +1103,7 @@ class SolutionControllerTests : ControllerTestBase() {
             ResourceSizeInfo("cpu_requests2", "memory_requests2"),
             ResourceSizeInfo("cpu_limits2", "memory_limits2"))
     val newRunTemplate =
-        RunTemplate(
-            runTemplateId,
+        RunTemplateUpdateRequest(
             runTemplateName,
             parameterLabels,
             description,

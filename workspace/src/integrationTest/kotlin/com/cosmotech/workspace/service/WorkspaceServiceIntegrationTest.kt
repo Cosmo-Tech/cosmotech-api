@@ -692,7 +692,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       SolutionCreateRequest(
           key = UUID.randomUUID().toString(),
           name = "My solution",
-          runTemplates = mutableListOf(RunTemplate("template")),
+          runTemplates = mutableListOf(RunTemplateCreateRequest("template")),
           parameters = mutableListOf(RunTemplateParameterCreateRequest("parameter", "string")),
           csmSimulator = "simulator",
           parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest("group")),

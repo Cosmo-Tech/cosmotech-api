@@ -56,7 +56,7 @@ import com.cosmotech.run.domain.*
 import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.domain.*
 import com.cosmotech.runner.domain.ResourceSizeInfo
-import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import com.ninjasquad.springmockk.SpykBean
 import io.mockk.every
@@ -111,7 +111,7 @@ class RunControllerTests : ControllerTestBase() {
 
     val runTemplates =
         mutableListOf(
-            RunTemplate(
+            RunTemplateCreateRequest(
                 RUNNER_RUN_TEMPLATE,
                 RUN_TEMPLATE_NAME,
                 PARAMETER_LABELS,

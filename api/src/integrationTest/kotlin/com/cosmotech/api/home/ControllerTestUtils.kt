@@ -84,7 +84,7 @@ class ControllerTestUtils {
         tags: MutableList<String> = mutableListOf(),
         parameters: MutableList<RunTemplateParameterCreateRequest> = mutableListOf(),
         parameterGroups: MutableList<RunTemplateParameterGroupCreateRequest> = mutableListOf(),
-        runTemplates: MutableList<RunTemplate> = mutableListOf(),
+        runTemplates: MutableList<RunTemplateCreateRequest> = mutableListOf(),
         url: String = "",
         security: SolutionSecurity? = null
     ): SolutionCreateRequest {

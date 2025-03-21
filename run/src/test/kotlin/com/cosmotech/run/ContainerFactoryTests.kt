@@ -244,7 +244,7 @@ class ContainerFactoryTests {
         id = CSM_RUN_TEMPLATE_ID,
         name = "Test Run",
         computeSize = "highcpupool",
-    )
+        parameterGroups = mutableListOf())
   }
 
   private fun getSolution(): Solution {

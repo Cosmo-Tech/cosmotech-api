@@ -661,7 +661,8 @@ class WorkspaceServiceImplTests {
             mutableListOf(
                 RunTemplateParameterGroup(
                     id = "group", isTable = false, parameters = mutableListOf())),
-        runTemplates = mutableListOf(RunTemplate("template")),
+        runTemplates =
+            mutableListOf(RunTemplate(id = "template", parameterGroups = mutableListOf())),
         security =
             SolutionSecurity(
                 ROLE_ADMIN, mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
