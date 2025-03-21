@@ -39,7 +39,7 @@ plugins {
   id("com.diffplug.spotless") version "7.0.2"
   id("org.springframework.boot") version "3.4.1" apply false
   id("project-report")
-  id("org.owasp.dependencycheck") version "12.0.0"
+  id("org.owasp.dependencycheck") version "12.1.0"
   id("com.github.jk1.dependency-license-report") version "2.9"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
