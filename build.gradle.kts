@@ -549,6 +549,18 @@ subprojects {
   }
 }
 
+tasks.getByName("spotlessJava") {
+  dependsOn(":cosmotech-api:openApiMarkdownGenerate", ":cosmotech-api:openApiUmlGenerate")
+}
+
+tasks.getByName("spotlessKotlin") {
+  dependsOn(":cosmotech-api:openApiMarkdownGenerate", ":cosmotech-api:openApiUmlGenerate")
+}
+
+tasks.getByName("spotlessKotlinGradle") {
+  dependsOn(":cosmotech-api:openApiMarkdownGenerate", ":cosmotech-api:openApiUmlGenerate")
+}
+
 val copySubProjectsDetektReportsTasks =
     subprojects.flatMap { subProject ->
       listOf("html", "xml", "txt", "sarif").map { format ->
