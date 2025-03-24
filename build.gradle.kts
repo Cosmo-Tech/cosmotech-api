@@ -74,7 +74,7 @@ val apiValidationVersion = "3.0.2"
 val kubernetesClientVersion = "22.0.0"
 
 // Checks
-val detektVersion = "1.23.7"
+val detektVersion = "1.23.8"
 
 // Tests
 val jUnitBomVersion = "5.10.0"
