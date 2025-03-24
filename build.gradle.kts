@@ -44,7 +44,7 @@ plugins {
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   id("org.openapi.generator") version "7.10.0" apply false
-  id("com.google.cloud.tools.jib") version "3.4.4" apply false
+  id("com.google.cloud.tools.jib") version "3.4.5" apply false
 }
 
 scmVersion { tag { prefix.set("") } }
