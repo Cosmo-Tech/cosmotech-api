@@ -6,7 +6,7 @@ plugins { id("org.jetbrains.kotlinx.kover") }
 
 dependencies {
   implementation(projects.cosmotechOrganizationApi)
-  implementation("org.apache.commons:commons-compress:1.24.0")
+  implementation("org.apache.commons:commons-compress:1.27.1")
 
   testImplementation("org.testng:testng:7.8.0")
   testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.4")
