@@ -309,7 +309,7 @@ subprojects {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.awaitility:awaitility-kotlin:$awaitilityKVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
       // Drop legacy Junit < 5
@@ -318,7 +318,7 @@ subprojects {
     }
     integrationTestImplementation("com.ninja-squad:springmockk:$springMockkVersion")
     // developmentOnly("org.springframework.boot:spring-boot-devtools")
-    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
 
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
   }
