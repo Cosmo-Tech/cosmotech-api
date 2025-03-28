@@ -71,7 +71,7 @@ val springDocVersion = "2.5.0"
 val swaggerParserVersion = "2.1.24"
 val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
-val kubernetesClientVersion = "22.0.0"
+val kubernetesClientVersion = "23.0.0-legacy"
 
 // Checks
 val detektVersion = "1.23.7"
