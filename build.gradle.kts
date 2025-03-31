@@ -296,7 +296,7 @@ subprojects {
 
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}") {
-      constraints { implementation("ai.djl:api:0.28.0") }
+      constraints { implementation("ai.djl:api:0.32.0") }
     }
     implementation("org.springframework.data:spring-data-redis")
     implementation("org.springframework:spring-jdbc")
