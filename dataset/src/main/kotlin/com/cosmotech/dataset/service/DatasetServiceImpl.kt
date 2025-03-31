@@ -1033,13 +1033,14 @@ class DatasetServiceImpl(
           datasetRepository
               .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), pageable)
               .toList()
+    } else {
+      datasetList =
+          findAllPaginated(defaultPageSize) {
+            datasetRepository
+                .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
+                .toList()
+          }
     }
-    datasetList =
-        findAllPaginated(defaultPageSize) {
-          datasetRepository
-              .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
-              .toList()
-        }
     datasetList.forEach { it.security = updateSecurityVisibility(it).security }
     return datasetList
   }
