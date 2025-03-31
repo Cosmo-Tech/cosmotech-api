@@ -37,8 +37,7 @@ paths:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/WorkspaceCreateRequest'
             examples:
               Workspace:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
@@ -47,6 +46,12 @@ paths:
           description: the workspace details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                Workspace:
+                  $ref: '#/components/examples/BreweryWorkspace'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Workspace'
               examples:
@@ -84,6 +89,14 @@ paths:
               examples:
                 WorkspaceList:
                   $ref: '#/components/examples/WorkspaceList'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workspace'
+              examples:
+                WorkspaceList:
+                  $ref: '#/components/examples/WorkspaceList'
   /organizations/{organization_id}/workspaces/{workspace_id}:
     parameters:
       - name: organization_id
@@ -113,6 +126,12 @@ paths:
               examples:
                 Workspace:
                   $ref: '#/components/examples/BreweryWorkspace'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                Workspace:
+                  $ref: '#/components/examples/BreweryWorkspace'
         "404":
           description: The Workspace specified is unknown or you don't have access to it
     patch:
@@ -132,8 +151,7 @@ paths:
                 $ref: '#/components/examples/BreweryWorkspaceUpdate'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/WorkspaceUpdateRequest'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryWorkspaceUpdate'
@@ -142,6 +160,12 @@ paths:
           description: the workspace details
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                BreweryUpdated:
+                  $ref: '#/components/examples/BreweryWorkspaceUpdated'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/Workspace'
               examples:
@@ -226,6 +250,12 @@ paths:
               examples:
                 BreweryWorkspaceFile:
                   $ref: '#/components/examples/BreweryWorkspaceFile'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/WorkspaceFile'
+              examples:
+                BreweryWorkspaceFile:
+                  $ref: '#/components/examples/BreweryWorkspaceFile'
         "400":
           description: Bad request
     get:
@@ -238,6 +268,14 @@ paths:
           description: the workspace files
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkspaceFile'
+              examples:
+                WorkspaceFiles:
+                  $ref: '#/components/examples/WorkspaceFiles'
+            application/yaml:
               schema:
                 type: array
                 items:
@@ -360,6 +398,12 @@ paths:
               examples:
                 BreweryADTUpdated:
                   $ref: '#/components/examples/BreweryWorkspaceWithLink'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                BreweryADTUpdated:
+                  $ref: '#/components/examples/BreweryWorkspaceWithLink'
         "400":
           description: Bad request
         "404":
@@ -415,6 +459,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkspacePermissionsList'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/WorkspacePermissionsList'
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security:
     parameters:
@@ -440,6 +487,12 @@ paths:
           description: The Workspace security
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceSecurity'
+              examples:
+                WorkspaceSecurity:
+                  $ref: '#/components/examples/BreweryWorkspaceSecurity'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceSecurity'
               examples:
@@ -481,8 +534,7 @@ paths:
                 $ref: '#/components/examples/BreweryWorkspaceRole'
           application/yaml:
             schema:
-              type: string
-              format: binary
+              $ref: '#/components/schemas/WorkspaceRole'
             examples:
               BreweryWorkspaceRole:
                 $ref: '#/components/examples/BreweryWorkspaceRole'
@@ -491,6 +543,12 @@ paths:
           description: The Workspace default visibility
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceSecurity'
+              examples:
+                WriterWorkspaceSecurity:
+                  $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
+            application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceSecurity'
               examples:
