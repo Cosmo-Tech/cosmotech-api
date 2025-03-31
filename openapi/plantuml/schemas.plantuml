@@ -499,7 +499,6 @@ entity Solution {
     description: String
     * repository: String
     alwaysPull: Boolean
-    * csmSimulator: String
     * version: String
     * ownerId: String
     sdkVersion: String
@@ -523,7 +522,6 @@ entity SolutionCreateRequest {
     * repository: String
     * version: String
     alwaysPull: Boolean
-    * csmSimulator: String
     tags: List<String>
     parameters: List<RunTemplateParameterCreateRequest>
     parameterGroups: List<RunTemplateParameterGroupCreateRequest>
@@ -547,7 +545,6 @@ entity SolutionUpdateRequest {
     description: String
     repository: String
     alwaysPull: Boolean
-    csmSimulator: String
     version: String
     url: String
     tags: List<String>

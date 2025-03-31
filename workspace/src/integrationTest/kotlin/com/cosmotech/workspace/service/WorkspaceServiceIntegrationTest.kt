@@ -694,7 +694,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
           name = "My solution",
           runTemplates = mutableListOf(RunTemplateCreateRequest("template")),
           parameters = mutableListOf(RunTemplateParameterCreateRequest("parameter", "string")),
-          csmSimulator = "simulator",
           parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest("group")),
           repository = "repository",
           version = "1.0.0",

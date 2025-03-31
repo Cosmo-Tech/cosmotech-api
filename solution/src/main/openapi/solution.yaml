@@ -946,11 +946,6 @@ components:
           type: boolean
           description: Set to true if the runtemplate wants to always pull the image
           default: false
-        csmSimulator:
-          type: string
-          description: The main Cosmo Tech simulator name used in standard Run Template
-          minLength: 1
-          example: "brewery_simulator"
         version:
           type: string
           description: The Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
@@ -1000,7 +995,6 @@ components:
         - key
         - name
         - repository
-        - csmSimulator
         - version
         - ownerId
         - parameters
@@ -1043,11 +1037,6 @@ components:
           type: boolean
           description: Set to true if the runtemplate wants to always pull the image
           default: false
-        csmSimulator:
-          type: string
-          description: The main Cosmo Tech simulator name used in standard Run Template
-          minLength: 1
-          example: "brewery_simulator"
         tags:
           type: array
           description: The list of tags
@@ -1083,7 +1072,6 @@ components:
         - name
         - repository
         - version
-        - csmSimulator
 
     SolutionUpdateRequest:
       type: object
@@ -1114,11 +1102,6 @@ components:
           type: boolean
           description: Set to true if the runtemplate wants to always pull the image
           default: false
-        csmSimulator:
-          type: string
-          description: The main Cosmo Tech simulator name used in standard Run Template
-          minLength: 1
-          example: "brewery_simulator"
         version:
           type: string
           description: The Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag

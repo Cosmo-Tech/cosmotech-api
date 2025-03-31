@@ -8,7 +8,6 @@ import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_OWNER_NAME
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_KEY
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_NAME
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_REPOSITORY
-import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_SIMULATOR
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_VERSION
 import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_KEY
 import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_NAME
@@ -78,7 +77,6 @@ class ControllerTestUtils {
         name: String = SOLUTION_NAME,
         repository: String = SOLUTION_REPOSITORY,
         version: String = SOLUTION_VERSION,
-        csmSimulator: String = SOLUTION_SIMULATOR,
         description: String = "",
         alwaysPull: Boolean? = null,
         tags: MutableList<String> = mutableListOf(),
@@ -93,7 +91,6 @@ class ControllerTestUtils {
           name = name,
           repository = repository,
           version = version,
-          csmSimulator = csmSimulator,
           description = description,
           alwaysPull = alwaysPull,
           tags = tags,
@@ -111,7 +108,6 @@ class ControllerTestUtils {
         name: String = SOLUTION_NAME,
         repository: String = SOLUTION_REPOSITORY,
         version: String = SOLUTION_VERSION,
-        csmSimulator: String = SOLUTION_SIMULATOR,
         description: String = "",
         alwaysPull: Boolean? = null,
         tags: MutableList<String> = mutableListOf(),
@@ -122,7 +118,6 @@ class ControllerTestUtils {
           name = name,
           repository = repository,
           version = version,
-          csmSimulator = csmSimulator,
           description = description,
           alwaysPull = alwaysPull,
           tags = tags,

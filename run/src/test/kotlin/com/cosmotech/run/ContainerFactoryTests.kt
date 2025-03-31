@@ -262,7 +262,6 @@ class ContainerFactoryTests {
                 RunTemplateParameterGroup(
                     id = "parameter", isTable = false, parameters = mutableListOf())),
         organizationId = "Organizationid",
-        csmSimulator = "simulator",
         security = SolutionSecurity(ROLE_ADMIN, mutableListOf()),
     )
   }

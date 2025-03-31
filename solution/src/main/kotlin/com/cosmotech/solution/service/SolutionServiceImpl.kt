@@ -152,7 +152,6 @@ class SolutionServiceImpl(
             parameters = solutionRunTemplateParameters,
             parameterGroups = solutionRunTemplateParameterGroups,
             url = solutionCreateRequest.url,
-            csmSimulator = solutionCreateRequest.csmSimulator,
             alwaysPull = solutionCreateRequest.alwaysPull,
             security = security)
 
@@ -283,7 +282,6 @@ class SolutionServiceImpl(
             key = solutionUpdateRequest.key ?: existingSolution.key,
             version = solutionUpdateRequest.version ?: existingSolution.version,
             url = solutionUpdateRequest.url ?: existingSolution.url,
-            csmSimulator = solutionUpdateRequest.csmSimulator ?: existingSolution.csmSimulator,
             alwaysPull = solutionUpdateRequest.alwaysPull ?: existingSolution.alwaysPull,
             parameters = solutionRunTemplateParameters,
             parameterGroups = solutionRunTemplateParameterGroups,

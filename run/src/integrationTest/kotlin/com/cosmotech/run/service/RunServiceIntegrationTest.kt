@@ -221,7 +221,6 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                       name = "RunTemplate1",
                       description = "RunTemplate1 description")),
           parameters = mutableListOf(RunTemplateParameterCreateRequest("parameter", "string")),
-          csmSimulator = "simulator",
           version = "1.0.0",
           repository = "repository",
           parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest("group")),

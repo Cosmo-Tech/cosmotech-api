@@ -4451,7 +4451,6 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           runTemplates = mutableListOf(RunTemplateCreateRequest("runTemplateId")),
           parameters = mutableListOf(RunTemplateParameterCreateRequest("parameter", "string")),
           repository = "repository",
-          csmSimulator = "simulator",
           version = "1.0.0",
           parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest("group")),
           security =
