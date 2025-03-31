@@ -17,7 +17,6 @@ import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_KEY
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_NAME
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_REPOSITORY
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_SDK_VERSION
-import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_SIMULATOR
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_VERSION
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
@@ -186,7 +185,6 @@ class SolutionControllerTests : ControllerTestBase() {
             SOLUTION_NAME,
             SOLUTION_REPOSITORY,
             SOLUTION_VERSION,
-            SOLUTION_SIMULATOR,
             description,
             false,
             tags,
@@ -324,7 +322,6 @@ class SolutionControllerTests : ControllerTestBase() {
             SOLUTION_NAME,
             SOLUTION_REPOSITORY,
             SOLUTION_VERSION,
-            SOLUTION_SIMULATOR,
             description,
             false,
             tags,
@@ -422,15 +419,14 @@ class SolutionControllerTests : ControllerTestBase() {
 
     val solutionUpdateRequest =
         constructSolutionUpdateRequest(
-            SOLUTION_KEY,
-            SOLUTION_NAME,
-            SOLUTION_REPOSITORY,
-            SOLUTION_VERSION,
-            SOLUTION_SIMULATOR,
-            description,
-            true,
-            tags,
-            url)
+            key = SOLUTION_KEY,
+            name = SOLUTION_NAME,
+            repository = SOLUTION_REPOSITORY,
+            version = SOLUTION_VERSION,
+            description = description,
+            alwaysPull = true,
+            tags = tags,
+            url = url)
 
     mvc.perform(
             patch("/organizations/$organizationId/solutions/$solutionId")

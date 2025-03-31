@@ -765,7 +765,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             key = "key",
             repository = "repository",
             runTemplates = mutableListOf(RunTemplateCreateRequest(id = "templates")),
-            csmSimulator = "simulator",
             parameters =
                 mutableListOf(RunTemplateParameterCreateRequest("parameterName", "string")),
             parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest("group")),
@@ -838,7 +837,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
-    val csmSimulator = "simulator"
     val solutionRepository = "repository"
 
     val solutionCreateRequest =
@@ -859,7 +857,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                     default = ROLE_ADMIN,
                     accessControlList =
                         mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
-            csmSimulator = csmSimulator,
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -879,7 +876,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("string", solutionSaved.parameters[0].varType)
     assertEquals(1, solutionSaved.parameterGroups.size)
     assertEquals("group", solutionSaved.parameterGroups[0].id)
-    assertEquals(csmSimulator, solutionSaved.csmSimulator)
     assertEquals(solutionUrl, solutionSaved.url)
     assertEquals(ROLE_ADMIN, solutionSaved.security.default)
     assertEquals(1, solutionSaved.security.accessControlList.size)
@@ -899,7 +895,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
-    val csmSimulator = "simulator"
     val solutionRepository = "repository"
 
     val solutionCreateRequest =
@@ -920,7 +915,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                     default = ROLE_ADMIN,
                     accessControlList =
                         mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
-            csmSimulator = csmSimulator,
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -931,7 +925,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val updatedDescription = "new description"
     val updatedTags = mutableListOf("newTag1", "newTag2")
     val updatedRepository = "new_repo"
-    val updatedCsmSimulator = "new_simulator"
     val newUrl = "new_url"
     val newVersion = "20.0.0"
     val solutionUpdateRequest =
@@ -942,7 +935,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             tags = updatedTags,
             alwaysPull = false,
             repository = updatedRepository,
-            csmSimulator = updatedCsmSimulator,
             runTemplates = solutionRunTemplates,
             parameters =
                 mutableListOf(
@@ -960,7 +952,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(updatedDescription, solutionSaved.description)
     assertEquals(updatedTags, solutionSaved.tags)
     assertEquals(updatedRepository, solutionSaved.repository)
-    assertEquals(updatedCsmSimulator, solutionSaved.csmSimulator)
     assertEquals(solutionRunTemplates.size, solutionSaved.runTemplates.size)
     assertEquals("template", solutionSaved.runTemplates[0].id)
     assertEquals(newUrl, solutionSaved.url)
@@ -986,7 +977,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
-    val csmSimulator = "simulator"
     val solutionRepository = "repository"
 
     val solutionCreateRequest =
@@ -1007,7 +997,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                     default = ROLE_ADMIN,
                     accessControlList =
                         mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
-            csmSimulator = csmSimulator,
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -1018,7 +1007,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val updatedDescription = "new description"
     val updatedTags = mutableListOf("newTag1", "newTag2")
     val updatedRepository = "new_repo"
-    val updatedCsmSimulator = "new_simulator"
     val newUrl = "new_url"
     val newVersion = "20.0.0"
     val solutionUpdateRequest =
@@ -1030,7 +1018,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             tags = updatedTags,
             alwaysPull = false,
             repository = updatedRepository,
-            csmSimulator = updatedCsmSimulator,
             url = newUrl,
             version = newVersion)
 
@@ -1043,7 +1030,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(updatedDescription, solutionSaved.description)
     assertEquals(updatedTags, solutionSaved.tags)
     assertEquals(updatedRepository, solutionSaved.repository)
-    assertEquals(updatedCsmSimulator, solutionSaved.csmSimulator)
     assertEquals(solutionRunTemplates.size, solutionSaved.runTemplates.size)
     assertEquals("template", solutionSaved.runTemplates[0].id)
     assertEquals(newUrl, solutionSaved.url)
@@ -1067,7 +1053,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
-    val csmSimulator = "simulator"
     val solutionRepository = "repository"
 
     val solutionCreateRequest =
@@ -1088,7 +1073,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                     default = ROLE_ADMIN,
                     accessControlList =
                         mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
-            csmSimulator = csmSimulator,
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -1099,7 +1083,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val updatedDescription = "new description"
     val updatedTags = mutableListOf("newTag1", "newTag2")
     val updatedRepository = "new_repo"
-    val updatedCsmSimulator = "new_simulator"
     val newUrl = "new_url"
     val newVersion = "20.0.0"
     val solutionUpdateRequest =
@@ -1114,7 +1097,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 mutableListOf(
                     RunTemplateParameterCreateRequest(id = "PaRaMeTeRnAmE", varType = "string"),
                     RunTemplateParameterCreateRequest(id = "pArAmEtErNaMe", varType = "string")),
-            csmSimulator = updatedCsmSimulator,
             url = newUrl,
             version = newVersion)
 
@@ -1138,7 +1120,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
-    val csmSimulator = "simulator"
     val solutionRepository = "repository"
 
     val solutionCreateRequest =
@@ -1159,7 +1140,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                     default = ROLE_ADMIN,
                     accessControlList =
                         mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
-            csmSimulator = csmSimulator,
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -1170,7 +1150,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val updatedDescription = "new description"
     val updatedTags = mutableListOf("newTag1", "newTag2")
     val updatedRepository = "new_repo"
-    val updatedCsmSimulator = "new_simulator"
     val newUrl = "new_url"
     val newVersion = "20.0.0"
     val solutionUpdateRequest =
@@ -1181,7 +1160,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             tags = updatedTags,
             alwaysPull = false,
             repository = updatedRepository,
-            csmSimulator = updatedCsmSimulator,
             url = newUrl,
             version = newVersion)
 
@@ -1194,7 +1172,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(updatedDescription, solutionSaved.description)
     assertEquals(updatedTags, solutionSaved.tags)
     assertEquals(updatedRepository, solutionSaved.repository)
-    assertEquals(updatedCsmSimulator, solutionSaved.csmSimulator)
     assertEquals(0, solutionSaved.runTemplates.size)
     assertEquals(newUrl, solutionSaved.url)
     assertEquals(newVersion, solutionSaved.version)
@@ -1217,7 +1194,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
-    val csmSimulator = "simulator"
     val solutionRepository = "repository"
 
     val solutionCreateRequest =
@@ -1238,7 +1214,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                     default = ROLE_ADMIN,
                     accessControlList =
                         mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
-            csmSimulator = csmSimulator,
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -1249,7 +1224,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val updatedDescription = "new description"
     val updatedTags = mutableListOf("newTag1", "newTag2")
     val updatedRepository = "new_repo"
-    val updatedCsmSimulator = "new_simulator"
     val newUrl = "new_url"
     val newVersion = "20.0.0"
     val solutionUpdateRequest =
@@ -1265,7 +1239,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 mutableListOf(
                     RunTemplateCreateRequest(id = "PaRaMeTeRnAmE"),
                     RunTemplateCreateRequest(id = "pArAmEtErNaMe")),
-            csmSimulator = updatedCsmSimulator,
             url = newUrl,
             version = newVersion)
 
@@ -2113,7 +2086,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
       runTemplates: MutableList<RunTemplateCreateRequest> = mutableListOf(),
       version: String = "1.0.0",
       repository: String = "repository",
-      csmSimulator: String = "simulator",
       parameter: MutableList<RunTemplateParameterCreateRequest> = mutableListOf(),
       parameterGroup: MutableList<RunTemplateParameterGroupCreateRequest> = mutableListOf(),
       userName: String = CONNECTED_READER_USER,
@@ -2125,7 +2097,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
           runTemplates = runTemplates,
           version = version,
           repository = repository,
-          csmSimulator = csmSimulator,
           parameters = parameter,
           parameterGroups = parameterGroup,
           security =

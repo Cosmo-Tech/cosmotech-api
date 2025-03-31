@@ -14,15 +14,11 @@ object SolutionConstants {
   const val SOLUTION_REPOSITORY = "solution_repository"
   const val SOLUTION_VERSION = "1.0.0"
   const val SOLUTION_SDK_VERSION = "11.3.0-45678.abcdef12"
-  const val SOLUTION_SIMULATOR = "my_simulator_name"
   const val NEW_USER_ID = "new.user@cosmotech.com"
   const val NEW_USER_ROLE = "editor"
   const val NEW_SOLUTION_NAME = "my_new_solution_name"
 
-  object RequestContent {
-    const val MINIMAL_SOLUTION_REQUEST_CREATION =
-        """{"key":"$SOLUTION_KEY","name":"$SOLUTION_NAME","repository":"$SOLUTION_REPOSITORY","version":"$SOLUTION_VERSION","csmSimulator":"$SOLUTION_SIMULATOR"}"""
-  }
+  object RequestContent {}
 
   object Errors {}
 }

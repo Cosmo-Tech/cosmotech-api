@@ -655,7 +655,6 @@ class WorkspaceServiceImplTests {
         ownerId = "ownerId",
         version = "1.0.0",
         repository = "repository",
-        csmSimulator = "simulator",
         parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
         parameterGroups =
             mutableListOf(
