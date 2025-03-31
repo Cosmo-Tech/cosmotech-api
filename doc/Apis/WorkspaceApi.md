@@ -51,7 +51,7 @@ All URIs are relative to *http://localhost*
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="createWorkspace"></a>
 # **createWorkspace**
@@ -77,7 +77,7 @@ Create a new workspace
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="createWorkspaceAccessControl"></a>
 # **createWorkspaceAccessControl**
@@ -133,7 +133,7 @@ Upload a file for the Workspace
 ### HTTP request headers
 
 - **Content-Type**: multipart/form-data
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="deleteDatasetLink"></a>
 # **deleteDatasetLink**
@@ -292,7 +292,7 @@ Get the details of an workspace
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="getWorkspaceAccessControl"></a>
 # **getWorkspaceAccessControl**
@@ -372,7 +372,7 @@ Get the Workspace security information
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listWorkspaceFiles"></a>
 # **listWorkspaceFiles**
@@ -398,7 +398,7 @@ List all Workspace files
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listWorkspaceRolePermissions"></a>
 # **listWorkspaceRolePermissions**
@@ -425,7 +425,7 @@ Get the Workspace permission by given role
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listWorkspaceSecurityUsers"></a>
 # **listWorkspaceSecurityUsers**
@@ -478,7 +478,7 @@ List all Workspaces
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateWorkspace"></a>
 # **updateWorkspace**
@@ -505,7 +505,7 @@ Update a workspace
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateWorkspaceAccessControl"></a>
 # **updateWorkspaceAccessControl**
@@ -560,5 +560,5 @@ Update the Workspace default security
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
