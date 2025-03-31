@@ -78,18 +78,6 @@ csm:
         namespace: "[fill-this-value]" # NAMESPACE
         service-account-name: "[fill-this-value]" # e.g argo-workflows-$NAMESPACE-service-account
         nodePoolLabel: ""
-    loki:
-      # base Url of Loki where to query logs
-      baseUrl: http://localhost:3100
-      containerRegistry:
-        host: "[fill-this-value]"
-        password: "[fill-this-value]"
-        provider: "[fill-this-value]"
-        registryPassword: "[fill-this-value]"
-        registryUrl: "[fill-this-value]"
-        registryUserName: "[fill-this-value]"
-        scheme: https
-        username: "[fill-this-value]"
     images:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector
