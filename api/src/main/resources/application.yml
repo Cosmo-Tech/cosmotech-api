@@ -171,8 +171,6 @@ csm:
           - text/plain
           - text/x-yaml
           - application/json
-    loki:
-      baseUrl: http://loki.phoenix.svc.cluster.local:3100
     containerRegistry:
       scheme: http
       host: localhost:5000
