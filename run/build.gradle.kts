@@ -7,7 +7,7 @@ plugins { id("org.jetbrains.kotlinx.kover") }
 dependencies {
   implementation("io.argoproj.workflow:argo-client-java:v3.5.11")
   implementation("com.squareup.retrofit2:retrofit:2.9.0")
-  implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+  implementation("com.squareup.retrofit2:converter-scalars:2.11.0")
 
   implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
   implementation("com.squareup.okhttp3:okhttp")
