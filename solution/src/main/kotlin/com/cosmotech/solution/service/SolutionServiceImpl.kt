@@ -259,16 +259,16 @@ class SolutionServiceImpl(
 
     val solutionRunTemplateParameters =
         solutionUpdateRequest.parameters?.map { convertToRunTemplateParameter(it) }?.toMutableList()
-            ?: mutableListOf()
+            ?: existingSolution.parameters
 
     val solutionRunTemplateParameterGroups =
         solutionUpdateRequest.parameterGroups
             ?.map { convertToRunTemplateParameterGroup(it) }
-            ?.toMutableList() ?: mutableListOf()
+            ?.toMutableList() ?: existingSolution.parameterGroups
 
     val solutionRunTemplates =
         solutionUpdateRequest.runTemplates?.map { convertToRunTemplate(it) }?.toMutableList()
-            ?: mutableListOf()
+            ?: existingSolution.runTemplates
 
     val updatedSolution =
         Solution(

@@ -1101,7 +1101,6 @@ components:
         alwaysPull:
           type: boolean
           description: Set to true if the runtemplate wants to always pull the image
-          default: false
         version:
           type: string
           description: The Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
