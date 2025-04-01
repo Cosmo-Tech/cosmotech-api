@@ -148,6 +148,49 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertTrue(solutionsFoundAfterDelete.size == 1)
   }
 
+  @Test
+  fun `test update solution with empty SolutionUpdateRequest`() {
+
+    val solutionKey = "key"
+    val solutionName = "name"
+    val solutionDescription = "description"
+    val solutionVersion = "1.0.0"
+    val solutionTags = mutableListOf("tag1", "tag2")
+    val solutionUrl = "url"
+    val solutionRunTemplates = mutableListOf(RunTemplateCreateRequest(id = "template"))
+    val solutionParameterGroups =
+        mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
+    val solutionRepository = "repository"
+
+    val solutionCreateRequest =
+        SolutionCreateRequest(
+            key = solutionKey,
+            name = solutionName,
+            description = solutionDescription,
+            version = solutionVersion,
+            tags = solutionTags,
+            repository = solutionRepository,
+            runTemplates = solutionRunTemplates,
+            parameterGroups = solutionParameterGroups,
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+            security =
+                SolutionSecurity(
+                    default = ROLE_ADMIN,
+                    accessControlList =
+                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+            url = solutionUrl,
+            alwaysPull = true,
+        )
+    val newSolution = solutionApiService.createSolution(organizationSaved.id, solutionCreateRequest)
+
+    val solutionUpdated =
+        solutionApiService.updateSolution(
+            organizationSaved.id, newSolution.id, SolutionUpdateRequest())
+    assertEquals(newSolution, solutionUpdated)
+  }
+
   @TestFactory
   fun `sdkVersion on Solution CRUD`() =
       mapOf(
@@ -1019,7 +1062,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             alwaysPull = false,
             repository = updatedRepository,
             url = newUrl,
-            version = newVersion)
+            version = newVersion,
+            parameters = mutableListOf())
 
     solutionSaved =
         solutionApiService.updateSolution(
@@ -1161,7 +1205,10 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             alwaysPull = false,
             repository = updatedRepository,
             url = newUrl,
-            version = newVersion)
+            version = newVersion,
+            runTemplates = mutableListOf(),
+            parameters = mutableListOf(),
+        )
 
     solutionSaved =
         solutionApiService.updateSolution(
