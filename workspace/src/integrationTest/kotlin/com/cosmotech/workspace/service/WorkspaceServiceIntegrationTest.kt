@@ -10,7 +10,6 @@ import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VIEWER
-import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -55,6 +54,7 @@ import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.io.UrlResource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
@@ -65,7 +65,7 @@ import org.springframework.test.context.junit4.SpringRunner
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("FunctionName")
-class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
+class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
@@ -146,15 +146,24 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             WorkspaceUpdateRequest(key = "key", name = "Workspace 1 updated"))
     assertEquals("Workspace 1 updated", updatedWorkspace.name)
     assertEquals(workspaceSaved.organizationId, updatedWorkspace.organizationId)
+  }
 
-    /*
-     TODO : Fix the corountine effect
+  @Test
+  fun `test list workspace files`() {
 
-    logger.info("should delete the first workspace")
-     workspaceApiService.deleteWorkspace(organizationRegistered.id!!, workspaceRegistered2.id!!)
-     val workspacesListAfterDelete: List<Workspace> =
-         workspaceApiService.listWorkspaces(organizationRegistered.id!!, null, null)
-     assertTrue(workspacesListAfterDelete.size == 1)*/
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+
+    var workspaceFiles =
+        workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
+    assertTrue(workspaceFiles.isEmpty())
+
+    val resourceTestFile = this::class.java.getResource("/test_workspace_file.txt")
+
+    workspaceApiService.createWorkspaceFile(
+        organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+
+    workspaceFiles = workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
+    assertEquals(1, workspaceFiles.size)
   }
 
   @Test
