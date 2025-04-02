@@ -108,13 +108,6 @@ E.g:
 {{- end }}
 {{- end }}
 
-{{/*
-Location of the persistence data
-*/}}
-{{- define "cosmotech-api.blobPersistencePath" -}}
-"/var/lib/cosmotech-api/data"
-{{- end }}
-
 {{- define "cosmotech-api.custom-rootca-path" -}}
 /mnt/cosmotech/certificates
 {{- end }}
@@ -197,8 +190,6 @@ csm:
       {{- else }}
       image-pull-secrets: []
       {{- end }}
-    blobPersistence:
-      path: {{ include "cosmotech-api.blobPersistencePath" . }}
     identityProvider:
       tls:
         bundle: {{ include "cosmotech-api.custom-rootca-bundle" . }}

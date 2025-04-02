@@ -46,11 +46,6 @@ spec:
         - name: helm-config
           secret:
             secretName: {{ include "cosmotech-api.fullname" . }}
-        {{if .Values.persistence.enabled}}
-        - name: blob-storage
-          persistentVolumeClaim:
-            claimName: {{ include "cosmotech-api.fullname" . }}-blob-storage
-        {{end}}
         {{if .Values.api.tlsTruststore.enabled}}
         - name: custom-rootca
           secret:
@@ -90,11 +85,6 @@ spec:
             - mountPath: /config
               name: helm-config
               readOnly: true
-            {{if .Values.persistence.enabled}}
-            - mountPath: {{ include "cosmotech-api.blobPersistencePath" . }}
-              name: blob-storage
-              readOnly: false
-            {{end}}
             {{if .Values.api.tlsTruststore.enabled }}
             - mountPath: {{ include "cosmotech-api.custom-rootca-path" . | quote }}
               name: custom-rootca

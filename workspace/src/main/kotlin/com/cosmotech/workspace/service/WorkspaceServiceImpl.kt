@@ -41,22 +41,19 @@ import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.cosmotech.workspace.repository.WorkspaceRepository
-import com.cosmotech.workspace.utils.getWorkspaceFilePath
-import com.cosmotech.workspace.utils.getWorkspaceFilesDir
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+import io.awspring.cloud.s3.S3Template
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
-import org.springframework.core.io.PathResource
+import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
 @Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -64,6 +61,8 @@ import org.springframework.stereotype.Service
 internal class WorkspaceServiceImpl(
     private val organizationService: OrganizationApiServiceInterface,
     private val solutionService: SolutionApiService,
+    private val s3Client: S3Client,
+    private val s3Template: S3Template,
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
     private val workspaceRepository: WorkspaceRepository
@@ -147,7 +146,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspaceFiles(organizationId: String, workspaceId: String) {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-    deleteAllFilesystemWorkspaceFiles(organizationId, workspace)
+    deleteAllS3WorkspaceObjects(organizationId, workspace)
   }
 
   override fun updateWorkspace(
@@ -205,7 +204,7 @@ internal class WorkspaceServiceImpl(
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_DELETE)
 
     try {
-      deleteAllFilesystemWorkspaceFiles(organizationId, workspace)
+      deleteAllS3WorkspaceObjects(organizationId, workspace)
       workspace.linkedDatasetIdList?.forEach { deleteDatasetLink(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
@@ -218,7 +217,7 @@ internal class WorkspaceServiceImpl(
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
     require(".." !in fileName) { "Invalid filename: '$fileName'. '..' is not allowed" }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-    deleteFilesystemWorkspaceFile(organizationId, workspace, fileName)
+    deleteS3WorkspaceObject(organizationId, workspace, fileName)
   }
 
   override fun getWorkspaceFile(
@@ -233,12 +232,10 @@ internal class WorkspaceServiceImpl(
         workspace.id,
         workspace.name,
         fileName)
-    val filePath =
-        getWorkspaceFilePath(csmPlatformProperties, organizationId, workspaceId, fileName)
-    if (!Files.isRegularFile(filePath)) {
-      throw CsmResourceNotFoundException("$fileName not found")
-    }
-    return PathResource(filePath)
+    return InputStreamResource(
+        s3Template
+            .download(csmPlatformProperties.s3.bucketName, "$organizationId/$workspaceId/$fileName")
+            .inputStream)
   }
 
   override fun createWorkspaceFile(
@@ -276,21 +273,14 @@ internal class WorkspaceServiceImpl(
         fileRelativeDestinationBuilder.append(file.filename)
       }
     }
+    val objectKey = "$organizationId/$workspaceId/$fileRelativeDestinationBuilder"
 
-    val filePath =
-        getWorkspaceFilePath(
-            csmPlatformProperties,
-            organizationId,
-            workspaceId,
-            fileRelativeDestinationBuilder.toString())
-
-    if (overwrite == false && Files.exists(filePath)) {
+    if (!overwrite && s3Template.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
       throw IllegalArgumentException(
           "File '$fileRelativeDestinationBuilder' already exists, not overwriting it")
     }
 
-    Files.createDirectories(filePath.getParent())
-    Files.copy(file.inputStream, filePath, REPLACE_EXISTING)
+    s3Template.upload(csmPlatformProperties.s3.bucketName, objectKey, file.inputStream)
     return WorkspaceFile(fileName = fileRelativeDestinationBuilder.toString())
   }
 
@@ -313,16 +303,12 @@ internal class WorkspaceServiceImpl(
         Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
     val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
     workspaces.forEach {
+      deleteAllS3WorkspaceObjects(organizationId, it)
       workspaceRepository.delete(it)
       if (csmPlatformProperties.internalResultServices?.enabled == true) {
         this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id))
       }
     }
-    File(
-            Path.of(csmPlatformProperties.blobPersistence.path, organizationId)
-                .toAbsolutePath()
-                .toString())
-        .deleteRecursively()
   }
 
   override fun createDatasetLink(
@@ -384,17 +370,23 @@ internal class WorkspaceServiceImpl(
   }
 
   private fun getWorkspaceFiles(organizationId: String, workspaceId: String): List<WorkspaceFile> {
-    val rootPath = getWorkspaceFilesDir(csmPlatformProperties, organizationId, workspaceId)
-    if (!Files.exists(rootPath)) {
-      return listOf()
-    }
-    return Files.walk(rootPath)
-        .filter { Files.isRegularFile(it) }
-        .map { WorkspaceFile(fileName = rootPath.relativize(it).toString()) }
+    val prefix = "${organizationId}/${workspaceId}/"
+    val listObjectsRequest =
+        ListObjectsV2Request.builder()
+            .bucket(csmPlatformProperties.s3.bucketName)
+            .prefix(prefix)
+            .build()
+
+    return s3Client
+        .listObjectsV2Paginator(listObjectsRequest)
+        .stream()
+        .flatMap {
+          it.contents().stream().map { WorkspaceFile(fileName = it.key().removePrefix(prefix)) }
+        }
         .toList()
   }
 
-  private fun deleteFilesystemWorkspaceFile(
+  private fun deleteS3WorkspaceObject(
       organizationId: String,
       workspace: Workspace,
       fileName: String
@@ -404,16 +396,24 @@ internal class WorkspaceServiceImpl(
         workspace.id,
         workspace.name,
         fileName)
-    Files.deleteIfExists(
-        getWorkspaceFilePath(csmPlatformProperties, organizationId, workspace.id, fileName))
+
+    s3Template.deleteObject(
+        csmPlatformProperties.s3.bucketName, "$organizationId/${workspace.id}/$fileName")
   }
 
-  private fun deleteAllFilesystemWorkspaceFiles(organizationId: String, workspace: Workspace) {
+  private fun deleteAllS3WorkspaceObjects(organizationId: String, workspace: Workspace) {
+    logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
+
     GlobalScope.launch(SecurityCoroutineContext()) {
       // TODO Consider using a smaller coroutine scope
-      logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
-      File(getWorkspaceFilesDir(csmPlatformProperties, organizationId, workspace.id).toString())
-          .deleteRecursively()
+      val workspaceFiles = getWorkspaceFiles(organizationId, workspace.id)
+      if (workspaceFiles.isEmpty()) {
+        logger.debug("No file to delete for workspace #{} ({})", workspace.id, workspace.name)
+      } else {
+        workspaceFiles.forEach { file ->
+          deleteS3WorkspaceObject(organizationId, workspace, file.fileName)
+        }
+      }
     }
   }
 

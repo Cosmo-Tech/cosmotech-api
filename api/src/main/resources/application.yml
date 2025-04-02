@@ -34,6 +34,19 @@ spring:
       enabled: false
     kubernetes:
       enabled: false
+    aws:
+      credentials:
+        access-key: ${csm.platform.s3.accessKeyId}
+        secret-key: ${csm.platform.s3.secretAccessKey}
+      s3:
+        # We don't need/have a region for our local S3 service but the AWS SDK requires one to be configured
+        region: ${csm.platform.s3.region}
+        # Enable path-style / disable DNS-style
+        # By default, and for AWS S3, the client crafts its URL with the bucket as sub-domain of the endpoint
+        # which is not how our current S3 implementation works as it expects the bucket in the path
+        # '<bucket_name>.<endpoint>/<object_key>' DNS vs Path '<endpoint>/<bucket_name>/<object_key>'
+        path-style-access-enabled: true
+        endpoint: ${csm.platform.s3.endpointUrl}
 
 management:
   endpoints:
@@ -119,8 +132,11 @@ csm:
         sender:
           username: "eventbus_sender_username"
           password: "eventbus_sender_password"
-    blobPersistence:
-      path: /tmp/cosmotech-api-data
+    s3:
+      endpointUrl: "http://localhost:9000"
+      bucketName: "cosmotech-api"
+      accessKeyId: "s3_username"
+      secretAccessKey: "s3_password"
     argo:
       base-uri: "https://localhost:2746"
       image-pull-secrets: []

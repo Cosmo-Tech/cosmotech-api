@@ -61,7 +61,7 @@ val springWebVersion = "6.2.1"
 
 // Implementation
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "2.1.0-SNAPSHOT"
+val cosmotechApiCommonVersion = "2.1.1-LCRA-store_workspace_files_in_seaweed_PROD-14290-SNAPSHOT"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.4.2"
 val redisOmSpringVersion = "0.9.7"
@@ -79,6 +79,7 @@ val testNgVersion = "7.8.0"
 val testContainersRedisVersion = "1.6.4"
 val testContainersPostgreSQLVersion = "1.19.7"
 val commonCompressVersion = "1.27.1"
+val awsSpringVersion = "3.1.1"
 
 // Checks
 val detektVersion = "1.23.7"
@@ -140,6 +141,7 @@ allprojects {
   configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.1") } } }
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
@@ -311,6 +313,9 @@ subprojects {
     implementation("org.apache.commons:commons-compress:$commonCompressVersion")
 
     implementation("org.json:json:$orgJsonVersion")
+
+    implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:$awsSpringVersion"))
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringVersion")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))

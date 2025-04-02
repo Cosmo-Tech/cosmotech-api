@@ -3,7 +3,6 @@
 package com.cosmotech.workspace.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_ADMIN
@@ -11,7 +10,6 @@ import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VIEWER
-import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -34,6 +32,7 @@ import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
+import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -42,8 +41,8 @@ import com.cosmotech.workspace.domain.WorkspaceWebApp
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.mockkStatic
+import org.junit.jupiter.api.AfterEach
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -57,10 +56,10 @@ import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.io.UrlResource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.test.util.ReflectionTestUtils
 
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
@@ -68,10 +67,11 @@ import org.springframework.test.util.ReflectionTestUtils
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("FunctionName")
-class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
+class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
+  val fileName = "test_workspace_file.txt"
   private val logger = LoggerFactory.getLogger(WorkspaceServiceIntegrationTest::class.java)
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
@@ -81,8 +81,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
-
-  private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
 
   lateinit var organization: OrganizationCreateRequest
   lateinit var solution: SolutionCreateRequest
@@ -96,11 +94,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
 
+  val resourceTestFile = this::class.java.getResource("/$fileName")
+
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    ReflectionTestUtils.setField(
-        solutionApiService, "containerRegistryService", containerRegistryService)
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
@@ -125,6 +123,16 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     dataset = makeDataset("dataset")
     datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
+  }
+
+  @AfterEach
+  fun cleanUp(){
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+
+    val workspaces = workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
+    workspaces.forEach {
+      workspaceApiService.deleteWorkspaceFiles(organizationSaved.id, it.id)
+    }
   }
 
   @Test
@@ -153,15 +161,75 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             WorkspaceUpdateRequest(key = "key", name = "Workspace 1 updated"))
     assertEquals("Workspace 1 updated", updatedWorkspace.name)
     assertEquals(workspaceSaved.organizationId, updatedWorkspace.organizationId)
+  }
 
-    /*
-     TODO : Fix the corountine effect
+  @Test
+  fun `test create workspace file`(){
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
-    logger.info("should delete the first workspace")
-     workspaceApiService.deleteWorkspace(organizationRegistered.id!!, workspaceRegistered2.id!!)
-     val workspacesListAfterDelete: List<Workspace> =
-         workspaceApiService.listWorkspaces(organizationRegistered.id!!, null, null)
-     assertTrue(workspacesListAfterDelete.size == 1)*/
+    logger.info("should create a workspace file")
+
+    var savedFile = WorkspaceFile("")
+    assertDoesNotThrow {
+      savedFile = workspaceApiService.createWorkspaceFile(organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+    }
+
+    assertEquals(fileName, savedFile.fileName)
+  }
+
+  @Test
+  fun `test get workspace file`(){
+    logger.info("should get a workspace file")
+
+    workspaceApiService.createWorkspaceFile(organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+    assertDoesNotThrow { workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName) }
+
+    val fetchedFile = workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
+    assertEquals(UrlResource(resourceTestFile!!).file, fetchedFile.file)
+  }
+
+  @Test
+  fun `test list workspace files`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+
+    logger.info("should list all workspace file")
+
+    var workspaceFiles =
+        workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
+    assertTrue(workspaceFiles.isEmpty())
+
+
+    workspaceApiService.createWorkspaceFile(
+        organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+
+    workspaceFiles = workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
+    assertEquals(1, workspaceFiles.size)
+  }
+
+  @Test
+  fun `test delete workspace file`(){
+    logger.info("should delete a workspace file")
+
+    workspaceApiService.createWorkspaceFile(
+      organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+
+    assertDoesNotThrow { workspaceApiService.deleteWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName) }
+
+    assertThrows<Exception> { workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName) }
+  }
+
+  @Test
+  fun `test deleteAll workspace file`(){
+    logger.info("should delete all workspace files")
+
+    workspaceApiService.createWorkspaceFile(
+      organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+    workspaceApiService.createWorkspaceFile(
+      organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+
+    assertDoesNotThrow { workspaceApiService.deleteWorkspaceFiles(organizationSaved.id, workspaceSaved.id) }
+
+    assertEquals(0, workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id).size)
   }
 
   @Test
