@@ -139,5 +139,8 @@ csm:
       host: "localhost:5000"
       username: "default"
       password: "my-wonderful-password"
-    blobPersistence:
-      path: /tmp/cosmotech-api-run-test-data
+    s3:
+      endpointUrl: "http://localhost:9000"
+      bucketName: "test-bucket"
+      accessKeyId: "s3_username"
+      secretAccessKey: "s3_password"

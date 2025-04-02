@@ -95,5 +95,8 @@ csm:
         default-page-size: 5
     rbac:
       enabled: true
-    blobPersistence:
-      path: /tmp/cosmotech-api-connector-test-data
+    s3:
+      endpointUrl: "http://localhost:9000"
+      bucketName: "test-bucket"
+      accessKeyId: "s3_username"
+      secretAccessKey: "s3_password"

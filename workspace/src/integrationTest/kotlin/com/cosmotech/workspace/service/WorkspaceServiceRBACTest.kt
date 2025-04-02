@@ -37,17 +37,15 @@ import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.redis.om.spring.RediSearchIndexer
+import io.awspring.cloud.s3.S3Template
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.*
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -62,6 +60,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import software.amazon.awssdk.services.s3.S3Client
 
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
@@ -77,6 +76,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   @RelaxedMockK private lateinit var resource: Resource
 
   @RelaxedMockK private lateinit var resourceScanner: ResourceScanner
+  @RelaxedMockK private lateinit var s3Client: S3Client
+  @RelaxedMockK private lateinit var s3Template: S3Template
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
@@ -91,21 +92,18 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     ReflectionTestUtils.setField(
         solutionApiService, "containerRegistryService", containerRegistryService)
+    ReflectionTestUtils.setField(workspaceApiService, "s3Client", s3Client)
+    ReflectionTestUtils.setField(workspaceApiService, "s3Template", s3Template)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
-    File(csmPlatformProperties.blobPersistence.path).deleteRecursively()
+    File(csmPlatformProperties.s3.endpointUrl).deleteRecursively()
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
-  }
-
-  @AfterEach
-  fun afterEach() {
-    File(csmPlatformProperties.blobPersistence.path).deleteRecursively()
   }
 
   @TestFactory
@@ -790,14 +788,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
-                val filePath =
-                    Path.of(
-                        csmPlatformProperties.blobPersistence.path,
-                        organizationSaved.id,
-                        workspaceSaved.id,
-                        "name")
-                Files.createDirectories(filePath.getParent())
-                Files.createFile(filePath)
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceFile(
                       organizationSaved.id, workspaceSaved.id, "name")
@@ -841,14 +831,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
-                val filePath =
-                    Path.of(
-                        csmPlatformProperties.blobPersistence.path,
-                        organizationSaved.id,
-                        workspaceSaved.id,
-                        "name")
-                Files.createDirectories(filePath.getParent())
-                Files.createFile(filePath)
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceFile(
                       organizationSaved.id, workspaceSaved.id, "name")
