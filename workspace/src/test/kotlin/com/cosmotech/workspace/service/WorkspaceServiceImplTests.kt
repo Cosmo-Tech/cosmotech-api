@@ -42,6 +42,7 @@ import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.cosmotech.workspace.repository.WorkspaceRepository
+import io.awspring.cloud.s3.S3Template
 import io.mockk.MockKAnnotations
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -71,11 +72,13 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
 import org.springframework.data.repository.findByIdOrNull
+import software.amazon.awssdk.services.s3.S3Client
 
 const val ORGANIZATION_ID = "o-AbCdEf1234"
 const val WORKSPACE_ID = "w-BcDeFg1234"
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
+const val S3_BUCKET_NAME = "test-bucket"
 
 @ExtendWith(MockKExtension::class)
 @Suppress("LargeClass")
@@ -83,6 +86,9 @@ class WorkspaceServiceImplTests {
 
   @MockK private lateinit var solutionService: SolutionApiServiceInterface
   @RelaxedMockK private lateinit var organizationService: OrganizationApiServiceInterface
+
+  @Suppress("unused") @RelaxedMockK private lateinit var s3Client: S3Client
+  @RelaxedMockK private lateinit var s3Template: S3Template
 
   private lateinit var blobPersistencePath: String
 
@@ -133,8 +139,10 @@ class WorkspaceServiceImplTests {
     every { csmPlatformProperties.rbac.enabled } returns true
     every { csmPlatformProperties.upload } returns csmPlatformPropertiesUpload
 
+    every { csmPlatformProperties.s3.bucketName } returns S3_BUCKET_NAME
+    every { s3Template.objectExists(any(), any()) } returns false
+
     blobPersistencePath = Files.createTempDirectory("cosmotech-api-test-data-").toString()
-    every { csmPlatformProperties.blobPersistence.path } returns blobPersistencePath
 
     MockKAnnotations.init(this)
   }

@@ -3,7 +3,6 @@
 package com.cosmotech.workspace.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_ADMIN
@@ -42,7 +41,6 @@ import com.cosmotech.workspace.domain.WorkspaceWebApp
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
@@ -60,7 +58,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.test.util.ReflectionTestUtils
 
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
@@ -82,8 +79,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
-  private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
-
   lateinit var organization: OrganizationCreateRequest
   lateinit var solution: SolutionCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
@@ -99,8 +94,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    ReflectionTestUtils.setField(
-        solutionApiService, "containerRegistryService", containerRegistryService)
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
