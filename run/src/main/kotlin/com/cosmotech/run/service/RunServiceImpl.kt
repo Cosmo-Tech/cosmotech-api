@@ -70,6 +70,7 @@ internal const val TEXT_POSTGRESQL_TYPE = "TEXT"
 internal const val JSON_KEY_WEIGHT = 3
 internal const val JSON_POSTGRESQL_TYPE = "JSONB"
 internal const val CONFLICT_KEY_WEIGHT = JSON_KEY_WEIGHT
+internal const val POSTGRESQL_DRIVER_CLASS_NAME = "org.postgresql.Driver"
 
 internal val jsonTypeMapWeight =
     mapOf(
@@ -220,7 +221,8 @@ class RunServiceImpl(
     val runtimeDS =
         DriverManagerDataSource(
             "jdbc:postgresql://$host:$port/$runId", writerStorageUsername, writerStoragePassword)
-    runtimeDS.setDriverClassName("org.postgresql.Driver")
+
+    runtimeDS.setDriverClassName(POSTGRESQL_DRIVER_CLASS_NAME)
     val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
     val connection = runDBJdbcTemplate.dataSource!!.connection
 
@@ -324,10 +326,9 @@ class RunServiceImpl(
     val run = getRun(organizationId, workspaceId, runnerId, runId)
     run.hasPermission(PERMISSION_WRITE)
 
-    if (sendRunDataRequest.data!!.isEmpty())
-        throw IllegalArgumentException("Data field cannot be empty")
+    require(sendRunDataRequest.data.isNotEmpty()) { "Data field cannot be empty" }
 
-    return this.sendDataToStorage(runId, sendRunDataRequest.id!!, sendRunDataRequest.data)
+    return this.sendDataToStorage(runId, sendRunDataRequest.id, sendRunDataRequest.data)
   }
 
   override fun queryRunData(
@@ -344,7 +345,7 @@ class RunServiceImpl(
     val runtimeDS =
         DriverManagerDataSource(
             "jdbc:postgresql://$host:$port/$runId", readerStorageUsername, readerStoragePassword)
-    runtimeDS.setDriverClassName("org.postgresql.Driver")
+    runtimeDS.setDriverClassName(POSTGRESQL_DRIVER_CLASS_NAME)
 
     val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
     val connection = runDBJdbcTemplate.dataSource!!.connection
@@ -509,7 +510,7 @@ class RunServiceImpl(
       val runtimeDS =
           DriverManagerDataSource(
               "jdbc:postgresql://$host:$port/$runId", adminStorageUsername, adminStoragePassword)
-      runtimeDS.setDriverClassName("org.postgresql.Driver")
+      runtimeDS.setDriverClassName(POSTGRESQL_DRIVER_CLASS_NAME)
       val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
       val connection = runDBJdbcTemplate.dataSource!!.connection
       try {
@@ -600,10 +601,11 @@ class RunServiceImpl(
     val runner = runStopRequest.runnerData as Runner
     val run = getRun(runner.organizationId, runner.workspaceId, runner.id, runner.lastRunId!!)
     run.hasPermission(PERMISSION_WRITE)
-    if (run.state!!.isTerminal()) {
-      throw IllegalStateException(
-          "Run ${run.id} is already in a terminal state (${run.state}). It can't be stopped.")
+
+    check(!(run.state!!.isTerminal())) {
+      "Run ${run.id} is already in a terminal state (${run.state}). It can't be stopped."
     }
+
     workflowService.stopWorkflow(run)
     val stoppedRun = run.copy(state = RunState.Failed)
     runRepository.save(stoppedRun)

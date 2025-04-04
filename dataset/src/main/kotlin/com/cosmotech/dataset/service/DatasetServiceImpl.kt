@@ -1286,18 +1286,16 @@ class DatasetServiceImpl(
     if (csmRbac.check(dataset.getRbac(), PERMISSION_READ_SECURITY).not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = dataset.security!!.accessControlList.firstOrNull { it.id == username }
-      if (retrievedAC != null) {
-        return dataset.copy(
-            security =
-                DatasetSecurity(
-                    default = dataset.security!!.default,
-                    accessControlList = mutableListOf(retrievedAC)))
-      } else {
-        return dataset.copy(
-            security =
-                DatasetSecurity(
-                    default = dataset.security!!.default, accessControlList = mutableListOf()))
-      }
+      val accessControlList =
+          if (retrievedAC != null) {
+            mutableListOf(retrievedAC)
+          } else {
+            mutableListOf()
+          }
+      return dataset.copy(
+          security =
+              DatasetSecurity(
+                  default = dataset.security!!.default, accessControlList = accessControlList))
     }
     return dataset
   }

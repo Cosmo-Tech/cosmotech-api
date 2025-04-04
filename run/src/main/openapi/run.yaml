@@ -379,6 +379,9 @@ components:
           items:
             type: object
             additionalProperties: true
+      required:
+        - id
+        - data
     RunStatus:
       type: object
       description: a Run status

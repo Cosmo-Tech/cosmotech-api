@@ -139,8 +139,7 @@ class RunContainerFactory(
       workflowType: String,
   ): RunStartContainers {
 
-    if (runner.runTemplateId.isBlank())
-        throw IllegalStateException("Runner runTemplateId cannot be null")
+    check(runner.runTemplateId.isNotBlank()) { "Runner runTemplateId cannot be blank" }
 
     val template = getRunTemplate(solution, (runner.runTemplateId))
 
@@ -213,7 +212,7 @@ class RunContainerFactory(
       jobId: String,
       imageRegistry: String = "",
       imageVersion: String = "latest",
-      containerEnvVars: MutableMap<String, String>,
+      containerEnvVars: Map<String, String>,
       workflowType: String,
       nodeLabel: String = NODE_LABEL_DEFAULT
   ): RunStartContainers {
@@ -257,11 +256,11 @@ class RunContainerFactory(
       imageVersion: String,
       nodeSizing: Sizing,
       containerName: String,
-      containerEnvVars: MutableMap<String, String>,
+      containerEnvVars: Map<String, String>,
       nodeLabel: String
   ): RunContainer {
 
-    val envVars = getMinimalCommonEnvVars(csmPlatformProperties)
+    val envVars = getMinimalCommonEnvVars(csmPlatformProperties).toMutableMap()
     envVars.putAll(containerEnvVars)
 
     return RunContainer(
@@ -317,7 +316,7 @@ internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): S
 
 internal fun getMinimalCommonEnvVars(
     csmPlatformProperties: CsmPlatformProperties
-): MutableMap<String, String> {
+): Map<String, String> {
 
   val twinCacheEnvVars: MutableMap<String, String> = mutableMapOf()
   val twinCacheInfo = csmPlatformProperties.twincache

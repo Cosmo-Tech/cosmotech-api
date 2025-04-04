@@ -66,12 +66,19 @@ val jedisVersion = "4.4.6"
 val springOauthVersion = "6.4.2"
 val redisOmSpringVersion = "0.9.7"
 val kotlinCoroutinesCoreVersion = "1.8.1"
+val kotlinCoroutinesTestVersion = "1.7.3"
 val oktaSpringBootVersion = "3.0.7"
 val springDocVersion = "2.8.6"
 val swaggerParserVersion = "2.1.25"
 val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
 val kubernetesClientVersion = "22.0.0"
+val orgJsonVersion = "20240303"
+val jacksonModuleKotlinVersion = "2.18.3"
+val testNgVersion = "7.8.0"
+val testContainersRedisVersion = "1.6.4"
+val testContainersPostgreSQLVersion = "1.19.7"
+val commonCompressVersion = "1.27.1"
 
 // Checks
 val detektVersion = "1.23.7"
@@ -282,7 +289,7 @@ subprojects {
         implementation("io.undertow:undertow-core:2.3.18.Final")
       }
     }
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
     implementation("io.kubernetes:client-java:${kubernetesClientVersion}")
@@ -301,15 +308,21 @@ subprojects {
     implementation("org.springframework.data:spring-data-redis")
     implementation("org.springframework:spring-jdbc")
     implementation("org.postgresql:postgresql")
+    implementation("org.apache.commons:commons-compress:$commonCompressVersion")
 
-    implementation("org.json:json:20240303")
+    implementation("org.json:json:$orgJsonVersion")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.awaitility:awaitility-kotlin:$awaitilityKVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesTestVersion")
+    testImplementation("org.testng:testng:$testNgVersion")
+    testImplementation(
+        "com.redis.testcontainers:testcontainers-redis-junit:$testContainersRedisVersion")
+    testImplementation("org.testcontainers:postgresql:$testContainersPostgreSQLVersion")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
       // Drop legacy Junit < 5
@@ -359,6 +372,8 @@ subprojects {
       }
 
   tasks.register<Copy>("copyAdocFiles") {
+    group = "documentation"
+    description = "Copy test generated code snippets to \$rootDir/doc/generated-snippets/"
     dependsOn("integrationTest")
     from("$testWorkingDirPath/build/generated-snippets")
     into("${rootDir}/doc/generated-snippets")
@@ -463,11 +478,16 @@ subprojects {
         openApiDefinitionFile
       }
   tasks.register<Copy>("copyOpenApiYamlToMainResources") {
+    group = "openapi"
+    description = "Copy openapi.yaml files to \$buildDir/resources/main/static/openapi.yaml"
     from(openApiFileDefinition)
     into("${layout.buildDirectory.get()}/resources/main/static")
     rename { if (it != "openapi.yaml") "openapi.yaml" else it }
   }
+
   tasks.register<Copy>("copyOpenApiYamlToTestResources") {
+    group = "openapi"
+    description = "Copy test openapi.yaml files to \$buildDir/resources/test/static/openapi.yaml"
     from(openApiFileDefinition)
     into("${layout.buildDirectory.get()}/resources/test/static")
     rename { if (it != "openapi.yaml") "openapi.yaml" else it }
@@ -476,7 +496,7 @@ subprojects {
   var fullVersion = project.version.toString()
   var buildVersion = ""
   if (!rootProject.scmVersion.scmPosition.revision.isNullOrEmpty()) {
-    buildVersion = "${rootProject.scmVersion.scmPosition.revision.substring(0, 8)}"
+    buildVersion = rootProject.scmVersion.scmPosition.revision.substring(0, 8)
     fullVersion = "$fullVersion-$buildVersion"
   }
   tasks.getByName<Copy>("processResources") {
@@ -495,6 +515,8 @@ subprojects {
   }
 
   tasks.register<Copy>("copyAboutJsonToTestResources") {
+    group = "information"
+    description = "Copy test about.json file to \$rootDir/api/src/main/resources/about.json"
     from("${rootDir}/api/src/main/resources/about.json")
     into("${layout.buildDirectory.get()}/resources/test/")
     filter<ReplaceTokens>(
@@ -571,6 +593,9 @@ val copySubProjectsDetektReportsTasks =
                     "${subProject.projectDir.relativeTo(rootDir)}"
                         .capitalizeAsciiOnly()
                         .replace("/", "_")) {
+                  group = "detekt"
+                  description =
+                      "Copy sub-projects detekt reports to \$projectDir/build/reports/detekt/\$format"
                   dependsOn("spotlessKotlin", "spotlessKotlinGradle", "spotlessJava")
                   from(
                       file(
@@ -583,12 +608,7 @@ val copySubProjectsDetektReportsTasks =
       }
     }
 
-tasks.register<Copy>("copySubProjectsDetektReports") {
-  shouldRunAfter("detekt")
-  dependsOn(*copySubProjectsDetektReportsTasks.toTypedArray())
-}
-
-tasks.getByName("detekt") { finalizedBy("copySubProjectsDetektReports") }
+tasks.getByName("detekt") { shouldRunAfter(*copySubProjectsDetektReportsTasks.toTypedArray()) }
 
 extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverReportExtension> {
   defaults {
@@ -605,4 +625,7 @@ extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverReportExtension> {
 }
 
 // https://github.com/jk1/Gradle-License-Report/blob/master/README.md
-tasks.register<ReportTask>("generateLicenseDoc") {}
+tasks.register<ReportTask>("generateLicenseDoc") {
+  group = "license"
+  description = "Generate Licenses report"
+}

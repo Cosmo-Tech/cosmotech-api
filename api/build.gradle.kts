@@ -11,6 +11,10 @@ plugins {
   id("org.jetbrains.kotlinx.kover")
 }
 
+val testNgVersion = "7.8.0"
+val testContainersRedisVersion = "1.6.4"
+val testContainersPostgreSQLVersion = "1.19.7"
+
 dependencies {
   implementation(projects.cosmotechMetaApi)
   implementation(projects.cosmotechConnectorApi)
@@ -21,11 +25,6 @@ dependencies {
   implementation(projects.cosmotechMetricsService)
   implementation(projects.cosmotechRunApi)
   implementation(projects.cosmotechRunnerApi)
-
-  testImplementation("org.testng:testng:7.8.0")
-  testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.4")
-  testImplementation("org.testcontainers:postgresql:1.19.7")
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 }
@@ -47,6 +46,8 @@ tasks.withType<JibTask> {
 }
 
 tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
+  group = "openapi"
+  description = "Copy all subprojects openapi.yaml files into \$buildDir/tmp/openapi"
   // By convention, we expect OpenAPI files for sub-projects to be named and placed as follows:
   // <subproject>/src/main/openapi/<subproject>.yaml
   // For example: organization/src/main/openapi/organization.yaml
@@ -105,6 +106,8 @@ tasks.getByName<OpenApiMergerTask>("mergeOpenApiFiles") {
 }
 
 tasks.register<GenerateTask>("openApiTypescriptGenerate") {
+  group = "openapi-ts"
+  description = "Generate OpenAPI TypeScript-Axios client"
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
   outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/typescript")
@@ -116,22 +119,32 @@ tasks.register<GenerateTask>("openApiTypescriptGenerate") {
 }
 
 tasks.register<Copy>("copyTypescriptGitPushScript") {
+  group = "openapi-ts"
+  description =
+      "Copy generated Typescript-Axios client project to \$buildDir/generated-sources/openapi/typescript/scripts"
   dependsOn("openApiTypescriptGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
   into("${layout.buildDirectory.get()}/generated-sources/openapi/typescript/scripts")
 }
 
 tasks.register<Copy>("copyTypescriptLicense") {
+  group = "openapi-ts"
+  description =
+      "Copy generated Typescript-Axios LICENSE file to \$buildDir/generated-sources/openapi/typescript/scripts"
   dependsOn("openApiTypescriptGenerate")
   from("${rootDir}/scripts/clients/build_override/LICENSE")
   into("${layout.buildDirectory.get()}/generated-sources/openapi/typescript")
 }
 
 tasks.register("generateTypescriptClient") {
+  group = "openapi-ts"
+  description = "Push generated Typescript-Axios client project to dedicated github repository"
   dependsOn("copyTypescriptGitPushScript", "copyTypescriptLicense")
 }
 
 tasks.register<GenerateTask>("openApiPythonGenerate") {
+  group = "openapi-python"
+  description = "Generate OpenAPI Python client"
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
   outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/python")
@@ -146,18 +159,27 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
 // PROD-14252: temporary fix waiting for upstream resolution of
 // https://github.com/OpenAPITools/openapi-generator/pull/20701
 tasks.register<Copy>("overwriteGeneratedPythonFile") {
+  group = "openapi-python"
+  description =
+      "Patch OpenAPI Python client (temporary fix OpenAPITools/openapi-generator/pull/20701)"
   dependsOn("openApiPythonGenerate")
   from("${rootDir}/scripts/clients/patches/python.yml")
   into("${layout.buildDirectory.get()}/generated-sources/openapi/python/.github/workflows/")
 }
 
 tasks.register<Copy>("copyPythonGitPushScript") {
+  group = "openapi-python"
+  description =
+      "Copy generated Python client project to \$buildDir/generated-sources/openapi/python/scripts"
   dependsOn("openApiPythonGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
   into("${layout.buildDirectory.get()}/generated-sources/openapi/python/scripts")
 }
 
 tasks.register<Copy>("copyPythonLicense") {
+  group = "openapi-python"
+  description =
+      "Copy generated Python LICENSE file to \$buildDir/generated-sources/openapi/python/scripts"
   dependsOn("openApiPythonGenerate")
   from("${rootDir}/scripts/clients/build_override/LICENSE")
   into("${layout.buildDirectory.get()}/generated-sources/openapi/python")
@@ -166,10 +188,14 @@ tasks.register<Copy>("copyPythonLicense") {
 // PROD-14252: temporary fix waiting for upstream resolution
 // of https://github.com/OpenAPITools/openapi-generator/pull/20701
 tasks.register("generatePythonClient") {
+  group = "openapi-python"
+  description = "Push generated Python client project to dedicated github repository"
   dependsOn("copyPythonGitPushScript", "copyPythonLicense", "overwriteGeneratedPythonFile")
 }
 
 tasks.register<GenerateTask>("openApiUmlGenerate") {
+  group = "documentation"
+  description = "Generate OpenAPI UML schema"
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
   outputDir.set("$rootDir/openapi/plantuml")
@@ -177,10 +203,14 @@ tasks.register<GenerateTask>("openApiUmlGenerate") {
 }
 
 tasks.register<Delete>("openApiMarkdownClean") {
+  group = "documentation"
+  description = "Remove MD files generated"
   delete("$rootDir/doc/Apis", "$rootDir/doc/Models")
 }
 
 tasks.register<GenerateTask>("openApiMarkdownGenerate") {
+  group = "documentation"
+  description = "Generate MD documentation files"
   dependsOn("mergeOpenApiFiles", "openApiMarkdownClean")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
   outputDir.set("$rootDir/doc")
@@ -195,6 +225,8 @@ tasks.getByName<ValidateTask>("openApiValidate") {
 }
 
 tasks.register("generateClients") {
+  group = "openapi"
+  description = "Generate Python and TS API clients, UML and Markdown documentation"
   dependsOn(
       "generateTypescriptClient",
       "generatePythonClient",
@@ -211,32 +243,6 @@ tasks.getByName<Copy>("copyOpenApiYamlToTestResources") { dependsOn("mergeOpenAp
 tasks.withType<GenerateTask> {
   // Force-run all generation tasks, thus bypassing the Gradle Cache
   outputs.upToDateWhen { false }
-}
-
-tasks.register<Exec>("rolloutKindDeployment") {
-  dependsOn("jib")
-  var apiVersion = "latest"
-  var namespace = "phoenix"
-  var clusterName = "kind-local-k8s-cluster"
-  if (project.hasProperty("rollout.apiVersion")) {
-    apiVersion = project.property("rollout.apiVersion").toString()
-  }
-  if (project.hasProperty("rollout.namespace")) {
-    namespace = project.property("rollout.namespace").toString()
-  }
-  if (project.hasProperty("rollout.clusterName")) {
-    clusterName = project.property("rollout.clusterName").toString()
-  }
-
-  commandLine(
-      "kubectl",
-      "--context",
-      clusterName,
-      "-n",
-      namespace,
-      "rollout",
-      "restart",
-      "deployment/cosmotech-api-${apiVersion}")
 }
 
 tasks.register<GenerateTask>("generateDocumentation") {

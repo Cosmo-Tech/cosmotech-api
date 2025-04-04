@@ -119,9 +119,8 @@ internal class RunnerApiServiceImpl(
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE_SECURITY)
 
     val users = listRunnerSecurityUsers(organizationId, workspaceId, runnerId)
-    if (users.contains(runnerAccessControl.id)) {
-      throw IllegalArgumentException("User is already in this Runner security")
-    }
+
+    require(!users.contains(runnerAccessControl.id)) { "User is already in this Runner security" }
 
     runnerInstance.setAccessControl(runnerAccessControl)
     runnerService.saveInstance(runnerInstance)

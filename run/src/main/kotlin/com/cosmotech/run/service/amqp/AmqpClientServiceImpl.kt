@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service
 data class ProbeMessage(
     val simulation: Map<String, Any>,
     val probe: Map<String, Any>,
-    val facts_common: Map<String, Any>,
+    val factsCommon: Map<String, Any>,
     val facts: List<Map<String, Any>>
 )
 
@@ -58,8 +58,8 @@ class AmqpClientServiceImpl(
               }
             })
     val data = mutableListOf<Map<String, Any>>()
-    messageRead.facts.forEach { it ->
-      val row = (it + messageRead.facts_common).toMutableMap()
+    messageRead.facts.forEach {
+      val row = (it + messageRead.factsCommon).toMutableMap()
       row["probe_name"] = messageRead.probe["name"].toString()
       row["probe_run"] = messageRead.probe["run"]!!
       data.add(row)

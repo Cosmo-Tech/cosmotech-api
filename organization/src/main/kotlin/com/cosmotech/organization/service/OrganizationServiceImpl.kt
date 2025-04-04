@@ -81,8 +81,8 @@ class OrganizationServiceImpl(
   ): Organization {
     logger.trace("Registering organization: {}", organizationCreateRequest)
 
-    if (organizationCreateRequest.name.isBlank()) {
-      throw IllegalArgumentException("Organization name must not be null or blank")
+    require(organizationCreateRequest.name.isNotBlank()) {
+      "Organization name must not be null or blank"
     }
 
     val organizationId = idGenerator.generate("organization")
@@ -171,8 +171,8 @@ class OrganizationServiceImpl(
     val organization = getVerifiedOrganization(organizationId, PERMISSION_WRITE_SECURITY)
 
     val users = listOrganizationSecurityUsers(organizationId)
-    if (users.contains(organizationAccessControl.id)) {
-      throw IllegalArgumentException("User is already in this Organization security")
+    require(!users.contains(organizationAccessControl.id)) {
+      "User is already in this Organization security"
     }
 
     val rbacSecurity =
@@ -252,18 +252,17 @@ class OrganizationServiceImpl(
         .not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = organization.security.accessControlList.firstOrNull { it.id == username }
-      return if (retrievedAC != null) {
-        organization.copy(
-            security =
-                OrganizationSecurity(
-                    default = organization.security.default,
-                    accessControlList = mutableListOf(retrievedAC)))
-      } else {
-        organization.copy(
-            security =
-                OrganizationSecurity(
-                    default = organization.security.default, accessControlList = mutableListOf()))
-      }
+
+      val accessControlList =
+          if (retrievedAC != null) {
+            mutableListOf(retrievedAC)
+          } else {
+            mutableListOf()
+          }
+      return organization.copy(
+          security =
+              OrganizationSecurity(
+                  default = organization.security.default, accessControlList = accessControlList))
     }
     return organization
   }
