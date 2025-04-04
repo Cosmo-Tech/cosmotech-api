@@ -81,7 +81,7 @@ val testContainersPostgreSQLVersion = "1.19.7"
 val commonCompressVersion = "1.27.1"
 
 // Checks
-val detektVersion = "1.23.7"
+val detektVersion = "1.23.8"
 
 // Tests
 val jUnitBomVersion = "5.10.0"
