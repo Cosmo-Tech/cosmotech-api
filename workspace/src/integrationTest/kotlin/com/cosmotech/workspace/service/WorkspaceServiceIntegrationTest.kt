@@ -32,6 +32,7 @@ import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
+import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -41,6 +42,7 @@ import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import org.junit.jupiter.api.AfterEach
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -69,6 +71,7 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
+  val fileName = "test_workspace_file.txt"
   private val logger = LoggerFactory.getLogger(WorkspaceServiceIntegrationTest::class.java)
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
@@ -90,6 +93,8 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   lateinit var workspaceSaved: Workspace
   lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
+
+  val resourceTestFile = this::class.java.getResource("/$fileName")
 
   @BeforeEach
   fun setUp() {
@@ -118,6 +123,16 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
 
     dataset = makeDataset("dataset")
     datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
+  }
+
+  @AfterEach
+  fun cleanUp(){
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+
+    val workspaces = workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
+    workspaces.forEach {
+      workspaceApiService.deleteWorkspaceFiles(organizationSaved.id, it.id)
+    }
   }
 
   @Test
@@ -149,21 +164,72 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   }
 
   @Test
-  fun `test list workspace files`() {
-
+  fun `test create workspace file`(){
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+
+    logger.info("should create a workspace file")
+
+    var savedFile = WorkspaceFile("")
+    assertDoesNotThrow {
+      savedFile = workspaceApiService.createWorkspaceFile(organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+    }
+
+    assertEquals(fileName, savedFile.fileName)
+  }
+
+  @Test
+  fun `test get workspace file`(){
+    logger.info("should get a workspace file")
+
+    workspaceApiService.createWorkspaceFile(organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+    assertDoesNotThrow { workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName) }
+
+    val fetchedFile = workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
+    assertEquals(UrlResource(resourceTestFile!!).file, fetchedFile.file)
+  }
+
+  @Test
+  fun `test list workspace files`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+
+    logger.info("should list all workspace file")
 
     var workspaceFiles =
         workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
     assertTrue(workspaceFiles.isEmpty())
 
-    val resourceTestFile = this::class.java.getResource("/test_workspace_file.txt")
 
     workspaceApiService.createWorkspaceFile(
         organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
 
     workspaceFiles = workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
     assertEquals(1, workspaceFiles.size)
+  }
+
+  @Test
+  fun `test delete workspace file`(){
+    logger.info("should delete a workspace file")
+
+    workspaceApiService.createWorkspaceFile(
+      organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+
+    assertDoesNotThrow { workspaceApiService.deleteWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName) }
+
+    assertThrows<Exception> { workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName) }
+  }
+
+  @Test
+  fun `test deleteAll workspace file`(){
+    logger.info("should delete all workspace files")
+
+    workspaceApiService.createWorkspaceFile(
+      organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+    workspaceApiService.createWorkspaceFile(
+      organizationSaved.id, workspaceSaved.id, UrlResource(resourceTestFile!!), true, null)
+
+    assertDoesNotThrow { workspaceApiService.deleteWorkspaceFiles(organizationSaved.id, workspaceSaved.id) }
+
+    assertEquals(0, workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id).size)
   }
 
   @Test
