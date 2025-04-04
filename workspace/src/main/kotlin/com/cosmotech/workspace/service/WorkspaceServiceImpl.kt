@@ -216,9 +216,7 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
-    if (".." in fileName) {
-      throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
-    }
+    require(".." !in fileName) { "Invalid filename: '$fileName'. '..' is not allowed" }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     deleteFilesystemWorkspaceFile(organizationId, workspace, fileName)
   }
@@ -228,9 +226,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       fileName: String
   ): Resource {
-    if (".." in fileName) {
-      throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
-    }
+    require(".." !in fileName) { "Invalid filename: '$fileName'. '..' is not allowed" }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ)
     logger.debug(
         "Downloading file resource from workspace #{} ({}): {}",
@@ -485,10 +481,9 @@ internal class WorkspaceServiceImpl(
     val organization = organizationService.getVerifiedOrganization(organizationId)
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
     val users = csmRbac.getUsers(workspace.security.toGenericSecurity(workspaceId))
-    if (users.contains(workspaceAccessControl.id)) {
-      throw IllegalArgumentException("User is already in this Workspace security")
+    require(!users.contains(workspaceAccessControl.id)) {
+      "User is already in this Workspace security"
     }
-
     val rbacSecurity =
         csmRbac.addUserRole(
             organization.security.toGenericSecurity(organizationId),
@@ -587,18 +582,18 @@ internal class WorkspaceServiceImpl(
         .not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = workspace.security.accessControlList.firstOrNull { it.id == username }
-      if (retrievedAC != null) {
-        return workspace.copy(
-            security =
-                WorkspaceSecurity(
-                    default = workspace.security.default,
-                    accessControlList = mutableListOf(retrievedAC)))
-      } else {
-        return workspace.copy(
-            security =
-                WorkspaceSecurity(
-                    default = workspace.security.default, accessControlList = mutableListOf()))
-      }
+
+      val accessControlList =
+          if (retrievedAC != null) {
+            mutableListOf(retrievedAC)
+          } else {
+            mutableListOf()
+          }
+
+      return workspace.copy(
+          security =
+              WorkspaceSecurity(
+                  default = workspace.security.default, accessControlList = accessControlList))
     }
     return workspace
   }

@@ -32,10 +32,9 @@ class MetricsServiceImpl(
 
   private fun addMetricToTimeSeries(metric: PersistentMetric) {
     val key = getMetricKey(metric)
-    if (metric.incrementBy > 0 && metric.value > 0) {
-      throw IllegalArgumentException("Cannot set both incrementBy and value")
+    require(!(metric.incrementBy > 0 && metric.value > 0)) {
+      "Cannot set both incrementBy and value"
     }
-
     val timestamp =
         when (metric.incrementBy) {
           0 -> unifiedJedis.tsAdd(key, metric.value)
@@ -88,11 +87,11 @@ class MetricsServiceImpl(
             metric.downSamplingAggregation.toRedisAggregation(),
             downSamplingBucketDuration,
             0)
-      } else {}
+      }
     } else {
       val timeSeriesRetention = unifiedJedis.tsInfo(key).getProperty("retentionTime")
 
-      if (!timeSeriesRetention.equals(metricRetention)) {
+      if (timeSeriesRetention != metricRetention) {
         logger.debug(
             "Redis TS retention changed: $key from $timeSeriesRetention to $metricRetention")
         logger.debug(
@@ -104,7 +103,7 @@ class MetricsServiceImpl(
                 .retention(metricRetention)
                 .labels(metricLabels)
                 .duplicatePolicy(DuplicatePolicy.MAX))
-      } else {}
+      }
     }
   }
 

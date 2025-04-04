@@ -69,14 +69,15 @@ class RunnerService(
     if (csmRbac.check(runner.getRbac(), PERMISSION_READ_SECURITY).not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = runner.security.accessControlList.firstOrNull { it.id == username }
-      if (retrievedAC != null) {
-        runner.security =
-            RunnerSecurity(
-                default = runner.security.default, accessControlList = mutableListOf(retrievedAC))
-      } else {
-        runner.security =
-            RunnerSecurity(default = runner.security.default, accessControlList = mutableListOf())
-      }
+
+      val accessControlList =
+          if (retrievedAC != null) {
+            mutableListOf(retrievedAC)
+          } else {
+            mutableListOf()
+          }
+      runner.security =
+          RunnerSecurity(default = runner.security.default, accessControlList = accessControlList)
     }
     return runner
   }
@@ -86,20 +87,16 @@ class RunnerService(
   }
 
   fun inWorkspace(workspaceId: String): RunnerService = apply {
-    if (this.organization == null) {
-      throw IllegalArgumentException(
-          "RunnerService's organization needs to be set. use inOrganization to do so.")
+    requireNotNull(this.organization) {
+      "RunnerService's organization needs to be set. use inOrganization to do so."
     }
-
     this.workspace = workspaceApiService.getWorkspace(this.organization!!.id, workspaceId)
   }
 
   fun userHasPermissionOnWorkspace(permission: String): RunnerService = apply {
-    if (this.workspace == null) {
-      throw IllegalArgumentException(
-          "RunnerService's workspace needs to be set. Use inWorkspace to do so.")
+    requireNotNull(this.workspace) {
+      "RunnerService's workspace needs to be set. Use inWorkspace to do so."
     }
-
     csmRbac.verify(workspace!!.security.toGenericSecurity(workspace!!.id), permission)
   }
 
@@ -253,11 +250,17 @@ class RunnerService(
     }
 
     fun setValueFrom(runner: Runner): RunnerInstance = apply {
-      if (runner.runTemplateId.isEmpty())
-          throw IllegalArgumentException("runner does not have a runTemplateId define")
-      if (!solutionApiService.isRunTemplateExist(
-          organization!!.id, workspace!!.id, workspace!!.solution.solutionId, runner.runTemplateId))
-          throw IllegalArgumentException("Run Template not found: ${runner.runTemplateId}")
+      require(runner.runTemplateId.isNotEmpty()) { "runner does not have a runTemplateId define" }
+
+      require(
+          solutionApiService.isRunTemplateExist(
+              organization!!.id,
+              workspace!!.id,
+              workspace!!.solution.solutionId,
+              runner.runTemplateId)) {
+            "Run Template not found: ${runner.runTemplateId}"
+          }
+
       val beforeMutateDatasetList = this.runner.datasetList
 
       val excludeFields =
@@ -365,9 +368,7 @@ class RunnerService(
         val runTemplateId = this.runner.runTemplateId
         val runTemplate =
             solution?.runTemplates?.find { runTemplate -> runTemplate.id == runTemplateId }
-        if (runTemplate == null) {
-          throw IllegalArgumentException("Run Template not found: $runTemplateId")
-        }
+        requireNotNull(runTemplate) { "Run Template not found: $runTemplateId" }
         val inheritedParameterValues =
             constructParametersValuesFromParent(
                 parentId, solution, runTemplate, parentRunner, this.runner)

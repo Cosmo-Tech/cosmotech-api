@@ -148,12 +148,8 @@ internal class RunArgoWorkflowService(
       val workflow =
           newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
               .workflowServiceCreateWorkflow(csmPlatformProperties.argo.workflows.namespace, body)
-      if (workflow.metadata.uid == null) {
-        throw IllegalStateException("Argo Workflow metadata.uid is null")
-      }
-      if (workflow.metadata.name == null) {
-        throw IllegalStateException("Argo Workflow metadata.name is null")
-      }
+      checkNotNull(workflow.metadata.uid) { "Argo Workflow metadata.uid is null" }
+      checkNotNull(workflow.metadata.name) { "Argo Workflow metadata.name is null" }
 
       return Run(
           csmSimulationRun = runStartContainers.csmSimulationId,

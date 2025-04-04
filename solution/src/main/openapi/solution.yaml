@@ -1210,7 +1210,6 @@ components:
           type: string
           description: The compute size needed for this Run Template
         runSizing:
-          description: Definition of resources needed for the scenario run
           $ref: "#/components/schemas/RunTemplateResourceSizing"
         parameterGroups:
           type: array
@@ -1254,7 +1253,6 @@ components:
           type: string
           description: The compute size needed for this Run Template
         runSizing:
-          description: Definition of resources needed for the scenario run
           $ref: "#/components/schemas/RunTemplateResourceSizing"
         parameterGroups:
           type: array
@@ -1292,7 +1290,6 @@ components:
           type: string
           description: The compute size needed for this Run Template
         runSizing:
-          description: Definition of resources needed for the scenario run
           $ref: "#/components/schemas/RunTemplateResourceSizing"
         parameterGroups:
           type: array

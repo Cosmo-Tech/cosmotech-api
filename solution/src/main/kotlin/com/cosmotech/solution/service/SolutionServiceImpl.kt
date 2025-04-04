@@ -179,9 +179,8 @@ class SolutionServiceImpl(
             .map { it.id.lowercase() }
             .firstOrNull { it == runTemplateCreateRequest.id.lowercase() }
 
-    if (runTemplateIdAlreadyExist != null) {
-      throw IllegalArgumentException(
-          "Run template with id '${runTemplateCreateRequest.id}' already exists")
+    require(runTemplateIdAlreadyExist == null) {
+      "Run template with id '${runTemplateCreateRequest.id}' already exists"
     }
     val runTemplateToCreate = convertToRunTemplate(runTemplateCreateRequest)
 
@@ -345,8 +344,8 @@ class SolutionServiceImpl(
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
 
     val users = listSolutionSecurityUsers(organizationId, solutionId)
-    if (users.contains(solutionAccessControl.id)) {
-      throw IllegalArgumentException("User is already in this Solution security")
+    require(!users.contains(solutionAccessControl.id)) {
+      "User is already in this Solution security"
     }
 
     val rbacSecurity =
@@ -382,9 +381,8 @@ class SolutionServiceImpl(
             .map { it.id.lowercase() }
             .firstOrNull { it == runTemplateParameterGroupCreateRequest.id.lowercase() }
 
-    if (parameterIdAlreadyExist != null) {
-      throw IllegalArgumentException(
-          "Parameter Group with id '${runTemplateParameterGroupCreateRequest.id}' already exists")
+    require(parameterIdAlreadyExist == null) {
+      "Parameter Group with id '${runTemplateParameterGroupCreateRequest.id}' already exists"
     }
     val parameterGroupToCreate =
         convertToRunTemplateParameterGroup(runTemplateParameterGroupCreateRequest)
@@ -472,9 +470,8 @@ class SolutionServiceImpl(
             .map { it.id.lowercase() }
             .firstOrNull { it == runTemplateParameterCreateRequest.id.lowercase() }
 
-    if (parameterIdAlreadyExist != null) {
-      throw IllegalArgumentException(
-          "Parameter with id '${runTemplateParameterCreateRequest.id}' already exists")
+    require(parameterIdAlreadyExist == null) {
+      "Parameter with id '${runTemplateParameterCreateRequest.id}' already exists"
     }
 
     val parameterToCreate = convertToRunTemplateParameter(runTemplateParameterCreateRequest)
@@ -601,18 +598,18 @@ class SolutionServiceImpl(
         .not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = solution.security.accessControlList.firstOrNull { it.id == username }
-      if (retrievedAC != null) {
-        return solution.copy(
-            security =
-                SolutionSecurity(
-                    default = solution.security.default,
-                    accessControlList = mutableListOf(retrievedAC)))
-      } else {
-        return solution.copy(
-            security =
-                SolutionSecurity(
-                    default = solution.security.default, accessControlList = mutableListOf()))
-      }
+
+      val accessControlList =
+          if (retrievedAC != null) {
+            mutableListOf(retrievedAC)
+          } else {
+            mutableListOf()
+          }
+
+      return solution.copy(
+          security =
+              SolutionSecurity(
+                  default = solution.security.default, accessControlList = accessControlList))
     }
     return solution
   }
@@ -689,9 +686,8 @@ class SolutionServiceImpl(
       duplicatedFieldIds.add("runTemplates")
     }
 
-    if (duplicatedFieldIds.isNotEmpty()) {
-      throw IllegalArgumentException(
-          "One or several solution items have same id : ${duplicatedFieldIds.joinToString(",")}")
+    require(duplicatedFieldIds.isEmpty()) {
+      "One or several solution items have same id : ${duplicatedFieldIds.joinToString(",")}"
     }
   }
 }
