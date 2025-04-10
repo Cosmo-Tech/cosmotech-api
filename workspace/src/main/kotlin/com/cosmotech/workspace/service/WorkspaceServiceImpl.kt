@@ -42,7 +42,7 @@ import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.cosmotech.workspace.repository.WorkspaceRepository
 import io.awspring.cloud.s3.S3Template
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
@@ -146,7 +146,9 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspaceFiles(organizationId: String, workspaceId: String) {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-    deleteAllS3WorkspaceObjects(organizationId, workspace)
+    CoroutineScope(SecurityCoroutineContext()).launch {
+      deleteAllS3WorkspaceObjects(organizationId, workspace)
+    }
   }
 
   override fun updateWorkspace(
@@ -204,13 +206,13 @@ internal class WorkspaceServiceImpl(
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_DELETE)
 
     try {
-      deleteAllS3WorkspaceObjects(organizationId, workspace)
+      CoroutineScope(SecurityCoroutineContext()).launch {
+        deleteAllS3WorkspaceObjects(organizationId, workspace)
+      }
       workspace.linkedDatasetIdList?.forEach { deleteDatasetLink(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
-      if (csmPlatformProperties.internalResultServices?.enabled == true) {
-        this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, workspaceId))
-      }
+      this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, workspaceId))
     }
   }
 
@@ -401,18 +403,14 @@ internal class WorkspaceServiceImpl(
         csmPlatformProperties.s3.bucketName, "$organizationId/${workspace.id}/$fileName")
   }
 
-  private fun deleteAllS3WorkspaceObjects(organizationId: String, workspace: Workspace) {
+  override fun deleteAllS3WorkspaceObjects(organizationId: String, workspace: Workspace) {
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
-
-    GlobalScope.launch(SecurityCoroutineContext()) {
-      // TODO Consider using a smaller coroutine scope
-      val workspaceFiles = getWorkspaceFiles(organizationId, workspace.id)
-      if (workspaceFiles.isEmpty()) {
-        logger.debug("No file to delete for workspace #{} ({})", workspace.id, workspace.name)
-      } else {
-        workspaceFiles.forEach { file ->
-          deleteS3WorkspaceObject(organizationId, workspace, file.fileName)
-        }
+    val workspaceFiles = getWorkspaceFiles(organizationId, workspace.id)
+    if (workspaceFiles.isEmpty()) {
+      logger.debug("No file to delete for workspace #{} ({})", workspace.id, workspace.name)
+    } else {
+      workspaceFiles.forEach { file ->
+        deleteS3WorkspaceObject(organizationId, workspace, file.fileName)
       }
     }
   }

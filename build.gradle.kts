@@ -61,7 +61,7 @@ val springWebVersion = "6.2.1"
 
 // Implementation
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "2.1.1-LCRA-store_workspace_files_in_seaweed_PROD-14290-SNAPSHOT"
+val cosmotechApiCommonVersion = "2.1.0-SNAPSHOT"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.4.2"
 val redisOmSpringVersion = "0.9.7"
@@ -77,7 +77,8 @@ val orgJsonVersion = "20240303"
 val jacksonModuleKotlinVersion = "2.18.3"
 val testNgVersion = "7.8.0"
 val testContainersRedisVersion = "1.6.4"
-val testContainersPostgreSQLVersion = "1.19.7"
+val testContainersPostgreSQLVersion = "1.20.6"
+val testContainersLocalStackVersion = "1.20.6"
 val commonCompressVersion = "1.27.1"
 val awsSpringVersion = "3.1.1"
 
@@ -141,7 +142,6 @@ allprojects {
   configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.1") } } }
 
   repositories {
-    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
@@ -327,6 +327,7 @@ subprojects {
     testImplementation(
         "com.redis.testcontainers:testcontainers-redis-junit:$testContainersRedisVersion")
     testImplementation("org.testcontainers:postgresql:$testContainersPostgreSQLVersion")
+    testImplementation("org.testcontainers:localstack:$testContainersLocalStackVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {

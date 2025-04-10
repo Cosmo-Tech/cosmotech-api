@@ -32,7 +32,6 @@ import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
-import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -46,7 +45,6 @@ import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -60,6 +58,7 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
@@ -124,14 +123,6 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
   }
 
-  @AfterEach
-  fun cleanUp() {
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-
-    val workspaces = workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
-    workspaces.forEach { workspaceApiService.deleteWorkspaceFiles(organizationSaved.id, it.id) }
-  }
-
   @Test
   fun `test CRUD operations on Workspace as User Admin`() {
 
@@ -167,13 +158,9 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
     logger.info("should create a workspace file")
-
-    var savedFile = WorkspaceFile("")
-    assertDoesNotThrow {
-      savedFile =
-          workspaceApiService.createWorkspaceFile(
-              organizationSaved.id, workspaceSaved.id, resourceTestFile, true, null)
-    }
+    val savedFile =
+        workspaceApiService.createWorkspaceFile(
+            organizationSaved.id, workspaceSaved.id, resourceTestFile, true, null)
 
     assertEquals(fileName, savedFile.fileName)
   }
@@ -219,13 +206,14 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     workspaceApiService.createWorkspaceFile(
         organizationSaved.id, workspaceSaved.id, resourceTestFile, true, null)
 
-    assertDoesNotThrow {
-      workspaceApiService.deleteWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
-    }
+    workspaceApiService.deleteWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
 
-    assertThrows<Exception> {
-      workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
-    }
+    val exception =
+        assertThrows<NoSuchKeyException> {
+          workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
+        }
+
+    assertEquals("The specified key does not exist.", exception.awsErrorDetails().errorMessage())
   }
 
   @Test
@@ -238,7 +226,7 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     workspaceApiService.createWorkspaceFile(
         organizationSaved.id, workspaceSaved.id, resourceTestFile, true, null)
 
-   workspaceApiService.deleteWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
+    workspaceApiService.deleteAllS3WorkspaceObjects(organizationSaved.id, workspaceSaved)
 
     assertEquals(
         0, workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id).size)

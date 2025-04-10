@@ -13,4 +13,6 @@ interface WorkspaceApiServiceInterface : WorkspaceApiService {
       workspaceId: String,
       requiredPermission: String = PERMISSION_READ
   ): Workspace
+
+  fun deleteAllS3WorkspaceObjects(organizationId: String, workspace: Workspace)
 }
