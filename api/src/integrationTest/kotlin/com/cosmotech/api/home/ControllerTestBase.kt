@@ -34,7 +34,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT
+import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.utility.DockerImageName
 import org.testcontainers.utility.MountableFile
 
 @Testcontainers
@@ -99,7 +101,8 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
     private const val READER_USER_CREDENTIALS = "readusertest"
     private const val WRITER_USER_CREDENTIALS = "writeusertest"
     private const val DEFAULT_REDIS_PORT = 6379
-    private const val REDIS_STACK_LASTEST_TAG_WITH_GRAPH = "6.2.6-v18"
+    private const val REDIS_STACK_LATEST_TAG_WITH_GRAPH = "6.2.6-v18"
+    private const val LOCALSTACK_FULL_IMAGE_NAME = "localstack/localstack:3.5.0"
 
     var postgres: PostgreSQLContainer<*> =
         PostgreSQLContainer("postgres:alpine3.19")
@@ -108,11 +111,17 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
 
     var redisStackServer =
         RedisStackContainer(
-            RedisStackContainer.DEFAULT_IMAGE_NAME.withTag(REDIS_STACK_LASTEST_TAG_WITH_GRAPH))
+            RedisStackContainer.DEFAULT_IMAGE_NAME.withTag(REDIS_STACK_LATEST_TAG_WITH_GRAPH))
+
+    val localStackServer =
+        LocalStackContainer(DockerImageName.parse(LOCALSTACK_FULL_IMAGE_NAME))
+            .withServices(LocalStackContainer.Service.S3)
 
     init {
       redisStackServer.start()
       postgres.start()
+      localStackServer.start()
+      localStackServer.execInContainer("awslocal", "s3", "mb", "s3://test-bucket")
     }
 
     @JvmStatic
@@ -120,6 +129,7 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
     fun connectionProperties(registry: DynamicPropertyRegistry) {
       initPostgresConfiguration(registry)
       initRedisConfiguration(registry)
+      initS3Configuration(registry)
     }
 
     private fun initRedisConfiguration(registry: DynamicPropertyRegistry) {
@@ -131,6 +141,13 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
 
       registry.add("spring.data.redis.host") { containerIp }
       registry.add("spring.data.redis.port") { DEFAULT_REDIS_PORT }
+    }
+
+    private fun initS3Configuration(registry: DynamicPropertyRegistry) {
+      registry.add("spring.cloud.aws.s3.endpoint") { localStackServer.endpoint }
+      registry.add("spring.cloud.aws.credentials.access-key") { localStackServer.accessKey }
+      registry.add("spring.cloud.aws.credentials.secret-key") { localStackServer.secretKey }
+      registry.add("spring.cloud.aws.s3.region") { localStackServer.region }
     }
 
     private fun initPostgresConfiguration(registry: DynamicPropertyRegistry) {

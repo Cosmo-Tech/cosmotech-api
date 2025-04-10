@@ -11,10 +11,6 @@ plugins {
   id("org.jetbrains.kotlinx.kover")
 }
 
-val testNgVersion = "7.8.0"
-val testContainersRedisVersion = "1.6.4"
-val testContainersPostgreSQLVersion = "1.19.7"
-
 dependencies {
   implementation(projects.cosmotechMetaApi)
   implementation(projects.cosmotechConnectorApi)
