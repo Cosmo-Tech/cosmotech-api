@@ -15,11 +15,11 @@ spring:
   cloud:
     aws:
       credentials:
-        access-key: "accessKeyId"
-        secret-key: "secretAccessKey"
+        access-key: "s3_username"
+        secret-key: "s3_password"
       s3:
         # We don't need/have a region for our local S3 service but the AWS SDK requires one to be configured
-        region: "region"
+        region: "dummy"
         # Enable path-style / disable DNS-style
         # By default, and for AWS S3, the client crafts its URL with the bucket as sub-domain of the endpoint
         # which is not how our current S3 implementation works as it expects the bucket in the path
@@ -119,3 +119,4 @@ csm:
       bucketName: "test-bucket"
       accessKeyId: "s3_username"
       secretAccessKey: "s3_password"
+      region: "dummy"

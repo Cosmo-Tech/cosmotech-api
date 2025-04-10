@@ -40,15 +40,6 @@ spring:
         keycloak:
           truststore:
             certificate: "classpath:[fill-this-value].pem" # certificate file
-  cloud:
-    aws:
-      credentials:
-        access-key: "s3_username"
-        secret-key: "s3_password"
-      s3:
-        region: "dummy"
-        path-style-access-enabled: true
-        endpoint: "http://localhost:9000"
 
 csm:
   platform:
@@ -86,6 +77,7 @@ csm:
       bucketName: "cosmotech-api"
       accessKeyId: "s3_username"
       secretAccessKey: "s3_password"
+      region: "dummy"
     argo:
       base-uri: "http://localhost:2746"
       workflows:
