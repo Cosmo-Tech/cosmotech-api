@@ -118,6 +118,8 @@ class TwingraphServiceImpl(
 
   override fun jobStatus(organizationId: String, jobId: String): String {
     checkIfGraphFunctionalityIsAvailable()
+    organizationService.getVerifiedOrganization(organizationId)
+
     val twingraphImportJobInfoRequest = TwingraphImportJobInfoRequest(this, jobId, organizationId)
     this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
     logger.debug("TwingraphImportEventResponse={}", twingraphImportJobInfoRequest.response)
@@ -151,6 +153,7 @@ class TwingraphServiceImpl(
 
   override fun getGraphMetaData(organizationId: String, graphId: String): Map<String, String> {
     checkIfGraphFunctionalityIsAvailable()
+    organizationService.getVerifiedOrganization(organizationId)
     if (unifiedJedis.exists(graphId.toRedisMetaDataKey())) {
       return unifiedJedis.hgetAll(graphId.toRedisMetaDataKey())
     }
