@@ -54,16 +54,10 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -89,8 +83,6 @@ class WorkspaceServiceImplTests {
 
   @Suppress("unused") @RelaxedMockK private lateinit var s3Client: S3Client
   @RelaxedMockK private lateinit var s3Template: S3Template
-
-  private lateinit var blobPersistencePath: String
 
   @Suppress("unused") @MockK private var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
   @Suppress("unused") @MockK private var idGenerator: CsmIdGenerator = mockk(relaxed = true)
@@ -142,14 +134,7 @@ class WorkspaceServiceImplTests {
     every { csmPlatformProperties.s3.bucketName } returns S3_BUCKET_NAME
     every { s3Template.objectExists(any(), any()) } returns false
 
-    blobPersistencePath = Files.createTempDirectory("cosmotech-api-test-data-").toString()
-
     MockKAnnotations.init(this)
-  }
-
-  @AfterEach
-  fun afterEach() {
-    File(blobPersistencePath).deleteRecursively()
   }
 
   @Test
@@ -167,8 +152,6 @@ class WorkspaceServiceImplTests {
         workspaceServiceImpl.createWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, null)
     assertNotNull(workspaceFile.fileName)
     assertEquals("my_file.txt", workspaceFile.fileName)
-    assertTrue(
-        Files.exists(Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID, "my_file.txt")))
   }
 
   @Test
@@ -188,8 +171,6 @@ class WorkspaceServiceImplTests {
         workspaceServiceImpl.createWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, "  ")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my_file.txt", workspaceFile.fileName)
-    assertTrue(
-        Files.exists(Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID, "my_file.txt")))
   }
 
   @Test
@@ -208,10 +189,6 @@ class WorkspaceServiceImplTests {
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my/destination/")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/destination/my_file.txt", workspaceFile.fileName)
-    assertTrue(
-        Files.exists(
-            Path.of(
-                blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID, "my/destination/my_file.txt")))
   }
 
   @Test
@@ -230,9 +207,6 @@ class WorkspaceServiceImplTests {
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my/destination/file")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/destination/file", workspaceFile.fileName)
-    assertTrue(
-        Files.exists(
-            Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID, "my/destination/file")))
   }
 
   @Test
@@ -251,10 +225,6 @@ class WorkspaceServiceImplTests {
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my//other/destination////////file")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/other/destination/file", workspaceFile.fileName)
-    assertTrue(
-        Files.exists(
-            Path.of(
-                blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID, "my/other/destination/file")))
   }
 
   @Test
@@ -263,7 +233,6 @@ class WorkspaceServiceImplTests {
       workspaceServiceImpl.createWorkspaceFile(
           ORGANIZATION_ID, WORKSPACE_ID, mockk(), false, "my/../other/destination/../../file")
     }
-    assertFalse(Files.exists(Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID)))
   }
 
   @Test
@@ -272,7 +241,6 @@ class WorkspaceServiceImplTests {
       workspaceServiceImpl.getWorkspaceFile(
           ORGANIZATION_ID, WORKSPACE_ID, "my/../../other/destination/file")
     }
-    assertFalse(Files.exists(Path.of(blobPersistencePath, ORGANIZATION_ID, WORKSPACE_ID)))
   }
 
   @Test
@@ -442,10 +410,6 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC download workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
-              val filePath =
-                  Path.of(blobPersistencePath, it.organization.id, it.workspace.id, "name")
-              Files.createDirectories(filePath.getParent())
-              Files.createFile(filePath)
               workspaceServiceImpl.getWorkspaceFile(it.organization.id, it.workspace.id, "name")
             }
           }
