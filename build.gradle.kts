@@ -67,7 +67,7 @@ val jedisVersion = "4.4.6"
 val springOauthVersion = "6.4.2"
 val redisOmSpringVersion = "0.9.7"
 val kotlinCoroutinesCoreVersion = "1.10.2"
-val kotlinCoroutinesTestVersion = "1.7.3"
+val kotlinCoroutinesTestVersion = "1.10.2"
 val oktaSpringBootVersion = "3.0.7"
 val springDocVersion = "2.8.6"
 val swaggerParserVersion = "2.1.25"
@@ -338,7 +338,7 @@ subprojects {
     }
     integrationTestImplementation("com.ninja-squad:springmockk:$springMockkVersion")
     // developmentOnly("org.springframework.boot:spring-boot-devtools")
-    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
   }
