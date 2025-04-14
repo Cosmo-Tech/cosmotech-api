@@ -35,7 +35,7 @@ import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
-import com.redis.om.spring.RediSearchIndexer
+import com.redis.om.spring.indexing.RediSearchIndexer
 import io.awspring.cloud.s3.S3Template
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK

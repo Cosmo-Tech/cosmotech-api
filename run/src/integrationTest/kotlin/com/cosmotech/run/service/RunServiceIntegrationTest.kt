@@ -47,7 +47,7 @@ import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
-import com.redis.om.spring.RediSearchIndexer
+import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
