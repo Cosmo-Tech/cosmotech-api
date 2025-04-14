@@ -5,9 +5,9 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 plugins { id("org.jetbrains.kotlinx.kover") }
 
 val argoClientJavaVersion = "v3.5.11"
-val retroFitVersion = "2.9.0"
+val retroFitVersion = "2.11.0"
 val okHttpBom = "4.10.0"
-val testContainersRabbitMQVersion = "1.19.7"
+val testContainersRabbitMQVersion = "1.20.6"
 val springRabbitMQTestVersion = "3.1.4"
 
 dependencies {
