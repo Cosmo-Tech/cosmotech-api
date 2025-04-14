@@ -66,8 +66,7 @@ val cosmotechApiCommonVersion = "2.1.0-SNAPSHOT"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.4.2"
 val redisOmSpringVersion = "0.9.7"
-val kotlinCoroutinesCoreVersion = "1.10.2"
-val kotlinCoroutinesTestVersion = "1.7.3"
+val kotlinCoroutinesVersion = "1.10.2"
 val oktaSpringBootVersion = "3.0.7"
 val springDocVersion = "2.8.6"
 val swaggerParserVersion = "2.1.25"
@@ -88,7 +87,7 @@ val detektVersion = "1.23.8"
 
 // Tests
 val jUnitBomVersion = "5.10.0"
-val mockkVersion = "1.13.13"
+val mockkVersion = "1.14.0"
 val awaitilityKVersion = "4.2.0"
 val testcontainersRedis = "1.6.4"
 val springMockkVersion = "4.0.2"
@@ -278,7 +277,7 @@ subprojects {
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesCoreVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     implementation(
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
@@ -323,7 +322,7 @@ subprojects {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.awaitility:awaitility-kotlin:$awaitilityKVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesTestVersion")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
     testImplementation("org.testng:testng:$testNgVersion")
     testImplementation(
         "com.redis.testcontainers:testcontainers-redis-junit:$testContainersRedisVersion")
@@ -338,7 +337,8 @@ subprojects {
     }
     integrationTestImplementation("com.ninja-squad:springmockk:$springMockkVersion")
     // developmentOnly("org.springframework.boot:spring-boot-devtools")
-    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    integrationTestImplementation(
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
 
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
   }
