@@ -7,6 +7,7 @@ import com.github.jk1.license.task.ReportTask
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
 import io.gitlab.arturbosch.detekt.Detekt
+import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -32,16 +33,16 @@ buildscript {
 }
 
 plugins {
-  val kotlinVersion = "1.9.23"
+  val kotlinVersion = "2.0.21"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.18.18"
   id("com.diffplug.spotless") version "7.0.2"
-  id("org.springframework.boot") version "3.4.1" apply false
+  id("org.springframework.boot") version "3.4.4" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.1.0"
   id("com.github.jk1.dependency-license-report") version "2.9"
-  id("org.jetbrains.kotlinx.kover") version "0.7.4"
+  id("org.jetbrains.kotlinx.kover") version "0.9.1"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   id("org.openapi.generator") version "7.10.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.5" apply false
@@ -65,7 +66,7 @@ val cosmotechApiCommonVersion = "2.1.0-SNAPSHOT"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.4.2"
 val redisOmSpringVersion = "0.9.7"
-val kotlinCoroutinesCoreVersion = "1.8.1"
+val kotlinCoroutinesCoreVersion = "1.10.2"
 val kotlinCoroutinesTestVersion = "1.7.3"
 val oktaSpringBootVersion = "3.0.7"
 val springDocVersion = "2.8.6"
@@ -83,7 +84,7 @@ val commonCompressVersion = "1.27.1"
 val awsSpringVersion = "3.1.1"
 
 // Checks
-val detektVersion = "1.23.7"
+val detektVersion = "1.23.8"
 
 // Tests
 val jUnitBomVersion = "5.10.0"
@@ -139,7 +140,7 @@ allprojects {
     sourceCompatibility = JavaVersion.VERSION_21
     toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
   }
-  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.1") } } }
+  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.10") } } }
 
   repositories {
     maven {
@@ -271,6 +272,8 @@ subprojects {
   }
 
   dependencies {
+    // https://youtrack.jetbrains.com/issue/KT-71057/POM-file-unusable-after-upgrading-to-2.0.20-from-2.0.10
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.21"))
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
@@ -304,9 +307,7 @@ subprojects {
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
-    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}") {
-      constraints { implementation("ai.djl:api:0.28.0") }
-    }
+    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
     implementation("org.springframework.data:spring-data-redis")
     implementation("org.springframework:spring-jdbc")
     implementation("org.postgresql:postgresql")
@@ -616,16 +617,23 @@ val copySubProjectsDetektReportsTasks =
 
 tasks.getByName("detekt") { shouldRunAfter(*copySubProjectsDetektReportsTasks.toTypedArray()) }
 
-extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverReportExtension> {
-  defaults {
-    // reports configs for XML, HTML, verify reports
+extensions.configure<KoverProjectExtension>("kover") {
+  reports {
+    filters {
+      excludes {
+        projects { cosmotechApi }
+        classes("com.cosmotech.Application*")
+        classes("com.cosmotech.*.api.*")
+        classes("com.cosmotech.*.domain.*")
+      }
+    }
   }
-  filters {
-    excludes {
-      projects { excludes { cosmotechApi } }
-      classes("com.cosmotech.Application*")
-      classes("com.cosmotech.*.api.*")
-      classes("com.cosmotech.*.domain.*")
+}
+
+kover {
+  reports {
+    total {
+      // reports configs for XML, HTML, verify reports
     }
   }
 }

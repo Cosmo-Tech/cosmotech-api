@@ -8,7 +8,7 @@ import com.cosmotech.run.domain.Run
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
-import com.redis.om.spring.RediSearchIndexer
+import com.redis.om.spring.indexing.RediSearchIndexer
 import com.redis.testcontainers.RedisServer
 import com.redis.testcontainers.RedisStackContainer
 import com.redis.testcontainers.junit.AbstractTestcontainersRedisTestBase
