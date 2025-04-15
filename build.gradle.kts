@@ -80,7 +80,7 @@ val testContainersRedisVersion = "1.6.4"
 val testContainersPostgreSQLVersion = "1.20.6"
 val testContainersLocalStackVersion = "1.20.6"
 val commonCompressVersion = "1.27.1"
-val awsSpringVersion = "3.1.1"
+val awsSpringVersion = "3.3.0"
 
 // Checks
 val detektVersion = "1.23.8"
