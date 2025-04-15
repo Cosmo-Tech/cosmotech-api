@@ -76,6 +76,7 @@ entity Dataset {
     twingraphId: String
     main: Boolean
     creationDate: Long
+    lastUpdate: Long
     refreshDate: Long
     sourceType: DatasetSourceType
     source: SourceInfo
@@ -172,6 +173,8 @@ entity Organization {
     * id: String
     * name: String
     * ownerId: String
+    creationDate: Long
+    lastUpdate: Long
     * security: OrganizationSecurity
 }
 
@@ -501,6 +504,8 @@ entity Solution {
     alwaysPull: Boolean
     * version: String
     * ownerId: String
+    creationDate: Long
+    lastUpdate: Long
     sdkVersion: String
     url: String
     tags: List<String>
@@ -586,6 +591,8 @@ entity Workspace {
     version: String
     tags: List<String>
     * ownerId: String
+    creationDate: Long
+    lastUpdate: Long
     * solution: WorkspaceSolution
     webApp: WorkspaceWebApp
     datasetCopy: Boolean

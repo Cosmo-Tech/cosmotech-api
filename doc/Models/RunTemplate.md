@@ -5,7 +5,7 @@
 |------------ | ------------- | ------------- | -------------|
 | **id** | **String** | The Solution Run Template id | [default to null] |
 | **name** | **String** | The Run Template name | [optional] [default to null] |
-| **labels** | **Map** | a translated label with key as ISO 639-1 code | [optional] [default to null] |
+| **labels** | **Map** | A translated label with key as ISO 639-1 code | [optional] [default to null] |
 | **description** | **String** | The Run Template description | [optional] [default to null] |
 | **tags** | **List** | The list of Run Template tags | [optional] [default to null] |
 | **computeSize** | **String** | The compute size needed for this Run Template | [optional] [default to null] |

@@ -12,6 +12,8 @@
 | **alwaysPull** | **Boolean** | Set to true if the runtemplate wants to always pull the image | [optional] [default to false] |
 | **version** | **String** | The Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag | [default to null] |
 | **ownerId** | **String** | The User id which owns this Solution | [default to null] |
+| **creationDate** | **Long** | The Solution creation date | [optional] [default to null] |
+| **lastUpdate** | **Long** | The date of the Solution last update | [optional] [default to null] |
 | **sdkVersion** | **String** | The full SDK version used to build this solution, if available | [optional] [default to null] |
 | **url** | **String** | An optional URL link to solution page | [optional] [default to null] |
 | **tags** | **List** | The list of tags | [optional] [default to null] |

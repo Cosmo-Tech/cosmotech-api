@@ -3,11 +3,11 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-| **key** | **String** | technical key for resource name convention and version grouping. Must be unique | [default to null] |
+| **key** | **String** | Technical key for resource name convention and version grouping. Must be unique | [default to null] |
 | **name** | **String** | Workspace name. This name is displayed in the sample webApp | [default to null] |
-| **description** | **String** | the Workspace description | [optional] [default to null] |
-| **version** | **String** | the Workspace version MAJOR.MINOR.PATCH. | [optional] [default to null] |
-| **tags** | **List** | the list of tags | [optional] [default to null] |
+| **description** | **String** | The Workspace description | [optional] [default to null] |
+| **version** | **String** | The Workspace version MAJOR.MINOR.PATCH. | [optional] [default to null] |
+| **tags** | **List** | The list of tags | [optional] [default to null] |
 | **solution** | [**WorkspaceSolution**](WorkspaceSolution.md) |  | [default to null] |
 | **webApp** | [**WorkspaceWebApp**](WorkspaceWebApp.md) |  | [optional] [default to null] |
 | **datasetCopy** | **Boolean** | Activate the copy of dataset on scenario creation | [optional] [default to true] |
