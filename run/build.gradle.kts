@@ -8,7 +8,7 @@ val argoClientJavaVersion = "v3.5.11"
 val retroFitVersion = "2.11.0"
 val okHttpBom = "4.12.0"
 val testContainersRabbitMQVersion = "1.20.6"
-val springRabbitMQTestVersion = "3.1.4"
+val springRabbitMQTestVersion = "3.2.4"
 
 dependencies {
   implementation(projects.cosmotechConnectorApi)
