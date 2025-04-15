@@ -33,7 +33,7 @@ buildscript {
 }
 
 plugins {
-  val kotlinVersion = "2.0.21"
+  val kotlinVersion = "2.1.20"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.18.18"
