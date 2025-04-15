@@ -1299,6 +1299,11 @@ class DatasetServiceImpl(
     }
     return dataset
   }
+
+  fun save(dataset: Dataset): Dataset {
+    dataset.lastUpdate = Instant.now().toEpochMilli()
+    return datasetRepository.save(dataset)
+  }
 }
 
 fun Dataset.getRbac(): RbacSecurity {

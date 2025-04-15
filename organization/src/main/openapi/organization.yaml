@@ -20,7 +20,7 @@ paths:
         - organization
       summary: Create a new organization
       requestBody:
-        description: the Organization to create
+        description: The Organization to create
         required: true
         content:
           application/json:
@@ -37,7 +37,7 @@ paths:
                 $ref: '#/components/examples/NewOrganizationIn'
       responses:
         "201":
-          description: the Organization details
+          description: The Organization details
           content:
             application/json:
               schema:
@@ -58,13 +58,13 @@ paths:
       parameters:
         - name: page
           in: query
-          description: page number to query (first page is at index 0)
+          description: Page number to query (first page is at index 0)
           required: false
           schema:
             type: integer
         - name: size
           in: query
-          description: amount of result by page
+          description: Amount of result by page
           required: false
           schema:
             type: integer
@@ -73,7 +73,7 @@ paths:
       summary: List all Organizations
       responses:
         "200":
-          description: the list of Organizations
+          description: The list of Organizations
           content:
             application/json:
               schema:
@@ -96,7 +96,7 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
@@ -107,7 +107,7 @@ paths:
       summary: Get the details of an Organization
       responses:
         "200":
-          description: the Organization details
+          description: The Organization details
           content:
             application/json:
               schema:
@@ -122,14 +122,14 @@ paths:
                 CosmoOrganization:
                   $ref: '#/components/examples/CosmoOrganization'
         "404":
-          description: the Organization specified is unknown or you don't have access to it
+          description: The Organization specified is unknown or you don't have access to it
     patch:
       operationId: updateOrganization
       tags:
         - organization
       summary: Update an Organization
       requestBody:
-        description: the new Organization details. This endpoint can't be used to update security
+        description: The new Organization details. This endpoint can't be used to update security
         required: true
         content:
           application/json:
@@ -146,7 +146,7 @@ paths:
                 $ref: '#/components/examples/ChangeOrganizationName'
       responses:
         "200":
-          description: the organization details
+          description: The organization details
           content:
             application/json:
               schema:
@@ -163,7 +163,7 @@ paths:
         "400":
           description: Bad request
         "404":
-          description: the Organization specified is unknown or you don't have access to it
+          description: The Organization specified is unknown or you don't have access to it
     delete:
       operationId: deleteOrganization
       tags:
@@ -173,7 +173,7 @@ paths:
         "204":
           description: Request succeeded
         "404":
-          description: the Organization specified is unknown or you don't have access to it
+          description: The Organization specified is unknown or you don't have access to it
 
   /organizations/permissions:
     get:
@@ -206,13 +206,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: role
         in: path
-        description: the Role
+        description: The Role
         required: true
         schema:
           type: string
@@ -244,7 +244,7 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
@@ -270,13 +270,13 @@ paths:
                 OrganizationSecurity:
                   $ref: '#/components/examples/OrganizationSecurity'
         "404":
-          description: the Organization specified is unknown or you don't have access to it
+          description: The Organization specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/security/default:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
@@ -320,13 +320,13 @@ paths:
                 UpdatedSecurity:
                   $ref: '#/components/examples/UpdatedSecurity'
         "404":
-          description: the Organization specified is unknown or you don't have access to it
+          description: The Organization specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/security/access:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
@@ -336,7 +336,7 @@ paths:
         - organization
       summary: Add a control access to the Organization
       requestBody:
-        description: the new Organization security access to add.
+        description: The new Organization security access to add.
         required: true
         content:
           application/json:
@@ -368,19 +368,19 @@ paths:
                 OrganizationAccessControl:
                   $ref: '#/components/examples/OrganizationAccessControl'
         "404":
-          description: the Organization specified is unknown or you don't have access to it
+          description: The Organization specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/security/access/{identity_id}:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: identity_id
         in: path
-        description: the User identifier
+        description: The User identifier
         required: true
         schema:
           type: string
@@ -455,7 +455,7 @@ paths:
         "204":
           description: Request succeeded
         "404":
-          description: the Organization or the user specified is unknown or you don't have access to them
+          description: The Organization or the user specified is unknown or you don't have access to them
 
   /organizations/{organization_id}/security/users:
     parameters:
@@ -491,7 +491,7 @@ paths:
                   - "alice@mycompany.com"
                   - "bob@mycompany.com"
         "404":
-          description: the Organization specified is unknown or you don't have access to it
+          description: The Organization specified is unknown or you don't have access to it
 
 components:
   securitySchemes:
@@ -508,21 +508,31 @@ components:
     Organization:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
-      description: an Organization
+      description: An Organization
       properties:
         id:
           x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           type: string
           readOnly: true
-          description: the Organization unique identifier
+          description: The Organization unique identifier
         name:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
-          description: the Organization name
+          description: The Organization name
         ownerId:
           type: string
           readOnly: true
-          description: the Owner User Id
+          description: The Owner User Id
+        creationDate:
+          type: integer
+          format: int64
+          readOnly: true
+          description: The Organization creation date
+        lastUpdate:
+          type: integer
+          format: int64
+          readOnly: true
+          description: The date of the Organization last update
         security:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
@@ -541,7 +551,7 @@ components:
         name:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
-          description: the Organization name
+          description: The Organization name
           minLength: 1
           maxLength: 50
         security:
@@ -555,7 +565,7 @@ components:
       properties:
         name:
           type: string
-          description: the Organization name
+          description: The Organization name
           minLength: 1
           maxLength: 50
 
@@ -567,11 +577,11 @@ components:
         default:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the role by default
+          description: The role by default
         accessControlList:
           type: array
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the list which can access this Organization with detailed access control information
+          description: The list which can access this Organization with detailed access control information
           items:
             $ref: '#/components/schemas/OrganizationAccessControl'
       required:
@@ -585,28 +595,28 @@ components:
         id:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the identity id
+          description: The identity id
         role:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: a role
+          description: A role
       required:
         - id
         - role
 
     OrganizationRole:
       type: object
-      description: the Organization Role
+      description: The Organization Role
       properties:
         role:
           type: string
-          description: the Organization Role
+          description: The Organization Role
       required:
         - role
 
     ComponentRolePermissions:
       type: object
-      description: a RBAC by component
+      description: A RBAC by component
       properties:
         component:
           type: string
@@ -641,6 +651,8 @@ components:
         id: "org-123"
         name: "Digital Twin Solutions"
         ownerId: "admin-user-123"
+        creationDate: 1713096000000
+        lastUpdate: 1713096000000
         security:
           default: "viewer"
           accessControlList:
@@ -662,6 +674,8 @@ components:
         id: "org-123"
         name: "Updated Digital Twin Solutions"
         ownerId: "admin-user-123"
+        creationDate: 1713096000000
+        lastUpdate: 1713182400000
         security:
           default: "viewer"
           accessControlList:
@@ -677,6 +691,8 @@ components:
         - id: "org-123"
           name: "Digital Twin Solutions"
           ownerId: "admin-user-123"
+          creationDate: 1713096000000
+          lastUpdate: 1713096000000
           security:
             default: "viewer"
             accessControlList:
@@ -685,6 +701,8 @@ components:
         - id: "org-456"
           name: "Supply Chain Analytics"
           ownerId: "admin-user-456"
+          creationDate: 1712923200000
+          lastUpdate: 1713009600000
           security:
             default: "viewer"
             accessControlList:

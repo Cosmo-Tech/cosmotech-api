@@ -1417,6 +1417,11 @@ components:
           format: int64
           readOnly: true
           description: the Dataset creation date
+        lastUpdate:
+          type: integer
+          format: int64
+          readOnly: true
+          description: The date of the Dataset last update
         refreshDate:
           type: integer
           format: int64
@@ -1686,11 +1691,12 @@ components:
         name: Brewery ADT reference
         description: Brewery reference model in ADT
         ownerId: "ownerId"
+        creationDate: 1650532800000
+        lastUpdate: 1650532800000
         ownerName: "Bob"
         parentId: "null"
         twingraphId: "null"
         main: "null"
-        creationDate: "null"
         refreshDate: "null"
         sourceType: "StorageAzure"
         source:
@@ -1734,11 +1740,12 @@ components:
         name: Brewery ADT reference
         description: Brewery reference model in ADT
         ownerId: "ownerId"
+        creationDate: 1650532800000
+        lastUpdate: 1650532800000
         ownerName: "Bob"
         parentId: "null"
         twingraphId: "null"
         main: "null"
-        creationDate: "null"
         refreshDate: "null"
         linkedWorkspaceIdList: ["w-34ue25fze1"]
         sourceType: "StorageAzure"
@@ -1783,11 +1790,12 @@ components:
           name: Brewery ADT reference
           description: Brewery reference model in ADT
           ownerId: "ownerId"
+          creationDate: 1650532800000
+          lastUpdate: 1650532800000
           ownerName: "Bob"
           parentId: "null"
           twingraphId: "null"
           main: "null"
-          creationDate: "null"
           refreshDate: "null"
           sourceType: "StorageAzure"
           source:
@@ -1827,11 +1835,12 @@ components:
           name: Brewery ADT reference
           description: Brewery reference model in ADT
           ownerId: "ownerId"
+          creationDate: 1650532800000
+          lastUpdate: 1650532800000
           ownerName: "Bob"
           parentId: "null"
           twingraphId: "null"
           main: "null"
-          creationDate: "null"
           refreshDate: "null"
           sourceType: "StorageAzure"
           source:
@@ -1880,11 +1889,12 @@ components:
         name: Brewery ADT new reference
         description: Brewery reference model in ADT
         ownerId: "ownerId"
+        creationDate: 1650532800000
+        lastUpdate: 1650619200000
         ownerName: "Bob"
         parentId: "null"
         twingraphId: "null"
         main: "null"
-        creationDate: "null"
         refreshDate: "null"
         sourceType: "StorageAzure"
         source:
@@ -1941,6 +1951,8 @@ components:
         repository: brewery_adt_validator
         version: "1.0.0"
         ownerId: "1"
+        creationDate: 1650532800000
+        lastUpdate: 1650619200000
         url: https://github.com/brewery-adt-validator
         tags:
           - Brewery

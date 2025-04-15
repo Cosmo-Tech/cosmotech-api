@@ -42,6 +42,7 @@ import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.cosmotech.workspace.repository.WorkspaceRepository
 import io.awspring.cloud.s3.S3Template
+import java.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
@@ -130,6 +131,7 @@ internal class WorkspaceServiceImpl(
             id = workspaceId,
             organizationId = organizationId,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+            creationDate = Instant.now().toEpochMilli(),
             key = workspaceCreateRequest.key,
             name = workspaceCreateRequest.name,
             solution = workspaceCreateRequest.solution,
@@ -141,7 +143,7 @@ internal class WorkspaceServiceImpl(
             datasetCopy = workspaceCreateRequest.datasetCopy,
         )
 
-    return workspaceRepository.save(createdWorkspace)
+    return save(createdWorkspace)
   }
 
   override fun deleteWorkspaceFiles(organizationId: String, workspaceId: String) {
@@ -196,7 +198,7 @@ internal class WorkspaceServiceImpl(
     }
 
     return if (hasChanged) {
-      workspaceRepository.save(existingWorkspace)
+      save(existingWorkspace)
     } else {
       existingWorkspace
     }
@@ -364,7 +366,7 @@ internal class WorkspaceServiceImpl(
     if (workspace.linkedDatasetIdList != null) {
       if (workspace.linkedDatasetIdList!!.contains(datasetId)) {
         workspace.linkedDatasetIdList!!.remove(datasetId)
-        return workspaceRepository.save(workspace)
+        return save(workspace)
       }
     }
 
@@ -441,7 +443,7 @@ internal class WorkspaceServiceImpl(
     val rbacSecurity =
         csmRbac.setDefault(workspace.security.toGenericSecurity(workspaceId), workspaceRole.role)
     workspace.security = rbacSecurity.toResourceSecurity()
-    workspaceRepository.save(workspace)
+    save(workspace)
     return workspace.security
   }
 
@@ -489,7 +491,7 @@ internal class WorkspaceServiceImpl(
             workspaceAccessControl.id,
             workspaceAccessControl.role)
     workspace.security = rbacSecurity.toResourceSecurity()
-    workspaceRepository.save(workspace)
+    save(workspace)
     val rbacAccessControl =
         csmRbac.getAccessControl(
             workspace.security.toGenericSecurity(workspaceId), workspaceAccessControl.id)
@@ -511,7 +513,7 @@ internal class WorkspaceServiceImpl(
         csmRbac.setUserRole(
             workspace.security.toGenericSecurity(workspaceId), identityId, workspaceRole.role)
     workspace.security = rbacSecurity.toResourceSecurity()
-    workspaceRepository.save(workspace)
+    save(workspace)
     val rbacAccessControl =
         csmRbac.getAccessControl(workspace.security.toGenericSecurity(workspaceId), identityId)
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
@@ -526,7 +528,7 @@ internal class WorkspaceServiceImpl(
     val rbacSecurity =
         csmRbac.removeUser(workspace.security.toGenericSecurity(workspaceId), identityId)
     workspace.security = rbacSecurity.toResourceSecurity()
-    workspaceRepository.save(workspace)
+    save(workspace)
   }
 
   override fun listWorkspaceSecurityUsers(
@@ -553,7 +555,7 @@ internal class WorkspaceServiceImpl(
     } else {
       workspace.linkedDatasetIdList = mutableListOf(datasetId)
     }
-    return workspaceRepository.save(workspace)
+    return save(workspace)
   }
 
   private fun sendRemoveWorkspaceFromDatasetEvent(
@@ -594,6 +596,11 @@ internal class WorkspaceServiceImpl(
                   default = workspace.security.default, accessControlList = accessControlList))
     }
     return workspace
+  }
+
+  fun save(workspace: Workspace): Workspace {
+    workspace.lastUpdate = Instant.now().toEpochMilli()
+    return workspaceRepository.save(workspace)
   }
 }
 

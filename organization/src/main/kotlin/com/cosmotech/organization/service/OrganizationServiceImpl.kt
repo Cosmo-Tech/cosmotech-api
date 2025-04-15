@@ -30,6 +30,7 @@ import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationUpdateRequest
 import com.cosmotech.organization.repository.OrganizationRepository
+import java.time.Instant
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -95,9 +96,10 @@ class OrganizationServiceImpl(
             id = organizationId,
             name = organizationCreateRequest.name,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+            creationDate = Instant.now().toEpochMilli(),
             security = security)
 
-    return organizationRepository.save(createdOrganization)
+    return save(createdOrganization)
   }
 
   override fun deleteOrganization(organizationId: String) {
@@ -120,7 +122,7 @@ class OrganizationServiceImpl(
     }
 
     return if (hasChanged) {
-      organizationRepository.save(existingOrganization)
+      save(existingOrganization)
     } else {
       existingOrganization
     }
@@ -149,7 +151,7 @@ class OrganizationServiceImpl(
         csmRbac.setDefault(
             organization.security.toGenericSecurity(organizationId), organizationRole.role)
     organization.security = rbacSecurity.toResourceSecurity()
-    organizationRepository.save(organization)
+    save(organization)
     return organization.security
   }
 
@@ -181,7 +183,7 @@ class OrganizationServiceImpl(
             organizationAccessControl.id,
             organizationAccessControl.role)
     organization.security = rbacSecurity.toResourceSecurity()
-    organizationRepository.save(organization)
+    save(organization)
     val rbacAccessControl =
         csmRbac.getAccessControl(
             organization.security.toGenericSecurity(organizationId), organizationAccessControl.id)
@@ -204,7 +206,7 @@ class OrganizationServiceImpl(
             identityId,
             organizationRole.role)
     organization.security = rbacSecurity.toResourceSecurity()
-    organizationRepository.save(organization)
+    save(organization)
     val rbacAccessControl =
         csmRbac.getAccessControl(
             organization.security.toGenericSecurity(organizationId), identityId)
@@ -216,7 +218,7 @@ class OrganizationServiceImpl(
     val rbacSecurity =
         csmRbac.removeUser(organization.security.toGenericSecurity(organizationId), identityId)
     organization.security = rbacSecurity.toResourceSecurity()
-    organizationRepository.save(organization)
+    save(organization)
   }
 
   override fun listOrganizationSecurityUsers(organizationId: String): List<String> {
@@ -265,6 +267,11 @@ class OrganizationServiceImpl(
                   default = organization.security.default, accessControlList = accessControlList))
     }
     return organization
+  }
+
+  fun save(organization: Organization): Organization {
+    organization.lastUpdate = Instant.now().toEpochMilli()
+    return organizationRepository.save(organization)
   }
 }
 
