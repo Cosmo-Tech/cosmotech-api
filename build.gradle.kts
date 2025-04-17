@@ -92,7 +92,6 @@ val awaitilityKVersion = "4.2.0"
 val testcontainersRedis = "1.6.4"
 val springMockkVersion = "4.0.2"
 
-var licenseReportDir = "$projectDir/doc/licenses"
 
 val configBuildDir = "${layout.buildDirectory.get()}/config"
 
@@ -110,7 +109,6 @@ dependencyCheck {
 }
 
 licenseReport {
-  outputDir = licenseReportDir
   allowedLicensesFile =
       "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/allowed-licenses.json"
   val bundle =
