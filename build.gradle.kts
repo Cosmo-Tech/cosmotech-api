@@ -641,3 +641,35 @@ tasks.register<ReportTask>("generateLicenseDoc") {
   group = "license"
   description = "Generate Licenses report"
 }
+
+
+tasks.register("generateAllReports") {
+    group = "reporting"
+    description = "Generates all available reports (test, coverage, dependencies, licenses, detekt)"
+    dependsOn(
+        // Test reports, need to gather them first
+        //        "test", 
+        //        "integrationTest",
+        // Coverage reports
+        "koverHtmlReport",
+        // Dependency reports
+        "htmlDependencyReport",
+        // License reports
+        "generateLicenseReport",
+        // Code analysis reports
+        "detekt"
+    )
+    doLast {
+       // Create reports directory if it doesn't exist
+        val reportsDir = layout.buildDirectory.get().dir("reports").asFile
+        reportsDir.mkdirs()
+        // Copy the template file to the reports directory
+        copy {
+            from("api/src/main/resources"){
+              include("reports-index.html")
+              include("reports-style.css")
+            }
+            into(reportsDir)
+        }
+    }
+}
