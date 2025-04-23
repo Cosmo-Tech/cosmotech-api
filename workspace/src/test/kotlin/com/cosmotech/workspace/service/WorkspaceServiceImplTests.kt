@@ -24,6 +24,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationEditInfo
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.toGenericSecurity
@@ -33,10 +34,12 @@ import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionEditInfo
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
+import com.cosmotech.workspace.domain.WorkspaceEditInfo
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -608,7 +611,8 @@ class WorkspaceServiceImplTests {
     return Organization(
         id = "organizationId",
         name = "Organization Name",
-        ownerId = "ownerId",
+        createInfo = OrganizationEditInfo(0, ""),
+        updateInfo = OrganizationEditInfo(0, ""),
         security =
             OrganizationSecurity(
                 default = ROLE_NONE,
@@ -624,7 +628,8 @@ class WorkspaceServiceImplTests {
         key = UUID.randomUUID().toString(),
         name = "My solution",
         organizationId = organizationId,
-        ownerId = "ownerId",
+        createInfo = SolutionEditInfo(0, ""),
+        updateInfo = SolutionEditInfo(0, ""),
         version = "1.0.0",
         repository = "repository",
         parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
@@ -673,7 +678,8 @@ class WorkspaceServiceImplTests {
                 solutionId = solutionId,
             ),
         organizationId = organizationId,
-        ownerId = "ownerId",
+        createInfo = WorkspaceEditInfo(0, ""),
+        updateInfo = WorkspaceEditInfo(0, ""),
         security =
             WorkspaceSecurity(
                 default = ROLE_NONE,

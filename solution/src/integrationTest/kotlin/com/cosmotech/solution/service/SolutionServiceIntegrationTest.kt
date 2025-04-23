@@ -9,6 +9,7 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
@@ -27,6 +28,7 @@ import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -34,6 +36,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertThrows
@@ -55,6 +58,7 @@ const val CONNECTED_READER_USER = "test.user@cosmotech.com"
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Suppress("FunctionName")
 class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(SolutionServiceIntegrationTest::class.java)
@@ -480,7 +484,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 regexValidation = "\\w",
                 description = "new_this_is_a_description2",
                 labels = mutableMapOf("en" to "new_this_is_a_label2"),
-                options = mutableMapOf("option1" to "newvalue1")))
+                options = mutableMapOf("option1" to "newValue1")))
     assertNotNull(solutionParameter)
     assertEquals(parameterId, solutionParameter.id)
     assertEquals("string", solutionParameter.varType)
@@ -491,7 +495,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("new_this_is_a_description2", solutionParameter.description)
     assertEquals(mutableMapOf("en" to "new_this_is_a_label2"), solutionParameter.labels)
     assertEquals(1, solutionParameter.options?.size)
-    assertEquals("newvalue1", solutionParameter.options?.get("option1"))
+    assertEquals("newValue1", solutionParameter.options?.get("option1"))
   }
 
   @Test
@@ -577,7 +581,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
               organizationSaved.id,
               "non-existing-solution-id",
               RunTemplateParameterCreateRequest(
-                  id = "my_parameter_name", varType = "my_vartype_parameter"))
+                  id = "my_parameter_name", varType = "my_varType_parameter"))
         }
     assertEquals(
         "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
@@ -2114,6 +2118,180 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         }
 
     assertEquals("One or several solution items have same id : runTemplates", exception.message)
+  }
+
+  @Nested
+  inner class SolutionTimeStampsTest() {
+    private var startTime: Long = 0
+
+    @BeforeEach
+    fun init() {
+      startTime = Instant.now().toEpochMilli()
+      organizationSaved =
+          organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
+      solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
+    }
+
+    @Test
+    fun `assert timestamps are functional for base CRUD`() {
+      assertTrue(solutionSaved.createInfo.timestamp > startTime)
+      assertEquals(solutionSaved.createInfo, solutionSaved.updateInfo)
+
+      val updateTime = Instant.now().toEpochMilli()
+      val solutionUpdated =
+          solutionApiService.updateSolution(
+              organizationSaved.id, solutionSaved.id, SolutionUpdateRequest("solutionUpdated"))
+
+      assertTrue { updateTime < solutionUpdated.updateInfo.timestamp }
+      assertEquals(solutionSaved.createInfo, solutionUpdated.createInfo)
+      assertTrue { solutionSaved.createInfo.timestamp < solutionUpdated.updateInfo.timestamp }
+      assertTrue { solutionSaved.updateInfo.timestamp < solutionUpdated.updateInfo.timestamp }
+
+      val solutionFetched = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(solutionUpdated.createInfo, solutionFetched.createInfo)
+      assertEquals(solutionUpdated.updateInfo, solutionFetched.updateInfo)
+    }
+
+    @Test
+    fun `assert timestamps are functional for parameters CRUD`() {
+      solutionApiService.createSolutionParameter(
+          organizationSaved.id,
+          solutionSaved.id,
+          RunTemplateParameterCreateRequest(id = "id", varType = "varType"))
+      val parameterAdded = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(solutionSaved.createInfo, parameterAdded.createInfo)
+      assertTrue { solutionSaved.updateInfo.timestamp < parameterAdded.updateInfo.timestamp }
+
+      solutionApiService.getSolutionParameter(organizationSaved.id, solutionSaved.id, "id")
+      val parameterFetched = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(parameterAdded.createInfo, parameterFetched.createInfo)
+      assertEquals(parameterAdded.updateInfo, parameterFetched.updateInfo)
+
+      solutionApiService.updateSolutionParameter(
+          organizationSaved.id,
+          solutionSaved.id,
+          "id",
+          RunTemplateParameterUpdateRequest("description"))
+      val parameterUpdated = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(parameterFetched.createInfo, parameterUpdated.createInfo)
+      assertTrue { parameterFetched.updateInfo.timestamp < parameterUpdated.updateInfo.timestamp }
+
+      solutionApiService.deleteSolutionParameter(organizationSaved.id, solutionSaved.id, "id")
+      val parameterDeleted = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(parameterUpdated.createInfo, parameterDeleted.createInfo)
+      assertTrue { parameterUpdated.updateInfo.timestamp < parameterDeleted.updateInfo.timestamp }
+    }
+
+    @Test
+    fun `assert timestamps are functional for parameterGroups CRUD`() {
+      solutionApiService.createSolutionParameterGroup(
+          organizationSaved.id, solutionSaved.id, RunTemplateParameterGroupCreateRequest("id"))
+      val parameterGroupAdded =
+          solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(solutionSaved.createInfo, parameterGroupAdded.createInfo)
+      assertTrue { solutionSaved.updateInfo.timestamp < parameterGroupAdded.updateInfo.timestamp }
+
+      solutionApiService.getSolutionParameterGroup(organizationSaved.id, solutionSaved.id, "id")
+      val parameterGroupFetched =
+          solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(parameterGroupAdded.createInfo, parameterGroupFetched.createInfo)
+      assertEquals(parameterGroupAdded.updateInfo, parameterGroupFetched.updateInfo)
+
+      solutionApiService.updateSolutionParameterGroup(
+          organizationSaved.id,
+          solutionSaved.id,
+          "id",
+          RunTemplateParameterGroupUpdateRequest("description"))
+      val parameterGroupUpdated =
+          solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(parameterGroupFetched.createInfo, parameterGroupUpdated.createInfo)
+      assertTrue {
+        parameterGroupFetched.updateInfo.timestamp < parameterGroupUpdated.updateInfo.timestamp
+      }
+
+      solutionApiService.deleteSolutionParameterGroup(organizationSaved.id, solutionSaved.id, "id")
+      val parameterGroupDeleted =
+          solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(parameterGroupUpdated.createInfo, parameterGroupDeleted.createInfo)
+      assertTrue {
+        parameterGroupUpdated.updateInfo.timestamp < parameterGroupDeleted.updateInfo.timestamp
+      }
+    }
+
+    @Test
+    fun `assert timestamps are functional for runTemplates CRUD`() {
+      solutionApiService.createSolutionRunTemplate(
+          organizationSaved.id, solutionSaved.id, RunTemplateCreateRequest("id"))
+      val runTemplatedAdded = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(solutionSaved.createInfo, runTemplatedAdded.createInfo)
+      assertTrue { solutionSaved.updateInfo.timestamp < runTemplatedAdded.updateInfo.timestamp }
+
+      solutionApiService.getRunTemplate(organizationSaved.id, solutionSaved.id, "id")
+      val runTemplateFetched =
+          solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(runTemplatedAdded.createInfo, runTemplateFetched.createInfo)
+      assertEquals(runTemplatedAdded.updateInfo, runTemplateFetched.updateInfo)
+
+      solutionApiService.updateSolutionRunTemplate(
+          organizationSaved.id, solutionSaved.id, "id", RunTemplateUpdateRequest("description"))
+      val runTemplateUpdated =
+          solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(runTemplateFetched.createInfo, runTemplateUpdated.createInfo)
+      assertTrue {
+        runTemplateFetched.updateInfo.timestamp < runTemplateUpdated.updateInfo.timestamp
+      }
+
+      solutionApiService.deleteSolutionRunTemplate(organizationSaved.id, solutionSaved.id, "id")
+      val runTemplateDeleted =
+          solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(runTemplateUpdated.createInfo, runTemplateDeleted.createInfo)
+      assertTrue {
+        runTemplateUpdated.updateInfo.timestamp < runTemplateDeleted.updateInfo.timestamp
+      }
+    }
+
+    @Test
+    fun `assert timestamps are functional for RBAC CRUD`() {
+      solutionApiService.createSolutionAccessControl(
+          organizationSaved.id, solutionSaved.id, SolutionAccessControl("newUser", ROLE_USER))
+      val rbacAdded = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(solutionSaved.createInfo, rbacAdded.createInfo)
+      assertTrue { solutionSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
+
+      solutionApiService.getSolutionAccessControl(organizationSaved.id, solutionSaved.id, "newUser")
+      val rbacFetched = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(rbacAdded.createInfo, rbacFetched.createInfo)
+      assertEquals(rbacAdded.updateInfo, rbacFetched.updateInfo)
+
+      solutionApiService.updateSolutionAccessControl(
+          organizationSaved.id, solutionSaved.id, "newUser", SolutionRole(ROLE_VIEWER))
+      val rbacUpdated = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(rbacFetched.createInfo, rbacUpdated.createInfo)
+      assertTrue { rbacFetched.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
+
+      solutionApiService.deleteSolutionAccessControl(
+          organizationSaved.id, solutionSaved.id, "newUser")
+      val rbacDeleted = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
+
+      assertEquals(rbacUpdated.createInfo, rbacDeleted.createInfo)
+      assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
+    }
   }
 
   fun makeOrganizationCreateRequest(id: String = "organization_id"): OrganizationCreateRequest {

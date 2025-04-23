@@ -29,6 +29,7 @@ import com.cosmotech.run.config.existTable
 import com.cosmotech.run.config.toDataTableName
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunDataQuery
+import com.cosmotech.run.domain.RunEditInfo
 import com.cosmotech.run.domain.RunStatus
 import com.cosmotech.run.domain.SendRunDataRequest
 import com.cosmotech.run.workflow.WorkflowService
@@ -36,6 +37,7 @@ import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
+import com.cosmotech.runner.domain.RunnerEditInfo
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.solution.SolutionApiServiceInterface
@@ -290,10 +292,15 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
             solutionId = solutionId,
             organizationId = organizationId,
             name = "name",
-            ownerId = "owner",
             runTemplateId = "runTemplate",
-            creationDate = Instant.now().toEpochMilli(),
-            lastUpdate = Instant.now().toEpochMilli(),
+            createInfo =
+                RunnerEditInfo(
+                    timestamp = Instant.now().toEpochMilli(),
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+            updateInfo =
+                RunnerEditInfo(
+                    timestamp = Instant.now().toEpochMilli(),
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties)),
             ownerName = "owner",
             datasetList = mutableListOf(),
             workspaceId = workspaceId,
@@ -307,7 +314,15 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
   }
 
   fun mockWorkflowRun(organizationId: String, workspaceId: String, runnerId: String): Run {
-    return Run(organizationId = organizationId, workspaceId = workspaceId, runnerId = runnerId)
+    return Run(
+        organizationId = organizationId,
+        workspaceId = workspaceId,
+        runnerId = runnerId,
+        createInfo =
+            RunEditInfo(
+                timestamp = Instant.now().toEpochMilli(),
+                userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+    )
   }
 
   @Test

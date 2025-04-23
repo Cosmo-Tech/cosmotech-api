@@ -404,6 +404,10 @@ components:
         workflowName:
           type: string
           description: the Cosmo Tech compute cluster Argo Workflow Name
+        createInfo:
+          description: The timestamp of the Run creation in milliseconds
+          allOf:
+            - $ref: '#/components/schemas/RunEditInfo'
         startTime:
           type: string
           description: the Run start Date Time
@@ -510,6 +514,10 @@ components:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Organization id
+        createInfo:
+          description: The details of the Run creation
+          allOf:
+            - $ref: '#/components/schemas/RunEditInfo'
         workflowId:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
@@ -525,11 +533,6 @@ components:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Cosmo Tech compute cluster Argo Workflow Name
-        ownerId:
-          type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          readOnly: true
-          description: the user id which own this run
         workspaceId:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
@@ -558,10 +561,6 @@ components:
           type: string
           readOnly: true
           description: the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic
-        createdAt:
-          type: string
-          readOnly: true
-          description: the Run creation date
         datasetList:
           type: array
           readOnly: true
@@ -583,6 +582,8 @@ components:
           description: the containers list. This information is not returned by the API.
           items:
             $ref: '#/components/schemas/RunContainer'
+      required:
+        - createInfo
     RunTemplateParameterValue:
       type: object
       description: the value of Analysis parameter for a Runner for this Run
@@ -692,6 +693,20 @@ components:
           items:
             type: object
             additionalProperties: true
+    RunEditInfo:
+      type: object
+      properties:
+        timestamp:
+          description: The timestamp of the modification in millisecond
+          type: integer
+          format: int64
+        userId:
+          description: The id of the user who did the modification
+          type: string
+      required:
+        - timestamp
+        - userId
+
   examples:
     DefaultRunData:
       summary: Run Data exemple
@@ -708,7 +723,6 @@ components:
         csmSimulationRun: a2880d46-a60d-4215-a593-783452e0df8f
         generateName: workflow-s-eeypwem0kw-
         workflowName: workflow-s-eeypwem0kw-lsczk
-        ownerId: null
         workspaceId: W-OGNQqJ7wP0
         workspaceKey: Brewery
         runnerId: r-EEYpWeM0kW
@@ -727,7 +741,6 @@ components:
         id: "1"
         workflowId: "1"
         workflowName: "w1"
-        ownerId: "1"
         state: Running
         startTime: 4/15/2021, 10:52:18.593 AM
         nodeLabel: highcpupool
@@ -741,7 +754,6 @@ components:
           csmSimulationRun: a2880d46-a60d-4215-a593-783452e0df8f
           generateName: workflow-s-eeypwem0kw-
           workflowName: workflow-s-eeypwem0kw-lsczk
-          ownerId: null
           workspaceId: W-OGNQqJ7wP0
           workspaceKey: Brewery
           runnerId: r-EEYpWeM0kW

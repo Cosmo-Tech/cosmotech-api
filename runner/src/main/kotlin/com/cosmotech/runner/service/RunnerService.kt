@@ -23,7 +23,6 @@ import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.service.getRbac
@@ -33,6 +32,7 @@ import com.cosmotech.runner.domain.CreatedRun
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
+import com.cosmotech.runner.domain.RunnerEditInfo
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerUpdateRequest
@@ -228,13 +228,16 @@ class RunnerService(
           Runner(
               id = idGenerator.generate("runner"),
               name = "init",
-              ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+              createInfo =
+                  RunnerEditInfo(
+                      timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+              updateInfo =
+                  RunnerEditInfo(
+                      timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
               solutionId = "init",
               runTemplateId = "init",
               organizationId = organization!!.id,
               workspaceId = workspace!!.id,
-              creationDate = now,
-              lastUpdate = now,
               ownerName = "init",
               datasetList = mutableListOf(),
               parametersValues = mutableListOf(),
@@ -244,6 +247,13 @@ class RunnerService(
     }
 
     fun initializeFrom(runner: Runner): RunnerInstance = apply { this.runner = runner }
+
+    fun stamp(): RunnerInstance = apply {
+      this.runner.updateInfo =
+          RunnerEditInfo(
+              timestamp = Instant.now().toEpochMilli(),
+              userId = getCurrentAccountIdentifier(csmPlatformProperties))
+    }
 
     fun getRunnerDataObjet(): Runner = this.runner
 
@@ -313,11 +323,11 @@ class RunnerService(
               runTemplateName = runnerCreateRequest.runTemplateName,
               security = this.runner.security,
               id = this.runner.id,
-              ownerId = this.runner.ownerId,
+              createInfo = this.runner.createInfo,
+              updateInfo = this.runner.updateInfo,
               organizationId = this.runner.organizationId,
               workspaceId = this.runner.workspaceId,
-              creationDate = this.runner.creationDate,
-              lastUpdate = this.runner.lastUpdate))
+          ))
     }
 
     fun setValueFrom(runnerUpdateRequest: RunnerUpdateRequest): RunnerInstance {
@@ -334,14 +344,16 @@ class RunnerService(
               id = this.runner.id,
               organizationId = this.runner.organizationId,
               security = this.runner.security,
-              ownerId = this.runner.ownerId,
               runTemplateName = runnerUpdateRequest.runTemplateName ?: this.runner.runTemplateName,
               solutionName = runnerUpdateRequest.solutionName ?: this.runner.solutionName,
               solutionId = this.runner.solutionId,
               rootId = this.runner.rootId,
               ownerName = runnerUpdateRequest.ownerName ?: this.runner.ownerName,
-              lastUpdate = Instant.now().toEpochMilli(),
-              creationDate = this.runner.creationDate,
+              createInfo = this.runner.createInfo,
+              updateInfo =
+                  RunnerEditInfo(
+                      timestamp = Instant.now().toEpochMilli(),
+                      userId = getCurrentAccountIdentifier(csmPlatformProperties)),
               parentId = this.runner.parentId,
               workspaceId = this.runner.workspaceId,
               lastRunId = this.runner.lastRunId,

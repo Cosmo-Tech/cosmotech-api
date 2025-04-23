@@ -34,6 +34,7 @@ Models/IngestionStatusEnum.md
 Models/Organization.md
 Models/OrganizationAccessControl.md
 Models/OrganizationCreateRequest.md
+Models/OrganizationEditInfo.md
 Models/OrganizationRole.md
 Models/OrganizationSecurity.md
 Models/OrganizationUpdateRequest.md
@@ -43,6 +44,7 @@ Models/Run.md
 Models/RunContainer.md
 Models/RunData.md
 Models/RunDataQuery.md
+Models/RunEditInfo.md
 Models/RunResourceRequested.md
 Models/RunState.md
 Models/RunStatus.md
@@ -61,6 +63,7 @@ Models/RunTemplateUpdateRequest.md
 Models/Runner.md
 Models/RunnerAccessControl.md
 Models/RunnerCreateRequest.md
+Models/RunnerEditInfo.md
 Models/RunnerResourceSizing.md
 Models/RunnerRole.md
 Models/RunnerRunTemplateParameterValue.md
@@ -71,6 +74,7 @@ Models/SendRunDataRequest.md
 Models/Solution.md
 Models/SolutionAccessControl.md
 Models/SolutionCreateRequest.md
+Models/SolutionEditInfo.md
 Models/SolutionRole.md
 Models/SolutionSecurity.md
 Models/SolutionUpdateRequest.md
@@ -81,6 +85,7 @@ Models/TwincacheStatusEnum.md
 Models/Workspace.md
 Models/WorkspaceAccessControl.md
 Models/WorkspaceCreateRequest.md
+Models/WorkspaceEditInfo.md
 Models/WorkspaceFile.md
 Models/WorkspaceRole.md
 Models/WorkspaceSecurity.md

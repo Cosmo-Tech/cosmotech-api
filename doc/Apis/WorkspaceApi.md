@@ -36,8 +36,8 @@ All URIs are relative to *http://localhost*
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 | **datasetId** | **String**| dataset id to be linked to | [default to null] |
 
 ### Return type
@@ -63,8 +63,8 @@ Create a new workspace
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **WorkspaceCreateRequest** | [**WorkspaceCreateRequest**](../Models/WorkspaceCreateRequest.md)| the Workspace to create | |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **WorkspaceCreateRequest** | [**WorkspaceCreateRequest**](../Models/WorkspaceCreateRequest.md)| The Workspace to create | |
 
 ### Return type
 
@@ -89,9 +89,9 @@ Add a control access to the Workspace
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **WorkspaceAccessControl** | [**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)| the new Workspace security access to add. | |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
+| **WorkspaceAccessControl** | [**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)| The new Workspace security access to add. | |
 
 ### Return type
 
@@ -116,8 +116,8 @@ Upload a file for the Workspace
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 | **file** | **File**| The file to upload | [default to null] |
 | **overwrite** | **Boolean**| Whether to overwrite an existing file | [optional] [default to false] |
 | **destination** | **String**| Destination path. Must end with a &#39;/&#39; if specifying a folder. Note that paths may or may not start with a &#39;/&#39;, but they are always treated as relative to the Workspace root location.  | [optional] [default to null] |
@@ -145,8 +145,8 @@ Upload a file for the Workspace
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 | **datasetId** | **String**| dataset id to be linked to | [default to null] |
 
 ### Return type
@@ -172,8 +172,8 @@ Delete a workspace
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 
 ### Return type
 
@@ -198,9 +198,9 @@ Remove the specified access from the given Organization Workspace
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
+| **identity\_id** | **String**| The User identifier | [default to null] |
 
 ### Return type
 
@@ -225,9 +225,9 @@ Delete a workspace file
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **file\_name** | **String**| the file name | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
+| **file\_name** | **String**| The file name | [default to null] |
 
 ### Return type
 
@@ -252,8 +252,8 @@ Delete all Workspace files
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 
 ### Return type
 
@@ -278,8 +278,8 @@ Get the details of an workspace
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 
 ### Return type
 
@@ -304,9 +304,9 @@ Get a control access for the Workspace
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
+| **identity\_id** | **String**| The User identifier | [default to null] |
 
 ### Return type
 
@@ -331,9 +331,9 @@ Download the Workspace File specified
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **file\_name** | **String**| the file name | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
+| **file\_name** | **String**| The file name | [default to null] |
 
 ### Return type
 
@@ -358,8 +358,8 @@ Get the Workspace security information
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 
 ### Return type
 
@@ -384,8 +384,8 @@ List all Workspace files
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 
 ### Return type
 
@@ -410,9 +410,9 @@ Get the Workspace permission by given role
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **role** | **String**| the Role | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
+| **role** | **String**| The Role | [default to null] |
 
 ### Return type
 
@@ -437,8 +437,8 @@ Get the Workspace security users list
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 
 ### Return type
 
@@ -463,9 +463,9 @@ List all Workspaces
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
 | **page** | **Integer**| page number to query (first page is at index 0) | [optional] [default to null] |
-| **size** | **Integer**| amount of result by page | [optional] [default to null] |
+| **size** | **Integer**| Amount of result by page | [optional] [default to null] |
 
 ### Return type
 
@@ -490,8 +490,8 @@ Update a workspace
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 | **WorkspaceUpdateRequest** | [**WorkspaceUpdateRequest**](../Models/WorkspaceUpdateRequest.md)| The new Workspace details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
@@ -517,9 +517,9 @@ Update the specified access to User for a Workspace
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
+| **identity\_id** | **String**| The User identifier | [default to null] |
 | **WorkspaceRole** | [**WorkspaceRole**](../Models/WorkspaceRole.md)| The new Workspace Access Control | |
 
 ### Return type
@@ -545,8 +545,8 @@ Update the Workspace default security
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
 | **WorkspaceRole** | [**WorkspaceRole**](../Models/WorkspaceRole.md)| This change the workspace default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the workspace. | |
 
 ### Return type

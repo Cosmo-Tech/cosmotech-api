@@ -680,11 +680,14 @@ components:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Runner parent id
-        ownerId:
-          type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          readOnly: true
-          description: the user id which own this Runner
+        createInfo:
+          description: The details of the Runner creation
+          allOf:
+            - $ref: '#/components/schemas/RunnerEditInfo'
+        updateInfo:
+          description: The details of the Runner last update
+          allOf:
+            - $ref: '#/components/schemas/RunnerEditInfo'
         rootId:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
@@ -707,16 +710,6 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the associated Workspace Id
-        creationDate:
-          type: integer
-          format: int64
-          readOnly: true
-          description: the Runner creation date
-        lastUpdate:
-          type: integer
-          format: int64
-          readOnly: true
-          description: the last time a Runner was updated
         ownerName:
           type: string
           readOnly: true
@@ -756,13 +749,12 @@ components:
       required:
         - id
         - name
-        - ownerId
+        - createInfo
+        - updateInfo
         - solutionId
         - runTemplateId
         - organizationId
         - workspaceId
-        - creationDate
-        - lastUpdate
         - ownerName
         - datasetList
         - parametersValues
@@ -981,13 +973,28 @@ components:
         - Validated
     CreatedRun:
       type: object
-      description: Newle created Run info
+      description: Newly created Run info
       properties:
         id:
           type: string
           description: Run id
       required:
         - id
+
+    RunnerEditInfo:
+      type: object
+      properties:
+        timestamp:
+          description: The timestamp of the modification in millisecond
+          type: integer
+          format: int64
+        userId:
+          description: The id of the user who did the modification
+          type: string
+      required:
+        - timestamp
+        - userId
+
   examples:
     BreweryRunnerIn:
       summary: Brewery Runner input example
@@ -1030,15 +1037,18 @@ components:
         tags:
           - Brewery
           - reference
-        ownerId: "1"
         worskspaceId: "1"
         solutionId: "1"
         solutionName: Brewery Solution
         runTemplateId: "hundred"
         runTemplateName: Full simulation 100 steps
         ownerName: Bob
-        creationDate: "2021-04-21T17:32:28Z"
-        lastUpdate: "2021-04-21T17:32:28Z"
+        createInfo:
+          timestamp: 123456789
+          userId: admin
+        updateInfo:
+          timestamp: 123456789
+          userId: admin
         datasetList:
           - "1"
         parametersValues:
@@ -1061,15 +1071,18 @@ components:
           tags:
             - Brewery
             - reference
-          ownerId: "1"
           worskspaceId: "1"
           solutionId: "1"
           solutionName: Brewery Solution
           runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
           ownerName: Bob
-          creationDate: "2021-04-21T17:32:28Z"
-          lastUpdate: "2021-04-21T17:32:28Z"
+          createInfo:
+            timestamp: 123456789
+            userId: admin
+          updateInfo:
+            timestamp: 123456789
+            userId: admin
           datasetList:
             - "1"
           parametersValues:
@@ -1088,15 +1101,18 @@ components:
             - Brewery
             - example
           parentId: "1"
-          ownerId: "1"
           worskspaceId: "1"
           solutionId: "1"
           solutionName: Brewery Solution
           runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
           ownerName: Bob
-          creationDate: "2021-04-21T17:32:28Z"
-          lastUpdate: "2021-04-21T17:32:28Z"
+          createInfo:
+            timestamp: 123456789
+            userId: admin
+          updateInfo:
+            timestamp: 123456789
+            userId: admin
           datasetList:
             - "1"
           parametersValues:
@@ -1115,15 +1131,18 @@ components:
           tags:
             - Brewery
           parentId: "1"
-          ownerId: "2"
           worskspaceId: "1"
           solutionId: "1"
           solutionName: Brewery Solution
           runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
           ownerName: Alice
-          creationDate: "2021-04-21T17:32:28Z"
-          lastUpdate: "2021-04-21T17:32:28Z"
+          createInfo:
+            timestamp: 123456789
+            userId: admin
+          updateInfo:
+            timestamp: 123456789
+            userId: admin
           datasetList:
             - "1"
           parametersValues:
@@ -1152,15 +1171,18 @@ components:
         tags:
           - Brewery
           - reference
-        ownerId: "1"
         worskspaceId: "1"
         solutionId: "1"
         solutionName: Brewery Solution
         runTemplateId: "hundred"
         runTemplateName: Full simulation 100 steps
         ownerName: Bob
-        creationDate: "2021-04-21T17:32:28Z"
-        lastUpdate: "2021-04-21T17:32:28Z"
+        createInfo:
+          timestamp: 123456789
+          userId: admin
+        updateInfo:
+          timestamp: 123456789
+          userId: admin
         datasetList:
           - "1"
         parametersValues:
@@ -1194,10 +1216,13 @@ components:
           tags:
             - Brewery
             - reference
-          ownerId: "1"
           worskspaceId: "1"
-          creationDate: "2021-04-21T17:32:28Z"
-          lastUpdate: "2021-04-21T17:32:28Z"
+          createInfo:
+            timestamp: 123456789
+            userId: admin
+          updateInfo:
+            timestamp: 123456789
+            userId: admin
           ownerName: Alice
           runTemplateName: Full simulation 100 steps
           solutionName: Brewery Solution
@@ -1220,10 +1245,13 @@ components:
             - Brewery
             - example
           parentId: "1"
-          ownerId: "1"
           worskspaceId: "1"
-          creationDate: "2021-04-21T17:32:28Z"
-          lastUpdate: "2021-04-21T17:32:28Z"
+          createInfo:
+            timestamp: 123456789
+            userId: admin
+          updateInfo:
+            timestamp: 123456789
+            userId: admin
           ownerName: Alice
           runTemplateName: Full simulation 100 steps
           solutionName: Brewery Solution
@@ -1246,10 +1274,13 @@ components:
           tags:
             - Brewery
           parentId: "1"
-          ownerId: "2"
           worskspaceId: "1"
-          creationDate: "2021-04-21T17:32:28Z"
-          lastUpdate: "2021-04-21T17:32:28Z"
+          createInfo:
+            timestamp: 123456789
+            userId: admin
+          updateInfo:
+            timestamp: 123456789
+            userId: admin
           ownerName: Alice
           runTemplateName: Full simulation 100 steps
           solutionName: Brewery Solution

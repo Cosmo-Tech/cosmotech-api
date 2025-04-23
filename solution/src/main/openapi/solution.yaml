@@ -17,7 +17,7 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
@@ -27,7 +27,7 @@ paths:
         - solution
       summary: Create a new solution
       requestBody:
-        description: the Solution to create
+        description: The Solution to create
         required: true
         content:
           application/json:
@@ -103,13 +103,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
@@ -142,7 +142,7 @@ paths:
         - solution
       summary: Update a solution
       requestBody:
-        description: the new Solution details. This endpoint can't be used to update security
+        description: The new Solution details. This endpoint can't be used to update security
         required: true
         content:
           application/json:
@@ -192,13 +192,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
@@ -259,19 +259,19 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
       - name: parameter_id
         in: path
-        description: the solution parameter identifier
+        description: The solution parameter identifier
         required: true
         schema:
           type: string
@@ -338,13 +338,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
@@ -404,19 +404,19 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
       - name: parameter_group_id
         in: path
-        description: the parameter group identifier
+        description: The parameter group identifier
         required: true
         schema:
           type: string
@@ -481,13 +481,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
@@ -547,19 +547,19 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
       - name: run_template_id
         in: path
-        description: the Run Template identifier
+        description: The Run Template identifier
         required: true
         schema:
           type: string
@@ -624,13 +624,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
@@ -706,13 +706,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
@@ -748,13 +748,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
@@ -802,19 +802,19 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: solution_id
         in: path
-        description: the Solution identifier
+        description: The Solution identifier
         required: true
         schema:
           type: string
       - name: identity_id
         in: path
-        description: the User identifier
+        description: The User identifier
         required: true
         schema:
           type: string
@@ -951,10 +951,14 @@ components:
           description: The Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
           minLength: 1
           example: "1.0.0"
-        ownerId:
-          type: string
-          minLength: 1
-          description: The User id which owns this Solution
+        createInfo:
+          description: The details of the Solution creation
+          allOf:
+            - $ref: '#/components/schemas/SolutionEditInfo'
+        updateInfo:
+          description: The details of the Solution last update
+          allOf:
+            - $ref: '#/components/schemas/SolutionEditInfo'
         sdkVersion:
           type: string
           description: The full SDK version used to build this solution, if available
@@ -996,7 +1000,8 @@ components:
         - name
         - repository
         - version
-        - ownerId
+        - createInfo
+        - updateInfo
         - parameters
         - parameterGroups
         - runTemplates
@@ -1009,7 +1014,7 @@ components:
       properties:
         key:
           type: string
-          description: technical key for resource name convention and version grouping. Must be unique
+          description: Technical key for resource name convention and version grouping. Must be unique
           minLength: 1
           maxLength: 50
           example: "brewery-solution"
@@ -1079,7 +1084,7 @@ components:
       properties:
         key:
           type: string
-          description: technical key for resource name convention and version grouping. Must be unique
+          description: Technical key for resource name convention and version grouping. Must be unique
           minLength: 1
           maxLength: 50
           example: "brewery-solution"
@@ -1319,10 +1324,10 @@ components:
       properties:
         cpu:
           type: string
-          description: define cpu needs
+          description: Define cpu needs
         memory:
           type: string
-          description: define memory needs
+          description: Define memory needs
       required:
         - cpu
         - memory
@@ -1333,7 +1338,7 @@ components:
       properties:
         id:
           type: string
-          description: the Parameter Group id
+          description: The Parameter Group id
           minLength: 1
           maxLength: 50
         description:
@@ -1368,7 +1373,7 @@ components:
       properties:
         id:
           type: string
-          description: the Parameter Group id
+          description: The Parameter Group id
           minLength: 1
           maxLength: 50
         description:
@@ -1430,17 +1435,17 @@ components:
       properties:
         id:
           type: string
-          description: the Parameter id
+          description: The Parameter id
           minLength: 1
           maxLength: 50
         description:
           type: string
-          description: the parameter description
+          description: The parameter description
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         varType:
           type: string
-          description: the variable type for the parameter. Basic types or special type %DATASETID%
+          description: The variable type for the parameter. Basic types or special type %DATASETID%
           minLength: 1
         defaultValue:
           type: string
@@ -1468,17 +1473,17 @@ components:
       properties:
         id:
           type: string
-          description: the Parameter id
+          description: The Parameter id
           minLength: 1
           maxLength: 50
         description:
           type: string
-          description: the parameter description
+          description: The parameter description
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         varType:
           type: string
-          description: the variable type for the parameter. Basic types or special type %DATASETID%
+          description: The variable type for the parameter. Basic types or special type %DATASETID%
           minLength: 1
         defaultValue:
           type: string
@@ -1506,12 +1511,12 @@ components:
       properties:
         description:
           type: string
-          description: the parameter description
+          description: The parameter description
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         varType:
           type: string
-          description: the variable type for the parameter. Basic types or special type %DATASETID%
+          description: The variable type for the parameter. Basic types or special type %DATASETID%
           minLength: 1
         defaultValue:
           type: string
@@ -1530,12 +1535,26 @@ components:
           description: Freeform options
           additionalProperties: true
 
-
     TranslatedLabels:
       type: object
-      description: a translated label with key as ISO 639-1 code
+      description: A translated label with key as ISO 639-1 code
       additionalProperties:
         type: string
+
+    SolutionEditInfo:
+      type: object
+      properties:
+        timestamp:
+          description: The timestamp of the modification in millisecond
+          type: integer
+          format: int64
+        userId:
+          description: The id of the user who did the modification
+          type: string
+      required:
+        - timestamp
+        - userId
+
   examples:
     Brewery:
       summary: Brewery Solution
@@ -1547,7 +1566,12 @@ components:
         description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
         repository: brewery_solution
         version: "1.0.0"
-        ownerId: "1"
+        createInfo:
+          timestamp: 123456789
+          userId: admin
+        updateInfo:
+          timestamp: 123456789
+          userId: admin
         url: https://github.com/Cosmo-Tech/brewery_sample_solution
         tags:
           - Brewery
@@ -1599,7 +1623,12 @@ components:
         description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
         repository: brewery_solution
         version: "1.0.0"
-        ownerId: "1"
+        createInfo:
+          timestamp: 123456789
+          userId: admin
+        updateInfo:
+          timestamp: 123456789
+          userId: admin
         url: https://github.com/Cosmo-Tech/brewery_sample_solution
         tags:
           - Brewery
@@ -1649,7 +1678,12 @@ components:
           description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
           repository: brewery_solution
           version: "1.0.0"
-          ownerId: "1"
+          createInfo:
+            timestamp: 123456789
+            userId: admin
+          updateInfo:
+            timestamp: 123456789
+            userId: admin
           url: https://github.com/Cosmo-Tech/brewery_sample_solution
           tags:
             - Brewery

@@ -66,6 +66,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -296,8 +297,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             runnerRetrieved.id,
             RunnerUpdateRequest(name = "Runner Updated"))
     assertEquals(
-        runnerRetrieved.copy(name = "Runner Updated", creationDate = 0, lastUpdate = 0),
-        runnerUpdated.copy(creationDate = 0, lastUpdate = 0))
+        runnerRetrieved.copy(name = "Runner Updated"),
+        runnerUpdated.copy(updateInfo = runnerRetrieved.updateInfo))
 
     logger.info("should delete the Runner and assert there is one less Runner left")
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, newRunnerSaved.id)
@@ -1067,6 +1068,92 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Nested
+  inner class RunnerTimeStampsTest() {
+    private var startTime: Long = 0
+
+    @BeforeEach
+    fun init() {
+      startTime = Instant.now().toEpochMilli()
+      organizationSaved =
+          organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
+      solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
+      datasetSaved = datasetApiService.createDataset(organizationSaved.id, makeDataset())
+      workspaceSaved =
+          workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
+      runnerSaved =
+          runnerApiService.createRunner(
+              organizationSaved.id, workspaceSaved.id, makeRunnerCreateRequest())
+    }
+
+    @Test
+    fun `assert timestamps are functional for base CRUD`() {
+      assertTrue(runnerSaved.createInfo.timestamp > startTime)
+      assertEquals(runnerSaved.createInfo, runnerSaved.updateInfo)
+
+      val updateTime = Instant.now().toEpochMilli()
+      val runnerUpdated =
+          runnerApiService.updateRunner(
+              organizationSaved.id,
+              workspaceSaved.id,
+              runnerSaved.id,
+              RunnerUpdateRequest("runnerUpdated"))
+
+      assertTrue { updateTime < runnerUpdated.updateInfo.timestamp }
+      assertEquals(runnerSaved.createInfo, runnerUpdated.createInfo)
+      assertTrue { runnerSaved.createInfo.timestamp < runnerUpdated.updateInfo.timestamp }
+      assertTrue { runnerSaved.updateInfo.timestamp < runnerUpdated.updateInfo.timestamp }
+
+      val runnerFetched =
+          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+
+      assertEquals(runnerUpdated.createInfo, runnerFetched.createInfo)
+      assertEquals(runnerUpdated.updateInfo, runnerFetched.updateInfo)
+    }
+
+    @Test
+    fun `assert timestamps are functional for RBAC CRUD`() {
+      runnerApiService.createRunnerAccessControl(
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.id,
+          RunnerAccessControl("newUser", ROLE_VIEWER))
+      val rbacAdded =
+          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+
+      assertEquals(runnerSaved.createInfo, rbacAdded.createInfo)
+      assertTrue { runnerSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
+
+      runnerApiService.getRunnerAccessControl(
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id, "newUser")
+      val rbacFetched =
+          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+
+      assertEquals(rbacAdded.createInfo, rbacFetched.createInfo)
+      assertEquals(rbacAdded.updateInfo, rbacFetched.updateInfo)
+
+      runnerApiService.updateRunnerAccessControl(
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.id,
+          "newUser",
+          RunnerRole(ROLE_VIEWER))
+      val rbacUpdated =
+          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+
+      assertEquals(rbacFetched.createInfo, rbacUpdated.createInfo)
+      assertTrue { rbacFetched.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
+
+      runnerApiService.deleteRunnerAccessControl(
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id, "newUser")
+      val rbacDeleted =
+          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+
+      assertEquals(rbacUpdated.createInfo, rbacDeleted.createInfo)
+      assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
+    }
+  }
+
   private fun makeConnector(name: String = "name"): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
@@ -1084,7 +1171,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     return Dataset(
         name = name,
         organizationId = organizationId,
-        creationDate = Instant.now().toEpochMilli(),
         ownerId = "ownerId",
         connector =
             DatasetConnector(

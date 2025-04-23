@@ -16,7 +16,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.convertToMap
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.run.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
@@ -29,6 +29,7 @@ import com.cosmotech.run.domain.QueryResult
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunData
 import com.cosmotech.run.domain.RunDataQuery
+import com.cosmotech.run.domain.RunEditInfo
 import com.cosmotech.run.domain.RunState
 import com.cosmotech.run.domain.RunStatus
 import com.cosmotech.run.domain.RunTemplateParameterValue
@@ -564,11 +565,10 @@ class RunServiceImpl(
       startInfo: StartInfo,
       runRequest: Run
   ): Run {
-    val now = Instant.now().toString()
+    val now = Instant.now().toEpochMilli()
     val run =
         runRequest.copy(
             id = runId,
-            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = runner.organizationId,
             workspaceId = runner.workspaceId,
             runnerId = runner.id,
@@ -577,7 +577,9 @@ class RunServiceImpl(
             generateName = startInfo.startContainers.generateName,
             computeSize = startInfo.runTemplate.computeSize,
             datasetList = runner.datasetList,
-            createdAt = now,
+            createInfo =
+                RunEditInfo(
+                    timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
             parametersValues =
                 (runner.parametersValues.map {
                       RunTemplateParameterValue(
@@ -592,7 +594,7 @@ class RunServiceImpl(
             "[workspaceId=${run.workspaceId}]" +
             "[runnerId=${run.runnerId}]" +
             "[runId=${run.id}] has been launched by " +
-            "[ownerId=${run.ownerId}]")
+            "[ownerId=${run.createInfo.userId}]")
     return runRepository.save(run)
   }
 

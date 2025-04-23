@@ -30,6 +30,7 @@ import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationEditInfo
 import com.cosmotech.organization.domain.OrganizationSecurity
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
@@ -605,5 +606,10 @@ private fun mockOrganization(
         OrganizationSecurity(
             ROLE_VIEWER, mutableListOf(OrganizationAccessControl(USER_ID, ROLE_ADMIN)))
 ): Organization {
-  return Organization(id = "o-123456789", name = name, ownerId = "123456789", security = security)
+  return Organization(
+      id = "o-123456789",
+      name = name,
+      createInfo = OrganizationEditInfo(timestamp = 123456789, userId = "user"),
+      updateInfo = OrganizationEditInfo(timestamp = 123456789, userId = "user"),
+      security = security)
 }
