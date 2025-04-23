@@ -25,7 +25,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
-  val kotlinVersion = "1.9.23"
+  val kotlinVersion = "1.9.25"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.15.5"
