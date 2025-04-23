@@ -188,7 +188,7 @@ class RunControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].csmSimulationRun").value(CSM_SIMULATION_RUN))
         .andExpect(jsonPath("$[0].generateName").value(""))
         .andExpect(jsonPath("$[0].workflowName").value(WORKFLOW_NAME))
-        .andExpect(jsonPath("$[0].ownerId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[0].workspaceId").value(workspaceId))
         .andExpect(jsonPath("$[0].workspaceKey").value(WORKSPACE_KEY))
         .andExpect(jsonPath("$[0].solutionId").value(""))
@@ -219,7 +219,7 @@ class RunControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.csmSimulationRun").value(CSM_SIMULATION_RUN))
         .andExpect(jsonPath("$.generateName").value(""))
         .andExpect(jsonPath("$.workflowName").value(WORKFLOW_NAME))
-        .andExpect(jsonPath("$.ownerId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.workspaceId").value(workspaceId))
         .andExpect(jsonPath("$.workspaceKey").value(WORKSPACE_KEY))
         .andExpect(jsonPath("$.solutionId").value(""))
@@ -441,16 +441,15 @@ class RunControllerTests : ControllerTestBase() {
           state = RunState.Successful,
           workflowId = WORKFLOW_ID,
           workflowName = WORKFLOW_NAME,
-          ownerId = PLATFORM_ADMIN_EMAIL,
           csmSimulationRun = CSM_SIMULATION_RUN,
           generateName = "generated_name",
+          createInfo = RunEditInfo(timestamp = 123456789, userId = "user"),
           organizationId = organizationId,
           workspaceId = workspaceId,
           workspaceKey = WORKSPACE_KEY,
           solutionId = solutionId,
           runTemplateId = RUNNER_RUN_TEMPLATE,
           computeSize = RUN_TEMPLATE_COMPUTE_SIZE,
-          createdAt = Date.from(Instant.now()).toString(),
           datasetList = DATASET_LIST,
           parametersValues =
               mutableListOf(

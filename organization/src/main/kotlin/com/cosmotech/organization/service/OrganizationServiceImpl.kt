@@ -20,16 +20,17 @@ import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.ComponentRolePermissions
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreateRequest
+import com.cosmotech.organization.domain.OrganizationEditInfo
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationUpdateRequest
 import com.cosmotech.organization.repository.OrganizationRepository
+import java.time.Instant
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -86,6 +87,7 @@ class OrganizationServiceImpl(
     }
 
     val organizationId = idGenerator.generate("organization")
+    val now = Instant.now().toEpochMilli()
     val security =
         csmRbac
             .initSecurity(organizationCreateRequest.security.toGenericSecurity(organizationId))
@@ -94,7 +96,12 @@ class OrganizationServiceImpl(
         Organization(
             id = organizationId,
             name = organizationCreateRequest.name,
-            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+            createInfo =
+                OrganizationEditInfo(
+                    timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+            updateInfo =
+                OrganizationEditInfo(
+                    timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
             security = security)
 
     return organizationRepository.save(createdOrganization)
@@ -120,7 +127,7 @@ class OrganizationServiceImpl(
     }
 
     return if (hasChanged) {
-      organizationRepository.save(existingOrganization)
+      save(existingOrganization)
     } else {
       existingOrganization
     }
@@ -149,7 +156,7 @@ class OrganizationServiceImpl(
         csmRbac.setDefault(
             organization.security.toGenericSecurity(organizationId), organizationRole.role)
     organization.security = rbacSecurity.toResourceSecurity()
-    organizationRepository.save(organization)
+    save(organization)
     return organization.security
   }
 
@@ -181,7 +188,7 @@ class OrganizationServiceImpl(
             organizationAccessControl.id,
             organizationAccessControl.role)
     organization.security = rbacSecurity.toResourceSecurity()
-    organizationRepository.save(organization)
+    save(organization)
     val rbacAccessControl =
         csmRbac.getAccessControl(
             organization.security.toGenericSecurity(organizationId), organizationAccessControl.id)
@@ -204,7 +211,7 @@ class OrganizationServiceImpl(
             identityId,
             organizationRole.role)
     organization.security = rbacSecurity.toResourceSecurity()
-    organizationRepository.save(organization)
+    save(organization)
     val rbacAccessControl =
         csmRbac.getAccessControl(
             organization.security.toGenericSecurity(organizationId), identityId)
@@ -216,7 +223,7 @@ class OrganizationServiceImpl(
     val rbacSecurity =
         csmRbac.removeUser(organization.security.toGenericSecurity(organizationId), identityId)
     organization.security = rbacSecurity.toResourceSecurity()
-    organizationRepository.save(organization)
+    save(organization)
   }
 
   override fun listOrganizationSecurityUsers(organizationId: String): List<String> {
@@ -265,6 +272,14 @@ class OrganizationServiceImpl(
                   default = organization.security.default, accessControlList = accessControlList))
     }
     return organization
+  }
+
+  fun save(organization: Organization): Organization {
+    organization.updateInfo =
+        OrganizationEditInfo(
+            timestamp = Instant.now().toEpochMilli(),
+            userId = getCurrentAccountIdentifier(csmPlatformProperties))
+    return organizationRepository.save(organization)
   }
 }
 

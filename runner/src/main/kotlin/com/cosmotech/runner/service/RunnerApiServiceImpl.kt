@@ -68,7 +68,7 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
 
-    return runnerService.saveInstance(runnerInstance.setValueFrom(runnerUpdateRequest))
+    return runnerService.saveInstance(runnerInstance.setValueFrom(runnerUpdateRequest).stamp())
   }
 
   override fun deleteRunner(organizationId: String, workspaceId: String, runnerId: String) {
@@ -123,7 +123,7 @@ internal class RunnerApiServiceImpl(
     require(!users.contains(runnerAccessControl.id)) { "User is already in this Runner security" }
 
     runnerInstance.setAccessControl(runnerAccessControl)
-    runnerService.saveInstance(runnerInstance)
+    runnerService.saveInstance(runnerInstance.stamp())
 
     return runnerInstance.getAccessControlFor(runnerAccessControl.id)
   }
@@ -156,7 +156,7 @@ internal class RunnerApiServiceImpl(
     val runnerAccessControl = RunnerAccessControl(identityId, runnerRole.role)
     runnerInstance.setAccessControl(runnerAccessControl)
 
-    runnerService.saveInstance(runnerInstance)
+    runnerService.saveInstance(runnerInstance.stamp())
 
     return runnerInstance.getAccessControlFor(identityId)
   }
@@ -173,7 +173,7 @@ internal class RunnerApiServiceImpl(
 
     runnerInstance.deleteAccessControlFor(identityId)
 
-    runnerService.saveInstance(runnerInstance)
+    runnerService.saveInstance(runnerInstance.stamp())
   }
 
   override fun getRunnerSecurity(
@@ -223,7 +223,7 @@ internal class RunnerApiServiceImpl(
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE_SECURITY)
 
     runnerInstance.setDefaultSecurity(runnerRole.role)
-    runnerService.saveInstance(runnerInstance)
+    runnerService.saveInstance(runnerInstance.stamp())
 
     return runnerInstance.getRunnerDataObjet().security
   }

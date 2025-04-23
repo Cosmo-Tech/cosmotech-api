@@ -40,6 +40,7 @@ import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -2128,6 +2129,75 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   fun `testVerifyPermissionsAndReturnOrganization with unknown organization id`() {
     assertThrows<CsmResourceNotFoundException> {
       organizationApiService.getVerifiedOrganization("wrong_orga_id")
+    }
+  }
+
+  @Nested
+  inner class OrganizationTimeStampsTest() {
+    private var startTime: Long = 0
+    private var organizationSaved: Organization = mockk<Organization>()
+
+    @BeforeEach
+    fun init() {
+      startTime = Instant.now().toEpochMilli()
+      Thread.sleep(1)
+      organizationSaved =
+          organizationApiService.createOrganization(
+              makeSimpleOrganizationCreateRequest("organization"))
+    }
+
+    @Test
+    fun `assert timestamps are functional for base CRUD`() {
+      assertTrue(organizationSaved.createInfo.timestamp > startTime)
+      assertEquals(organizationSaved.createInfo, organizationSaved.updateInfo)
+
+      val updateTime = Instant.now().toEpochMilli()
+      val organizationUpdated =
+          organizationApiService.updateOrganization(
+              organizationSaved.id, OrganizationUpdateRequest("organizationUpdated"))
+
+      assertTrue { updateTime < organizationUpdated.updateInfo.timestamp }
+      assertEquals(organizationSaved.createInfo, organizationSaved.createInfo)
+      assertTrue {
+        organizationSaved.createInfo.timestamp < organizationUpdated.updateInfo.timestamp
+      }
+      assertTrue {
+        organizationSaved.updateInfo.timestamp < organizationUpdated.updateInfo.timestamp
+      }
+
+      val organizationFetched = organizationApiService.getOrganization(organizationSaved.id)
+
+      assertEquals(organizationUpdated.createInfo, organizationFetched.createInfo)
+      assertEquals(organizationUpdated.updateInfo, organizationFetched.updateInfo)
+    }
+
+    @Test
+    fun `assert timestamps are functional for RBAC CRUD`() {
+      organizationApiService.createOrganizationAccessControl(
+          organizationSaved.id, OrganizationAccessControl("newUser", ROLE_USER))
+      val rbacAdded = organizationApiService.getOrganization(organizationSaved.id)
+
+      assertEquals(organizationSaved.createInfo, rbacAdded.createInfo)
+      assertTrue { organizationSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
+
+      organizationApiService.updateOrganizationAccessControl(
+          organizationSaved.id, "newUser", OrganizationRole(ROLE_VIEWER))
+      val rbacUpdated = organizationApiService.getOrganization(organizationSaved.id)
+
+      assertEquals(rbacAdded.createInfo, rbacUpdated.createInfo)
+      assertTrue { rbacAdded.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
+
+      organizationApiService.getOrganizationAccessControl(organizationSaved.id, "newUser")
+      val rbacFetched = organizationApiService.getOrganization(organizationSaved.id)
+
+      assertEquals(rbacUpdated.createInfo, rbacFetched.createInfo)
+      assertEquals(rbacUpdated.updateInfo, rbacFetched.updateInfo)
+
+      organizationApiService.deleteOrganizationAccessControl(organizationSaved.id, "newUser")
+      val rbacDeleted = organizationApiService.getOrganization(organizationSaved.id)
+
+      assertEquals(rbacFetched.createInfo, rbacDeleted.createInfo)
+      assertTrue { rbacFetched.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
     }
   }
 

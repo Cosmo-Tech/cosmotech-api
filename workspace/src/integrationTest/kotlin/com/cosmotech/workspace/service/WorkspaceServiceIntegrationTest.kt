@@ -32,6 +32,7 @@ import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
+import com.cosmotech.workspace.domain.WorkspaceEditInfo
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -41,11 +42,13 @@ import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -527,7 +530,7 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     organization =
         makeOrganizationCreateRequest(
-            id = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
+            name = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
     organizationSaved = organizationApiService.createOrganization(organization)
     solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -550,7 +553,7 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     organization =
         makeOrganizationCreateRequest(
-            id = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
+            name = "Organization test", userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
     organizationSaved = organizationApiService.createOrganization(organization)
     solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -578,7 +581,8 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
             organizationId = organizationSaved.id,
             key = "key",
             name = "name",
-            ownerId = "ownerId",
+            createInfo = WorkspaceEditInfo(0, ""),
+            updateInfo = WorkspaceEditInfo(0, ""),
             solution = WorkspaceSolution(solutionSaved.id),
             description = "description",
             linkedDatasetIdList = null,
@@ -607,7 +611,8 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
         workspaceApiService.createWorkspace(organizationSaved.id, workspaceCreateRequest)
 
     workspaceToCreate.id = workspaceSaved.id
-    workspaceToCreate.ownerId = workspaceSaved.ownerId
+    workspaceToCreate.createInfo = workspaceSaved.createInfo
+    workspaceToCreate.updateInfo = workspaceSaved.updateInfo
     assertEquals(workspaceToCreate, workspaceSaved)
   }
 
@@ -619,7 +624,8 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
             organizationId = organizationSaved.id,
             key = "key",
             name = "name",
-            ownerId = "ownerId",
+            createInfo = WorkspaceEditInfo(0, ""),
+            updateInfo = WorkspaceEditInfo(0, ""),
             solution = WorkspaceSolution(solutionSaved.id),
             description = "description",
             linkedDatasetIdList = null,
@@ -661,7 +667,6 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
             id = workspaceSaved.id,
             key = workspaceUpdateRequest.key!!,
             name = workspaceUpdateRequest.name!!,
-            ownerId = workspaceSaved.ownerId,
             solution = workspaceUpdateRequest.solution!!,
             description = workspaceUpdateRequest.description,
             tags = workspaceUpdateRequest.tags,
@@ -671,6 +676,8 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     workspaceSaved =
         workspaceApiService.updateWorkspace(
             organizationSaved.id, workspaceSaved.id, workspaceUpdateRequest)
+    workspaceToCreate.createInfo = workspaceSaved.createInfo
+    workspaceToCreate.updateInfo = workspaceSaved.updateInfo
 
     assertEquals(workspaceToCreate, workspaceSaved)
   }
@@ -737,13 +744,98 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
         exception.message)
   }
 
+  @Nested
+  inner class WorkspaceTimeStampsTest() {
+    private var startTime: Long = 0
+
+    @BeforeEach
+    fun init() {
+      startTime = Instant.now().toEpochMilli()
+      organizationSaved =
+          organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
+      solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
+      datasetSaved = datasetApiService.createDataset(organizationSaved.id, makeDataset())
+      workspaceSaved =
+          workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
+    }
+
+    @Test
+    fun `assert timestamps are functional for base CRUD`() {
+      assertTrue(workspaceSaved.createInfo.timestamp > startTime)
+      assertEquals(workspaceSaved.createInfo, workspaceSaved.updateInfo)
+
+      val updateTime = Instant.now().toEpochMilli()
+      val workspaceUpdated =
+          workspaceApiService.updateWorkspace(
+              organizationSaved.id, workspaceSaved.id, WorkspaceUpdateRequest("workspaceUpdated"))
+
+      assertTrue { updateTime < workspaceUpdated.updateInfo.timestamp }
+      assertEquals(workspaceSaved.createInfo, workspaceUpdated.createInfo)
+      assertTrue { workspaceSaved.createInfo.timestamp < workspaceUpdated.updateInfo.timestamp }
+      assertTrue { workspaceSaved.updateInfo.timestamp < workspaceUpdated.updateInfo.timestamp }
+
+      val workspaceFetched =
+          workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+
+      assertEquals(workspaceUpdated.createInfo, workspaceFetched.createInfo)
+      assertEquals(workspaceUpdated.updateInfo, workspaceFetched.updateInfo)
+    }
+
+    @Test
+    fun `assert timestamps are functional for workspace links`() {
+      val workspaceLinked =
+          workspaceApiService.createDatasetLink(
+              organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+      assertEquals(workspaceSaved.createInfo, workspaceLinked.createInfo)
+      assertTrue { workspaceSaved.updateInfo.timestamp < workspaceLinked.updateInfo.timestamp }
+
+      workspaceApiService.deleteDatasetLink(
+          organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+      val workspaceUnlinked =
+          workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+      assertEquals(workspaceLinked.createInfo, workspaceUnlinked.createInfo)
+      assertTrue { workspaceLinked.updateInfo.timestamp < workspaceUnlinked.updateInfo.timestamp }
+    }
+
+    @Test
+    fun `assert timestamps are functional for RBAC CRUD`() {
+      workspaceApiService.createWorkspaceAccessControl(
+          organizationSaved.id, workspaceSaved.id, WorkspaceAccessControl("newUser", ROLE_USER))
+      val rbacAdded = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+
+      assertEquals(workspaceSaved.createInfo, rbacAdded.createInfo)
+      assertTrue { workspaceSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
+
+      workspaceApiService.getWorkspaceAccessControl(
+          organizationSaved.id, workspaceSaved.id, "newUser")
+      val rbacFetched = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+
+      assertEquals(rbacAdded.createInfo, rbacFetched.createInfo)
+      assertEquals(rbacAdded.updateInfo, rbacFetched.updateInfo)
+
+      workspaceApiService.updateWorkspaceAccessControl(
+          organizationSaved.id, workspaceSaved.id, "newUser", WorkspaceRole(ROLE_VIEWER))
+      val rbacUpdated = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+
+      assertEquals(rbacFetched.createInfo, rbacUpdated.createInfo)
+      assertTrue { rbacFetched.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
+
+      workspaceApiService.deleteWorkspaceAccessControl(
+          organizationSaved.id, workspaceSaved.id, "newUser")
+      val rbacDeleted = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+
+      assertEquals(rbacUpdated.createInfo, rbacDeleted.createInfo)
+      assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
+    }
+  }
+
   fun makeOrganizationCreateRequest(
-      id: String,
+      name: String = "Organization Name",
       userName: String = CONNECTED_ADMIN_USER,
       role: String = ROLE_ADMIN
   ) =
       OrganizationCreateRequest(
-          name = "Organization Name",
+          name = name,
           security =
               OrganizationSecurity(
                   default = ROLE_NONE,

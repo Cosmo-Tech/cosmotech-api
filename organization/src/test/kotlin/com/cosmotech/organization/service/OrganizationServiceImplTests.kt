@@ -22,6 +22,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationEditInfo
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationUpdateRequest
@@ -337,7 +338,8 @@ class OrganizationServiceImplTests {
     return Organization(
         id = "o-123456789",
         name = "test-orga",
-        ownerId = USER_ID,
+        createInfo = OrganizationEditInfo(0, ""),
+        updateInfo = OrganizationEditInfo(0, ""),
         security =
             OrganizationSecurity(
                 default = "none",
@@ -353,7 +355,12 @@ class OrganizationServiceImplTests {
         OrganizationSecurity(
             ROLE_VIEWER, mutableListOf(OrganizationAccessControl("ID", ROLE_VIEWER)))
     val organization =
-        Organization(id = ORGANIZATION_ID, name = "name", ownerId = "ownerId", security = security)
+        Organization(
+            id = ORGANIZATION_ID,
+            name = "name",
+            createInfo = OrganizationEditInfo(0, ""),
+            updateInfo = OrganizationEditInfo(0, ""),
+            security = security)
     return organization
   }
 }

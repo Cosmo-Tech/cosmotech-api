@@ -4,11 +4,13 @@ package com.cosmotech.run.workflow.argo
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.WorkflowStatusRequest
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.run.CONTAINER_CSM_ORC
 import com.cosmotech.run.ORGANIZATION_ID_LABEL
 import com.cosmotech.run.RUNNER_ID_LABEL
 import com.cosmotech.run.WORKSPACE_ID_LABEL
 import com.cosmotech.run.domain.Run
+import com.cosmotech.run.domain.RunEditInfo
 import com.cosmotech.run.domain.RunResourceRequested
 import com.cosmotech.run.domain.RunState
 import com.cosmotech.run.domain.RunStatus
@@ -28,6 +30,7 @@ import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowCreateReque
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStatus
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStopRequest
 import java.security.cert.X509Certificate
+import java.time.Instant
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
 import okhttp3.OkHttpClient
@@ -154,6 +157,10 @@ internal class RunArgoWorkflowService(
       return Run(
           csmSimulationRun = runStartContainers.csmSimulationId,
           generateName = runStartContainers.generateName,
+          createInfo =
+              RunEditInfo(
+                  timestamp = Instant.now().toEpochMilli(),
+                  userId = getCurrentAccountIdentifier(csmPlatformProperties)),
           workflowId = workflow.metadata.uid,
           workflowName = workflow.metadata.name,
           nodeLabel = runStartContainers.nodeLabel,

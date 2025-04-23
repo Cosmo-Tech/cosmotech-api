@@ -30,7 +30,7 @@ Create a new organization
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **OrganizationCreateRequest** | [**OrganizationCreateRequest**](../Models/OrganizationCreateRequest.md)| the Organization to create | |
+| **OrganizationCreateRequest** | [**OrganizationCreateRequest**](../Models/OrganizationCreateRequest.md)| The Organization to create | |
 
 ### Return type
 
@@ -55,8 +55,8 @@ Add a control access to the Organization
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationAccessControl** | [**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)| the new Organization security access to add. | |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **OrganizationAccessControl** | [**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)| The new Organization security access to add. | |
 
 ### Return type
 
@@ -81,7 +81,7 @@ Delete an organization
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
 
 ### Return type
 
@@ -106,8 +106,8 @@ Remove the specified access from the given Organization
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **identity\_id** | **String**| The User identifier | [default to null] |
 
 ### Return type
 
@@ -132,7 +132,7 @@ Get the details of an Organization
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
 
 ### Return type
 
@@ -157,8 +157,8 @@ Get a control access for the Organization
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **identity\_id** | **String**| The User identifier | [default to null] |
 
 ### Return type
 
@@ -183,8 +183,8 @@ Get the Organization permissions by given role
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **role** | **String**| the Role | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **role** | **String**| The Role | [default to null] |
 
 ### Return type
 
@@ -209,7 +209,7 @@ Get the Organization security information
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
 
 ### Return type
 
@@ -259,8 +259,8 @@ List all Organizations
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **page** | **Integer**| page number to query (first page is at index 0) | [optional] [default to null] |
-| **size** | **Integer**| amount of result by page | [optional] [default to null] |
+| **page** | **Integer**| Page number to query (first page is at index 0) | [optional] [default to null] |
+| **size** | **Integer**| Amount of result by page | [optional] [default to null] |
 
 ### Return type
 
@@ -307,8 +307,8 @@ Update an Organization
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationUpdateRequest** | [**OrganizationUpdateRequest**](../Models/OrganizationUpdateRequest.md)| the new Organization details. This endpoint can&#39;t be used to update security | |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **OrganizationUpdateRequest** | [**OrganizationUpdateRequest**](../Models/OrganizationUpdateRequest.md)| The new Organization details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
 
@@ -333,8 +333,8 @@ Update the specified access to User for an Organization
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **identity\_id** | **String**| The User identifier | [default to null] |
 | **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| The new Organization Access Control | |
 
 ### Return type
@@ -360,7 +360,7 @@ Update the Organization default security
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
 | **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| This change the organization default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the organization. | |
 
 ### Return type

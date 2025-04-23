@@ -16,7 +16,7 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
@@ -26,7 +26,7 @@ paths:
         - workspace
       summary: Create a new workspace
       requestBody:
-        description: the Workspace to create
+        description: The Workspace to create
         required: true
         content:
           application/json:
@@ -43,7 +43,7 @@ paths:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
       responses:
         "201":
-          description: the workspace details
+          description: The workspace details
           content:
             application/json:
               schema:
@@ -70,7 +70,7 @@ paths:
             type: integer
         - name: size
           in: query
-          description: amount of result by page
+          description: Amount of result by page
           required: false
           schema:
             type: integer
@@ -79,7 +79,7 @@ paths:
       summary: List all Workspaces
       responses:
         "200":
-          description: the workspace details
+          description: The workspace details
           content:
             application/json:
               schema:
@@ -101,13 +101,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
@@ -118,7 +118,7 @@ paths:
       summary: Get the details of an workspace
       responses:
         "200":
-          description: the Workspace details
+          description: The Workspace details
           content:
             application/json:
               schema:
@@ -157,7 +157,7 @@ paths:
                 $ref: '#/components/examples/BreweryWorkspaceUpdate'
       responses:
         "200":
-          description: the workspace details
+          description: The workspace details
           content:
             application/json:
               schema:
@@ -174,7 +174,7 @@ paths:
         "400":
           description: Bad request
         "404":
-          description: the Workspace specified is unknown or you don't have access to it
+          description: The Workspace specified is unknown or you don't have access to it
     delete:
       operationId: deleteWorkspace
       tags:
@@ -182,23 +182,23 @@ paths:
       summary: Delete a workspace
       responses:
         "204":
-          description: the workspace details
+          description: The workspace details
         "400":
           description: Bad request
         "404":
-          description: the Workspace specified is unknown or you don't have access to it
+          description: The Workspace specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/workspaces/{workspace_id}/files:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
@@ -208,7 +208,7 @@ paths:
         - workspace
       summary: Upload a file for the Workspace
       requestBody:
-        description: the file to upload
+        description: The file to upload
         required: true
         content:
           multipart/form-data:
@@ -242,7 +242,7 @@ paths:
                   file: "Lorem Ipsum Dolor Sit Amet"
       responses:
         "201":
-          description: the file resource details
+          description: The file resource details
           content:
             application/json:
               schema:
@@ -265,7 +265,7 @@ paths:
       summary: List all Workspace files
       responses:
         "200":
-          description: the workspace files
+          description: The workspace files
           content:
             application/json:
               schema:
@@ -284,7 +284,7 @@ paths:
                 WorkspaceFiles:
                   $ref: '#/components/examples/WorkspaceFiles'
         "404":
-          description: the Workspace specified is unknown or you don't have access to it
+          description: The Workspace specified is unknown or you don't have access to it
     delete:
       operationId: deleteWorkspaceFiles
       tags:
@@ -294,25 +294,25 @@ paths:
         "204":
           description: Request succeeded
         "404":
-          description: the Workspace specified is unknown or you don't have access to them
+          description: The Workspace specified is unknown or you don't have access to them
 
   /organizations/{organization_id}/workspaces/{workspace_id}/files/download:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
       - name: file_name
         in: query
-        description: the file name
+        description: The file name
         required: true
         schema:
           type: string
@@ -323,32 +323,32 @@ paths:
       summary: Download the Workspace File specified
       responses:
         "200":
-          description: the workspace file as a resource
+          description: The workspace file as a resource
           content:
             application/octet-stream:
               schema:
                 type: string
                 format: binary
         "404":
-          description: the Workspace file specified is unknown or you don't have access to it
+          description: The Workspace file specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/workspaces/{workspace_id}/files/delete:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
       - name: file_name
         in: query
-        description: the file name
+        description: The file name
         required: true
         schema:
           type: string
@@ -361,19 +361,19 @@ paths:
         "204":
           description: Request succeeded
         "404":
-          description: the Workspace or the file specified is unknown or you don't have access to them
+          description: The Workspace or the file specified is unknown or you don't have access to them
 
   /organizations/{organization_id}/workspaces/{workspace_id}/link:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
@@ -390,7 +390,7 @@ paths:
         - workspace
       responses:
         "200":
-          description: the workspace details
+          description: The workspace details
           content:
             application/json:
               schema:
@@ -407,7 +407,7 @@ paths:
         "400":
           description: Bad request
         "404":
-          description: the workspace specified is unknown or you don't have access to it
+          description: The workspace specified is unknown or you don't have access to it
     delete:
       parameters:
         - name: datasetId
@@ -421,29 +421,29 @@ paths:
         - workspace
       responses:
         "200":
-          description: the request succeeded
+          description: The request succeeded
         "400":
           description: Bad request
         "404":
-          description: the Dataset specified is unknown or you don't have access to it
+          description: The Dataset specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role}:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
       - name: role
         in: path
-        description: the Role
+        description: The Role
         required: true
         schema:
           type: string
@@ -467,13 +467,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
@@ -499,19 +499,19 @@ paths:
                 WorkspaceSecurity:
                   $ref: '#/components/examples/BreweryWorkspaceSecurity'
         "404":
-          description: the Workspace specified is unknown or you don't have access to it
+          description: The Workspace specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security/default:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
@@ -555,19 +555,19 @@ paths:
                 WriterWorkspaceSecurity:
                   $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
         "404":
-          description: the Workspace specified is unknown or you don't have access to it
+          description: The Workspace specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security/access:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
@@ -577,7 +577,7 @@ paths:
         - workspace
       summary: Add a control access to the Workspace
       requestBody:
-        description: the new Workspace security access to add.
+        description: The new Workspace security access to add.
         required: true
         content:
           application/json:
@@ -609,25 +609,25 @@ paths:
                 WorkspaceAccessControl:
                   $ref: '#/components/examples/BreweryWorkspaceAccessControl'
         "404":
-          description: the Workspace specified is unknown or you don't have access to it
+          description: The Workspace specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
       - name: identity_id
         in: path
-        description: the User identifier
+        description: The User identifier
         required: true
         schema:
           type: string
@@ -708,13 +708,13 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string
       - name: workspace_id
         in: path
-        description: the Workspace identifier
+        description: The Workspace identifier
         required: true
         schema:
           type: string
@@ -734,7 +734,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceUsersList'
         "404":
-          description: the Workspace or the User specified is unknown or you don't have access to them
+          description: The Workspace or the User specified is unknown or you don't have access to them
 
 components:
   securitySchemes:
@@ -751,7 +751,7 @@ components:
     Workspace:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
-      description: a Workspace
+      description: A Workspace
       properties:
         id:
           type: string
@@ -769,7 +769,7 @@ components:
           example: "o-0123456789ab"
         key:
           type: string
-          description: technical key for resource name convention and version grouping. Must be unique
+          description: Technical key for resource name convention and version grouping. Must be unique
           minLength: 1
           maxLength: 50
           example: "MyKey"
@@ -782,7 +782,7 @@ components:
           example: "FranceOffice"
         description:
           type: string
-          description: the Workspace description
+          description: The Workspace description
         linkedDatasetIdList:
           type: array
           description: list of dataset linked to this dataset
@@ -790,17 +790,21 @@ components:
             type: string
         version:
           type: string
-          description: the Workspace version MAJOR.MINOR.PATCH.
+          description: The Workspace version MAJOR.MINOR.PATCH.
           example: "1.0.0"
         tags:
           type: array
-          description: the list of tags
+          description: The list of tags
           items:
             type: string
-        ownerId:
-          type: string
-          readOnly: true
-          description: the user id which own this workspace. set by the API from Authentification service receved id
+        createInfo:
+          description: The details of the Workspace creation
+          allOf:
+            - $ref: '#/components/schemas/WorkspaceEditInfo'
+        updateInfo:
+          description: The details of the Workspace last update
+          allOf:
+            - $ref: '#/components/schemas/WorkspaceEditInfo'
         solution:
           $ref: '#/components/schemas/WorkspaceSolution'
         webApp:
@@ -819,7 +823,8 @@ components:
         - organizationId
         - key
         - name
-        - ownerId
+        - createInfo
+        - updateInfo
         - solution
         - security
 
@@ -830,7 +835,7 @@ components:
       properties:
         key:
           type: string
-          description: technical key for resource name convention and version grouping. Must be unique
+          description: Technical key for resource name convention and version grouping. Must be unique
           minLength: 1
           maxLength: 50
         name:
@@ -841,14 +846,14 @@ components:
           maxLength: 50
         description:
           type: string
-          description: the Workspace description
+          description: The Workspace description
         version:
           type: string
-          description: the Workspace version MAJOR.MINOR.PATCH.
+          description: The Workspace version MAJOR.MINOR.PATCH.
           example: "1.0.0"
         tags:
           type: array
-          description: the list of tags
+          description: The list of tags
           items:
             type: string
         solution:
@@ -872,7 +877,7 @@ components:
       properties:
         key:
           type: string
-          description: technical key for resource name convention and version grouping. Must be unique
+          description: Technical key for resource name convention and version grouping. Must be unique
           minLength: 1
           maxLength: 50
         name:
@@ -882,10 +887,10 @@ components:
           maxLength: 50
         description:
           type: string
-          description: the Workspace description
+          description: The Workspace description
         tags:
           type: array
-          description: the list of tags
+          description: The list of tags
           items:
             type: string
         solution:
@@ -921,16 +926,16 @@ components:
 
     WorkspaceSecurity:
       type: object
-      description: the workspace security information
+      description: The workspace security information
       properties:
         default:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the role by default
+          description: The role by default
         accessControlList:
           type: array
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the list which can access this Workspace with detailed access control information
+          description: The list which can access this Workspace with detailed access control information
           items:
             $ref: '#/components/schemas/WorkspaceAccessControl'
       required:
@@ -938,46 +943,46 @@ components:
         - accessControlList
     WorkspaceAccessControl:
       type: object
-      description: a Workspace access control item
+      description: A Workspace access control item
       properties:
         id:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the identity id
+          description: The identity id
         role:
           type: string
-          description: a role
+          description: A role
       required:
         - id
         - role
     WorkspaceRole:
       type: object
-      description: the Workspace Role
+      description: The Workspace Role
       properties:
         role:
           type: string
-          description: the Workspace Role
+          description: The Workspace Role
       required:
         - role
     WorkspaceFile:
       type: object
-      description: a Workspace File resource
+      description: A Workspace File resource
       properties:
         fileName:
           type: string
-          description: the Workspace File name
+          description: The Workspace File name
       required:
         - fileName
     WorkspaceWebApp:
       type: object
-      description: a Workspace Web Application
+      description: A Workspace Web Application
       properties:
         url:
           type: string
-          description: the Workspace Web Application URL
+          description: The Workspace Web Application URL
         iframes:
           type: object
-          description: a map of iframeKey/iframeURL
+          description: A map of iframeKey/iframeURL
           additionalProperties: true
         options:
           type: object
@@ -987,20 +992,20 @@ components:
         - url
     WorkspaceSolution:
       type: object
-      description: the Workspace Solution configuration
+      description: The Workspace Solution configuration
       properties:
         solutionId:
           type: string
-          description: the Solution Id attached to this workspace
+          description: The Solution Id attached to this workspace
           pattern: '^sol-\w{10,20}'
         runTemplateFilter:
           type: array
-          description: the list of Solution Run Template Id to filter
+          description: The list of Solution Run Template Id to filter
           items:
             type: string
         defaultRunTemplateDataset:
           type: object
-          description: a map of RunTemplateId/DatasetId to set a default dataset for a Run Template
+          description: A map of RunTemplateId/DatasetId to set a default dataset for a Run Template
           additionalProperties: true
       required:
       - solutionId
@@ -1024,6 +1029,21 @@ components:
       example:
         - alice@mycompany.com
         - bob@mycompany.com
+
+    WorkspaceEditInfo:
+      type: object
+      properties:
+        timestamp:
+          description: The timestamp of the modification in millisecond
+          type: integer
+          format: int64
+        userId:
+          description: The id of the user who did the modification
+          type: string
+      required:
+        - timestamp
+        - userId
+
   examples:
     BreweryWorkspace:
       summary: Brewery Workspace
@@ -1042,6 +1062,12 @@ components:
           defaultRunTemplateDataset:
             run1: "data1"
         datasetCopy: true
+        createInfo:
+          timestamp: 123456789
+          userId: admin
+        updateInfo:
+          timestamp: 123456789
+          userId: admin
         security:
           default: "viewer"
           accessControlList:
@@ -1066,6 +1092,12 @@ components:
           defaultRunTemplateDataset:
             run1: "data1"
         datasetCopy: true
+        createInfo:
+          timestamp: 123456789
+          userId: admin
+        updateInfo:
+          timestamp: 123456789
+          userId: admin
         security:
           default: "viewer"
           accessControlList:
@@ -1109,6 +1141,12 @@ components:
             defaultRunTemplateDataset:
               run1: "data1"
           datasetCopy: true
+          createInfo:
+            timestamp: 123456789
+            userId: admin
+          updateInfo:
+            timestamp: 123456789
+            userId: admin
           security:
             default: "viewer"
             accessControlList:
@@ -1127,6 +1165,12 @@ components:
             defaultRunTemplateDataset:
               runA: "data1"
           datasetCopy: true
+          createInfo:
+            timestamp: 123456789
+            userId: admin
+          updateInfo:
+            timestamp: 123456789
+            userId: admin
           security:
             default: "viewer"
             accessControlList:
@@ -1154,6 +1198,12 @@ components:
           defaultRunTemplateDataset:
             run1: "data1"
         datasetCopy: true
+        createInfo:
+          timestamp: 123456789
+          userId: admin
+        updateInfo:
+          timestamp: 123456789
+          userId: admin
         security:
           default: "viewer"
           accessControlList:

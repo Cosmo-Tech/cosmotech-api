@@ -8,6 +8,7 @@ import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationEditInfo
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.run.domain.ContainerResourceSizeInfo
 import com.cosmotech.run.domain.ContainerResourceSizing
@@ -16,6 +17,7 @@ import com.cosmotech.run.service.WORKFLOW_TYPE_RUN
 import com.cosmotech.runner.api.RunnerApiService
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
+import com.cosmotech.runner.domain.RunnerEditInfo
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerValidationStatus
@@ -24,9 +26,11 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionEditInfo
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceEditInfo
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.MockKAnnotations
@@ -223,12 +227,11 @@ class ContainerFactoryTests {
         name = "TestRunner",
         runTemplateId = CSM_RUN_TEMPLATE_ID,
         datasetList = mutableListOf("1", "2"),
-        ownerId = "owner",
         solutionId = "solution",
         organizationId = "organization",
         workspaceId = "workspace",
-        creationDate = Instant.now().toEpochMilli(),
-        lastUpdate = Instant.now().toEpochMilli(),
+        createInfo = RunnerEditInfo(timestamp = Instant.now().toEpochMilli(), userId = "user"),
+        updateInfo = RunnerEditInfo(timestamp = Instant.now().toEpochMilli(), userId = "user"),
         ownerName = "owner",
         parametersValues =
             mutableListOf(
@@ -252,7 +255,8 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-        ownerId = "ownerId",
+        createInfo = SolutionEditInfo(0, ""),
+        updateInfo = SolutionEditInfo(0, ""),
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplate()),
@@ -271,7 +275,8 @@ class ContainerFactoryTests {
         id = "Workspaceid",
         key = "Test",
         organizationId = "organizationId",
-        ownerId = "ownerId",
+        createInfo = WorkspaceEditInfo(0, ""),
+        updateInfo = WorkspaceEditInfo(0, ""),
         name = "Test Workspace",
         description = "Test Workspace Description",
         version = "1.0.0",
@@ -286,7 +291,8 @@ class ContainerFactoryTests {
     return Organization(
         id = "Organizationid",
         name = "Organization Test",
-        ownerId = "ownerId",
+        createInfo = OrganizationEditInfo(0, ""),
+        updateInfo = OrganizationEditInfo(0, ""),
         security =
             OrganizationSecurity(
                 ROLE_ADMIN, mutableListOf(OrganizationAccessControl("user", ROLE_ADMIN))))

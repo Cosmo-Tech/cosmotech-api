@@ -171,7 +171,8 @@ entity IoTypesEnum {
 entity Organization {
     * id: String
     * name: String
-    * ownerId: String
+    * createInfo: OrganizationEditInfo
+    * updateInfo: OrganizationEditInfo
     * security: OrganizationSecurity
 }
 
@@ -183,6 +184,11 @@ entity OrganizationAccessControl {
 entity OrganizationCreateRequest {
     * name: String
     security: OrganizationSecurity
+}
+
+entity OrganizationEditInfo {
+    * timestamp: Long
+    * userId: String
 }
 
 entity OrganizationRole {
@@ -211,18 +217,17 @@ entity Run {
     id: String
     state: RunState
     organizationId: String
+    * createInfo: RunEditInfo
     workflowId: String
     csmSimulationRun: String
     generateName: String
     workflowName: String
-    ownerId: String
     workspaceId: String
     workspaceKey: String
     runnerId: String
     solutionId: String
     runTemplateId: String
     computeSize: String
-    createdAt: String
     datasetList: List<String>
     parametersValues: List<RunTemplateParameterValue>
     nodeLabel: String
@@ -253,6 +258,11 @@ entity RunDataQuery {
     * query: String
 }
 
+entity RunEditInfo {
+    * timestamp: Long
+    * userId: String
+}
+
 entity RunResourceRequested {
     cpu: Long
     memory: Long
@@ -268,6 +278,7 @@ entity RunStatus {
     runnerId: String
     workflowId: String
     workflowName: String
+    createInfo: RunEditInfo
     startTime: String
     endTime: String
     phase: String
@@ -409,14 +420,13 @@ entity Runner {
     description: String
     tags: List<String>
     parentId: String
-    * ownerId: String
+    * createInfo: RunnerEditInfo
+    * updateInfo: RunnerEditInfo
     rootId: String
     * solutionId: String
     * runTemplateId: String
     * organizationId: String
     * workspaceId: String
-    * creationDate: Long
-    * lastUpdate: Long
     * ownerName: String
     solutionName: String
     runTemplateName: String
@@ -447,6 +457,11 @@ entity RunnerCreateRequest {
     solutionName: String
     runTemplateName: String
     security: RunnerSecurity
+}
+
+entity RunnerEditInfo {
+    * timestamp: Long
+    * userId: String
 }
 
 entity RunnerResourceSizing {
@@ -500,7 +515,8 @@ entity Solution {
     * repository: String
     alwaysPull: Boolean
     * version: String
-    * ownerId: String
+    * createInfo: SolutionEditInfo
+    * updateInfo: SolutionEditInfo
     sdkVersion: String
     url: String
     tags: List<String>
@@ -528,6 +544,11 @@ entity SolutionCreateRequest {
     runTemplates: List<RunTemplateCreateRequest>
     url: String
     security: SolutionSecurity
+}
+
+entity SolutionEditInfo {
+    * timestamp: Long
+    * userId: String
 }
 
 entity SolutionRole {
@@ -585,7 +606,8 @@ entity Workspace {
     linkedDatasetIdList: List<String>
     version: String
     tags: List<String>
-    * ownerId: String
+    * createInfo: WorkspaceEditInfo
+    * updateInfo: WorkspaceEditInfo
     * solution: WorkspaceSolution
     webApp: WorkspaceWebApp
     datasetCopy: Boolean
@@ -607,6 +629,11 @@ entity WorkspaceCreateRequest {
     webApp: WorkspaceWebApp
     datasetCopy: Boolean
     security: WorkspaceSecurity
+}
+
+entity WorkspaceEditInfo {
+    * timestamp: Long
+    * userId: String
 }
 
 entity WorkspaceFile {
@@ -673,10 +700,15 @@ SolutionUpdateRequest -- "0..*" RunTemplateParameterGroupCreateRequest : paramet
 SolutionUpdateRequest -- "0..*" RunTemplateCreateRequest : runTemplates
 OrganizationCreateRequest -- OrganizationSecurity : security
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
+Runner -- RunnerEditInfo : createInfo
+Runner -- RunnerEditInfo : updateInfo
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
 Runner -- RunnerSecurity : security
+Organization -- OrganizationEditInfo : createInfo
+Organization -- OrganizationEditInfo : updateInfo
 Organization -- OrganizationSecurity : security
+RunStatus -- RunEditInfo : createInfo
 RunStatus -- "0..*" RunStatusNode : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : edges
@@ -686,6 +718,8 @@ RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
 RunStatusNode -- RunResourceRequested : resourcesDuration
 WorkspaceUpdateRequest -- WorkspaceSolution : solution
 WorkspaceUpdateRequest -- WorkspaceWebApp : webApp
+Solution -- SolutionEditInfo : createInfo
+Solution -- SolutionEditInfo : updateInfo
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates
@@ -694,11 +728,14 @@ Dataset -- SourceInfo : source
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
 Dataset -- DatasetSecurity : security
+Run -- RunEditInfo : createInfo
 Run -- "0..*" RunTemplateParameterValue : parametersValues
 Run -- "0..*" RunContainer : containers
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 RunnerResourceSizing -- ResourceSizeInfo : requests
 RunnerResourceSizing -- ResourceSizeInfo : limits
+Workspace -- WorkspaceEditInfo : createInfo
+Workspace -- WorkspaceEditInfo : updateInfo
 Workspace -- WorkspaceSolution : solution
 Workspace -- WorkspaceWebApp : webApp
 Workspace -- WorkspaceSecurity : security

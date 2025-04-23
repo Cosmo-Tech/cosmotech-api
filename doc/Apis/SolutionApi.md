@@ -43,8 +43,8 @@ Create a new solution
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **SolutionCreateRequest** | [**SolutionCreateRequest**](../Models/SolutionCreateRequest.md)| the Solution to create | |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **SolutionCreateRequest** | [**SolutionCreateRequest**](../Models/SolutionCreateRequest.md)| The Solution to create | |
 
 ### Return type
 
@@ -69,8 +69,8 @@ Create solution access control
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 | **SolutionAccessControl** | [**SolutionAccessControl**](../Models/SolutionAccessControl.md)| Access control to create | |
 
 ### Return type
@@ -96,8 +96,8 @@ Create solution parameter for a solution
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 | **RunTemplateParameterCreateRequest** | [**RunTemplateParameterCreateRequest**](../Models/RunTemplateParameterCreateRequest.md)| Parameter to create | |
 
 ### Return type
@@ -123,8 +123,8 @@ Create a solution parameter group
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 | **RunTemplateParameterGroupCreateRequest** | [**RunTemplateParameterGroupCreateRequest**](../Models/RunTemplateParameterGroupCreateRequest.md)| Parameter group to create | |
 
 ### Return type
@@ -150,8 +150,8 @@ Create a solution run template
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 | **RunTemplateCreateRequest** | [**RunTemplateCreateRequest**](../Models/RunTemplateCreateRequest.md)| Run template to create | |
 
 ### Return type
@@ -177,8 +177,8 @@ Delete a solution
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 
 ### Return type
 
@@ -203,9 +203,9 @@ Delete solution access control
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **identity\_id** | **String**| The User identifier | [default to null] |
 
 ### Return type
 
@@ -230,9 +230,9 @@ Delete specific parameter from the solution
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **parameter\_id** | **String**| the solution parameter identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **parameter\_id** | **String**| The solution parameter identifier | [default to null] |
 
 ### Return type
 
@@ -257,9 +257,9 @@ Delete a parameter group from the solution
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **parameter\_group\_id** | **String**| the parameter group identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **parameter\_group\_id** | **String**| The parameter group identifier | [default to null] |
 
 ### Return type
 
@@ -284,9 +284,9 @@ Delete a specific run template
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **run\_template\_id** | **String**| the Run Template identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **run\_template\_id** | **String**| The Run Template identifier | [default to null] |
 
 ### Return type
 
@@ -311,9 +311,9 @@ Retrieve a solution run templates
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **run\_template\_id** | **String**| the Run Template identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **run\_template\_id** | **String**| The Run Template identifier | [default to null] |
 
 ### Return type
 
@@ -338,8 +338,8 @@ Get the details of a solution
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 
 ### Return type
 
@@ -364,9 +364,9 @@ Get solution access control
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **identity\_id** | **String**| The User identifier | [default to null] |
 
 ### Return type
 
@@ -391,9 +391,9 @@ Get the details of a solution parameter
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **parameter\_id** | **String**| the solution parameter identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **parameter\_id** | **String**| The solution parameter identifier | [default to null] |
 
 ### Return type
 
@@ -418,9 +418,9 @@ Get details of a solution parameter group
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **parameter\_group\_id** | **String**| the parameter group identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **parameter\_group\_id** | **String**| The parameter group identifier | [default to null] |
 
 ### Return type
 
@@ -445,8 +445,8 @@ Get solution security information
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 
 ### Return type
 
@@ -471,8 +471,8 @@ List all solution run templates
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 
 ### Return type
 
@@ -497,8 +497,8 @@ List all solution parameter groups
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 
 ### Return type
 
@@ -523,8 +523,8 @@ List all solution parameters
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 
 ### Return type
 
@@ -549,8 +549,8 @@ List solution security users
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
 
 ### Return type
 
@@ -575,7 +575,7 @@ List all Solutions
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
 | **page** | **Integer**| Page number to query (zero-based indexing) | [optional] [default to null] |
 | **size** | **Integer**| Number of records per page | [optional] [default to null] |
 
@@ -602,9 +602,9 @@ Update a solution
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **SolutionUpdateRequest** | [**SolutionUpdateRequest**](../Models/SolutionUpdateRequest.md)| the new Solution details. This endpoint can&#39;t be used to update security | |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **SolutionUpdateRequest** | [**SolutionUpdateRequest**](../Models/SolutionUpdateRequest.md)| The new Solution details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
 
@@ -629,9 +629,9 @@ Update solution access control
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **identity\_id** | **String**| the User identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **identity\_id** | **String**| The User identifier | [default to null] |
 | **SolutionRole** | [**SolutionRole**](../Models/SolutionRole.md)| Access control updates | |
 
 ### Return type
@@ -684,9 +684,9 @@ Update solution parameter
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **parameter\_id** | **String**| the solution parameter identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **parameter\_id** | **String**| The solution parameter identifier | [default to null] |
 | **RunTemplateParameterUpdateRequest** | [**RunTemplateParameterUpdateRequest**](../Models/RunTemplateParameterUpdateRequest.md)| Parameter to update | |
 
 ### Return type
@@ -712,9 +712,9 @@ Update a solution parameter group
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **parameter\_group\_id** | **String**| the parameter group identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **parameter\_group\_id** | **String**| The parameter group identifier | [default to null] |
 | **RunTemplateParameterGroupUpdateRequest** | [**RunTemplateParameterGroupUpdateRequest**](../Models/RunTemplateParameterGroupUpdateRequest.md)| Parameter groups to update | |
 
 ### Return type
@@ -740,9 +740,9 @@ Update a specific run template
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **solution\_id** | **String**| the Solution identifier | [default to null] |
-| **run\_template\_id** | **String**| the Run Template identifier | [default to null] |
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **solution\_id** | **String**| The Solution identifier | [default to null] |
+| **run\_template\_id** | **String**| The Run Template identifier | [default to null] |
 | **RunTemplateUpdateRequest** | [**RunTemplateUpdateRequest**](../Models/RunTemplateUpdateRequest.md)| Run template updates | |
 
 ### Return type

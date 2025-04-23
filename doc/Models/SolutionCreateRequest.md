@@ -3,7 +3,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-| **key** | **String** | technical key for resource name convention and version grouping. Must be unique | [default to null] |
+| **key** | **String** | Technical key for resource name convention and version grouping. Must be unique | [default to null] |
 | **name** | **String** | Solution name. This name is displayed in the sample webApp | [default to null] |
 | **description** | **String** | The Solution description | [optional] [default to null] |
 | **repository** | **String** | The registry repository containing the image | [default to null] |

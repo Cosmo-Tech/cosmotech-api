@@ -8,14 +8,13 @@
 | **description** | **String** | the Runner description | [optional] [default to null] |
 | **tags** | **List** | the list of tags | [optional] [default to null] |
 | **parentId** | **String** | the Runner parent id | [optional] [default to null] |
-| **ownerId** | **String** | the user id which own this Runner | [default to null] |
+| **createInfo** | [**RunnerEditInfo**](RunnerEditInfo.md) | The details of the Runner creation | [default to null] |
+| **updateInfo** | [**RunnerEditInfo**](RunnerEditInfo.md) | The details of the Runner last update | [default to null] |
 | **rootId** | **String** | the runner root id | [optional] [default to null] |
 | **solutionId** | **String** | the Solution Id associated with this Runner | [default to null] |
 | **runTemplateId** | **String** | the Solution Run Template Id associated with this Runner | [default to null] |
 | **organizationId** | **String** | the associated Organization Id | [default to null] |
 | **workspaceId** | **String** | the associated Workspace Id | [default to null] |
-| **creationDate** | **Long** | the Runner creation date | [default to null] |
-| **lastUpdate** | **Long** | the last time a Runner was updated | [default to null] |
 | **ownerName** | **String** | the name of the owner | [default to null] |
 | **solutionName** | **String** | the Solution name | [optional] [default to null] |
 | **runTemplateName** | **String** | the Solution Run Template name associated with this Runner | [optional] [default to null] |

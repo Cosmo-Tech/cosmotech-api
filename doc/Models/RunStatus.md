@@ -9,6 +9,7 @@
 | **runnerId** | **String** | the Runner id | [optional] [default to null] |
 | **workflowId** | **String** | the Cosmo Tech compute cluster Argo Workflow Id to search | [optional] [default to null] |
 | **workflowName** | **String** | the Cosmo Tech compute cluster Argo Workflow Name | [optional] [default to null] |
+| **createInfo** | [**RunEditInfo**](RunEditInfo.md) | The timestamp of the Run creation in milliseconds | [optional] [default to null] |
 | **startTime** | **String** | the Run start Date Time | [optional] [default to null] |
 | **endTime** | **String** | the Run end Date Time | [optional] [default to null] |
 | **phase** | **String** | high-level summary of where the workflow is in its lifecycle | [optional] [default to null] |
