@@ -62,7 +62,9 @@ class RunnerService(
 ) : CsmPhoenixService() {
 
   fun updateSecurityVisibility(runner: Runner): Runner {
-    if (csmRbac.check(runner.getRbac(), PERMISSION_READ_SECURITY).not()) {
+    if (csmRbac
+        .check(runner.getRbac(), PERMISSION_READ_SECURITY, getScenarioRolesDefinition())
+        .not()) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = runner.security!!.accessControlList.firstOrNull { it.id == username }
       if (retrievedAC != null) {
