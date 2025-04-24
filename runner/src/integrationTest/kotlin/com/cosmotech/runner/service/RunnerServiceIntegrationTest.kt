@@ -1052,6 +1052,49 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `As a validator, I can see whole security property for getRunner`() {
+    every { getCurrentAccountIdentifier(any()) } returns defaultName
+    runner = makeRunner(userName = defaultName, role = ROLE_VALIDATOR)
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+
+    runnerSaved =
+        runnerApiService.getRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+
+    assertEquals(2, runnerSaved.security!!.accessControlList.size)
+    assertEquals(ROLE_NONE, runnerSaved.security!!.default)
+    assertEquals(
+        RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+        runnerSaved.security!!.accessControlList[0])
+    assertEquals(
+        RunnerAccessControl(defaultName, ROLE_VALIDATOR),
+        runnerSaved.security!!.accessControlList[1])
+  }
+
+  @Test
+  fun `As a validator, I can see whole security property for listRunners`() {
+    every { getCurrentAccountIdentifier(any()) } returns defaultName
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    materializeTwingraph()
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    workspace = makeWorkspace()
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    runner = makeRunner(userName = defaultName, role = ROLE_VALIDATOR)
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+
+    val runners =
+        runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+    runners.forEach {
+      assertEquals(2, it.security!!.accessControlList.size)
+      assertEquals(ROLE_NONE, it.security!!.default)
+      assertEquals(
+          RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN), it.security!!.accessControlList[0])
+      assertEquals(
+          RunnerAccessControl(defaultName, ROLE_VALIDATOR), it.security!!.accessControlList[1])
+    }
+  }
+
   private fun makeConnector(name: String = "name"): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
