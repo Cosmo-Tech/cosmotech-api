@@ -66,7 +66,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -110,6 +109,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
+  private var startTime: Long = 0
 
   lateinit var connector: Connector
   lateinit var dataset: Dataset
@@ -165,6 +165,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Runner::class.java)
+
+    startTime = Instant.now().toEpochMilli()
 
     connector = makeConnector("Connector")
     connectorSaved = connectorApiService.registerConnector(connector)
@@ -1068,90 +1070,73 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  @Nested
-  inner class RunnerTimeStampsTest() {
-    private var startTime: Long = 0
+  @Test
+  fun `assert timestamps are functional for base CRUD`() {
+    runnerSaved =
+        runnerApiService.createRunner(
+            organizationSaved.id, workspaceSaved.id, makeRunnerCreateRequest())
+    assertTrue(runnerSaved.createInfo.timestamp > startTime)
+    assertEquals(runnerSaved.createInfo, runnerSaved.updateInfo)
 
-    @BeforeEach
-    fun init() {
-      startTime = Instant.now().toEpochMilli()
-      organizationSaved =
-          organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
-      solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
-      datasetSaved = datasetApiService.createDataset(organizationSaved.id, makeDataset())
-      workspaceSaved =
-          workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
-      runnerSaved =
-          runnerApiService.createRunner(
-              organizationSaved.id, workspaceSaved.id, makeRunnerCreateRequest())
-    }
+    val updateTime = Instant.now().toEpochMilli()
+    val runnerUpdated =
+        runnerApiService.updateRunner(
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            RunnerUpdateRequest("runnerUpdated"))
 
-    @Test
-    fun `assert timestamps are functional for base CRUD`() {
-      assertTrue(runnerSaved.createInfo.timestamp > startTime)
-      assertEquals(runnerSaved.createInfo, runnerSaved.updateInfo)
+    assertTrue { updateTime < runnerUpdated.updateInfo.timestamp }
+    assertEquals(runnerSaved.createInfo, runnerUpdated.createInfo)
+    assertTrue { runnerSaved.createInfo.timestamp < runnerUpdated.updateInfo.timestamp }
+    assertTrue { runnerSaved.updateInfo.timestamp < runnerUpdated.updateInfo.timestamp }
 
-      val updateTime = Instant.now().toEpochMilli()
-      val runnerUpdated =
-          runnerApiService.updateRunner(
-              organizationSaved.id,
-              workspaceSaved.id,
-              runnerSaved.id,
-              RunnerUpdateRequest("runnerUpdated"))
+    val runnerFetched =
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
-      assertTrue { updateTime < runnerUpdated.updateInfo.timestamp }
-      assertEquals(runnerSaved.createInfo, runnerUpdated.createInfo)
-      assertTrue { runnerSaved.createInfo.timestamp < runnerUpdated.updateInfo.timestamp }
-      assertTrue { runnerSaved.updateInfo.timestamp < runnerUpdated.updateInfo.timestamp }
+    assertEquals(runnerUpdated.createInfo, runnerFetched.createInfo)
+    assertEquals(runnerUpdated.updateInfo, runnerFetched.updateInfo)
+  }
 
-      val runnerFetched =
-          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+  @Test
+  fun `assert timestamps are functional for RBAC CRUD`() {
+    runnerSaved =
+        runnerApiService.createRunner(
+            organizationSaved.id, workspaceSaved.id, makeRunnerCreateRequest())
+    runnerApiService.createRunnerAccessControl(
+        organizationSaved.id,
+        workspaceSaved.id,
+        runnerSaved.id,
+        RunnerAccessControl("newUser", ROLE_VIEWER))
+    val rbacAdded =
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
-      assertEquals(runnerUpdated.createInfo, runnerFetched.createInfo)
-      assertEquals(runnerUpdated.updateInfo, runnerFetched.updateInfo)
-    }
+    assertEquals(runnerSaved.createInfo, rbacAdded.createInfo)
+    assertTrue { runnerSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
 
-    @Test
-    fun `assert timestamps are functional for RBAC CRUD`() {
-      runnerApiService.createRunnerAccessControl(
-          organizationSaved.id,
-          workspaceSaved.id,
-          runnerSaved.id,
-          RunnerAccessControl("newUser", ROLE_VIEWER))
-      val rbacAdded =
-          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+    runnerApiService.getRunnerAccessControl(
+        organizationSaved.id, workspaceSaved.id, runnerSaved.id, "newUser")
+    val rbacFetched =
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
-      assertEquals(runnerSaved.createInfo, rbacAdded.createInfo)
-      assertTrue { runnerSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
+    assertEquals(rbacAdded.createInfo, rbacFetched.createInfo)
+    assertEquals(rbacAdded.updateInfo, rbacFetched.updateInfo)
 
-      runnerApiService.getRunnerAccessControl(
-          organizationSaved.id, workspaceSaved.id, runnerSaved.id, "newUser")
-      val rbacFetched =
-          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+    runnerApiService.updateRunnerAccessControl(
+        organizationSaved.id, workspaceSaved.id, runnerSaved.id, "newUser", RunnerRole(ROLE_VIEWER))
+    val rbacUpdated =
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
-      assertEquals(rbacAdded.createInfo, rbacFetched.createInfo)
-      assertEquals(rbacAdded.updateInfo, rbacFetched.updateInfo)
+    assertEquals(rbacFetched.createInfo, rbacUpdated.createInfo)
+    assertTrue { rbacFetched.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
 
-      runnerApiService.updateRunnerAccessControl(
-          organizationSaved.id,
-          workspaceSaved.id,
-          runnerSaved.id,
-          "newUser",
-          RunnerRole(ROLE_VIEWER))
-      val rbacUpdated =
-          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+    runnerApiService.deleteRunnerAccessControl(
+        organizationSaved.id, workspaceSaved.id, runnerSaved.id, "newUser")
+    val rbacDeleted =
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
-      assertEquals(rbacFetched.createInfo, rbacUpdated.createInfo)
-      assertTrue { rbacFetched.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
-
-      runnerApiService.deleteRunnerAccessControl(
-          organizationSaved.id, workspaceSaved.id, runnerSaved.id, "newUser")
-      val rbacDeleted =
-          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-
-      assertEquals(rbacUpdated.createInfo, rbacDeleted.createInfo)
-      assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
-    }
+    assertEquals(rbacUpdated.createInfo, rbacDeleted.createInfo)
+    assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
   }
 
   private fun makeConnector(name: String = "name"): Connector {

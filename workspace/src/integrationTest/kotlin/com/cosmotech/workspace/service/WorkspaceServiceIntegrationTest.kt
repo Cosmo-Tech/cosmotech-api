@@ -48,7 +48,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -97,12 +96,16 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
 
+  private var startTime: Long = 0
+
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
+
+    startTime = Instant.now().toEpochMilli()
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
@@ -744,89 +747,78 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
         exception.message)
   }
 
-  @Nested
-  inner class WorkspaceTimeStampsTest() {
-    private var startTime: Long = 0
+  @Test
+  fun `assert timestamps are functional for base CRUD`() {
+    workspaceSaved =
+        workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
+    assertTrue(workspaceSaved.createInfo.timestamp > startTime)
+    assertEquals(workspaceSaved.createInfo, workspaceSaved.updateInfo)
 
-    @BeforeEach
-    fun init() {
-      startTime = Instant.now().toEpochMilli()
-      organizationSaved =
-          organizationApiService.createOrganization(makeOrganizationCreateRequest("organization"))
-      solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
-      datasetSaved = datasetApiService.createDataset(organizationSaved.id, makeDataset())
-      workspaceSaved =
-          workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
-    }
+    val updateTime = Instant.now().toEpochMilli()
+    val workspaceUpdated =
+        workspaceApiService.updateWorkspace(
+            organizationSaved.id, workspaceSaved.id, WorkspaceUpdateRequest("workspaceUpdated"))
 
-    @Test
-    fun `assert timestamps are functional for base CRUD`() {
-      assertTrue(workspaceSaved.createInfo.timestamp > startTime)
-      assertEquals(workspaceSaved.createInfo, workspaceSaved.updateInfo)
+    assertTrue { updateTime < workspaceUpdated.updateInfo.timestamp }
+    assertEquals(workspaceSaved.createInfo, workspaceUpdated.createInfo)
+    assertTrue { workspaceSaved.createInfo.timestamp < workspaceUpdated.updateInfo.timestamp }
+    assertTrue { workspaceSaved.updateInfo.timestamp < workspaceUpdated.updateInfo.timestamp }
 
-      val updateTime = Instant.now().toEpochMilli()
-      val workspaceUpdated =
-          workspaceApiService.updateWorkspace(
-              organizationSaved.id, workspaceSaved.id, WorkspaceUpdateRequest("workspaceUpdated"))
+    val workspaceFetched = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
 
-      assertTrue { updateTime < workspaceUpdated.updateInfo.timestamp }
-      assertEquals(workspaceSaved.createInfo, workspaceUpdated.createInfo)
-      assertTrue { workspaceSaved.createInfo.timestamp < workspaceUpdated.updateInfo.timestamp }
-      assertTrue { workspaceSaved.updateInfo.timestamp < workspaceUpdated.updateInfo.timestamp }
+    assertEquals(workspaceUpdated.createInfo, workspaceFetched.createInfo)
+    assertEquals(workspaceUpdated.updateInfo, workspaceFetched.updateInfo)
+  }
 
-      val workspaceFetched =
-          workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+  @Test
+  fun `assert timestamps are functional for workspace links`() {
+    workspaceSaved =
+        workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
+    val workspaceLinked =
+        workspaceApiService.createDatasetLink(
+            organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    assertEquals(workspaceSaved.createInfo, workspaceLinked.createInfo)
+    assertTrue { workspaceSaved.updateInfo.timestamp < workspaceLinked.updateInfo.timestamp }
 
-      assertEquals(workspaceUpdated.createInfo, workspaceFetched.createInfo)
-      assertEquals(workspaceUpdated.updateInfo, workspaceFetched.updateInfo)
-    }
+    workspaceApiService.deleteDatasetLink(
+        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    val workspaceUnlinked =
+        workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+    assertEquals(workspaceLinked.createInfo, workspaceUnlinked.createInfo)
+    assertTrue { workspaceLinked.updateInfo.timestamp < workspaceUnlinked.updateInfo.timestamp }
+  }
 
-    @Test
-    fun `assert timestamps are functional for workspace links`() {
-      val workspaceLinked =
-          workspaceApiService.createDatasetLink(
-              organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
-      assertEquals(workspaceSaved.createInfo, workspaceLinked.createInfo)
-      assertTrue { workspaceSaved.updateInfo.timestamp < workspaceLinked.updateInfo.timestamp }
+  @Test
+  fun `assert timestamps are functional for RBAC CRUD`() {
+    workspaceSaved =
+        workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
+    workspaceApiService.createWorkspaceAccessControl(
+        organizationSaved.id, workspaceSaved.id, WorkspaceAccessControl("newUser", ROLE_USER))
+    val rbacAdded = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
 
-      workspaceApiService.deleteDatasetLink(
-          organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
-      val workspaceUnlinked =
-          workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
-      assertEquals(workspaceLinked.createInfo, workspaceUnlinked.createInfo)
-      assertTrue { workspaceLinked.updateInfo.timestamp < workspaceUnlinked.updateInfo.timestamp }
-    }
+    assertEquals(workspaceSaved.createInfo, rbacAdded.createInfo)
+    assertTrue { workspaceSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
 
-    @Test
-    fun `assert timestamps are functional for RBAC CRUD`() {
-      workspaceApiService.createWorkspaceAccessControl(
-          organizationSaved.id, workspaceSaved.id, WorkspaceAccessControl("newUser", ROLE_USER))
-      val rbacAdded = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+    workspaceApiService.getWorkspaceAccessControl(
+        organizationSaved.id, workspaceSaved.id, "newUser")
+    val rbacFetched = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
 
-      assertEquals(workspaceSaved.createInfo, rbacAdded.createInfo)
-      assertTrue { workspaceSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
+    assertEquals(rbacAdded.createInfo, rbacFetched.createInfo)
+    assertEquals(rbacAdded.updateInfo, rbacFetched.updateInfo)
 
-      workspaceApiService.getWorkspaceAccessControl(
-          organizationSaved.id, workspaceSaved.id, "newUser")
-      val rbacFetched = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+    workspaceApiService.updateWorkspaceAccessControl(
+        organizationSaved.id, workspaceSaved.id, "newUser", WorkspaceRole(ROLE_VIEWER))
+    val rbacUpdated = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
 
-      assertEquals(rbacAdded.createInfo, rbacFetched.createInfo)
-      assertEquals(rbacAdded.updateInfo, rbacFetched.updateInfo)
+    assertEquals(rbacFetched.createInfo, rbacUpdated.createInfo)
+    assertTrue { rbacFetched.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
 
-      workspaceApiService.updateWorkspaceAccessControl(
-          organizationSaved.id, workspaceSaved.id, "newUser", WorkspaceRole(ROLE_VIEWER))
-      val rbacUpdated = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+    workspaceApiService.deleteWorkspaceAccessControl(
+        organizationSaved.id, workspaceSaved.id, "newUser")
+    val rbacDeleted = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
 
-      assertEquals(rbacFetched.createInfo, rbacUpdated.createInfo)
-      assertTrue { rbacFetched.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
-
-      workspaceApiService.deleteWorkspaceAccessControl(
-          organizationSaved.id, workspaceSaved.id, "newUser")
-      val rbacDeleted = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
-
-      assertEquals(rbacUpdated.createInfo, rbacDeleted.createInfo)
-      assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
-    }
+    assertEquals(rbacUpdated.createInfo, rbacDeleted.createInfo)
+    assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
   }
 
   fun makeOrganizationCreateRequest(

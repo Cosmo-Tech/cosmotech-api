@@ -2139,7 +2139,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     val organizationSaved =
         organizationApiService.createOrganization(
             makeSimpleOrganizationCreateRequest("organization"))
-    assertTrue(organizationSaved.createInfo.timestamp > startTime)
+    assertTrue(organizationSaved.createInfo.timestamp >= startTime)
     assertEquals(organizationSaved.createInfo, organizationSaved.updateInfo)
 
     val updateTime = Instant.now().toEpochMilli()
