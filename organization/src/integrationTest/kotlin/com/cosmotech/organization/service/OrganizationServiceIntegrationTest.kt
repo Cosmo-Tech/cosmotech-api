@@ -81,6 +81,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
 
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
+  var startTime: Long = 0
 
   val defaultName = "my.account-tester@cosmotech.com"
 
@@ -96,6 +97,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Organization::class.java)
+    startTime = Instant.now().toEpochMilli()
   }
 
   @Nested
@@ -2132,73 +2134,61 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  @Nested
-  inner class OrganizationTimeStampsTest() {
-    private var startTime: Long = 0
-    private var organizationSaved: Organization = mockk<Organization>()
+  @Test
+  fun `assert timestamps are functional for base CRUD`() {
+    val organizationSaved =
+        organizationApiService.createOrganization(
+            makeSimpleOrganizationCreateRequest("organization"))
+    assertTrue(organizationSaved.createInfo.timestamp > startTime)
+    assertEquals(organizationSaved.createInfo, organizationSaved.updateInfo)
 
-    @BeforeEach
-    fun init() {
-      startTime = Instant.now().toEpochMilli()
-      Thread.sleep(1)
-      organizationSaved =
-          organizationApiService.createOrganization(
-              makeSimpleOrganizationCreateRequest("organization"))
-    }
+    val updateTime = Instant.now().toEpochMilli()
+    val organizationUpdated =
+        organizationApiService.updateOrganization(
+            organizationSaved.id, OrganizationUpdateRequest("organizationUpdated"))
 
-    @Test
-    fun `assert timestamps are functional for base CRUD`() {
-      assertTrue(organizationSaved.createInfo.timestamp > startTime)
-      assertEquals(organizationSaved.createInfo, organizationSaved.updateInfo)
+    assertTrue { updateTime < organizationUpdated.updateInfo.timestamp }
+    assertEquals(organizationSaved.createInfo, organizationUpdated.createInfo)
+    assertTrue { organizationSaved.createInfo.timestamp < organizationUpdated.updateInfo.timestamp }
+    assertTrue { organizationSaved.updateInfo.timestamp < organizationUpdated.updateInfo.timestamp }
 
-      val updateTime = Instant.now().toEpochMilli()
-      val organizationUpdated =
-          organizationApiService.updateOrganization(
-              organizationSaved.id, OrganizationUpdateRequest("organizationUpdated"))
+    val organizationFetched = organizationApiService.getOrganization(organizationSaved.id)
 
-      assertTrue { updateTime < organizationUpdated.updateInfo.timestamp }
-      assertEquals(organizationSaved.createInfo, organizationSaved.createInfo)
-      assertTrue {
-        organizationSaved.createInfo.timestamp < organizationUpdated.updateInfo.timestamp
-      }
-      assertTrue {
-        organizationSaved.updateInfo.timestamp < organizationUpdated.updateInfo.timestamp
-      }
+    assertEquals(organizationUpdated.createInfo, organizationFetched.createInfo)
+    assertEquals(organizationUpdated.updateInfo, organizationFetched.updateInfo)
+  }
 
-      val organizationFetched = organizationApiService.getOrganization(organizationSaved.id)
+  @Test
+  fun `assert timestamps are functional for RBAC CRUD`() {
+    val organizationSaved =
+        organizationApiService.createOrganization(
+            makeSimpleOrganizationCreateRequest("organization"))
+    organizationApiService.createOrganizationAccessControl(
+        organizationSaved.id, OrganizationAccessControl("newUser", ROLE_USER))
 
-      assertEquals(organizationUpdated.createInfo, organizationFetched.createInfo)
-      assertEquals(organizationUpdated.updateInfo, organizationFetched.updateInfo)
-    }
+    val rbacAdded = organizationApiService.getOrganization(organizationSaved.id)
 
-    @Test
-    fun `assert timestamps are functional for RBAC CRUD`() {
-      organizationApiService.createOrganizationAccessControl(
-          organizationSaved.id, OrganizationAccessControl("newUser", ROLE_USER))
-      val rbacAdded = organizationApiService.getOrganization(organizationSaved.id)
+    assertEquals(organizationSaved.createInfo, rbacAdded.createInfo)
+    assertTrue { organizationSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
 
-      assertEquals(organizationSaved.createInfo, rbacAdded.createInfo)
-      assertTrue { organizationSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
+    organizationApiService.updateOrganizationAccessControl(
+        organizationSaved.id, "newUser", OrganizationRole(ROLE_VIEWER))
+    val rbacUpdated = organizationApiService.getOrganization(organizationSaved.id)
 
-      organizationApiService.updateOrganizationAccessControl(
-          organizationSaved.id, "newUser", OrganizationRole(ROLE_VIEWER))
-      val rbacUpdated = organizationApiService.getOrganization(organizationSaved.id)
+    assertEquals(rbacAdded.createInfo, rbacUpdated.createInfo)
+    assertTrue { rbacAdded.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
 
-      assertEquals(rbacAdded.createInfo, rbacUpdated.createInfo)
-      assertTrue { rbacAdded.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
+    organizationApiService.getOrganizationAccessControl(organizationSaved.id, "newUser")
+    val rbacFetched = organizationApiService.getOrganization(organizationSaved.id)
 
-      organizationApiService.getOrganizationAccessControl(organizationSaved.id, "newUser")
-      val rbacFetched = organizationApiService.getOrganization(organizationSaved.id)
+    assertEquals(rbacUpdated.createInfo, rbacFetched.createInfo)
+    assertEquals(rbacUpdated.updateInfo, rbacFetched.updateInfo)
 
-      assertEquals(rbacUpdated.createInfo, rbacFetched.createInfo)
-      assertEquals(rbacUpdated.updateInfo, rbacFetched.updateInfo)
+    organizationApiService.deleteOrganizationAccessControl(organizationSaved.id, "newUser")
+    val rbacDeleted = organizationApiService.getOrganization(organizationSaved.id)
 
-      organizationApiService.deleteOrganizationAccessControl(organizationSaved.id, "newUser")
-      val rbacDeleted = organizationApiService.getOrganization(organizationSaved.id)
-
-      assertEquals(rbacFetched.createInfo, rbacDeleted.createInfo)
-      assertTrue { rbacFetched.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
-    }
+    assertEquals(rbacFetched.createInfo, rbacDeleted.createInfo)
+    assertTrue { rbacFetched.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
   }
 
   private fun testFindAllWithRBAC(
