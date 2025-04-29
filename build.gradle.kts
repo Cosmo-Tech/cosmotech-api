@@ -92,13 +92,9 @@ val awaitilityKVersion = "4.2.0"
 val testcontainersRedis = "1.6.4"
 val springMockkVersion = "4.0.2"
 
-var licenseReportDir = "$projectDir/doc/licenses"
-
 val configBuildDir = "${layout.buildDirectory.get()}/config"
 
 mkdir(configBuildDir)
-
-val hardCodedLicensesReportPath = "project-licenses-for-check-license-task.json"
 
 dependencyCheck {
   // Configure dependency check plugin. It checks for publicly disclosed
@@ -110,16 +106,12 @@ dependencyCheck {
 }
 
 licenseReport {
-  outputDir = licenseReportDir
   allowedLicensesFile =
       "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/allowed-licenses.json"
   val bundle =
       "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/license-normalizer-bundle.json"
 
-  renderers =
-      arrayOf<ReportRenderer>(
-          InventoryHtmlReportRenderer("index.html"),
-          JsonReportRenderer("project-licenses-for-check-license-task.json", false))
+  renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"))
   filters =
       arrayOf<LicenseBundleNormalizer>(
           LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true))
@@ -642,4 +634,39 @@ kover {
 tasks.register<ReportTask>("generateLicenseDoc") {
   group = "license"
   description = "Generate Licenses report"
+}
+
+tasks.register("generateAllReports") {
+  group = "reporting"
+  description =
+      """Generates all available reports (test, coverage, dependencies, licenses, detekt)
+    |/!\ Warning: Please do not run this task locally, tests are really resource consuming
+  """
+          .trimMargin()
+  dependsOn(
+      // Test reports, need to gather them first
+      // Please do not run this task locally, tests are really resource consuming
+      "test",
+      "integrationTest",
+      // Coverage reports
+      "koverHtmlReport",
+      // Dependency reports
+      "htmlDependencyReport",
+      // License reports
+      "generateLicenseReport",
+      // Code analysis reports
+      "detekt")
+  doLast {
+    // Create reports directory if it doesn't exist
+    val reportsDir = layout.buildDirectory.get().dir("reports").asFile
+    reportsDir.mkdirs()
+    // Copy the template file to the reports directory
+    copy {
+      from("api/src/main/resources") {
+        include("reports-index.html")
+        include("reports-style.css")
+      }
+      into(reportsDir)
+    }
+  }
 }

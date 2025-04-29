@@ -1,0 +1,30 @@
+body { 
+  font-family: Arial, sans-serif; 
+    margin: 20px;
+    line-height: 1.6;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+h1, h2 { 
+    color: #333;
+}
+.reports-section {
+    margin: 20px 0;
+}
+ul { 
+    list-style-type: none; 
+    padding: 0;
+}
+li { 
+    margin: 10px 0; 
+}
+a { 
+    color: #0366d6; 
+    text-decoration: none;
+    display: inline-block;
+    padding: 4px 0;
+}
+a:hover { 
+    text-decoration: underline; 
+}
