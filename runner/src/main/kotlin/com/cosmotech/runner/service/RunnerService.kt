@@ -7,6 +7,7 @@ import com.cosmotech.api.events.HasRunningRuns
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.RunStop
 import com.cosmotech.api.events.RunnerDeleted
+import com.cosmotech.api.events.UpdateRunnerStatus
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
@@ -30,6 +31,8 @@ import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.CreatedRun
+import com.cosmotech.runner.domain.LastRunInfo
+import com.cosmotech.runner.domain.LastRunInfo.LastRunStatus
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
@@ -176,8 +179,18 @@ class RunnerService(
           CsmResourceNotFoundException(
               "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
         }
+    if (runner.lastRunInfo.lastRunStatus != LastRunStatus.Failed ||
+        runner.lastRunInfo.lastRunStatus != LastRunStatus.Successful) {
+      updateRunnerStatus(runner)
+    }
     updateSecurityVisibility(runner)
     return RunnerInstance().initializeFrom(runner).userHasPermission(PERMISSION_READ)
+  }
+
+  fun updateRunnerStatus(runner: Runner) {
+    val updateRunnerStatusEvent =
+        UpdateRunnerStatus(this, runner.organizationId, runner.workspaceId, runner.id)
+    eventPublisher.publishEvent(updateRunnerStatusEvent)
   }
 
   fun listInstances(pageRequest: PageRequest): List<Runner> {
@@ -210,7 +223,7 @@ class RunnerService(
 
   fun stopLastRunOf(runnerInstance: RunnerInstance) {
     val runner = runnerInstance.getRunnerDataObjet()
-    runner.lastRunId
+    runner.lastRunInfo.lastRunId
         ?: throw IllegalArgumentException("Runner ${runner.id} doesn't have a last run")
     this.eventPublisher.publishEvent(RunStop(this, runner))
   }
@@ -236,6 +249,7 @@ class RunnerService(
               ownerName = "init",
               datasetList = mutableListOf(),
               parametersValues = mutableListOf(),
+              lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
               validationStatus = RunnerValidationStatus.Draft,
               security = RunnerSecurity("", accessControlList = mutableListOf()),
           )
@@ -303,7 +317,10 @@ class RunnerService(
               datasetList = runnerCreateRequest.datasetList ?: mutableListOf(),
               parametersValues = runnerCreateRequest.parametersValues ?: mutableListOf(),
               parentId = runnerCreateRequest.parentId,
-              lastRunId = this.runner.lastRunId,
+              lastRunInfo =
+                  LastRunInfo(
+                      lastRunId = this.runner.lastRunInfo.lastRunId,
+                      lastRunStatus = this.runner.lastRunInfo.lastRunStatus),
               solutionName = runnerCreateRequest.solutionName,
               solutionId = runnerCreateRequest.solutionId,
               validationStatus = this.runner.validationStatus,
@@ -342,12 +359,16 @@ class RunnerService(
               creationDate = this.runner.creationDate,
               parentId = this.runner.parentId,
               workspaceId = this.runner.workspaceId,
-              lastRunId = this.runner.lastRunId,
+              lastRunInfo =
+                  LastRunInfo(
+                      lastRunStatus = this.runner.lastRunInfo.lastRunStatus,
+                      lastRunId = this.runner.lastRunInfo.lastRunId),
               validationStatus = this.runner.validationStatus))
     }
 
     fun setLastRunId(runInfo: String) {
-      this.runner.lastRunId = runInfo
+      this.runner.lastRunInfo =
+          LastRunInfo(lastRunId = runInfo, lastRunStatus = LastRunStatus.InProgress)
     }
 
     fun initParameters(): RunnerInstance = apply {

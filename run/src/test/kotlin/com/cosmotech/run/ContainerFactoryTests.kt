@@ -14,6 +14,8 @@ import com.cosmotech.run.domain.ContainerResourceSizing
 import com.cosmotech.run.domain.RunContainer
 import com.cosmotech.run.service.WORKFLOW_TYPE_RUN
 import com.cosmotech.runner.api.RunnerApiService
+import com.cosmotech.runner.domain.LastRunInfo
+import com.cosmotech.runner.domain.LastRunInfo.LastRunStatus
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
@@ -235,6 +237,7 @@ class ContainerFactoryTests {
                 RunnerRunTemplateParameterValue(parameterId = "param1", value = "value1"),
                 RunnerRunTemplateParameterValue(parameterId = "param2", value = "value2")),
         validationStatus = RunnerValidationStatus.Draft,
+        lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
         security =
             RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))))
   }

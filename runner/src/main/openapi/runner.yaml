@@ -742,9 +742,9 @@ components:
           description: the list of Solution Run Template parameters values
           items:
             $ref: '#/components/schemas/RunnerRunTemplateParameterValue'
-        lastRunId:
-          description: last run id from current runner
-          type: string
+        lastRunInfo:
+          allOf:
+            - $ref: '#/components/schemas/LastRunInfo'
         validationStatus:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           allOf:
@@ -766,6 +766,7 @@ components:
         - ownerName
         - datasetList
         - parametersValues
+        - lastRunInfo
         - validationStatus
         - security
 
@@ -886,6 +887,9 @@ components:
           readOnly: true
           description: the Solution Run Template name associated with this Runner
           minLength: 1
+        lastRunInfo:
+          allOf:
+            - $ref: '#/components/schemas/LastRunInfo'
     RunnerSecurity:
       type: object
       description: the Runner security information
@@ -988,6 +992,23 @@ components:
           description: Run id
       required:
         - id
+    LastRunInfo:
+      type: object
+      description: last run info from current runner
+      properties:
+        lastRunId:
+          description: last run id from current runner
+          type: string
+        lastRunStatus:
+          description: last run status from current runner
+          type: string
+          enum:
+            - NotStarted
+            - InProgress
+            - Successful
+            - Failed
+            - Unknown
+
   examples:
     BreweryRunnerIn:
       summary: Brewery Runner input example

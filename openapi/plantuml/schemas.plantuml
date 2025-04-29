@@ -168,6 +168,11 @@ entity IngestionStatusEnum {
 entity IoTypesEnum {
 }
 
+entity LastRunInfo {
+    lastRunId: String
+    lastRunStatus: String
+}
+
 entity Organization {
     * id: String
     * name: String
@@ -423,7 +428,7 @@ entity Runner {
     * datasetList: List<String>
     runSizing: RunnerResourceSizing
     * parametersValues: List<RunnerRunTemplateParameterValue>
-    lastRunId: String
+    * lastRunInfo: LastRunInfo
     * validationStatus: RunnerValidationStatus
     * security: RunnerSecurity
 }
@@ -481,6 +486,7 @@ entity RunnerUpdateRequest {
     ownerName: String
     solutionName: String
     runTemplateName: String
+    lastRunInfo: LastRunInfo
 }
 
 entity RunnerValidationStatus {
@@ -647,6 +653,7 @@ entity WorkspaceWebApp {
 
 RunnerUpdateRequest -- RunnerResourceSizing : runSizing
 RunnerUpdateRequest -- "0..*" RunnerRunTemplateParameterValue : parametersValues
+RunnerUpdateRequest -- LastRunInfo : lastRunInfo
 RunTemplateResourceSizing -- ResourceSizeInfo : requests
 RunTemplateResourceSizing -- ResourceSizeInfo : limits
 RunnerCreateRequest -- RunnerResourceSizing : runSizing
@@ -675,6 +682,7 @@ OrganizationCreateRequest -- OrganizationSecurity : security
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
+Runner -- LastRunInfo : lastRunInfo
 Runner -- RunnerSecurity : security
 Organization -- OrganizationSecurity : security
 RunStatus -- "0..*" RunStatusNode : nodes

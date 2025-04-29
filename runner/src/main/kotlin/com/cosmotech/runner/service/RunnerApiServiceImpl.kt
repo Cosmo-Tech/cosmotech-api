@@ -14,6 +14,7 @@ import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.CreatedRun
+import com.cosmotech.runner.domain.LastRunInfo
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
@@ -235,8 +236,9 @@ internal class RunnerApiServiceImpl(
             .inOrganization(runDeleted.organizationId)
             .inWorkspace(runDeleted.workspaceId)
     val runnerInstance = runnerService.getInstance(runDeleted.runnerId)
-    if (runnerInstance.getRunnerDataObjet().lastRunId == runDeleted.runId) {
-      runnerInstance.getRunnerDataObjet().lastRunId = null
+    if (runnerInstance.getRunnerDataObjet().lastRunInfo.lastRunId == runDeleted.runId) {
+      runnerInstance.getRunnerDataObjet().lastRunInfo =
+          LastRunInfo(lastRunId = null, lastRunStatus = LastRunInfo.LastRunStatus.NotStarted)
     }
     runnerService.saveInstance(runnerInstance)
   }

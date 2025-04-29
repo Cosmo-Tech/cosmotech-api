@@ -13,6 +13,7 @@
 | **ownerName** | **String** | the name of the owner | [optional] [default to null] |
 | **solutionName** | **String** | the Solution name | [optional] [default to null] |
 | **runTemplateName** | **String** | the Solution Run Template name associated with this Runner | [optional] [default to null] |
+| **lastRunInfo** | [**LastRunInfo**](LastRunInfo.md) |  | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
