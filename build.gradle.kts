@@ -96,8 +96,6 @@ val configBuildDir = "${layout.buildDirectory.get()}/config"
 
 mkdir(configBuildDir)
 
-val hardCodedLicensesReportPath = "project-licenses-for-check-license-task.json"
-
 dependencyCheck {
   // Configure dependency check plugin. It checks for publicly disclosed
   // vulnerabilities in project dependencies. To use it, you need to have an
@@ -113,10 +111,7 @@ licenseReport {
   val bundle =
       "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/license-normalizer-bundle.json"
 
-  renderers =
-      arrayOf<ReportRenderer>(
-          InventoryHtmlReportRenderer("index.html"),
-          JsonReportRenderer("project-licenses-for-check-license-task.json", false))
+  renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"))
   filters =
       arrayOf<LicenseBundleNormalizer>(
           LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true))
@@ -643,11 +638,16 @@ tasks.register<ReportTask>("generateLicenseDoc") {
 
 tasks.register("generateAllReports") {
   group = "reporting"
-  description = "Generates all available reports (test, coverage, dependencies, licenses, detekt)"
+  description =
+      """Generates all available reports (test, coverage, dependencies, licenses, detekt)
+    |/!\ Warning: Please do not run this task locally, tests are really resource consuming
+  """
+          .trimMargin()
   dependsOn(
       // Test reports, need to gather them first
-      //        "test",
-      //        "integrationTest",
+      // Please do not run this task locally, tests are really resource consuming
+      "test",
+      "integrationTest",
       // Coverage reports
       "koverHtmlReport",
       // Dependency reports
