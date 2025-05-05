@@ -14,6 +14,7 @@ import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.CreatedRun
+import com.cosmotech.runner.domain.LastRunInfo
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
@@ -105,7 +106,17 @@ internal class RunnerApiServiceImpl(
 
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
 
-    runnerService.stopLastRunOf(runnerInstance)
+    val lastRunInfo = runnerInstance.getRunnerDataObjet().lastRunInfo
+
+    if (lastRunInfo.lastRunStatus in
+        listOf(
+            LastRunInfo.LastRunStatus.Running,
+            LastRunInfo.LastRunStatus.NotStarted,
+            LastRunInfo.LastRunStatus.Unknown)) {
+      runnerService.stopLastRunOf(runnerInstance)
+    }
+    throw IllegalStateException(
+        "Run ${lastRunInfo.lastRunId} can not be stopped as its already finished")
   }
 
   override fun createRunnerAccessControl(
@@ -235,9 +246,14 @@ internal class RunnerApiServiceImpl(
             .inOrganization(runDeleted.organizationId)
             .inWorkspace(runDeleted.workspaceId)
     val runnerInstance = runnerService.getInstance(runDeleted.runnerId)
-    if (runnerInstance.getRunnerDataObjet().lastRunId == runDeleted.runId) {
-      runnerInstance.getRunnerDataObjet().lastRunId = null
+    if (runnerInstance.getRunnerDataObjet().lastRunInfo.lastRunId == runDeleted.runId) {
+      runnerInstance.getRunnerDataObjet().lastRunInfo =
+          LastRunInfo(
+              lastRunId = runDeleted.lastRun, lastRunStatus = LastRunInfo.LastRunStatus.NotStarted)
     }
     runnerService.saveInstance(runnerInstance)
+    if (runDeleted.lastRun != null) {
+      runnerService.getInstance(runDeleted.runnerId)
+    }
   }
 }

@@ -156,6 +156,7 @@ All URIs are relative to *http://localhost*
  - [FileUploadValidation](./Models/FileUploadValidation.md)
  - [GraphProperties](./Models/GraphProperties.md)
  - [IngestionStatusEnum](./Models/IngestionStatusEnum.md)
+ - [LastRunInfo](./Models/LastRunInfo.md)
  - [Organization](./Models/Organization.md)
  - [OrganizationAccessControl](./Models/OrganizationAccessControl.md)
  - [OrganizationCreateRequest](./Models/OrganizationCreateRequest.md)
