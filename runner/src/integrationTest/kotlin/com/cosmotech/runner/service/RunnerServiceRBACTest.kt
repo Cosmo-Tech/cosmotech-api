@@ -23,22 +23,22 @@ import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.IoTypesEnum
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.runner.api.RunnerApiService
+import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
@@ -46,9 +46,9 @@ import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerUpdateRequest
 import com.cosmotech.runner.domain.RunnerValidationStatus
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.*
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
@@ -95,12 +95,12 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
 
   @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var connectorApiService: ConnectorApiService
-  @Autowired lateinit var organizationApiService: OrganizationApiService
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
-  @Autowired lateinit var solutionApiService: SolutionApiService
-  @Autowired lateinit var workspaceApiService: WorkspaceApiService
-  @Autowired lateinit var runnerApiService: RunnerApiService
+  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
+  @SpykBean lateinit var datasetApiService: DatasetApiServiceInterface
+  @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
+  @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
+  @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)

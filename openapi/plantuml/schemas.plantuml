@@ -168,6 +168,11 @@ entity IngestionStatusEnum {
 entity IoTypesEnum {
 }
 
+entity LastRunInfo {
+    lastRunId: String
+    lastRunStatus: String
+}
+
 entity Organization {
     * id: String
     * name: String
@@ -433,7 +438,7 @@ entity Runner {
     * datasetList: List<String>
     runSizing: RunnerResourceSizing
     * parametersValues: List<RunnerRunTemplateParameterValue>
-    lastRunId: String
+    * lastRunInfo: LastRunInfo
     * validationStatus: RunnerValidationStatus
     * security: RunnerSecurity
 }
@@ -704,6 +709,7 @@ Runner -- RunnerEditInfo : createInfo
 Runner -- RunnerEditInfo : updateInfo
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
+Runner -- LastRunInfo : lastRunInfo
 Runner -- RunnerSecurity : security
 Organization -- OrganizationEditInfo : createInfo
 Organization -- OrganizationEditInfo : updateInfo

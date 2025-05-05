@@ -9,6 +9,7 @@ import com.cosmotech.api.events.RunStop
 import com.cosmotech.api.events.RunnerDeleted
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
+import com.cosmotech.api.events.UpdateRunnerStatus
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -460,14 +461,27 @@ class RunServiceImpl(
       if (csmPlatformProperties.internalResultServices?.enabled == true)
           adminRunStorageTemplate.dropDB(run.id!!)
 
-      val runDeleted =
-          RunDeleted(this, run.organizationId!!, run.workspaceId!!, run.runnerId!!, run.id!!)
-      this.eventPublisher.publishEvent(runDeleted)
-
       runRepository.delete(run)
+
+      val runs = listRuns(run.organizationId!!, run.workspaceId!!, run.runnerId!!, null, null)
+      var lastRun: String? = null
+      var lastStart: Long = 0
+      if (runs.isNotEmpty()) {
+        runs.forEach {
+          if (it.createInfo.timestamp >= lastStart) {
+            lastStart = it.createInfo.timestamp
+            lastRun = it.id!!
+          }
+        }
+      } else {
+        lastRun = null
+      }
+      val runDeleted =
+          RunDeleted(this, run.organizationId, run.workspaceId, run.runnerId, run.id!!, lastRun)
+      this.eventPublisher.publishEvent(runDeleted)
     } catch (exception: IllegalStateException) {
       logger.debug(
-          "An error occured while deleteting Run {}: {}", run.id, exception.message, exception)
+          "An error occurred while deleting Run {}: {}", run.id, exception.message, exception)
     }
   }
 
@@ -598,10 +612,27 @@ class RunServiceImpl(
     return runRepository.save(run)
   }
 
+  @EventListener(UpdateRunnerStatus::class)
+  fun updateRunnerStatus(updateRunnerStatus: UpdateRunnerStatus) {
+    val runner =
+        runnerApiService.getRunner(
+            updateRunnerStatus.organizationId,
+            updateRunnerStatus.workspaceId,
+            updateRunnerStatus.runnerId)
+    if (runner.lastRunInfo.lastRunId != null) {
+      val status =
+          getRunStatus(
+              runner.organizationId, runner.workspaceId, runner.id, runner.lastRunInfo.lastRunId!!)
+      updateRunnerStatus.response = status.toString()
+    }
+    throw IllegalStateException("LastRunId for runner ${runner.id} cannot be null!")
+  }
+
   @EventListener(RunStop::class)
   fun onRunStop(runStopRequest: RunStop) {
     val runner = runStopRequest.runnerData as Runner
-    val run = getRun(runner.organizationId, runner.workspaceId, runner.id, runner.lastRunId!!)
+    val run =
+        getRun(runner.organizationId, runner.workspaceId, runner.id, runner.lastRunInfo.lastRunId!!)
     run.hasPermission(PERMISSION_WRITE)
 
     check(!(run.state!!.isTerminal())) {
