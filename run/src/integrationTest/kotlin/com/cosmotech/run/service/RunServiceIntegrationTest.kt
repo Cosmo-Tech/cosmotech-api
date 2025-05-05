@@ -34,6 +34,8 @@ import com.cosmotech.run.domain.RunStatus
 import com.cosmotech.run.domain.SendRunDataRequest
 import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
+import com.cosmotech.runner.domain.LastRunInfo
+import com.cosmotech.runner.domain.LastRunInfo.LastRunStatus
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
@@ -306,6 +308,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
             workspaceId = workspaceId,
             validationStatus = RunnerValidationStatus.Draft,
             parametersValues = mutableListOf(),
+            lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
             security =
                 RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))))
     val runStart = RunStart(this, runner)

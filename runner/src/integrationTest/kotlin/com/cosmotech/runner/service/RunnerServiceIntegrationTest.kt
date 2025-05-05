@@ -988,6 +988,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val lastRunId =
         runnerApiService
             .getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+            .lastRunInfo
             .lastRunId
     assertEquals(expectedRunId, lastRunId)
   }
@@ -1027,6 +1028,12 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
           it.security)
       assertEquals(1, it.security.accessControlList.size)
     }
+  }
+
+  @Test
+  fun `LastRunInfo should always be accurate`() {
+    val lastRunner =
+        runnerSaved.copy(lastRunInfo = LastRunInfo("newRun", LastRunInfo.LastRunStatus.Successful))
   }
 
   @Test

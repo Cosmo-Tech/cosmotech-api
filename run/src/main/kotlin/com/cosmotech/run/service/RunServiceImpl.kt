@@ -9,6 +9,7 @@ import com.cosmotech.api.events.RunStop
 import com.cosmotech.api.events.RunnerDeleted
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
+import com.cosmotech.api.events.UpdateRunnerStatus
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -39,7 +40,9 @@ import com.cosmotech.run.utils.isTerminal
 import com.cosmotech.run.utils.withoutSensitiveData
 import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
+import com.cosmotech.runner.domain.LastRunInfo
 import com.cosmotech.runner.domain.Runner
+import com.cosmotech.runner.domain.RunnerUpdateRequest
 import com.cosmotech.runner.service.getRbac
 import com.google.gson.Gson
 import com.google.gson.JsonParser
@@ -460,14 +463,17 @@ class RunServiceImpl(
       if (csmPlatformProperties.internalResultServices?.enabled == true)
           adminRunStorageTemplate.dropDB(run.id!!)
 
+      runRepository.delete(run)
+
       val runDeleted =
           RunDeleted(this, run.organizationId!!, run.workspaceId!!, run.runnerId!!, run.id!!)
-      this.eventPublisher.publishEvent(runDeleted)
+      val runs = listRuns(run.organizationId, run.workspaceId, run.runnerId, null, null)
+      runs.forEach {}
 
-      runRepository.delete(run)
+      this.eventPublisher.publishEvent(runDeleted)
     } catch (exception: IllegalStateException) {
       logger.debug(
-          "An error occured while deleteting Run {}: {}", run.id, exception.message, exception)
+          "An error occurred while deleting Run {}: {}", run.id, exception.message, exception)
     }
   }
 
@@ -598,10 +604,26 @@ class RunServiceImpl(
     return runRepository.save(run)
   }
 
+  @EventListener(UpdateRunnerStatus::class)
+  fun updateRunnerStatus(updateRunnerStatus: UpdateRunnerStatus) {
+    val runner =
+        runnerApiService.getRunner(
+            updateRunnerStatus.organizationId,
+            updateRunnerStatus.workspaceId,
+            updateRunnerStatus.runnerId)
+    if (runner.lastRunInfo.lastRunId != null) {
+      val status =
+          getRunStatus(
+              runner.organizationId, runner.workspaceId, runner.id, runner.lastRunInfo.lastRunId!!)
+      updateRunnerStatus(runner, runner.lastRunInfo.lastRunId!!, status)
+    }
+  }
+
   @EventListener(RunStop::class)
   fun onRunStop(runStopRequest: RunStop) {
     val runner = runStopRequest.runnerData as Runner
-    val run = getRun(runner.organizationId, runner.workspaceId, runner.id, runner.lastRunId!!)
+    val run =
+        getRun(runner.organizationId, runner.workspaceId, runner.id, runner.lastRunInfo.lastRunId!!)
     run.hasPermission(PERMISSION_WRITE)
 
     check(!(run.state!!.isTerminal())) {
@@ -623,6 +645,14 @@ class RunServiceImpl(
     if (csmPlatformProperties.internalResultServices?.enabled != true) {
       throw NotImplementedException(notImplementedExceptionMessage)
     }
+  }
+
+  private fun updateRunnerStatus(runner: Runner, runId: String, runStatus: RunStatus) {
+    runnerApiService.updateRunner(
+        runner.organizationId,
+        runner.workspaceId,
+        runner.id,
+        RunnerUpdateRequest(lastRunInfo = LastRunInfo(runId, statusConverter(runStatus))))
   }
 
   @EventListener(TwingraphImportEvent::class)
@@ -709,5 +739,15 @@ class RunServiceImpl(
   fun onRunnerDeleted(runnerDeleted: RunnerDeleted) {
     listAllRuns(runnerDeleted.organizationId, runnerDeleted.workspaceId, runnerDeleted.runnerId)
         .forEach { deleteRun(it) }
+  }
+
+  private fun statusConverter(runStatus: RunStatus): LastRunInfo.LastRunStatus {
+    return when (runStatus.state) {
+      RunState.Running -> LastRunInfo.LastRunStatus.InProgress
+      RunState.Failed -> LastRunInfo.LastRunStatus.Failed
+      RunState.Unknown -> LastRunInfo.LastRunStatus.Unknown
+      RunState.Successful -> LastRunInfo.LastRunStatus.Successful
+      else -> LastRunInfo.LastRunStatus.NotStarted
+    }
   }
 }
