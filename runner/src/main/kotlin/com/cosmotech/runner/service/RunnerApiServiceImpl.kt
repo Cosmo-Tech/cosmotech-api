@@ -238,8 +238,12 @@ internal class RunnerApiServiceImpl(
     val runnerInstance = runnerService.getInstance(runDeleted.runnerId)
     if (runnerInstance.getRunnerDataObjet().lastRunInfo.lastRunId == runDeleted.runId) {
       runnerInstance.getRunnerDataObjet().lastRunInfo =
-          LastRunInfo(lastRunId = null, lastRunStatus = LastRunInfo.LastRunStatus.NotStarted)
+          LastRunInfo(
+              lastRunId = runDeleted.lastRun, lastRunStatus = LastRunInfo.LastRunStatus.NotStarted)
     }
     runnerService.saveInstance(runnerInstance)
+    if (runDeleted.lastRun != null) {
+      runnerService.getInstance(runDeleted.runnerId)
+    }
   }
 }

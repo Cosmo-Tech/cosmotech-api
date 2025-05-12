@@ -465,11 +465,21 @@ class RunServiceImpl(
 
       runRepository.delete(run)
 
+      val runs = listRuns(run.organizationId!!, run.workspaceId!!, run.runnerId!!, null, null)
+      var lastRun: String? = null
+      var lastStart: Long = 0
+      if (runs.isNotEmpty()) {
+        runs.forEach {
+          if (it.createInfo.timestamp >= lastStart) {
+            lastStart = it.createInfo.timestamp
+            lastRun = it.id!!
+          }
+        }
+      } else {
+        lastRun = null
+      }
       val runDeleted =
-          RunDeleted(this, run.organizationId!!, run.workspaceId!!, run.runnerId!!, run.id!!)
-      val runs = listRuns(run.organizationId, run.workspaceId, run.runnerId, null, null)
-      runs.forEach {}
-
+          RunDeleted(this, run.organizationId, run.workspaceId, run.runnerId, run.id!!, lastRun)
       this.eventPublisher.publishEvent(runDeleted)
     } catch (exception: IllegalStateException) {
       logger.debug(

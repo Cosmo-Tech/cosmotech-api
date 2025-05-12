@@ -9,6 +9,7 @@ import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.HasRunningRuns
 import com.cosmotech.api.events.RunStart
+import com.cosmotech.api.events.UpdateRunnerStatus
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_ADMIN
@@ -71,6 +72,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
+import org.mockito.Answers
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -106,6 +108,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
+  @SpykBean @Autowired lateinit var runnerService: RunnerService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
@@ -982,6 +985,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
           firstArg<RunStart>().response = expectedRunId
         }
 
+    every { eventPublisher.publishEvent(any<UpdateRunnerStatus>()) } returns Unit
+
     val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     assertEquals(expectedRunId, run.id)
 
@@ -1145,6 +1150,31 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(rbacUpdated.createInfo, rbacDeleted.createInfo)
     assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
   }
+/*
+  @Test
+  fun `assert last run status is correct`(){
+    val expectedRunId = "run-genid12345"
+    every { eventPublisher.publishEvent(any<RunStart>()) } answers
+            {
+              firstArg<RunStart>().response = expectedRunId
+            }
+    runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+
+    logger.info("status is not final")
+    every { runnerService.updateRunnerStatus(any()) } returns runnerSaved
+    var runInfo = runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id).lastRunInfo
+    assertEquals(LastRunInfo(expectedRunId, LastRunInfo.LastRunStatus.InProgress), runInfo)
+
+    logger.info("status is final")
+
+
+
+    logger.info("run deleted with no other")
+
+    logger.info("run deleted with 1 other")
+
+    logger.info("run deleted with multiple others")
+  }*/
 
   private fun makeConnector(name: String = "name"): Connector {
     return Connector(
