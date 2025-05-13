@@ -72,7 +72,6 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
-import org.mockito.Answers
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -985,17 +984,18 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
           firstArg<RunStart>().response = expectedRunId
         }
 
-    every { eventPublisher.publishEvent(any<UpdateRunnerStatus>()) } returns Unit
-
     val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     assertEquals(expectedRunId, run.id)
 
-    val lastRunId =
+    every { eventPublisher.publishEvent(any<UpdateRunnerStatus>()) } returns Unit
+
+    val lastRunInfo =
         runnerApiService
             .getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
             .lastRunInfo
-            .lastRunId
-    assertEquals(expectedRunId, lastRunId)
+
+    assertEquals(expectedRunId, lastRunInfo.lastRunId)
+    assertEquals(LastRunInfo.LastRunStatus.InProgress, lastRunInfo.lastRunStatus)
   }
 
   @Test
@@ -1150,7 +1150,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(rbacUpdated.createInfo, rbacDeleted.createInfo)
     assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
   }
-/*
+
+  /*
   @Test
   fun `assert last run status is correct`(){
     val expectedRunId = "run-genid12345"

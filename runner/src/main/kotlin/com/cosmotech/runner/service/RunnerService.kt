@@ -181,10 +181,9 @@ class RunnerService(
           CsmResourceNotFoundException(
               "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
         }
-    if(runner.lastRunInfo.lastRunId != null) {
+    if (runner.lastRunInfo.lastRunId != null) {
       if (runner.lastRunInfo.lastRunStatus != LastRunStatus.Failed ||
-        runner.lastRunInfo.lastRunStatus != LastRunStatus.Successful
-      ) {
+          runner.lastRunInfo.lastRunStatus != LastRunStatus.Successful) {
         runner = updateRunnerStatus(runner)
       }
     }
@@ -222,7 +221,7 @@ class RunnerService(
     val startEvent = RunStart(this, runnerInstance.getRunnerDataObjet())
     this.eventPublisher.publishEvent(startEvent)
     val runId = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
-    runnerInstance.setLastRunId(runId)
+    runnerInstance.setLastRun(runId)
     runnerRepository.save(runnerInstance.getRunnerDataObjet())
     return CreatedRun(id = runId)
   }
@@ -384,7 +383,7 @@ class RunnerService(
               validationStatus = this.runner.validationStatus))
     }
 
-    fun setLastRunId(runInfo: String) {
+    fun setLastRun(runInfo: String) {
       this.runner.lastRunInfo =
           LastRunInfo(lastRunId = runInfo, lastRunStatus = LastRunStatus.InProgress)
     }
