@@ -175,13 +175,13 @@ class RunnerService(
     return runnerInstance.initialize()
   }
 
-  fun getInstance(runnerId: String): RunnerInstance {
+  fun getInstance(runnerId: String, withStatusUpdate: Boolean = true): RunnerInstance {
     var runner =
         runnerRepository.findBy(organization!!.id, workspace!!.id, runnerId).orElseThrow {
           CsmResourceNotFoundException(
               "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
         }
-    if (runner.lastRunInfo.lastRunId != null) {
+    if (withStatusUpdate && runner.lastRunInfo.lastRunId != null) {
       if (runner.lastRunInfo.lastRunStatus != LastRunStatus.Failed ||
           runner.lastRunInfo.lastRunStatus != LastRunStatus.Successful) {
         runner = updateRunnerStatus(runner)

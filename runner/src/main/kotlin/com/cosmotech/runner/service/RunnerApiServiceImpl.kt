@@ -104,19 +104,10 @@ internal class RunnerApiServiceImpl(
   override fun stopRun(organizationId: String, workspaceId: String, runnerId: String) {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
 
-    val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
+    val runnerInstance =
+        runnerService.getInstance(runnerId, false).userHasPermission(PERMISSION_WRITE)
 
-    val lastRunInfo = runnerInstance.getRunnerDataObjet().lastRunInfo
-
-    if (lastRunInfo.lastRunStatus in
-        listOf(
-            LastRunInfo.LastRunStatus.Running,
-            LastRunInfo.LastRunStatus.NotStarted,
-            LastRunInfo.LastRunStatus.Unknown)) {
-      runnerService.stopLastRunOf(runnerInstance)
-    }
-    throw IllegalStateException(
-        "Run ${lastRunInfo.lastRunId} can not be stopped as its already finished")
+    runnerService.stopLastRunOf(runnerInstance)
   }
 
   override fun createRunnerAccessControl(

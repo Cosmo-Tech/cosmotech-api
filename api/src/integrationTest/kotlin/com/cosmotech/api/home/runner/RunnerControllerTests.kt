@@ -4,7 +4,6 @@ package com.cosmotech.api.home.runner
 
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.RunStart
-import com.cosmotech.api.events.RunStop
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
@@ -730,18 +729,18 @@ class RunnerControllerTests : ControllerTestBase() {
                                 memory = "1Gi",
                             ),
                     )))
-    every { eventPublisher.publishEvent(any<RunStart>()) } answers
+    every { eventPublisher.publishEvent(any()) } answers
         {
           firstArg<RunStart>().response = expectedRunId
-        }
+        } andThen
+        Unit
+
     mvc.perform(
             post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/start")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
-
-    every { eventPublisher.publishEvent(any<RunStop>()) } answers { firstArg<RunStop>() }
 
     mvc.perform(
             post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/stop")

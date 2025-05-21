@@ -173,7 +173,7 @@ class RunControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
-  fun list_runners() {
+  fun list_runs() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs")
@@ -205,7 +205,7 @@ class RunControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
-  fun get_runner() {
+  fun get_run() {
 
     mvc.perform(
             get(
@@ -236,7 +236,7 @@ class RunControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
-  fun delete_runner() {
+  fun delete_run() {
 
     mvc.perform(
             delete(
@@ -253,7 +253,7 @@ class RunControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
-  fun send_data_runner() {
+  fun send_data_run() {
 
     val dataToSend =
         """{
@@ -295,7 +295,7 @@ class RunControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
-  fun query_data_runner() {
+  fun query_data_run() {
 
     val dataToSend =
         """{
