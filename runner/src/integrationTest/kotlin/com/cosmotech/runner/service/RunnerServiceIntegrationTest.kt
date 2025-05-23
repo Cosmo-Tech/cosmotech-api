@@ -58,6 +58,7 @@ import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import java.lang.IllegalStateException
 import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
@@ -107,7 +108,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
-  @SpykBean @Autowired lateinit var runnerService: RunnerService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
@@ -1020,7 +1020,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     assertEquals(expectedRunId, run.id)
 
-    // This line points the fact that the run status is not final so the getRunner trigger an update
+    // This line points to the fact that the run status is not final, so the getRunner trigger an
+    // update
     // for lastRunInfo
     every { eventPublisher.publishEvent(any<UpdateRunnerStatus>()) } answers
         {
@@ -1032,6 +1033,96 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     assertEquals(expectedRunId, runnerStarted.lastRunInfo.lastRunId)
     assertEquals(LastRunInfo.LastRunStatus.Running, runnerStarted.lastRunInfo.lastRunStatus)
+  }
+
+  @Test
+  fun `test getRunner when runner has been stopped`() {
+
+    val expectedRunId = "run-genid12345"
+
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<RunStart>().response = expectedRunId
+        } andThenAnswer
+        {
+          // This line points to the fact that the run status is not final, so the getRunner trigger
+          // an update
+          // for lastRunInfo
+          firstArg<UpdateRunnerStatus>().response = "Running"
+        } andThenAnswer
+        {
+          // Mock the RunStop event
+        } andThenAnswer
+        {
+          // Simulate the workflow's stop and the runner.lastInfo update after workflow's stop
+          // For the getRunner Called at the end on the test
+          firstArg<UpdateRunnerStatus>().response = "Failed"
+        }
+
+    val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+    assertEquals(expectedRunId, run.id)
+
+    runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+
+    val runnerStarted =
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+
+    assertEquals(expectedRunId, runnerStarted.lastRunInfo.lastRunId)
+    assertEquals(LastRunInfo.LastRunStatus.Failed, runnerStarted.lastRunInfo.lastRunStatus)
+  }
+
+  @Test
+  fun `test to stop a runner when is already finished but lastRunInfo is not updated to Successful`() {
+
+    val expectedRunId = "run-genid12345"
+
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<RunStart>().response = expectedRunId
+        } andThenAnswer
+        {
+          // This line points to the fact that the run status is not final, so the getRunner trigger
+          // an update
+          // for lastRunInfo
+          firstArg<UpdateRunnerStatus>().response = "Successful"
+        }
+
+    val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+    assertEquals(expectedRunId, run.id)
+
+    val exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+        }
+
+    assertEquals("Run $expectedRunId can not be stopped as its already finished", exception.message)
+  }
+
+  @Test
+  fun `test to stop a runner when is already finished but lastRunInfo is not updated to Failed`() {
+
+    val expectedRunId = "run-genid12345"
+
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<RunStart>().response = expectedRunId
+        } andThenAnswer
+        {
+          // This line points the fact that the run status is not final so the getRunner trigger an
+          // update
+          // for lastRunInfo
+          firstArg<UpdateRunnerStatus>().response = "Failed"
+        }
+
+    val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+    assertEquals(expectedRunId, run.id)
+
+    val exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+        }
+
+    assertEquals("Run $expectedRunId can not be stopped as its already finished", exception.message)
   }
 
   @Test

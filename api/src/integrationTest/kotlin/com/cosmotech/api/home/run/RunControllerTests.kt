@@ -3,6 +3,7 @@
 package com.cosmotech.api.home.run
 
 import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.events.UpdateRunnerStatus
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
@@ -61,6 +62,7 @@ import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import com.ninjasquad.springmockk.SpykBean
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
 import java.time.Instant
 import java.util.*
 import org.json.JSONObject
@@ -175,6 +177,11 @@ class RunControllerTests : ControllerTestBase() {
   @WithMockOauth2User
   fun list_runs() {
 
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<UpdateRunnerStatus>().response = "Running"
+        }
+
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -207,6 +214,11 @@ class RunControllerTests : ControllerTestBase() {
   @WithMockOauth2User
   fun get_run() {
 
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<UpdateRunnerStatus>().response = "Running"
+        }
+
     mvc.perform(
             get(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId")
@@ -238,6 +250,23 @@ class RunControllerTests : ControllerTestBase() {
   @WithMockOauth2User
   fun delete_run() {
 
+    every { workflowService.stopWorkflow(any()) } returns mockk<RunStatus>(relaxed = true)
+
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<UpdateRunnerStatus>().response = "Successful"
+        } andThenAnswer
+        {
+          firstArg<UpdateRunnerStatus>().response = "Successful"
+        } andThenAnswer
+        {
+          firstArg<UpdateRunnerStatus>().response = "Successful"
+        } andThenAnswer
+        {
+          firstArg<UpdateRunnerStatus>().response = "Successful"
+        } andThenAnswer
+        {}
+
     mvc.perform(
             delete(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId")
@@ -254,6 +283,11 @@ class RunControllerTests : ControllerTestBase() {
   @Test
   @WithMockOauth2User
   fun send_data_run() {
+
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<UpdateRunnerStatus>().response = "Running"
+        }
 
     val dataToSend =
         """{
@@ -296,6 +330,11 @@ class RunControllerTests : ControllerTestBase() {
   @Test
   @WithMockOauth2User
   fun query_data_run() {
+
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<UpdateRunnerStatus>().response = "Running"
+        }
 
     val dataToSend =
         """{
@@ -353,6 +392,11 @@ class RunControllerTests : ControllerTestBase() {
             .trimMargin()
 
     every { workflowService.getRunningLogs(any()) } returns logs
+
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<UpdateRunnerStatus>().response = "Successful"
+        }
 
     mvc.perform(
             get(

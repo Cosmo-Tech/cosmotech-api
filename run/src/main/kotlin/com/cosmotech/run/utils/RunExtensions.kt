@@ -14,7 +14,8 @@ internal fun RunState.isTerminal() =
       RunState.Failed,
       RunState.Successful -> true
       RunState.Unknown,
-      RunState.Running -> false
+      RunState.Running,
+      RunState.NotStarted -> false
     }
 
 internal fun RunContainer.getNodeLabelSize(): Map<String, String> {
