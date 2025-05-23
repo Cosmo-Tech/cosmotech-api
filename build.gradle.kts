@@ -55,16 +55,8 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 // Dependencies version
-
-// Required versions
-val jacksonVersion = "2.15.3"
-val springWebVersion = "6.2.1"
-
-// Implementation
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "2.1.1-LCRA-update_last_run_status_PROD-14360-SNAPSHOT"
-val jedisVersion = "4.4.6"
-val springOauthVersion = "6.4.2"
+val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
 val redisOmSpringVersion = "0.9.7"
 val kotlinCoroutinesVersion = "1.10.2"
 val oktaSpringBootVersion = "3.0.7"
@@ -89,7 +81,6 @@ val detektVersion = "1.23.8"
 val jUnitBomVersion = "5.12.2"
 val mockkVersion = "1.14.0"
 val awaitilityKVersion = "4.2.0"
-val testcontainersRedis = "1.6.4"
 val springMockkVersion = "4.0.2"
 
 val configBuildDir = "${layout.buildDirectory.get()}/config"
@@ -134,7 +125,6 @@ allprojects {
   configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.10") } } }
 
   repositories {
-    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
