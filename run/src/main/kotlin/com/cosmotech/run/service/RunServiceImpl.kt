@@ -399,7 +399,7 @@ class RunServiceImpl(
     return run
   }
 
-  private fun getRunStatus(run: Run): RunStatus {
+  fun getRunStatus(run: Run): RunStatus {
     val runStatus = this.workflowService.getRunStatus(run)
     return runStatus.copy(
         state = mapWorkflowPhaseToRunStatus(phase = runStatus.phase, runId = run.id))
@@ -614,18 +614,26 @@ class RunServiceImpl(
 
   @EventListener(UpdateRunnerStatus::class)
   fun updateRunnerStatus(updateRunnerStatus: UpdateRunnerStatus) {
-    val runner =
-        runnerApiService.getRunner(
-            updateRunnerStatus.organizationId,
-            updateRunnerStatus.workspaceId,
-            updateRunnerStatus.runnerId)
-    if (runner.lastRunInfo.lastRunId != null) {
-      val status =
-          getRunStatus(
-              runner.organizationId, runner.workspaceId, runner.id, runner.lastRunInfo.lastRunId!!)
+    val organizationId = updateRunnerStatus.organizationId
+    val workspaceId = updateRunnerStatus.workspaceId
+    val runnerId = updateRunnerStatus.runnerId
+    val runId = updateRunnerStatus.lastRunId
+    if (runId.isNotEmpty()) {
+      val run =
+          runRepository
+              .findBy(organizationId, workspaceId, runnerId, runId)
+              .orElseThrow {
+                throw IllegalArgumentException(
+                    "Run #$runId not found in #$runnerId. In #$workspaceId, #$organizationId.")
+              }
+              .withStateInformation()
+              .withoutSensitiveData()
+
+      val status = getRunStatus(run).state
       updateRunnerStatus.response = status.toString()
+      return
     }
-    throw IllegalStateException("LastRunId for runner ${runner.id} cannot be null!")
+    throw IllegalStateException("LastRunId for runner $runnerId cannot be null!")
   }
 
   @EventListener(RunStop::class)

@@ -4,6 +4,7 @@ package com.cosmotech.api.home.runner
 
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.RunStart
+import com.cosmotech.api.events.UpdateRunnerStatus
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
@@ -732,8 +733,11 @@ class RunnerControllerTests : ControllerTestBase() {
     every { eventPublisher.publishEvent(any()) } answers
         {
           firstArg<RunStart>().response = expectedRunId
-        } andThen
-        Unit
+        } andThenAnswer
+        {
+          firstArg<UpdateRunnerStatus>().response = "Running"
+        } andThenAnswer
+        {}
 
     mvc.perform(
             post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/start")

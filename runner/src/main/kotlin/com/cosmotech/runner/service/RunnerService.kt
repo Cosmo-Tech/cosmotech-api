@@ -175,13 +175,13 @@ class RunnerService(
     return runnerInstance.initialize()
   }
 
-  fun getInstance(runnerId: String, withStatusUpdate: Boolean = true): RunnerInstance {
+  fun getInstance(runnerId: String): RunnerInstance {
     var runner =
         runnerRepository.findBy(organization!!.id, workspace!!.id, runnerId).orElseThrow {
           CsmResourceNotFoundException(
               "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
         }
-    if (withStatusUpdate && runner.lastRunInfo.lastRunId != null) {
+    if (runner.lastRunInfo.lastRunId != null) {
       if (runner.lastRunInfo.lastRunStatus != LastRunStatus.Failed ||
           runner.lastRunInfo.lastRunStatus != LastRunStatus.Successful) {
         runner = updateRunnerStatus(runner)
@@ -193,7 +193,12 @@ class RunnerService(
 
   fun updateRunnerStatus(runner: Runner): Runner {
     val updateRunnerStatusEvent =
-        UpdateRunnerStatus(this, runner.organizationId, runner.workspaceId, runner.id)
+        UpdateRunnerStatus(
+            this,
+            runner.organizationId,
+            runner.workspaceId,
+            runner.id,
+            runner.lastRunInfo.lastRunId ?: "")
     eventPublisher.publishEvent(updateRunnerStatusEvent)
     val runStatus = LastRunStatus.forValue(updateRunnerStatusEvent.response!!)
     return runnerRepository.save(runner.apply { lastRunInfo.lastRunStatus = runStatus })

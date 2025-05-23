@@ -442,6 +442,7 @@ components:
         - Successful
         - Failed
         - Unknown
+        - NotStarted
     RunStatusNode:
       type: object
       description: status of a Run Node
