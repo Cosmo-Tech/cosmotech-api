@@ -11,7 +11,6 @@ val testContainersRabbitMQVersion = "1.20.6"
 val springRabbitMQTestVersion = "3.2.4"
 
 dependencies {
-  implementation(projects.cosmotechConnectorApi)
   implementation(projects.cosmotechDatasetApi)
   implementation(projects.cosmotechOrganizationApi)
   implementation(projects.cosmotechSolutionApi)

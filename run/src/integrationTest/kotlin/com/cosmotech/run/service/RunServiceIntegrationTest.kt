@@ -10,13 +10,9 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.ConnectorApiServiceInterface
-import com.cosmotech.connector.domain.Connector
-import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.dataset.domain.DatasetConnector
-import com.cosmotech.dataset.domain.IngestionStatusEnum
+import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -100,13 +96,11 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_READER_USER = "test.user@cosmotech.com"
   private val logger = LoggerFactory.getLogger(RunServiceIntegrationTest::class.java)
-  private val defaultName = "my.account-tester@cosmotech.com"
 
   @MockK(relaxed = true) private lateinit var containerFactory: RunContainerFactory
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
   @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
@@ -118,14 +112,12 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
 
   @Autowired lateinit var adminRunStorageTemplate: JdbcTemplate
 
-  lateinit var connector: Connector
-  lateinit var dataset: Dataset
+  lateinit var dataset: DatasetCreateRequest
   lateinit var solution: SolutionCreateRequest
   lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
   lateinit var runner: RunnerCreateRequest
 
-  lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
   lateinit var solutionSaved: Solution
   lateinit var organizationSaved: Organization
@@ -150,71 +142,33 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     rediSearchIndexer.createIndexFor(Runner::class.java)
     rediSearchIndexer.createIndexFor(Run::class.java)
 
-    connector = mockConnector("Connector")
-    connectorSaved = connectorApiService.registerConnector(connector)
-
-    organization = makeOrganizationCreateRequest("Organization")
+    organization = makeOrganizationCreateRequest()
     organizationSaved = organizationApiService.createOrganization(organization)
 
-    dataset = mockDataset(organizationSaved.id, "Dataset", connectorSaved)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-
-    solution = makeSolutionCreateRequest(organizationSaved.id)
-    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
+    workspace = makeWorkspaceCreateRequest(solutionSaved.id, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+    datasetSaved =
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
+
+    solution = makeSolutionCreateRequest()
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
     runner =
         makeRunnerCreateRequest(
-            organizationSaved.id,
-            workspaceSaved.id,
             solutionSaved.id,
             solutionSaved.runTemplates[0].id,
             "Runner",
-            mutableListOf(datasetSaved.id!!))
+            mutableListOf(datasetSaved.id))
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
     every { workflowService.launchRun(any(), any(), any(), any()) } returns
         mockWorkflowRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-    every { datasetApiService.findDatasetById(any(), any()) } returns
-        datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS }
-    every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
-
     every { runnerApiService.getRunner(any(), any(), any()) } returns runnerSaved
     every { eventPublisher.publishEvent(any<RunDeleted>()) } returns Unit
   }
 
-  private fun mockConnector(name: String = "connector"): Connector {
-    return Connector(
-        key = UUID.randomUUID().toString(),
-        name = name,
-        repository = "/repository",
-        version = "1.0",
-        ioTypes = listOf(IoTypesEnum.read))
-  }
-
-  fun mockDataset(
-      organizationId: String = organizationSaved.id,
-      name: String = "Dataset",
-      connector: Connector = connectorSaved,
-      roleName: String = defaultName,
-      role: String = ROLE_ADMIN
-  ): Dataset {
-    return Dataset(
-        name = name,
-        organizationId = organizationId,
-        ownerId = "ownerId",
-        connector =
-            DatasetConnector(
-                id = connector.id,
-                name = connector.name,
-                version = connector.version,
-            ),
-    )
-  }
-
-  fun makeSolutionCreateRequest(organizationId: String = organizationSaved.id) =
+  fun makeSolutionCreateRequest() =
       SolutionCreateRequest(
           key = UUID.randomUUID().toString(),
           name = "My solution",
@@ -236,7 +190,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                           SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                           SolutionAccessControl(id = CONNECTED_READER_USER, role = ROLE_ADMIN))))
 
-  fun makeOrganizationCreateRequest(id: String = "organizationId") =
+  fun makeOrganizationCreateRequest() =
       OrganizationCreateRequest(
           name = "Organization Name",
           security =
@@ -248,7 +202,6 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                           OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
 
   fun makeWorkspaceCreateRequest(
-      organizationId: String = organizationSaved.id,
       solutionId: String = solutionSaved.id,
       name: String = "workspace"
   ) =
@@ -265,12 +218,10 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                   mutableListOf(WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
 
   fun makeRunnerCreateRequest(
-      organizationId: String = organizationSaved.id,
-      workspaceId: String = workspaceSaved.id,
       solutionId: String = solutionSaved.id,
       runTemplateId: String = solutionSaved.runTemplates[0].id,
       name: String = "runner",
-      datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
+      datasetList: MutableList<String> = mutableListOf(datasetSaved.id)
   ) =
       RunnerCreateRequest(
           name = name,

@@ -6,11 +6,24 @@ import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.createOrganizationAndReturnId
+import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.constructSolutionCreateRequest
+import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.createSolutionAndReturnId
+import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceCreateRequest
+import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.createWorkspaceAndReturnId
 import com.cosmotech.api.home.annotations.WithMockOauth2User
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_NAME
+import com.cosmotech.api.home.run.RunConstants.RequestContent.DESCRIPTION
+import com.cosmotech.api.home.run.RunConstants.RequestContent.PARAMETER_GROUP_ID
+import com.cosmotech.api.home.run.RunConstants.RequestContent.PARAMETER_LABELS
+import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_COMPUTE_SIZE
+import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_NAME
+import com.cosmotech.api.home.run.RunConstants.RequestContent.TAGS
+import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetCreateRequest
+import com.cosmotech.solution.domain.RunTemplateCreateRequest
+import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -30,19 +43,46 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 class DatasetControllerTests : ControllerTestBase() {
 
   private lateinit var organizationId: String
+  private lateinit var solutionId: String
+  private lateinit var workspaceId: String
 
   private val logger = LoggerFactory.getLogger(DatasetControllerTests::class.java)
 
   @BeforeEach
   fun beforeEach() {
+
+    val runTemplateRunSizing =
+        RunTemplateResourceSizing(
+            com.cosmotech.solution.domain.ResourceSizeInfo("cpu_requests", "memory_requests"),
+            com.cosmotech.solution.domain.ResourceSizeInfo("cpu_limits", "memory_limits"))
+
+    val runTemplates =
+        mutableListOf(
+            RunTemplateCreateRequest(
+                RUNNER_RUN_TEMPLATE,
+                RUN_TEMPLATE_NAME,
+                PARAMETER_LABELS,
+                DESCRIPTION,
+                TAGS,
+                RUN_TEMPLATE_COMPUTE_SIZE,
+                runTemplateRunSizing,
+                mutableListOf(PARAMETER_GROUP_ID),
+                10))
+
     organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
+    solutionId =
+        createSolutionAndReturnId(
+            mvc, organizationId, constructSolutionCreateRequest(runTemplates = runTemplates))
+    workspaceId =
+        createWorkspaceAndReturnId(
+            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
   }
 
   @Test
   @WithMockOauth2User
   fun create_dataset() {
     mvc.perform(
-            post("/organizations/$organizationId/datasets")
+            post("/organizations/$organizationId/workspaces/$workspaceId/datasets")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject(constructDataset()).toString())
                 .accept(MediaType.APPLICATION_JSON)
@@ -57,7 +97,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(document("organizations/{organization_id}/datasets/POST"))
   }
 
-  fun constructDataset(name: String = DATASET_NAME): Dataset {
-    return Dataset(name = name)
+  fun constructDataset(name: String = DATASET_NAME): DatasetCreateRequest {
+    return DatasetCreateRequest(name = name)
   }
 }

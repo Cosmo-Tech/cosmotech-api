@@ -1,18 +1,24 @@
 openapi: 3.0.3
 
 info:
-  title: ""
-  version: ""
+  title: Cosmo Tech Dataset Manager API
+  description: Cosmo Tech Dataset Manager API
+  version: 1.0.0-SNAPSHOT
+
+servers:
+  - url: 'http://localhost:8080'
 
 security:
-  - oAuth2AuthCode: []
+  - oAuth2AuthCode: [ ]
 
 tags:
   - name: dataset
     description: Dataset Management
+  - name: dataset part
+    description: Dataset Part Management
 
 paths:
-  /organizations/{organization_id}/datasets:
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets:
     parameters:
       - name: organization_id
         in: path
@@ -20,200 +26,81 @@ paths:
         required: true
         schema:
           type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    description: Create a dataset
     post:
       operationId: createDataset
       tags:
         - dataset
-      summary: Create a new Dataset
+      summary: Create a Dataset
       requestBody:
-        description: the Dataset to create
-        required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Dataset'
-            examples:
-              BreweryADT:
-                $ref: '#/components/examples/BreweryADT'
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-            examples:
-              BreweryADT:
-                $ref: '#/components/examples/BreweryADT'
+              type: object
+              properties:
+                files:
+                  $ref: "#/components/schemas/DatasetPartFiles"
+                dataset:
+                  $ref: "#/components/schemas/DatasetCreateRequest"
+
       responses:
         "201":
-          description: the dataset details
+          description: Dataset successfully created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryADT'
+                $ref: "#/components/schemas/Dataset"
             application/yaml:
               schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryADT'
+                $ref: "#/components/schemas/Dataset"
         "400":
           description: Bad request
-    get:
-      parameters:
-        - name: page
-          in: query
-          description: page number to query (first page is at index 0)
-          required: false
-          schema:
-            type: integer
-        - name: size
-          in: query
-          description: amount of result by page
-          required: false
-          schema:
-            type: integer
-      operationId: findAllDatasets
-      tags:
-        - dataset
-      summary: List all Datasets
-      responses:
-        "200":
-          description: the list of Datasets
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Dataset'
-              examples:
-                Two:
-                  $ref: '#/components/examples/TwoDatasets'
-            application/yaml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Dataset'
-              examples:
-                Two:
-                  $ref: '#/components/examples/TwoDatasets'
-  /organizations/{organization_id}/datasets/search:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-    post:
-      parameters:
-        - name: page
-          in: query
-          description: page number to query (first page is at index 0)
-          required: false
-          schema:
-            type: integer
-        - name: size
-          in: query
-          description: amount of result by page
-          required: false
-          schema:
-            type: integer
-      operationId: searchDatasets
-      tags:
-        - dataset
-      summary: Search Datasets by tags
-      requestBody:
-        description: the Dataset search parameters
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DatasetSearch'
-            examples:
-              DatasetSearch:
-                $ref: '#/components/examples/DatasetSearch'
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/DatasetSearch'
-            examples:
-              DatasetSearch:
-                $ref: '#/components/examples/DatasetSearch'
-      responses:
-        "200":
-          description: the list of Datasets
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Dataset'
-              examples:
-                Two:
-                  $ref: '#/components/examples/TwoDatasets'
-            application/yaml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Dataset'
-              examples:
-                Two:
-                  $ref: '#/components/examples/TwoDatasets'
-  /organizations/{organization_id}/datasets/copy:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: copyDataset
-      tags:
-        - dataset
-      summary: Copy a Dataset to another Dataset.
-      description: Not implemented!
-      requestBody:
-        description: the Dataset copy parameters
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DatasetCopyParameters'
-            examples:
-              BreweryDatasetCopyParameters:
-                $ref: '#/components/examples/BreweryDatasetCopyParameters'
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/DatasetCopyParameters'
-            examples:
-              BreweryDatasetCopyParameters:
-                $ref: '#/components/examples/BreweryDatasetCopyParameters'
-      responses:
-        "201":
-          description: the Dataset copy operation parameters
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DatasetCopyParameters'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryDatasetCopyParameters'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/DatasetCopyParameters'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryDatasetCopyParameters'
-        "400":
-          description: Bad request
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
         "404":
-          description: the Dataset specified as Source or Target is unknown or you don't have access to it
-  /organizations/{organization_id}/datasets/{dataset_id}:
+          description: Organization or workspace specified is not found
+    get:
+      operationId: listDatasets
+      tags:
+        - dataset
+      description: List all datasets
+      summary: Retrieve a list of defined Dataset
+      responses:
+        "200":
+          description: Datasets successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dataset"
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dataset"
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
+        "404":
+          description: Organization or workspace or dataset specified is not found
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}:
     parameters:
       - name: organization_id
         in: path
         description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
         required: true
         schema:
           type: string
@@ -224,131 +111,73 @@ paths:
         schema:
           type: string
     get:
-      operationId: findDatasetById
+      operationId: getDataset
       tags:
         - dataset
-      summary: Get the details of a Dataset
+      description: Retrieve a dataset
+      summary: Retrieve a Dataset
       responses:
         "200":
-          description: the Dataset details
+          description: Dataset successfully retrieved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryADT'
+                $ref: "#/components/schemas/Dataset"
             application/yaml:
               schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryADT'
+                $ref: "#/components/schemas/Dataset"
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
         "404":
-          description: the Dataset specified is unknown or you don't have access to it
+          description: Organization or workspace or dataset specified is not found
     patch:
       operationId: updateDataset
       tags:
         - dataset
-      summary: Update a dataset
+      description: Update a dataset
+      summary: Update a Dataset
       requestBody:
-        description: the new Dataset details. This endpoint can't be used to update security
-        required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Dataset'
-            examples:
-              BreweryADTUpdate:
-                $ref: '#/components/examples/BreweryADTUpdate'
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/Dataset'
-            examples:
-              BreweryADTUpdate:
-                $ref: '#/components/examples/BreweryADTUpdate'
+              type: object
+              properties:
+                files:
+                  $ref: "#/components/schemas/DatasetPartFiles"
+                dataset:
+                  $ref: "#/components/schemas/DatasetUpdateRequest"
       responses:
         "200":
-          description: the dataset details
+          description: Dataset successfully updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADTUpdated:
-                  $ref: '#/components/examples/BreweryADTUpdated'
+                items:
+                  $ref: "#/components/schemas/Dataset"
             application/yaml:
               schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADTUpdated:
-                  $ref: '#/components/examples/BreweryADTUpdated'
+                items:
+                  $ref: "#/components/schemas/Dataset"
         "400":
           description: Bad request
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
         "404":
-          description: the Dataset specified is unknown or you don't have access to it
-    post:
-      operationId: uploadTwingraph
-      tags:
-        - dataset
-      summary: Upload data from zip file to dataset's twingraph
-      description: |
-        To create a new graph from flat files,  you need to create a Zip file. This Zip
-        file must countain two folders named Edges and Nodes.
-
-        .zip hierarchy:
-        *main_folder/Nodes
-        *main_folder/Edges
-
-        In each folder you can place one or multiple csv files containing your Nodes or
-        Edges data.
-
-        Your csv files must follow the following header (column name) requirements:
-
-        The Nodes CSVs requires at least one column (the 1st).Column name = 'id'. It
-        will represent the nodes ID
-        Ids must be populated with string
-
-        The Edges CSVs require three columns named, in order,
-        * source
-        * target
-        * id
-
-        those colomns represent
-        * The source of the edge
-        * The target of the edge
-        * The id of the edge
-
-        All following columns content are up to you.
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      requestBody:
-        required: true
-        content:
-          application/octet-stream:
-            schema:
-              type: string
-              format: binary
-      responses:
-        '202':
-          description: File uploaded successfully. Processing...
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FileUploadValidation'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/FileUploadValidation'
+          description: Organization or workspace or dataset specified is not found
     delete:
       operationId: deleteDataset
       tags:
         - dataset
-      summary: Delete a dataset
+      description: Delete a dataset
+      summary: Delete a Dataset
       responses:
         "204":
-          description: Request successful
+          description: Dataset successfully deleted
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
         "404":
-          description: the Dataset specified is unknown or you don't have access to it
-  /organizations/{organization_id}/datasets/{dataset_id}/subdataset:
+          description: Organization or workspace or dataset specified is not found
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default:
     parameters:
       - name: organization_id
         in: path
@@ -356,651 +185,9 @@ paths:
         required: true
         schema:
           type: string
-      - name: dataset_id
+      - name: workspace_id
         in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: createSubDataset
-      tags:
-        - dataset
-      summary: Create a sub-dataset from the dataset in parameter
-      description: |
-        Create a copy of the dataset using the results of the list of queries given in parameter.
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      requestBody:
-        description: the Cypher query to filter
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SubDatasetGraphQuery'
-            examples:
-              BreweryADT:
-                $ref: '#/components/examples/BreweryADT'
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/SubDatasetGraphQuery'
-            examples:
-              BreweryADT:
-                $ref: '#/components/examples/BreweryADT'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryADT'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryADT'
-  /organizations/{organization_id}/datasets/{dataset_id}/refresh:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: refreshDataset
-      tags:
-        - dataset
-      summary: Refresh data on dataset from dataset's source
-      description: |
-        Refresh dataset from parent source. At date, sources can be:
-
-            dataset (refresh from another dataset)
-
-            Azure Digital twin
-
-            Azure storage
-
-            Local File (import a new file)
-
-        During refresh, datas are overwritten
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DatasetTwinGraphInfo'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/DatasetTwinGraphInfo'
-  /organizations/{organization_id}/datasets/{dataset_id}/refresh/rollback:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: rollbackRefresh
-      tags:
-        - dataset
-      summary: Rollback the dataset after a failed refresh
-      description: |
-        Rollback the twingraph on a dataset after a failed refresh
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: string
-              examples:
-                SuccessfulResponse:
-                  $ref: '#/components/examples/SuccessfulRollback'
-            application/yaml:
-              schema:
-                type: string
-              examples:
-                SuccessfulResponse:
-                  $ref: '#/components/examples/SuccessfulRollback'
-
-  /organizations/{organization_id}/datasets/{dataset_id}/twingraph:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: twingraphQuery
-      tags:
-        - dataset
-      summary: Return the result of a query made on the graph instance as a json
-      description: |
-        Run a query on a graph instance and return the result as a json
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      requestBody:
-        description: the query to run
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DatasetTwinGraphQuery'
-            examples:
-              GetAllNodes:
-                $ref: '#/components/examples/TwinGraphGetAllNodes'
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/DatasetTwinGraphQuery'
-            examples:
-              GetAllNodes:
-                $ref: '#/components/examples/TwinGraphGetAllNodes'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-
-  /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type}:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset Identifier
-        required: true
-        schema:
-          type: string
-      - name: type
-        in: path
-        description: the entity model type
-        required: true
-        schema:
-          type: string
-          enum:
-            - node
-            - relationship
-    post:
-      operationId: createTwingraphEntities
-      tags:
-        - dataset
-      summary: Create new entities in a graph instance
-      description: |
-        Create new entities in a graph instance
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      requestBody:
-        description: the entities to create
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/GraphProperties'
-            examples:
-              QueryEntities:
-                $ref: '#/components/examples/QueryEntities'
-          application/yaml:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/GraphProperties'
-            examples:
-              QueryEntities:
-                $ref: '#/components/examples/QueryEntities'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: string
-    get:
-      operationId: getTwingraphEntities
-      tags:
-        - dataset
-      summary: Get entities in a graph instance
-      description: |
-        Get entities in a graph instance
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      parameters:
-        - name: ids
-          in: query
-          description: the entities to get
-          required: true
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: string
-    patch:
-      operationId: updateTwingraphEntities
-      tags:
-        - dataset
-      summary: Update entities in a graph instance
-      description: update entities in a graph instance
-      requestBody:
-        description: |
-          The entities to update
-          Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/GraphProperties'
-            examples:
-              QueryEntities:
-                $ref: '#/components/examples/QueryEntities'
-          application/yaml:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/GraphProperties'
-            examples:
-              QueryEntities:
-                $ref: '#/components/examples/QueryEntities'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: string
-    delete:
-      operationId: deleteTwingraphEntities
-      tags:
-        - dataset
-      summary: Delete entities in a graph instance
-      description: |
-        Delete entities in a graph instance
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      parameters:
-        - name: ids
-          in: query
-          description: the entities to delete
-          required: true
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        '204':
-          description: Successful response
-
-  /organizations/{organization_id}/datasets/{dataset_id}/batch:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset Identifier
-        required: true
-        schema:
-          type: string
-      - name: twinGraphQuery
-        in: query
-        required: true
-        schema:
-          $ref: '#/components/schemas/DatasetTwinGraphQuery'
-        examples:
-          Create Nodes:
-            description: |
-              Nodes creation and column mapping with CSV Header: $id, $name, $rank
-              CSV Separator: ,
-            value:
-              query: "CREATE (:Person {id: toInteger($id), name: $name, rank: toInteger($rank)})"
-          Update Nodes:
-            description: |
-              Nodes updating and column mapping with CSV Header: $id, $rank
-              CSV Separator: ,
-            value:
-              query: "MATCH (p:Person {id: toInteger($id)}) SET p.rank = $rank"
-          Create Relationships:
-            description: |
-              Relationship creation and column mapping with CSV Header: $id, $rank
-              CSV Separator: ,
-            value:
-              query: |
-                MERGE (p1:Person {id: toInteger($UserId1)})
-                MERGE (p2:Person {id: toInteger($UserId2)})
-                CREATE (p1)-[:FOLLOWS {reaction_count: $reaction_count}]->(p2)
-          Delete Nodes:
-            description: |
-              Nodes deleting and column mapping with CSV Header: $id
-              CSV Separator: ,
-            value:
-              query: "MATCH (p:Person {id: toInteger($id)}) DELETE p"
-    post:
-      operationId: twingraphBatchUpdate
-      tags:
-        - dataset
-      summary: "Async batch update by loading a CSV file on a graph instance "
-      description: |
-        Async batch update by loading a CSV file on a graph instance
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      requestBody:
-        required: true
-        content:
-          text/csv:
-            schema:
-              type: string
-              format: binary
-            examples:
-              Create / Update / Delete Nodes:
-                value: |
-                  id,name,rank
-                  1,"John Doe",37
-                  2,"Joe Bloggs",14
-              Create / Update Relationships:
-                value: |
-                  UserId1,UserId2,reaction_count
-                  1,2,25
-                  2,1,37
-          application/octet-stream:
-            schema:
-              type: string
-              format: binary
-      responses:
-        "200":
-          description: csv file processed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TwinGraphBatchResult'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/TwinGraphBatchResult'
-        "400":
-          description: Bad request
-
-  /organizations/{organization_id}/datasets/{dataset_id}/batch-query:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: twingraphBatchQuery
-      tags:
-        - dataset
-      summary: Run a query on a graph instance and return the result as a zip file in async mode
-      description: |
-        Run a query on a graph instance and return the result as a zip file in async mode
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      requestBody:
-        description: the query to run
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DatasetTwinGraphQuery'
-            examples:
-              GetAllNodes:
-                $ref: '#/components/examples/GetAllNodes'
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/DatasetTwinGraphQuery'
-            examples:
-              GetAllNodes:
-                $ref: '#/components/examples/GetAllNodes'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DatasetTwinGraphHash'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/DatasetTwinGraphHash'
-  /organizations/{organization_id}/datasets/twingraph/download/{hash}:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: hash
-        in: path
-        description: the Graph download identifier
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: downloadTwingraph
-      tags:
-        - dataset
-      summary: Download a graph as a zip file
-      description: |
-        Download the compressed graph reference by the hash in a zip file
-        Note: This endpoint is activated only if `csm.platform.twincache.useGraphModule` property is set to true
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
-
-  /organizations/{organization_id}/datasets/{dataset_id}/status:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the dataset identifier
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: getDatasetTwingraphStatus
-      tags:
-        - dataset
-      summary: Get the dataset's refresh job status
-      description: Get the status of the import workflow lauch on the dataset's refresh. This endpoint needs to be called to update a dataset IngestionStatus or TwincacheStatus
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IngestionStatusEnum'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/IngestionStatusEnum'
-  /organizations/{organization_id}/datasets/{dataset_id}/compatibility:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: addOrReplaceDatasetCompatibilityElements
-      tags:
-        - dataset
-      summary: Add Dataset Compatibility elements.
-      requestBody:
-        description: the Dataset Compatibility elements
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/DatasetCompatibility"
-              example:
-                TwoDatasetCompatibility:
-                  summary: 2 Dataset Compatibilities
-                  description: 2 Dataset Compatibilities
-                  value:
-                    - solutionKey: Brewery Solution
-                      minimumVersion: "1.0.0"
-                    - solutionKey: Brewery Solution
-                      minimumVersion: "1.0.1"
-          application/yaml:
-            schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/DatasetCompatibility"
-              example:
-                TwoDatasetCompatibility:
-                  summary: 2 Dataset Compatibilities
-                  description: 2 Dataset Compatibilities
-                  value:
-                    - solutionKey: Brewery Solution
-                      minimumVersion: "1.0.0"
-                    - solutionKey: Brewery Solution
-                      minimumVersion: "1.0.1"
-      responses:
-        "201":
-          description: the Dataset Compatibility elements
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DatasetCompatibility'
-              examples:
-                TwoDatasetCompatibility:
-                  summary: 2 Dataset Compatibilities
-                  description: 2 Dataset Compatibilities
-                  value:
-                    - solutionKey: Brewery Solution
-                      minimumVersion: "1.0.0"
-                    - solutionKey: Brewery Solution
-                      minimumVersion: "1.0.1"
-            application/yaml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DatasetCompatibility'
-              examples:
-                TwoDatasetCompatibility:
-                  summary: 2 Dataset Compatibilities
-                  description: 2 Dataset Compatibilities
-                  value:
-                    - solutionKey: Brewery Solution
-                      minimumVersion: "1.0.0"
-                    - solutionKey: Brewery Solution
-                      minimumVersion: "1.0.1"
-        "400":
-          description: Bad request
-        "404":
-          description: the Dataset specified is unknown or you don't have access to it
-    delete:
-      operationId: removeAllDatasetCompatibilityElements
-      tags:
-        - dataset
-      summary: Remove all Dataset Compatibility elements from the Dataset specified
-      responses:
-        "204":
-          description: the operation succeeded
-        "404":
-          description: the Dataset specified is unknown or you don't have access to it
-  /organizations/{organization_id}/datasets/{dataset_id}/security:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: getDatasetSecurity
-      tags:
-        - dataset
-      summary: Get the Dataset security information
-      responses:
-        "200":
-          description: The Dataset security
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DatasetSecurity'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/DatasetSecurity'
-        "404":
-          description: the Dataset specified is unknown or you don't have access to it
-  /organizations/{organization_id}/datasets/{dataset_id}/security/default:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
+        description: the Workspace identifier
         required: true
         schema:
           type: string
@@ -1024,15 +211,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DatasetRole'
-            examples:
-              BreweryDatasetRole:
-                $ref: '#/components/examples/BreweryDatasetRole'
           application/yaml:
             schema:
               $ref: '#/components/schemas/DatasetRole'
-            examples:
-              BreweryDatasetRole:
-                $ref: '#/components/examples/BreweryDatasetRole'
       responses:
         "201":
           description: The Dataset default visibility
@@ -1040,16 +221,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetSecurity'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/DatasetSecurity'
         "404":
           description: the Dataset specified is unknown or you don't have access to it
-  /organizations/{organization_id}/datasets/{dataset_id}/security/access:
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access:
     parameters:
       - name: organization_id
         in: path
         description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
         required: true
         schema:
           type: string
@@ -1071,15 +255,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DatasetAccessControl'
-            examples:
-              DatasetAccess:
-                $ref: '#/components/examples/BreweryDatasetAccessControl'
           application/yaml:
             schema:
               $ref: '#/components/schemas/DatasetAccessControl'
-            examples:
-              DatasetAccess:
-                $ref: '#/components/examples/BreweryDatasetAccessControl'
       responses:
         "201":
           description: The Dataset access
@@ -1087,22 +265,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
-              examples:
-                DatasetAccessControl:
-                  $ref: '#/components/examples/BreweryDatasetAccessControl'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
-              examples:
-                DatasetAccessControl:
-                  $ref: '#/components/examples/BreweryDatasetAccessControl'
         "404":
           description: the Dataset specified is unknown or you don't have access to it
-  /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id}:
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}:
     parameters:
       - name: organization_id
         in: path
         description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
         required: true
         schema:
           type: string
@@ -1130,15 +308,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
-              examples:
-                DatasetAccessControl:
-                  $ref: '#/components/examples/BreweryDatasetAccessControl'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
-              examples:
-                DatasetAccessControl:
-                  $ref: '#/components/examples/BreweryDatasetAccessControl'
         "404":
           description: The Dataset or user specified is unknown or you don't have access to it
     patch:
@@ -1153,15 +325,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DatasetRole'
-            examples:
-              BreweryDatasetRole:
-                $ref: '#/components/examples/BreweryDatasetRole'
           application/yaml:
             schema:
               $ref: '#/components/schemas/DatasetRole'
-            examples:
-              BreweryDatasetRole:
-                $ref: '#/components/examples/BreweryDatasetRole'
       responses:
         "200":
           description: The Dataset access
@@ -1169,15 +335,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
-              examples:
-                DatasetAccessControl:
-                  $ref: '#/components/examples/BreweryDatasetAccessControl'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
-              examples:
-                DatasetAccessControl:
-                  $ref: '#/components/examples/BreweryDatasetAccessControl'
         "404":
           description: The Dataset specified is unknown or you don't have access to it
     delete:
@@ -1191,11 +351,17 @@ paths:
         "404":
           description: The Dataset or the user specified is unknown or you don't have access to them
 
-  /organizations/{organization_id}/datasets/{dataset_id}/security/users:
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/users:
     parameters:
       - name: organization_id
         in: path
         description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
         required: true
         schema:
           type: string
@@ -1222,22 +388,97 @@ paths:
                 example:
                   - alice@mycompany.com
                   - bob@mycompany.com
+        "404":
+          description: the Dataset or the User specified is unknown or you don't have access to them
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createDatasetPart
+      tags:
+        - dataset part
+      summary: Create a data part of a Dataset
+      requestBody:
+        description: New Dataset part to create.
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  $ref: "#/components/schemas/DatasetPartFile"
+                dataset_part:
+                  $ref: '#/components/schemas/DatasetPartCreateRequest'
+      responses:
+        "201":
+          description: Dataset part successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetPart'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/DatasetPart'
+        "400":
+          description: Bad request - Dataset part cannot be created
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
+        "404":
+          description: Dataset specified is not found
+    get:
+      operationId: listDatasetParts
+      tags:
+        - dataset part
+      summary: Retrieve all dataset parts of a Dataset
+      responses:
+        "200":
+          description: List of dataset parts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DatasetPart"
             application/yaml:
               schema:
                 type: array
                 items:
-                  type: string
-                example:
-                  - alice@mycompany.com
-                  - bob@mycompany.com
+                  $ref: "#/components/schemas/DatasetPart"
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
         "404":
-          description: the Dataset or the User specified is unknown or you don't have access to them
-
-  /organizations/{organization_id}/datasets/{dataset_id}/link:
+          description: Dataset specified is not found
+        "422":
+          description: Targeted dataset do not support requests
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}:
     parameters:
       - name: organization_id
         in: path
         description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
         required: true
         schema:
           type: string
@@ -1247,43 +488,87 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      parameters:
-        - name: workspaceId
-          in: query
-          description: workspace id to be linked to
-          required: true
-          schema:
-            type: string
-      operationId: linkWorkspace
+      - name: dataset_part_id
+        in: path
+        description: the Dataset part identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getDatasetPart
       tags:
-        - dataset
+        - dataset part
+      summary: Retrieve a data part of a Dataset
       responses:
         "200":
-          description: the dataset details
+          description: Dataset part successfully retrieved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADTUpdated:
-                  $ref: '#/components/examples/BreweryADTWithLink'
+                $ref: '#/components/schemas/DatasetPart'
             application/yaml:
               schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADTUpdated:
-                  $ref: '#/components/examples/BreweryADTWithLink'
-        "400":
-          description: Bad request
+                $ref: '#/components/schemas/DatasetPart'
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
         "404":
-          description: the Dataset specified is unknown or you don't have access to it
-
-  /organizations/{organization_id}/datasets/{dataset_id}/unlink:
+          description: Dataset part specified is not found
+    put:
+      operationId: replaceDatasetPart
+      tags:
+        - dataset part
+      summary: Replace existing dataset parts of a Dataset
+      requestBody:
+        description: New Dataset part
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  $ref: "#/components/schemas/DatasetPartFile"
+                dataset_part:
+                  $ref: '#/components/schemas/DatasetPartUpdateRequest'
+      responses:
+        "200":
+          description: Dataset part successfully replaced
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetPart"
+            application/yaml:
+              schema:
+                $ref: "#/components/schemas/DatasetPart"
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
+        "404":
+          description: Dataset part specified is not found
+        "422":
+          description: Targeted dataset do not support requests
+    delete:
+      operationId: deleteDatasetPart
+      tags:
+        - dataset part
+      description: Delete a dataset part
+      summary: Delete a Dataset part
+      responses:
+        "204":
+          description: Dataset part successfully deleted
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
+        "404":
+          description: Dataset part specified is not found
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/query:
     parameters:
       - name: organization_id
         in: path
         description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
         required: true
         schema:
           type: string
@@ -1293,212 +578,306 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      parameters:
-        - name: workspaceId
-          in: query
-          description: workspace id to be linked to
-          required: true
-          schema:
+      - name: dataset_part_id
+        in: path
+        description: the DatasetPart identifier
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: filters
+        schema:
+          type: array
+          items:
             type: string
-      operationId: unlinkWorkspace
+        description: |
+          Property names that should be part of the response data.
+          You can specify a property name like:
+           - id
+           - stock
+           - quantity
+           - ...
+      - in: query
+        name: sums
+        schema:
+          type: array
+          items:
+            type: string
+        description: Property names to sum by
+      - in: query
+        name: counts
+        schema:
+          type: array
+          items:
+            type: string
+        description: Property names to count by
+      - in: query
+        name: offset
+        schema:
+          type: integer
+        description: The query offset
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: The query limit
+    get:
+      operationId: queryData
       tags:
-        - dataset
+        - dataset part
+      summary: Get data of a Dataset
       responses:
         "200":
-          description: the dataset details
+          description: Data related to provided information
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryADT'
+                $ref: "#/components/schemas/DatasetQueryResult"
             application/yaml:
               schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryADT'
+                $ref: "#/components/schemas/DatasetQueryResult"
         "400":
-          description: Bad request
+          description: Bad request - Data cannot be retrieved from provided information
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
         "404":
-          description: the Dataset specified is unknown or you don't have access to it
+          description: Dataset specified is not found or you don't have access to it
+        "422":
+          description: Targeted dataset do not support requests
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/download:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_part_id
+        in: path
+        description: the Dataset part identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: downloadDatasetPart
+      tags:
+        - dataset part
+      summary: Download data from a dataset part
+      responses:
+        "200":
+          description: Dataset part successfully downloaded
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "403":
+          description: Insufficient permissions on organization or workspace or dataset
+        "404":
+          description: Dataset part specified is not found
+
+
 
 components:
-  securitySchemes:
-    oAuth2AuthCode:
-      type: oauth2
-      description: OAuth2 authentication
-      flows:
-        authorizationCode:
-          authorizationUrl: "https://example.com/authorize"
-          tokenUrl: "https://example.com/token"
-          scopes: {}
   schemas:
-    FileUploadValidation:
-      type: object
-      description: files read on upload
-      properties:
-        nodes:
-          type: array
-          description: list of filename found on nodes folder
-          items:
-            $ref: '#/components/schemas/FileUploadMetadata'
-        edges:
-          type: array
-          description: list of filename found on edges folder
-          items:
-            $ref: '#/components/schemas/FileUploadMetadata'
-    FileUploadMetadata:
-      type: object
-      properties:
-        name:
-          type: string
-        size:
-          type: integer
-    DatasetSearch:
-      type: object
-      description: the search options
-      properties:
-        datasetTags:
-          type: array
-          description: the dataset tag list to search
-          items:
-            type: string
-      required:
-        - datasetTags
+    # main Dataset object
     Dataset:
       type: object
-      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
-      description: a Dataset
+      description: Dataset object
       properties:
         id:
-          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           type: string
-          readOnly: true
-          description: the Dataset unique identifier
+          pattern: '^d-\w{10,20}'
         name:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           type: string
-          description: the Dataset name
+          minLength: 1
+          maxLength: 50
         description:
           type: string
-          description: the Dataset description
-        ownerId:
-          type: string
-          readOnly: true
-          description: the User id which own this Dataset
-        ownerName:
-          type: string
-          readOnly: true
-          description: the name of the owner
-        organizationId:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          type: string
-          readOnly: true
-          description: the Organization Id related to this Dataset
-        parentId:
-          type: string
-          description: the Dataset id which is the parent of this Dataset
-        linkedWorkspaceIdList:
-          type: array
-          description: list of workspace linked to this dataset
-          items:
-            type: string
-        twingraphId:
-          type: string
-          description: the twin graph id
-        main:
-          type: boolean
-          description: is this the main dataset
-        creationDate:
-          type: integer
-          format: int64
-          readOnly: true
-          description: the Dataset creation date
-        refreshDate:
-          type: integer
-          format: int64
-          readOnly: true
-          description: the last time a refresh was done
-        sourceType:
-          $ref: '#/components/schemas/DatasetSourceType'
-        source:
-          $ref: '#/components/schemas/SourceInfo'
-        ingestionStatus:
-          $ref: '#/components/schemas/IngestionStatusEnum'
-        twincacheStatus:
-          $ref: '#/components/schemas/TwincacheStatusEnum'
-        queries:
-          type: array
-          description: the list of queries
-          items:
-            type: string
         tags:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: array
-          description: the list of tags
           items:
             type: string
-        connector:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          type: object
-          description: the Connector setup bound to a Dataset
-          properties:
-            id:
-              type: string
-              x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-              description: the Connector id
-            name:
-              type: string
-              x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-              description: the Connector name
-            version:
-              type: string
-              description: the Connector version
-            parametersValues:
-              type: object
-              additionalProperties:
-                type: string
-            #      required:
-            #       - id
-        fragmentsIds:
+        parts:
           type: array
-          description: the list of other Datasets ids to compose as fragments
           items:
-            type: string
-        validatorId:
-          type: string
-          description: the validator id
-        compatibility:
-          type: array
-          description: the list of compatible Solutions versions
-          items:
-            $ref: '#/components/schemas/DatasetCompatibility'
-        security:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+            $ref: '#/components/schemas/DatasetPart'
+        createInfo:
+          description: The details of the Dataset creation
           allOf:
-            - $ref: '#/components/schemas/DatasetSecurity'
-    #      required:
-    #        - name
-    #        - connector
-    TwincacheStatusEnum:
+            - $ref: '#/components/schemas/EditInfo'
+        updateInfo:
+          description: The details of the Dataset last update
+          allOf:
+            - $ref: '#/components/schemas/EditInfo'
+        security:
+          $ref: '#/components/schemas/DatasetSecurity'
+      required:
+        - id
+        - name
+        - tags
+        - parts
+        - createInfo
+        - updateInfo
+        - security
+
+    DatasetCreateRequest:
+      type: object
+      description: Dataset creation request
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+          default: []
+        parts:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatasetPartCreateRequest'
+          default: []
+        security:
+          $ref: '#/components/schemas/DatasetSecurity'
+      required:
+        - name
+
+    DatasetUpdateRequest:
+      type: object
+      description: Dataset creation request
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        parts:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatasetPartCreateRequest'
+        security:
+          $ref: '#/components/schemas/DatasetSecurity'
+
+    # main Dataset Part object
+    DatasetPart:
+      type: object
+      description: Dataset part object
+      properties:
+        id:
+          type: string
+          pattern: '^dp-\w{10,20}'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        type:
+          $ref: '#/components/schemas/DatasetPartTypeEnum'
+        createInfo:
+          description: The details of the Dataset creation
+          allOf:
+            - $ref: '#/components/schemas/EditInfo'
+        updateInfo:
+          description: The details of the Dataset last update
+          allOf:
+            - $ref: '#/components/schemas/EditInfo'
+      required:
+        - id
+        - name
+        - tags
+        - type
+        - createInfo
+        - updateInfo
+
+    DatasetPartCreateRequest:
+      type: object
+      description: Dataset part create request object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        type:
+          $ref: '#/components/schemas/DatasetPartTypeEnum'
+      required:
+        - name
+
+    DatasetPartUpdateRequest:
+      type: object
+      description: Dataset part update request object
+      properties:
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    DatasetPartTypeEnum:
       type: string
-      description: the twincache data status
-      nullable: true
+      description: The dataset part Type
       enum:
-        - EMPTY
-        - FULL
-    IngestionStatusEnum:
+        - File
+        - Relational
+      default: Relational
+
+    DatasetPartFiles:
+      type: array
+      description: |
+        Notes:
+          - Each parts defined in dataset should have a file defined in this list
+          - Please ensure that upload files order match with data parts list defined
+            - First file uploaded will match with first dataset parts and so on
+      items:
+        $ref: '#/components/schemas/DatasetPartFile'
+
+    DatasetPartFile:
       type: string
-      description: the Dataset ingestion status
-      nullable: true
-      enum:
-        - NONE
-        - PENDING
-        - ERROR
-        - SUCCESS
+      description: Data file to upload
+      format: binary
+
+    DatasetQueryResult:
+      type: array
+      items:
+        type: object
+
+    DatasetInfo:
+      type: object
+      additionalProperties: true
+
     DatasetSecurity:
       type: object
       description: the dataset security information
@@ -1516,6 +895,7 @@ components:
       required:
         - default
         - accessControlList
+
     DatasetAccessControl:
       type: object
       description: a Dataset access control item
@@ -1530,6 +910,7 @@ components:
       required:
         - id
         - role
+
     DatasetRole:
       type: object
       description: the Dataset Role
@@ -1539,509 +920,17 @@ components:
           description: the Dataset Role
       required:
         - role
-    DatasetSourceType:
-      type: string
-      description: the Dataset Source Type
-      enum:
-        - ADT
-        - AzureStorage
-        - File
-        - None
-        - Twincache
-        - ETL
-    DatasetTwinGraphInfo:
+
+    EditInfo:
       type: object
-      description: a twin graph query in cypher language
       properties:
-        jobId:
-          type: string
-          description: the import job id
-        datasetId:
-          type: string
-          description: the Dataset id
-        status:
-          type: string
-          description: Twingraph status
-    DatasetTwinGraphQuery:
-      type: object
-      description: a twin graph query in cypher language
-      properties:
-        query:
-          type: string
-          description: the query in cypher language
-      required:
-        - query
-    DatasetTwinGraphHash:
-      type: object
-      description: a twin graph hash
-      properties:
-        hash:
-          type: string
-          description: the hash of the graph
-    DatasetCompatibility:
-      type: object
-      description: a Dataset compatibility constraint to a Solution version open range
-      properties:
-        solutionKey:
-          type: string
-          description: the Solution key which group Solution versions
-        minimumVersion:
-          type: string
-          description: the Solution minimum version compatibility (version included)
-        maximumVersion:
-          type: string
-          description: the Solution maximum version compatibility (version included)
-      required:
-        - solutionKey
-    DatasetCopyParameters:
-      type: object
-      description: the Dataset Copy Parameters
-      properties:
-        sourceId:
-          type: string
-          description: the source Dataset id
-        targetId:
-          type: string
-          description: the target Dataset id
-        options:
-          type: object
-          description: freeform options to path to connectors
-          additionalProperties: true
-    SubDatasetGraphQuery:
-      type: object
-      description: a twin graph query in cypher language
-      properties:
-        name:
-          type: string
-          description: the name of the subdataset
-        description:
-          type: string
-          description: the description of the subdataset
-        queries:
-          type: array
-          description: the query in cypher language
-          items:
-            type: string
-        main:
-          type: boolean
-          description: is this the main dataset
-    SourceInfo:
-      type: object
-      description: Source job import information
-      properties:
-        name:
-          type: string
-          description: the source name containing the files to import
-        location:
-          type: string
-          description: the source location containing the files to import
-        path:
-          type: string
-          description: the source location containing the files to import
-        jobId:
-          type: string
-          description: indicate the last import jobId
-      required:
-        - location
-    TwinGraphBatchResult:
-      type: object
-      description: Processing result
-      properties:
-        totalLines:
+        timestamp:
+          description: The timestamp of the modification in millisecond
           type: integer
-        processedLines:
-          type: integer
-        errors:
-          type: array
-          items:
-            type: string
+          format: int64
+        userId:
+          description: The id of the user who did the modification
+          type: string
       required:
-        - totalLines
-        - processedLines
-        - errors
-    GraphProperties:
-      type: object
-      properties:
-        type:
-          type: string
-          description: the type of the relationship
-        source:
-          type: string
-          description: the source node of the relationship
-        target:
-          type: string
-          description: the target node of the relationship
-        name:
-          type: string
-          description: the name of the graph data object
-        params:
-          type: string
-          description: the parameters of the graph data object
-  examples:
-    BreweryADT:
-      summary: Brewery ADT Dataset
-      description: Brewery Dataset in ADT example
-      value:
-        id: "d-0123456789"
-        name: Brewery ADT reference
-        description: Brewery reference model in ADT
-        ownerId: "ownerId"
-        ownerName: "Bob"
-        parentId: "null"
-        twingraphId: "null"
-        main: "null"
-        creationDate: "null"
-        refreshDate: "null"
-        sourceType: "StorageAzure"
-        source:
-          sourceInfo:
-            - name: "storageAccount"
-            - location: "containerName"
-            - path: "path"
-        queries: ["MATCH (n) RETURN n"]
-        tags:
-          - ADT
-          - Brewery
-          - Reference
-        connector:
-          id: "1"
-          name: ADT Connector
-          version: "1.0.0"
-          ownerId: "1"
-          parametersValues:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: "12345678"
-            AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
-            ADT_QUERY: SELECT * FROM digitaltwins
-            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
-        validatorId: "null"
-        compatibility:
-          - solutionKey: Brewery Solution
-            minimumVersion: "1.0.0"
-        security:
-          default: none
-          accessControlList:
-            - id: "jane.doe@cosmotech.com"
-              role: "editor"
-            - id: "john.doe@cosmotech.com"
-              role: "viewer"
-    BreweryADTWithLink:
-      summary: Brewery ADT Dataset
-      description: Brewery Dataset in ADT example
-      value:
-        id: "d-0123456789"
-        name: Brewery ADT reference
-        description: Brewery reference model in ADT
-        ownerId: "ownerId"
-        ownerName: "Bob"
-        parentId: "null"
-        twingraphId: "null"
-        main: "null"
-        creationDate: "null"
-        refreshDate: "null"
-        linkedWorkspaceIdList: ["w-34ue25fze1"]
-        sourceType: "StorageAzure"
-        source:
-          sourceInfo:
-            - name: "storageAccount"
-            - location: "containerName"
-            - path: "path"
-        queries: ["MATCH (n) RETURN n"]
-        tags:
-          - ADT
-          - Brewery
-          - Reference
-        connector:
-          id: "1"
-          name: ADT Connector
-          version: "1.0.0"
-          ownerId: "1"
-          parametersValues:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: "12345678"
-            AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
-            ADT_QUERY: SELECT * FROM digitaltwins
-            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
-        validatorId: "null"
-        compatibility:
-          - solutionKey: Brewery Solution
-            minimumVersion: "1.0.0"
-        security:
-          default: none
-          accessControlList:
-            - id: "jane.doe@cosmotech.com"
-              role: "editor"
-            - id: "john.doe@cosmotech.com"
-              role: "viewer"
-    TwoDatasets:
-      summary: Two Datasets example
-      description: Two ADT Datasets example
-      value:
-        - id: "1"
-          name: Brewery ADT reference
-          description: Brewery reference model in ADT
-          ownerId: "ownerId"
-          ownerName: "Bob"
-          parentId: "null"
-          twingraphId: "null"
-          main: "null"
-          creationDate: "null"
-          refreshDate: "null"
-          sourceType: "StorageAzure"
-          source:
-            sourceInfo:
-              - name: "storageAccount"
-              - location: "containerName"
-              - path: "path"
-          queries: ["MATCH (n) RETURN n"]
-          tags:
-            - ADT
-            - Brewery
-            - Reference
-          connector:
-            id: "1"
-            name: ADT Connector
-            version: "1.0.0"
-            ownerId: "1"
-            parametersValues:
-              AZURE_TENANT_ID: "12345678"
-              AZURE_CLIENT_ID: "12345678"
-              AZURE_CLIENT_SECRET: "12345678"
-              AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
-              ADT_QUERY: SELECT * FROM digitaltwins
-              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
-          validatorId: "null"
-          compatibility:
-            - solutionKey: Brewery Solution
-              minimumVersion: "1.0.0"
-          security:
-            default: none
-            accessControlList:
-              - id: "jane.doe@cosmotech.com"
-                role: "editor"
-              - id: "john.doe@cosmotech.com"
-                role: "viewer"
-        - id: "2"
-          name: Brewery ADT reference
-          description: Brewery reference model in ADT
-          ownerId: "ownerId"
-          ownerName: "Bob"
-          parentId: "null"
-          twingraphId: "null"
-          main: "null"
-          creationDate: "null"
-          refreshDate: "null"
-          sourceType: "StorageAzure"
-          source:
-            sourceInfo:
-              - name: "storageAccount"
-              - location: "containerName"
-              - path: "path"
-          queries: ["MATCH (n) RETURN n"]
-          tags:
-            - ADT
-            - Brewery
-            - Reference
-          connector:
-            id: "1"
-            name: ADT Connector
-            version: "1.0.0"
-            ownerId: "1"
-            parametersValues:
-              AZURE_TENANT_ID: "12345678"
-              AZURE_CLIENT_ID: "12345678"
-              AZURE_CLIENT_SECRET: "12345678"
-              AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
-              ADT_QUERY: SELECT * FROM digitaltwins
-              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
-          validatorId: "null"
-          compatibility:
-            - solutionKey: Brewery Solution
-              minimumVersion: "1.0.0"
-          security:
-            default: none
-            accessControlList:
-              - id: "jane.doe@cosmotech.com"
-                role: "editor"
-              - id: "john.doe@cosmotech.com"
-                role: "viewer"
-    BreweryADTUpdate:
-      summary: Brewery ADT name update example
-      description: Brewery ADT reference model name update example
-      value:
-        name: Brewery ADT new reference
-    BreweryADTUpdated:
-      summary: Brewery ADT updated Dataset
-      description: Brewery Dataset in ADT name updated example
-      value:
-        id: "1"
-        name: Brewery ADT new reference
-        description: Brewery reference model in ADT
-        ownerId: "ownerId"
-        ownerName: "Bob"
-        parentId: "null"
-        twingraphId: "null"
-        main: "null"
-        creationDate: "null"
-        refreshDate: "null"
-        sourceType: "StorageAzure"
-        source:
-          sourceInfo:
-            - name: "storageAccount"
-            - location: "containerName"
-            - path: "path"
-        queries: ["MATCH (n) RETURN n"]
-        tags:
-          - ADT
-          - Brewery
-          - Reference
-        connector:
-          id: "1"
-          name: ADT Connector
-          version: "1.0.0"
-          ownerId: "1"
-          parametersValues:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: "12345678"
-            AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
-            ADT_QUERY: SELECT * FROM digitaltwins
-            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
-        validatorId: "null"
-        compatibility:
-          - solutionKey: Brewery Solution
-            minimumVersion: "1.0.0"
-        security:
-          default: none
-          accessControlList:
-            - id: "jane.doe@cosmotech.com"
-              role: "editor"
-            - id: "john.doe@cosmotech.com"
-              role: "viewer"
-    BreweryDatasetAccessControl:
-      summary: Set an access control.
-      description: Set an access control for a user to a dataset.
-      value:
-        id: "bob.doe@cosmotech.com"
-        role: "editor"
-    BreweryDatasetRole:
-      summary: Set a Dataset Role.
-      description: Set a Role for a user to a dataset.
-      value:
-        role: "editor"
-    BreweryADTValidator:
-      summary: Brewery ADT Dataset Validator
-      description: a Validator for the Brewery Dataset from ADT in a Docker image
-      value:
-        id: "1"
-        name: Brewery ADT Validator
-        description: A Validator for the Brewery Dataset from ADT
-        repository: brewery_adt_validator
-        version: "1.0.0"
-        ownerId: "1"
-        url: https://github.com/brewery-adt-validator
-        tags:
-          - Brewery
-          - ADT
-    OneValidator:
-      summary: Dataset Validator list
-      description: a Validator list with one element
-      value:
-        - id: "1"
-          name: Brewery ADT Validator
-          description: A Validator for the Brewery Dataset from ADT
-          repository: brewery_adt_validator
-          version: "1.0.0"
-          ownerId: "1"
-          url: https://github.com/brewery-adt-validator
-          tags:
-            - Brewery
-            - ADT
-    BreweryADTValidatorRun:
-      summary: Brewery ADT Dataset Validator Run
-      description: a Validator Run for the Brewery Dataset from ADT in a Docker image
-      value:
-        id: 1
-        validatorId: "1"
-        validatorName: Brewery ADT Validator
-        datasetId: "1"
-        datasetName: Brewery ADT reference
-        state: Finished
-        containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa7
-        logs: Validation ended with success\nBrewery ADT reference OK
-    ThreeValidatorRun:
-      summary: Brewery ADT Dataset Validator Run list
-      description: a list of Validator Run for the Brewery Dataset
-      value:
-        - id: "1"
-          validatorId: "1"
-          validatorName: Brewery ADT Validator
-          datasetId: "1"
-          datasetName: Brewery ADT reference
-          state: Finished
-          containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa7
-          logs: Validation ended with success\nBrewery ADT reference OK
-        - id: "2"
-          validatorId: "1"
-          validatorName: Brewery ADT Validator
-          datasetId: "1"
-          datasetName: Brewery ADT reference
-          state: OnError
-          containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa8
-          logs: Validation ended with errors\nBrewery ADT reference KO
-        - id: "3"
-          validatorId: "1"
-          validatorName: Brewery ADT Validator
-          datasetId: "1"
-          datasetName: Brewery ADT reference
-          state: Running
-          containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa9
-          logs: none
-    BreweryADTRunValidator:
-      summary: Brewery ADT Dataset Validator Run input
-      description: a Validator Run input for the Brewery Dataset from ADT in a Docker image
-      value:
-        datasetId: "1"
-    BreweryDatasetCopyParameters:
-      summary: Parameters for Dataset copy example
-      description: Parameters for Dataset copy from Dataset 1 to 2 example
-      value:
-        sourceId: "1"
-        targetId: "2"
-    DatasetSearch:
-      summary: Example for dataset search
-      description: Parameters to search for a dataset
-      value:
-        datasetTags:
-          - dataset
-    TwinGraphGetAllNodes:
-      summary: Get all nodes query
-      description: Get all nodes query (be careful if you want to query large graph)
-      value:
-        query: "MATCH(n) RETURN n"
-    QueryEntities:
-      summary: Run action on a graph relationship
-      description: Run action on a graph relationship
-      value:
-        - type: "entityType"
-          source: "source-node-name"
-          target: "target-node-name"
-          name: "entity-name"
-          params: "param1: 'value1', param2: 'value2'"
-        - type: "entityType"
-          source: "source-node-name"
-          target: "target-node-name"
-          name: "entity-name"
-          params: "param1: 'value1', param2: 'value2'"
-    GetAllNodes:
-      summary: Get all nodes query
-      description: Get all nodes query (be careful if you want to query large graph)
-      value:
-        query: "MATCH(n) RETURN n"
-    SuccessfulRollback:
-      summary: Successful status rollback
-      description: Successful status after rollback
-      value:
-        message: "Dataset d-012456789 status is now SUCCESS"
+        - timestamp
+        - userId

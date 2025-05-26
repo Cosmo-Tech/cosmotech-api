@@ -13,14 +13,9 @@ import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
-import com.cosmotech.connector.domain.Connector
-import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetConnector
-import com.cosmotech.dataset.domain.DatasetSecurity
+import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -79,7 +74,6 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
-  @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
   @Autowired lateinit var resourceLoader: ResourceLoader
@@ -87,13 +81,11 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   lateinit var organization: OrganizationCreateRequest
   lateinit var solution: SolutionCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
-  lateinit var connector: Connector
-  lateinit var dataset: Dataset
+  lateinit var dataset: DatasetCreateRequest
 
   lateinit var organizationSaved: Organization
   lateinit var solutionSaved: Solution
   lateinit var workspaceSaved: Workspace
-  lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
 
   private var startTime: Long = 0
@@ -110,7 +102,6 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
-    rediSearchIndexer.createIndexFor(Connector::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)
 
     organization = makeOrganizationCreateRequest("Organization test")
@@ -122,11 +113,8 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-    connector = makeConnector("Connector")
-    connectorSaved = connectorApiService.registerConnector(connector)
-
-    dataset = makeDataset("dataset")
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
+    datasetSaved =
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
   }
 
   @Test
@@ -462,14 +450,12 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
             .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
 
-    workspaceApiService.createDatasetLink(
-        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
 
-    val datasetIds = listOf(datasetSaved.id!!)
+    val datasetIds = listOf(datasetSaved.id)
     checkLinkedDatasetId(datasetIds)
 
-    workspaceApiService.createDatasetLink(
-        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
 
     checkLinkedDatasetId(datasetIds)
   }
@@ -497,11 +483,9 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
             .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
 
-    workspaceApiService.createDatasetLink(
-        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
 
-    workspaceApiService.deleteDatasetLink(
-        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
 
     assertEquals(
         workspaceApiService
@@ -519,8 +503,7 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
             .getWorkspace(organizationSaved.id, workspaceSaved.id)
             .linkedDatasetIdList)
 
-    workspaceApiService.deleteDatasetLink(
-        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
 
     assertNull(
         workspaceApiService
@@ -537,10 +520,12 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     organizationSaved = organizationApiService.createOrganization(organization)
     solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-    dataset = makeDataset()
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
+
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+    dataset = makeDataset()
+    datasetSaved =
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
 
     workspaceSaved = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
     assertEquals(
@@ -560,10 +545,13 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     organizationSaved = organizationApiService.createOrganization(organization)
     solution = makeSolution(userName = CONNECTED_DEFAULT_USER, role = ROLE_VIEWER)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-    dataset = makeDataset()
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
+
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+    dataset = makeDataset()
+    datasetSaved =
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
 
     var workspaces = workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
     workspaces.forEach {
@@ -776,12 +764,11 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
         workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
     val workspaceLinked =
         workspaceApiService.createDatasetLink(
-            organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+            organizationSaved.id, workspaceSaved.id, datasetSaved.id)
     assertEquals(workspaceSaved.createInfo, workspaceLinked.createInfo)
     assertTrue { workspaceSaved.updateInfo.timestamp < workspaceLinked.updateInfo.timestamp }
 
-    workspaceApiService.deleteDatasetLink(
-        organizationSaved.id, workspaceSaved.id, datasetSaved.id!!)
+    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
     val workspaceUnlinked =
         workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
     assertEquals(workspaceLinked.createInfo, workspaceUnlinked.createInfo)
@@ -836,11 +823,7 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
                           OrganizationAccessControl(id = userName, role = role),
                           OrganizationAccessControl("userLambda", "viewer"))))
 
-  fun makeSolution(
-      organizationId: String = organizationSaved.id,
-      userName: String = CONNECTED_DEFAULT_USER,
-      role: String = ROLE_USER
-  ) =
+  fun makeSolution(userName: String = CONNECTED_DEFAULT_USER, role: String = ROLE_USER) =
       SolutionCreateRequest(
           key = UUID.randomUUID().toString(),
           name = "My solution",
@@ -858,7 +841,6 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
                           SolutionAccessControl(id = userName, role = role))))
 
   fun makeWorkspaceCreateRequest(
-      organizationId: String = organizationSaved.id,
       solutionId: String = solutionSaved.id,
       name: String = "name",
       userName: String = CONNECTED_ADMIN_USER,
@@ -879,36 +861,7 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
                           WorkspaceAccessControl(id = userName, role = role),
                           WorkspaceAccessControl(CONNECTED_DEFAULT_USER, "viewer"))))
 
-  private fun makeConnector(name: String = "name") =
-      Connector(
-          key = UUID.randomUUID().toString(),
-          name = name,
-          repository = "/repository",
-          version = "1.0",
-          ioTypes = listOf(IoTypesEnum.read))
-
   fun makeDataset(
-      organizationId: String = organizationSaved.id,
-      name: String = "name",
-      connector: Connector = connectorSaved,
-      userName: String = CONNECTED_DEFAULT_USER,
-      role: String = ROLE_ADMIN
-  ) =
-      Dataset(
-          name = name,
-          organizationId = organizationId,
-          ownerId = "ownerId",
-          connector =
-              DatasetConnector(
-                  id = connector.id,
-                  name = connector.name,
-                  version = connector.version,
-              ),
-          security =
-              DatasetSecurity(
-                  default = ROLE_NONE,
-                  accessControlList =
-                      mutableListOf(
-                          DatasetAccessControl(id = userName, role = role),
-                          DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+      name: String = "my_dataset_test",
+  ) = DatasetCreateRequest(name)
 }

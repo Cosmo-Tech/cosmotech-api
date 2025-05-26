@@ -9,5 +9,4 @@ dependencies {
   implementation(projects.cosmotechSolutionApi)
   testImplementation(projects.cosmotechWorkspaceApi)
   testImplementation(projects.cosmotechDatasetApi)
-  testImplementation(projects.cosmotechConnectorApi)
 }

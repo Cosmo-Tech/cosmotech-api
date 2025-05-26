@@ -74,11 +74,6 @@ class ContainerFactoryTests {
             version = "v1",
             basePath = "basepath",
         )
-    every { csmPlatformProperties.images } returns
-        CsmPlatformProperties.CsmImages(
-            scenarioFetchParameters = "cosmotech/scenariofetchparameters:1.0.0",
-            sendDataWarehouse = "cosmotech/senddatawarehouse:1.0.0",
-        )
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(
             code = "keycloak",

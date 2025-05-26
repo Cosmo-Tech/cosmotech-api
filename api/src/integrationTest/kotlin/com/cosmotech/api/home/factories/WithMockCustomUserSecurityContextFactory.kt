@@ -3,9 +3,14 @@
 package com.cosmotech.api.home.factories
 
 import com.cosmotech.api.home.annotations.WithMockOauth2User
-import com.cosmotech.dataset.utils.convertToJsonValue
+import com.cosmotech.api.utils.objectMapper
+import com.fasterxml.jackson.core.JacksonException
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import org.json.JSONObject
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContext
@@ -57,4 +62,28 @@ class WithMockOauth2UserSecurityContextFactory : WithSecurityContextFactory<With
     context.authentication = auth
     return context
   }
+}
+
+val jsonObjectMapper: ObjectMapper =
+    objectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
+
+@Suppress("SwallowedException")
+fun Any.convertToJsonValue(): Any {
+  var result = this
+  if (this is String) {
+    if (this.startsWith("{") || this.startsWith("[") || this.startsWith("\"")) {
+      result =
+          try {
+            val firstTry = jsonObjectMapper.readValue<JSONObject>(this)
+            if (firstTry.isEmpty) {
+              jsonObjectMapper.readValue(this)
+            } else {
+              firstTry
+            }
+          } catch (e: JacksonException) {
+            return result
+          }
+    }
+  }
+  return result
 }

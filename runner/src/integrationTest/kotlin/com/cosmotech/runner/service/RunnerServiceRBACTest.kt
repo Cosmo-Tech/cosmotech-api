@@ -1,7 +1,5 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-@file:Suppress("DEPRECATION")
-
 package com.cosmotech.runner.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -23,15 +21,11 @@ import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.ConnectorApiServiceInterface
-import com.cosmotech.connector.domain.Connector
-import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetSecurity
-import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
@@ -45,7 +39,6 @@ import com.cosmotech.runner.domain.RunnerCreateRequest
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerUpdateRequest
-import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
@@ -95,7 +88,6 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
 
   @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
   @SpykBean lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
@@ -143,34 +135,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC.listRunners : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              var datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
+
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -205,32 +190,24 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC.listRunners : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
-                  makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                  makeWorkspaceCreateRequest(solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -265,35 +242,25 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC.listRunners : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -328,34 +295,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC.listRunners : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -367,7 +326,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id, workspaceSaved.id, null, null)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -390,33 +349,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC createRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -450,33 +402,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC createRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -488,11 +433,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     }
                 if (role == ROLE_NONE || role == ROLE_VALIDATOR) {
                   assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 }
               } else {
@@ -516,34 +461,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC createRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -577,31 +514,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC createRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -641,33 +573,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC.findRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -704,33 +629,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC.findRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -743,7 +661,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -767,34 +685,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC.findRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -831,31 +741,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC.findRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -891,35 +796,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC.findRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -955,35 +852,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC deleteRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              every { datasetApiService.deleteDataset(any(), any()) } returns Unit
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -1020,35 +908,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC deleteRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              every { datasetApiService.deleteDataset(any(), any()) } returns Unit
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -1061,7 +940,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1085,36 +964,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC deleteRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              every { datasetApiService.deleteDataset(any(), any()) } returns Unit
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -1151,35 +1020,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC deleteRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              every { datasetApiService.deleteDataset(any(), any()) } returns Unit
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -1214,37 +1074,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC deleteRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              every { datasetApiService.deleteDataset(any(), any()) } returns Unit
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1286,33 +1136,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC updateRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -1325,7 +1168,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           runnerSaved.id,
-                          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!)))
+                          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id)))
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1336,7 +1179,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       workspaceSaved.id,
                       runnerSaved.id,
-                      RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!)))
+                      RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id)))
                 }
               }
             }
@@ -1355,33 +1198,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC updateRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -1394,10 +1230,10 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           runnerSaved.id,
-                          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!)))
+                          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id)))
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1405,7 +1241,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       workspaceSaved.id,
                       runnerSaved.id,
-                      RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!)))
+                      RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id)))
                 }
               }
             }
@@ -1424,34 +1260,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC updateRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -1464,7 +1292,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           runnerSaved.id,
-                          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!)))
+                          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id)))
                     }
                 assertEquals(
                     "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1475,7 +1303,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       workspaceSaved.id,
                       runnerSaved.id,
-                      RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!)))
+                      RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id)))
                 }
               }
             }
@@ -1494,31 +1322,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC updateRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -1531,7 +1354,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           runnerSaved.id,
-                          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!)))
+                          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id)))
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
@@ -1542,7 +1365,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       workspaceSaved.id,
                       runnerSaved.id,
-                      RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!)))
+                      RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id)))
                 }
               }
             }
@@ -1560,35 +1383,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC updateRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1600,7 +1415,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           runnerSaved.id,
-                          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!)))
+                          RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id)))
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -1617,7 +1432,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                       organizationSaved.id,
                       workspaceSaved.id,
                       runnerSaved.id,
-                      RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!)))
+                      RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id)))
                 }
               }
             }
@@ -1636,35 +1451,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC getRunnerPermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1700,35 +1507,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC listRunnerPermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1740,7 +1539,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id, role)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1764,36 +1563,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC listRunnerPermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1829,33 +1619,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC listRunnerPermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1890,36 +1674,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC listRunnerPermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1961,33 +1736,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC getRunnerSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2024,33 +1792,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC getRunnerSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2063,7 +1824,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -2087,34 +1848,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC getRunnerSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2151,31 +1904,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC getRunnerSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2211,35 +1959,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC getRunnerSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -2281,34 +2021,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              materializeTwingraph(datasetSaved)
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2351,34 +2083,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              materializeTwingraph(datasetSaved)
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2394,7 +2118,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           RunnerRole(ROLE_ADMIN))
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -2421,35 +2145,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              materializeTwingraph(datasetSaved)
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2492,31 +2207,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2558,35 +2268,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -2634,34 +2336,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC createRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2704,49 +2398,37 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 "Check Dataset RBAC modification " +
                     "when createRunnerAccessControl is called on a runner with role : $role") {
                   every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-                  val connector = makeConnector()
-                  val connectorSaved = connectorApiService.registerConnector(connector)
                   val organization =
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
                   val organizationSaved = organizationApiService.createOrganization(organization)
-                  val dataset =
-                      makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-                  var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-                  datasetSaved =
-                      datasetRepository.save(
-                          datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-                  every { datasetApiService.createSubDataset(any(), any(), any()) } returns
-                      datasetSaved
-                  val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+                  val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
                   val solutionSaved =
                       solutionApiService.createSolution(organizationSaved.id, solution)
                   val workspace =
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
-                          solutionSaved.id,
-                          id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN)
+                          solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
                   val workspaceSaved =
                       workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+                  val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+                  val datasetSaved =
+                      datasetApiService.createDataset(
+                          organizationSaved.id, workspaceSaved.id, null, dataset)
                   val runner =
                       makeRunnerWithRole(
-                          organizationSaved.id,
-                          workspaceSaved.id,
-                          solutionSaved.id,
-                          mutableListOf(datasetSaved.id!!),
-                          id = TEST_USER_MAIL,
+                          solutionId = solutionSaved.id,
+                          datasetList = mutableListOf(datasetSaved.id),
+                          userId = TEST_USER_MAIL,
                           role = ROLE_ADMIN)
                   val runnerSaved =
                       runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
-
                   assertDoesNotThrow {
                     assertTrue(
-                        datasetSaved.security
-                            ?.accessControlList
-                            ?.filter { datasetAccessControl ->
+                        datasetSaved.security.accessControlList
+                            .filter { datasetAccessControl ->
                               datasetAccessControl.id == "unknown_user@test.com"
                             }
-                            .isNullOrEmpty())
+                            .isEmpty())
 
                     runnerApiService.createRunnerAccessControl(
                         organizationSaved.id,
@@ -2755,19 +2437,19 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                         RunnerAccessControl("unknown_user@test.com", role))
 
                     val datasetWithUpgradedACL =
-                        datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
+                        datasetApiService.getDataset(
+                            organizationSaved.id, workspaceSaved.id, datasetSaved.id)
                     var datasetRole = role
                     if (role == ROLE_VALIDATOR) {
                       datasetRole = ROLE_USER
                     }
                     assertEquals(
                         true,
-                        datasetWithUpgradedACL.security
-                            ?.accessControlList
-                            ?.filter { datasetAccessControl ->
+                        datasetWithUpgradedACL.security.accessControlList
+                            .filter { datasetAccessControl ->
                               datasetAccessControl.id == "unknown_user@test.com"
                             }
-                            ?.any { datasetAccessControl ->
+                            .any { datasetAccessControl ->
                               datasetAccessControl.role == datasetRole
                             })
                   }
@@ -2777,38 +2459,29 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   @Test
   fun `test createRunnerAccessControl when called on a runner with an user that do not exist in Dataset RBAC`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    val connector = makeConnector()
-    val connectorSaved = connectorApiService.registerConnector(connector)
-    val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+    val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
     val organizationSaved = organizationApiService.createOrganization(organization)
-    val dataset =
-        makeDataset(
-            organizationSaved.id, connectorSaved, id = "unknown_user@test.com", role = ROLE_NONE)
-    var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-    datasetSaved =
-        datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-    every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+    val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+    val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+    val workspace =
+        makeWorkspaceCreateRequest(solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+    val workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+    val dataset = makeDataset(userId = "unknown_user@test.com", role = ROLE_NONE)
+    var datasetSaved =
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
+    val runner =
+        makeRunnerWithRole(
+            solutionSaved.id,
+            mutableListOf(datasetSaved.id),
+            userId = "unknown_user@test.com",
+            role = ROLE_ADMIN)
 
     assertEquals(
         false,
-        datasetSaved.security?.accessControlList?.any { datasetAccessControl ->
+        datasetSaved.security.accessControlList.any { datasetAccessControl ->
           datasetAccessControl.id == TEST_USER_MAIL
         })
 
-    val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
-    val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
-    val workspace =
-        makeWorkspaceCreateRequest(
-            organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = ROLE_ADMIN)
-    val workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-    val runner =
-        makeRunnerWithRole(
-            organizationSaved.id,
-            workspaceSaved.id,
-            solutionSaved.id,
-            mutableListOf(datasetSaved.id!!),
-            id = "unknown_user@test.com",
-            role = ROLE_ADMIN)
     val runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
     runnerApiService.createRunnerAccessControl(
@@ -2817,10 +2490,10 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
         runnerSaved.id,
         RunnerAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
     val datasetWithUpgradedACL =
-        datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
+        datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
     assertEquals(
         true,
-        datasetWithUpgradedACL.security?.accessControlList?.any { datasetAccessControl ->
+        datasetWithUpgradedACL.security.accessControlList.any { datasetAccessControl ->
           datasetAccessControl.id == TEST_USER_MAIL
         })
   }
@@ -2838,35 +2511,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC createRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2909,32 +2573,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC createRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              materializeTwingraph(datasetSaved)
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -2976,36 +2634,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC createRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -3053,33 +2702,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC getRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3116,33 +2758,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC getRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3155,7 +2790,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -3179,34 +2814,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC getRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3243,31 +2870,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC getRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3303,35 +2925,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC getRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -3373,34 +2987,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3437,34 +3043,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3478,11 +3076,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                     }
                 if (role == ROLE_NONE || role == ROLE_VALIDATOR) {
                   assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                       exception.message)
                 } else {
                   assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                       exception.message)
                 }
               } else {
@@ -3507,35 +3105,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3548,7 +3137,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -3572,32 +3161,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3633,36 +3216,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -3704,39 +3278,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC updateRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
-                  listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
-              every {
-                datasetApiService.updateDatasetAccessControl(any(), any(), any(), any())
-              } returns mockk()
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3781,39 +3342,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC updateRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
-                  listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
-              every {
-                datasetApiService.updateDatasetAccessControl(any(), any(), any(), any())
-              } returns mockk()
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3830,7 +3378,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           RunnerRole(ROLE_VIEWER))
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -3858,40 +3406,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC updateRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
-                  listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
-              every {
-                datasetApiService.updateDatasetAccessControl(any(), any(), any(), any())
-              } returns mockk()
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -3936,37 +3470,26 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC updateRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
-                  listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
-              every {
-                datasetApiService.updateDatasetAccessControl(any(), any(), any(), any())
-              } returns mockk()
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -4010,41 +3533,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC updateRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
-              every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
-                  listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
-              every {
-                datasetApiService.updateDatasetAccessControl(any(), any(), any(), any())
-              } returns mockk()
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -4094,35 +3603,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
-              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -4158,35 +3659,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Dataset RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, role)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -4198,7 +3691,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -4222,36 +3715,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Solution RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, role)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -4287,33 +3771,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Workspace RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
                       role = ROLE_ADMIN)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -4348,36 +3826,27 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Runner RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val connector = makeConnector()
-              val connectorSaved = connectorApiService.registerConnector(connector)
               val organization =
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val dataset =
-                  makeDataset(organizationSaved.id, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
-              var datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-              datasetSaved =
-                  datasetRepository.save(
-                      datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
-              val solution = makeSolution(organizationSaved.id, TEST_USER_MAIL, ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
-                      solutionSaved.id,
-                      id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, null, dataset)
               val runner =
                   makeRunnerWithRole(
-                      organizationSaved.id,
-                      workspaceSaved.id,
-                      solutionSaved.id,
-                      mutableListOf(datasetSaved.id!!),
-                      id = TEST_USER_MAIL,
-                      role = role)
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -4406,45 +3875,18 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
-  private fun materializeTwingraph(dataset: Dataset, createTwingraph: Boolean = true): Dataset {
-    dataset.apply {
-      if (createTwingraph && !this.twingraphId.isNullOrBlank()) {
-        jedis.graphQuery(this.twingraphId, "CREATE (n:labelrouge)")
-      }
-      this.ingestionStatus = IngestionStatusEnum.SUCCESS
-    }
-    return datasetRepository.save(dataset)
-  }
-
-  private fun makeConnector() =
-      Connector(
-          key = UUID.randomUUID().toString(),
-          name = "Connector",
-          repository = "/repository",
-          version = "1.0",
-          ioTypes = listOf(IoTypesEnum.read))
-
-  fun makeDataset(organizationId: String, connector: Connector, id: String, role: String) =
-      Dataset(
-          name = "Dataset",
-          organizationId = organizationId,
-          ownerId = "ownerId",
-          ingestionStatus = IngestionStatusEnum.SUCCESS,
-          connector =
-              DatasetConnector(
-                  id = connector.id,
-                  name = connector.name,
-                  version = connector.version,
-              ),
+  fun makeDataset(name: String = "my_dataset_test", userId: String, role: String) =
+      DatasetCreateRequest(
+          name = name,
           security =
               DatasetSecurity(
                   default = ROLE_NONE,
                   accessControlList =
                       mutableListOf(
                           DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                          DatasetAccessControl(id = id, role = role))))
+                          DatasetAccessControl(id = userId, role = role))))
 
-  fun makeSolution(organizationId: String, id: String, role: String) =
+  fun makeSolution(userId: String, role: String) =
       SolutionCreateRequest(
           key = UUID.randomUUID().toString(),
           name = "My solution",
@@ -4458,9 +3900,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   default = ROLE_NONE,
                   mutableListOf(
                       SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                      SolutionAccessControl(id = id, role = role))))
+                      SolutionAccessControl(id = userId, role = role))))
 
-  fun makeOrganizationCreateRequest(id: String, role: String) =
+  fun makeOrganizationCreateRequest(userId: String, role: String) =
       OrganizationCreateRequest(
           name = "Organization Name",
           security =
@@ -4469,14 +3911,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   accessControlList =
                       mutableListOf(
                           OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                          OrganizationAccessControl(id = id, role = role))))
+                          OrganizationAccessControl(id = userId, role = role))))
 
-  fun makeWorkspaceCreateRequest(
-      organizationId: String,
-      solutionId: String,
-      id: String,
-      role: String
-  ) =
+  fun makeWorkspaceCreateRequest(solutionId: String, userId: String, role: String) =
       WorkspaceCreateRequest(
           key = UUID.randomUUID().toString(),
           name = "Workspace",
@@ -4489,16 +3926,13 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   default = ROLE_NONE,
                   mutableListOf(
                       WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                      WorkspaceAccessControl(id = id, role = role))))
+                      WorkspaceAccessControl(id = userId, role = role))))
 
   fun makeRunnerWithRole(
-      organizationId: String,
-      workspaceId: String,
       solutionId: String,
       datasetList: MutableList<String>,
-      id: String,
-      role: String,
-      validationStatus: RunnerValidationStatus = RunnerValidationStatus.Draft
+      userId: String,
+      role: String
   ) =
       RunnerCreateRequest(
           name = "Runner",
@@ -4512,5 +3946,5 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   ROLE_NONE,
                   mutableListOf(
                       RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                      RunnerAccessControl(id, role))))
+                      RunnerAccessControl(userId, role))))
 }
