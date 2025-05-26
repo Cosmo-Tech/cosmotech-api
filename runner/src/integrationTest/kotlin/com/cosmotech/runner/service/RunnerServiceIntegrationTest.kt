@@ -24,16 +24,9 @@ import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
-import com.cosmotech.connector.domain.Connector
-import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetConnector
-import com.cosmotech.dataset.domain.DatasetSecurity
-import com.cosmotech.dataset.domain.IngestionStatusEnum
-import com.cosmotech.dataset.domain.TwincacheStatusEnum
+import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -101,7 +94,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
   @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var datasetRepository: DatasetRepository
@@ -113,15 +105,13 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
   private var startTime: Long = 0
 
-  lateinit var connector: Connector
-  lateinit var dataset: Dataset
+  lateinit var dataset: DatasetCreateRequest
   lateinit var solution: SolutionCreateRequest
   lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
   lateinit var runner: RunnerCreateRequest
   lateinit var parentRunner: RunnerCreateRequest
 
-  lateinit var connectorSaved: Connector
   lateinit var datasetSaved: Dataset
   lateinit var solutionSaved: Solution
   lateinit var organizationSaved: Organization
@@ -170,15 +160,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     startTime = Instant.now().toEpochMilli()
 
-    connector = makeConnector("Connector")
-    connectorSaved = connectorApiService.registerConnector(connector)
-
     organization = makeOrganizationCreateRequest()
     organizationSaved = organizationApiService.createOrganization(organization)
-
-    dataset = makeDataset(organizationSaved.id, "Dataset", connectorSaved)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-    materializeTwingraph()
 
     solution = makeSolution(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -186,10 +169,14 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
+    dataset = makeDataset("Dataset")
+    datasetSaved =
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
+
     parentRunner =
         makeRunnerCreateRequest(
             name = "RunnerParent",
-            datasetList = mutableListOf(datasetSaved.id!!),
+            datasetList = mutableListOf(datasetSaved.id),
             parametersValues = mutableListOf(runTemplateParameterValue1))
 
     parentRunnerSaved =
@@ -199,7 +186,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunnerCreateRequest(
             name = "Runner",
             parentId = parentRunnerSaved.id,
-            datasetList = mutableListOf(datasetSaved.id!!),
+            datasetList = mutableListOf(datasetSaved.id),
             parametersValues = mutableListOf(runTemplateParameterValue2))
 
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
@@ -218,7 +205,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val newRunner =
         makeRunnerCreateRequest(
             name = "NewRunner",
-            datasetList = mutableListOf(datasetSaved.id!!),
+            datasetList = mutableListOf(datasetSaved.id),
             parametersValues =
                 mutableListOf(
                     RunnerRunTemplateParameterValue(
@@ -244,7 +231,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val newRunner =
         makeRunnerCreateRequest(
             name = "NewRunner",
-            datasetList = mutableListOf(datasetSaved.id!!),
+            datasetList = mutableListOf(datasetSaved.id),
             parametersValues = mutableListOf(creationParameterValue))
     val newRunnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
@@ -279,7 +266,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should create a new Runner")
     val newRunner =
-        makeRunnerCreateRequest(name = "NewRunner", datasetList = mutableListOf(datasetSaved.id!!))
+        makeRunnerCreateRequest(name = "NewRunner", datasetList = mutableListOf(datasetSaved.id))
     val newRunnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
 
@@ -323,11 +310,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val numberOfRunners = 20
     val defaultPageSize = csmPlatformProperties.twincache.runner.defaultPageSize
     val expectedSize = 15
-    datasetSaved = materializeTwingraph()
     IntRange(1, numberOfRunners - 1).forEach {
       val runner =
-          makeRunnerCreateRequest(
-              name = "Runner$it", datasetList = mutableListOf(datasetSaved.id!!))
+          makeRunnerCreateRequest(name = "Runner$it", datasetList = mutableListOf(datasetSaved.id))
       runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
     }
 
@@ -501,7 +486,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         "should add an Access Control and assert it is the one created in the linked datasets")
     runnerSaved.datasetList.forEach {
       assertDoesNotThrow {
-        datasetApiService.getDatasetAccessControl(organizationSaved.id, it, TEST_USER_MAIL)
+        datasetApiService.getDatasetAccessControl(
+            organizationSaved.id, workspaceSaved.id, it, TEST_USER_MAIL)
       }
     }
 
@@ -519,7 +505,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     runnerSaved.datasetList.forEach {
       assertEquals(
           ROLE_VIEWER,
-          datasetApiService.getDatasetAccessControl(organizationSaved.id, it, TEST_USER_MAIL).role)
+          datasetApiService
+              .getDatasetAccessControl(organizationSaved.id, workspaceSaved.id, it, TEST_USER_MAIL)
+              .role)
     }
 
     logger.info("should get the list of users and assert there are 2")
@@ -532,16 +520,16 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     runnerApiService.deleteRunnerAccessControl(
         organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
     assertThrows<CsmResourceNotFoundException> {
-      runnerAccessControlRegistered =
-          runnerApiService.getRunnerAccessControl(
-              organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
+      runnerApiService.getRunnerAccessControl(
+          organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
     }
 
     logger.info(
         "should remove the Access Control and assert it has been removed in the linked datasets")
     runnerSaved.datasetList.forEach {
       assertThrows<CsmResourceNotFoundException> {
-        datasetApiService.getDatasetAccessControl(organizationSaved.id, it, TEST_USER_MAIL)
+        datasetApiService.getDatasetAccessControl(
+            organizationSaved.id, workspaceSaved.id, it, TEST_USER_MAIL)
       }
     }
   }
@@ -612,7 +600,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
     runnerSaved.datasetList.forEach { dataset ->
-      assertDoesNotThrow { datasetApiService.findDatasetById(organizationSaved.id, dataset) }
+      assertDoesNotThrow {
+        datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, dataset)
+      }
     }
   }
 
@@ -713,20 +703,23 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test updating (adding) runner's datasetList add runner users to new dataset`() {
-    val newDataset = datasetApiService.createDataset(organizationSaved.id, makeDataset())
+    val newDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, null, makeDataset())
     runnerSaved =
         runnerApiService.updateRunner(
             organizationSaved.id,
             workspaceSaved.id,
             runnerSaved.id,
-            RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id!!, newDataset.id!!)))
+            RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id, newDataset.id)))
 
     val runnerUserList =
         runnerApiService.listRunnerSecurityUsers(
             organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
     val datasetUserList =
-        datasetApiService.getDatasetSecurityUsers(organizationSaved.id, newDataset.id!!)
+        datasetApiService.getDatasetSecurityUsers(
+            organizationSaved.id, organizationSaved.id, newDataset.id)
     datasetUserList.containsAll(runnerUserList)
   }
 
@@ -828,15 +821,16 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             solution = WorkspaceSolution(solutionSaved.id),
             datasetCopy = false)
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-    runner = makeRunnerCreateRequest(datasetList = mutableListOf(datasetSaved.id!!))
+    runner = makeRunnerCreateRequest(datasetList = mutableListOf(datasetSaved.id))
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
     datasetSaved =
-        datasetApiService.findDatasetById(organizationSaved.id, runnerSaved.datasetList[0])
+        datasetApiService.getDataset(
+            organizationSaved.id, workspaceSaved.id, runnerSaved.datasetList[0])
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
     assertDoesNotThrow {
-      datasetApiService.findDatasetById(organizationSaved.id, datasetSaved.id!!)
+      datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
     }
   }
 
@@ -849,11 +843,12 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             solution = WorkspaceSolution(solutionSaved.id),
             datasetCopy = true)
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-    runner = makeRunnerCreateRequest(datasetList = mutableListOf(datasetSaved.id!!))
+    runner = makeRunnerCreateRequest(datasetList = mutableListOf(datasetSaved.id))
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
     datasetSaved =
-        datasetApiService.findDatasetById(organizationSaved.id, runnerSaved.datasetList[0])
+        datasetApiService.getDataset(
+            organizationSaved.id, workspaceSaved.id, runnerSaved.datasetList[0])
     runnerApiService.createRunnerAccessControl(
         organizationSaved.id,
         workspaceSaved.id,
@@ -861,7 +856,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         RunnerAccessControl(id = "id", role = ROLE_EDITOR))
 
     val datasetAC =
-        datasetApiService.getDatasetAccessControl(organizationSaved.id, datasetSaved.id!!, "id")
+        datasetApiService.getDatasetAccessControl(
+            organizationSaved.id, workspaceSaved.id, datasetSaved.id, "id")
     assertEquals(ROLE_EDITOR, datasetAC.role)
   }
 
@@ -901,7 +897,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             name = "Runner_With_unknown_runtemplate_id",
             parentId = "unknown_parent_id",
             runTemplateId = "unknown_runtemplate_id",
-            datasetList = mutableListOf(datasetSaved.id!!),
+            datasetList = mutableListOf(datasetSaved.id),
             parametersValues = mutableListOf(runTemplateParameterValue2))
 
     val assertThrows =
@@ -921,7 +917,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         makeRunnerCreateRequest(
             name = "Runner_With_unknown_parent",
             parentId = parentId,
-            datasetList = mutableListOf(datasetSaved.id!!),
+            datasetList = mutableListOf(datasetSaved.id),
             parametersValues = mutableListOf(runTemplateParameterValue2))
 
     val assertThrows =
@@ -1144,8 +1140,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun `As a viewer, I can only see my information in security property for listRunners`() {
     every { getCurrentAccountIdentifier(any()) } returns defaultName
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-    materializeTwingraph()
+    datasetSaved =
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -1184,8 +1180,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun `As a validator, I can see whole security property for listRunners`() {
     every { getCurrentAccountIdentifier(any()) } returns defaultName
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id, dataset)
-    materializeTwingraph()
+    datasetSaved =
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -1272,63 +1268,10 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
   }
 
-  /*
-  @Test
-  fun `assert last run status is correct`(){
-    val expectedRunId = "run-genid12345"
-    every { eventPublisher.publishEvent(any<RunStart>()) } answers
-            {
-              firstArg<RunStart>().response = expectedRunId
-            }
-    runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-
-    logger.info("status is not final")
-    every { runnerService.updateRunnerStatus(any()) } returns runnerSaved
-    var runInfo = runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id).lastRunInfo
-    assertEquals(LastRunInfo(expectedRunId, LastRunInfo.LastRunStatus.InProgress), runInfo)
-
-    logger.info("status is final")
-
-
-
-    logger.info("run deleted with no other")
-
-    logger.info("run deleted with 1 other")
-
-    logger.info("run deleted with multiple others")
-  }*/
-
-  private fun makeConnector(name: String = "name"): Connector {
-    return Connector(
-        key = UUID.randomUUID().toString(),
-        name = name,
-        repository = "/repository",
-        version = "1.0",
-        ioTypes = listOf(IoTypesEnum.read))
-  }
-
   fun makeDataset(
-      organizationId: String = organizationSaved.id,
       name: String = "name",
-      connector: Connector = connectorSaved
-  ): Dataset {
-    return Dataset(
-        name = name,
-        organizationId = organizationId,
-        ownerId = "ownerId",
-        connector =
-            DatasetConnector(
-                id = connector.id,
-                name = connector.name,
-                version = connector.version,
-            ),
-        security =
-            DatasetSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        DatasetAccessControl(defaultName, ROLE_USER))))
+  ): DatasetCreateRequest {
+    return DatasetCreateRequest(name)
   }
 
   fun makeSolution(organizationId: String = organizationSaved.id): SolutionCreateRequest {
@@ -1420,18 +1363,4 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                   mutableListOf(
                       RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                       RunnerAccessControl(userName, role))))
-
-  private fun materializeTwingraph(
-      dataset: Dataset = datasetSaved,
-      createTwingraph: Boolean = true
-  ): Dataset {
-    dataset.apply {
-      if (createTwingraph && !this.twingraphId.isNullOrBlank()) {
-        jedis.graphQuery(this.twingraphId, "MATCH (n:labelrouge) return 1")
-      }
-      this.ingestionStatus = IngestionStatusEnum.SUCCESS
-      this.twincacheStatus = TwincacheStatusEnum.FULL
-    }
-    return datasetRepository.save(dataset)
-  }
 }

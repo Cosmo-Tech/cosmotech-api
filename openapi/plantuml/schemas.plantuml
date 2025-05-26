@@ -21,35 +21,6 @@ entity ComponentRolePermissions {
     * roles: Map
 }
 
-entity Connector {
-    id: String
-    key: String
-    name: String
-    description: String
-    repository: String
-    version: String
-    tags: List<String>
-    ownerId: String
-    url: String
-    ioTypes: List<IoTypesEnum>
-    parameterGroups: List<ConnectorParameterGroup>
-}
-
-entity ConnectorParameter {
-    * id: String
-    * label: String
-    valueType: String
-    options: List<String>
-    default: String
-    envVar: String
-}
-
-entity ConnectorParameterGroup {
-    * id: String
-    * label: String
-    * parameters: List<ConnectorParameter>
-}
-
 entity ContainerResourceSizeInfo {
     * cpu: String
     * memory: String
@@ -65,29 +36,14 @@ entity CreatedRun {
 }
 
 entity Dataset {
-    id: String
-    name: String
+    * id: String
+    * name: String
     description: String
-    ownerId: String
-    ownerName: String
-    organizationId: String
-    parentId: String
-    linkedWorkspaceIdList: List<String>
-    twingraphId: String
-    main: Boolean
-    creationDate: Long
-    refreshDate: Long
-    sourceType: DatasetSourceType
-    source: SourceInfo
-    ingestionStatus: IngestionStatusEnum
-    twincacheStatus: TwincacheStatusEnum
-    queries: List<String>
-    tags: List<String>
-    connector: DatasetConnector
-    fragmentsIds: List<String>
-    validatorId: String
-    compatibility: List<DatasetCompatibility>
-    security: DatasetSecurity
+    * tags: List<String>
+    * parts: List<DatasetPart>
+    * createInfo: EditInfo
+    * updateInfo: EditInfo
+    * security: DatasetSecurity
 }
 
 entity DatasetAccessControl {
@@ -95,31 +51,41 @@ entity DatasetAccessControl {
     * role: String
 }
 
-entity DatasetCompatibility {
-    * solutionKey: String
-    minimumVersion: String
-    maximumVersion: String
+entity DatasetCreateRequest {
+    * name: String
+    description: String
+    tags: List<String>
+    parts: List<DatasetPartCreateRequest>
+    security: DatasetSecurity
 }
 
-entity DatasetConnector {
-    id: String
-    name: String
-    version: String
-    parametersValues: Map
+entity DatasetPart {
+    * id: String
+    * name: String
+    description: String
+    * tags: List<String>
+    * type: DatasetPartTypeEnum
+    * createInfo: EditInfo
+    * updateInfo: EditInfo
 }
 
-entity DatasetCopyParameters {
-    sourceId: String
-    targetId: String
-    options: Map
+entity DatasetPartCreateRequest {
+    * name: String
+    description: String
+    tags: List<String>
+    type: DatasetPartTypeEnum
+}
+
+entity DatasetPartTypeEnum {
+}
+
+entity DatasetPartUpdateRequest {
+    description: String
+    tags: List<String>
 }
 
 entity DatasetRole {
     * role: String
-}
-
-entity DatasetSearch {
-    * datasetTags: List<String>
 }
 
 entity DatasetSecurity {
@@ -127,45 +93,17 @@ entity DatasetSecurity {
     * accessControlList: List<DatasetAccessControl>
 }
 
-entity DatasetSourceType {
-}
-
-entity DatasetTwinGraphHash {
-    hash: String
-}
-
-entity DatasetTwinGraphInfo {
-    jobId: String
-    datasetId: String
-    status: String
-}
-
-entity DatasetTwinGraphQuery {
-    * query: String
-}
-
-entity FileUploadMetadata {
+entity DatasetUpdateRequest {
     name: String
-    size: Integer
+    description: String
+    tags: List<String>
+    parts: List<DatasetPartCreateRequest>
+    security: DatasetSecurity
 }
 
-entity FileUploadValidation {
-    nodes: List<FileUploadMetadata>
-    edges: List<FileUploadMetadata>
-}
-
-entity GraphProperties {
-    type: String
-    source: String
-    target: String
-    name: String
-    params: String
-}
-
-entity IngestionStatusEnum {
-}
-
-entity IoTypesEnum {
+entity EditInfo {
+    * timestamp: Long
+    * userId: String
 }
 
 entity LastRunInfo {
@@ -579,29 +517,6 @@ entity SolutionUpdateRequest {
     runTemplates: List<RunTemplateCreateRequest>
 }
 
-entity SourceInfo {
-    name: String
-    * location: String
-    path: String
-    jobId: String
-}
-
-entity SubDatasetGraphQuery {
-    name: String
-    description: String
-    queries: List<String>
-    main: Boolean
-}
-
-entity TwinGraphBatchResult {
-    * totalLines: Integer
-    * processedLines: Integer
-    * errors: List<String>
-}
-
-entity TwincacheStatusEnum {
-}
-
 entity Workspace {
     * id: String
     * organizationId: String
@@ -677,6 +592,8 @@ entity WorkspaceWebApp {
 }
 
 
+DatasetCreateRequest -- "0..*" DatasetPartCreateRequest : parts
+DatasetCreateRequest -- DatasetSecurity : security
 RunnerUpdateRequest -- RunnerResourceSizing : runSizing
 RunnerUpdateRequest -- "0..*" RunnerRunTemplateParameterValue : parametersValues
 RunTemplateResourceSizing -- ResourceSizeInfo : requests
@@ -693,7 +610,6 @@ WorkspaceCreateRequest -- WorkspaceSolution : solution
 WorkspaceCreateRequest -- WorkspaceWebApp : webApp
 WorkspaceCreateRequest -- WorkspaceSecurity : security
 AboutInfo -- AboutInfoVersion : version
-ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 RunTemplateUpdateRequest -- RunTemplateResourceSizing : runSizing
 RunContainer -- ContainerResourceSizing : runSizing
 SolutionCreateRequest -- "0..*" RunTemplateParameterCreateRequest : parameters
@@ -704,7 +620,6 @@ SolutionUpdateRequest -- "0..*" RunTemplateParameterCreateRequest : parameters
 SolutionUpdateRequest -- "0..*" RunTemplateParameterGroupCreateRequest : parameterGroups
 SolutionUpdateRequest -- "0..*" RunTemplateCreateRequest : runTemplates
 OrganizationCreateRequest -- OrganizationSecurity : security
-Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerEditInfo : createInfo
 Runner -- RunnerEditInfo : updateInfo
 Runner -- RunnerResourceSizing : runSizing
@@ -716,23 +631,25 @@ Organization -- OrganizationEditInfo : updateInfo
 Organization -- OrganizationSecurity : security
 RunStatus -- RunEditInfo : createInfo
 RunStatus -- "0..*" RunStatusNode : nodes
-FileUploadValidation -- "0..*" FileUploadMetadata : nodes
-FileUploadValidation -- "0..*" FileUploadMetadata : edges
 RunTemplate -- RunTemplateResourceSizing : runSizing
+DatasetUpdateRequest -- "0..*" DatasetPartCreateRequest : parts
+DatasetUpdateRequest -- DatasetSecurity : security
 RunTemplateCreateRequest -- RunTemplateResourceSizing : runSizing
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
 RunStatusNode -- RunResourceRequested : resourcesDuration
 WorkspaceUpdateRequest -- WorkspaceSolution : solution
 WorkspaceUpdateRequest -- WorkspaceWebApp : webApp
+DatasetPart -- EditInfo : createInfo
+DatasetPart -- EditInfo : updateInfo
 Solution -- SolutionEditInfo : createInfo
 Solution -- SolutionEditInfo : updateInfo
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates
 Solution -- SolutionSecurity : security
-Dataset -- SourceInfo : source
-Dataset -- DatasetConnector : connector
-Dataset -- "0..*" DatasetCompatibility : compatibility
+Dataset -- "0..*" DatasetPart : parts
+Dataset -- EditInfo : createInfo
+Dataset -- EditInfo : updateInfo
 Dataset -- DatasetSecurity : security
 Run -- RunEditInfo : createInfo
 Run -- "0..*" RunTemplateParameterValue : parametersValues
