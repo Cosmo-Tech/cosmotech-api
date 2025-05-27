@@ -696,13 +696,16 @@ components:
     # main Dataset object
     Dataset:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: Dataset object
       properties:
         id:
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           type: string
           pattern: '^d-\w{10,20}'
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           minLength: 1
           maxLength: 50
         description:
@@ -734,7 +737,9 @@ components:
           allOf:
             - $ref: '#/components/schemas/EditInfo'
         security:
-          $ref: '#/components/schemas/DatasetSecurity'
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          allOf:
+            - $ref: '#/components/schemas/DatasetSecurity'
       required:
         - id
         - name
@@ -795,13 +800,16 @@ components:
     # main Dataset Part object
     DatasetPart:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: Dataset part object
       properties:
         id:
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           type: string
           pattern: '^dp-\w{10,20}'
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           minLength: 1
           maxLength: 50
         description:
