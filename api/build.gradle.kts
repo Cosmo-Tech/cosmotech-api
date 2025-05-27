@@ -46,6 +46,9 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
   // By convention, we expect OpenAPI files for sub-projects to be named and placed as follows:
   // <subproject>/src/main/openapi/<subproject>.yaml
   // For example: organization/src/main/openapi/organization.yaml
+  // Get the order from settings.gradle.kts include() declaration
+  val moduleOrder = rootProject.subprojects.map { it.name }
+  
   val sourcePaths =
       configurations.implementation
           .get()
@@ -60,6 +63,12 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
           .map { file("${it}/src/main/openapi/${it.relativeTo(rootDir)}.yaml") }
           .filter { it.exists() }
           .map { it.absolutePath }
+          .sortedBy { path ->
+            // Extract module name from path and find its index in the desired order
+            val moduleName = file(path).parentFile.parentFile.parentFile.name
+            val index = moduleOrder.indexOf(moduleName)
+            if (index >= 0) index else Int.MAX_VALUE // Put unknown modules at the end
+          }
           .toMutableList()
   // If you need to reference a non-conventional path, feel free to add it below to the
   // sourcePaths local variable, like so: sourcePaths.add("my/path/to/another/openapi.yaml")
