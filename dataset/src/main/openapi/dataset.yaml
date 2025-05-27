@@ -707,6 +707,16 @@ components:
           maxLength: 50
         description:
           type: string
+        organizationId:
+          type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          readOnly: true
+          description: the associated Organization Id
+        workspaceId:
+          type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          readOnly: true
+          description: the associated Workspace Id
         tags:
           type: array
           items:
@@ -730,6 +740,8 @@ components:
         - name
         - tags
         - parts
+        - organizationId
+        - workspaceId
         - createInfo
         - updateInfo
         - security
@@ -800,6 +812,21 @@ components:
             type: string
         type:
           $ref: '#/components/schemas/DatasetPartTypeEnum'
+        organizationId:
+          type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          readOnly: true
+          description: the associated Organization Id
+        workspaceId:
+          type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          readOnly: true
+          description: the associated Workspace Id
+        datasetId:
+          type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          readOnly: true
+          description: the associated Dataset Id
         createInfo:
           description: The details of the Dataset creation
           allOf:
@@ -813,6 +840,9 @@ components:
         - name
         - tags
         - type
+        - organizationId
+        - workspaceId
+        - datasetId
         - createInfo
         - updateInfo
 

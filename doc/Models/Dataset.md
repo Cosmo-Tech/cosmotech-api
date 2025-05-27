@@ -6,6 +6,8 @@
 | **id** | **String** |  | [default to null] |
 | **name** | **String** |  | [default to null] |
 | **description** | **String** |  | [optional] [default to null] |
+| **organizationId** | **String** | the associated Organization Id | [default to null] |
+| **workspaceId** | **String** | the associated Workspace Id | [default to null] |
 | **tags** | **List** |  | [default to null] |
 | **parts** | [**List**](DatasetPart.md) |  | [default to null] |
 | **createInfo** | [**EditInfo**](EditInfo.md) | The details of the Dataset creation | [default to null] |
