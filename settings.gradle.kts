@@ -15,7 +15,15 @@ pluginManagement {
 rootProject.name = "cosmotech-api-parent"
 
 include(
-    "api", "meta", "dataset", "organization", "solution", "workspace", "metrics", "runner", "run")
+    "api",
+    "organization",
+    "solution",
+    "workspace",
+    "dataset",
+    "runner",
+    "run",
+    "meta",
+    "metrics")
 
 project(":api").name = "cosmotech-api"
 
