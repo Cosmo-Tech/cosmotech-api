@@ -3,6 +3,8 @@
 package com.cosmotech.dataset.service
 
 import com.cosmotech.api.CsmPhoenixService
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
@@ -13,12 +15,18 @@ import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetUpdateRequest
+import com.cosmotech.dataset.repository.DatasetRepository
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 
 @Service
 @Suppress("EmptyDefaultConstructor", "TooManyFunctions")
-class DatasetServiceImpl() : CsmPhoenixService(), DatasetApiServiceInterface {
+class DatasetServiceImpl(
+    private val workspaceService: WorkspaceApiServiceInterface,
+    private val datasetRepository: DatasetRepository,
+    private val csmRbac: CsmRbac,
+) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   override fun getVerifiedDataset(
       organizationId: String,
@@ -26,7 +34,14 @@ class DatasetServiceImpl() : CsmPhoenixService(), DatasetApiServiceInterface {
       datasetId: String,
       requiredPermission: String
   ): Dataset {
-    TODO("Not yet implemented")
+    workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
+    val dataset =
+        datasetRepository.findBy(organizationId, workspaceId, datasetId).orElseThrow {
+          CsmResourceNotFoundException(
+              "Dataset $datasetId not found in organization $organizationId and workspace $workspaceId")
+        }
+    csmRbac.verify(dataset.security.toGenericSecurity(datasetId), requiredPermission)
+    return dataset
   }
 
   override fun findByOrganizationIdWorkspaceIdAndDatasetId(
@@ -123,9 +138,9 @@ class DatasetServiceImpl() : CsmPhoenixService(), DatasetApiServiceInterface {
   }
 }
 
-fun DatasetSecurity?.toGenericSecurity(organizationId: String) =
+fun DatasetSecurity?.toGenericSecurity(datasetId: String) =
     RbacSecurity(
-        organizationId,
+        datasetId,
         this?.default ?: ROLE_NONE,
         this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
             ?: mutableListOf())
