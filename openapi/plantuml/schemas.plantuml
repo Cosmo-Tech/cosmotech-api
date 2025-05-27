@@ -39,6 +39,8 @@ entity Dataset {
     * id: String
     * name: String
     description: String
+    * organizationId: String
+    * workspaceId: String
     * tags: List<String>
     * parts: List<DatasetPart>
     * createInfo: EditInfo
@@ -65,6 +67,9 @@ entity DatasetPart {
     description: String
     * tags: List<String>
     * type: DatasetPartTypeEnum
+    * organizationId: String
+    * workspaceId: String
+    * datasetId: String
     * createInfo: EditInfo
     * updateInfo: EditInfo
 }
