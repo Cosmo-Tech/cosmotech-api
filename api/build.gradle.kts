@@ -48,7 +48,7 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
   // For example: organization/src/main/openapi/organization.yaml
   // Get the order from settings.gradle.kts include() declaration
   val moduleOrder = rootProject.subprojects.map { it.name }
-  
+
   val sourcePaths =
       configurations.implementation
           .get()
