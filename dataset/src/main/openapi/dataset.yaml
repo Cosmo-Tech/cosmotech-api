@@ -46,8 +46,10 @@ paths:
               properties:
                 files:
                   $ref: "#/components/schemas/DatasetPartFiles"
-                dataset:
+                datasetCreateRequest:
                   $ref: "#/components/schemas/DatasetCreateRequest"
+              required:
+                - datasetCreateRequest
 
       responses:
         "201":
@@ -67,6 +69,19 @@ paths:
           description: Organization or workspace specified is not found
     get:
       operationId: listDatasets
+      parameters:
+        - name: page
+          in: query
+          description: Page number to query (first page is at index 0)
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: Amount of result by page
+          required: false
+          schema:
+            type: integer
       tags:
         - dataset
       description: List all datasets
@@ -197,8 +212,8 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: setDatasetDefaultSecurity
+    patch:
+      operationId: updateDatasetDefaultSecurity
       tags:
         - dataset
       summary: Set the Dataset default security
@@ -244,7 +259,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: addDatasetAccessControl
+      operationId: createDatasetAccessControl
       tags:
         - dataset
       summary: Add a control access to the Dataset
@@ -341,7 +356,7 @@ paths:
         "404":
           description: The Dataset specified is unknown or you don't have access to it
     delete:
-      operationId: removeDatasetAccessControl
+      operationId: deleteDatasetAccessControl
       tags:
         - dataset
       summary: Remove the specified access from the given Dataset
@@ -372,7 +387,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getDatasetSecurityUsers
+      operationId: listDatasetSecurityUsers
       tags:
         - dataset
       summary: Get the Dataset security users list
@@ -425,8 +440,10 @@ paths:
               properties:
                 file:
                   $ref: "#/components/schemas/DatasetPartFile"
-                dataset_part:
+                datasetPartCreateRequest:
                   $ref: '#/components/schemas/DatasetPartCreateRequest'
+              required:
+                - datasetPartCreateRequest
       responses:
         "201":
           description: Dataset part successfully created

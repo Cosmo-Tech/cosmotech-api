@@ -114,7 +114,7 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     datasetSaved =
-        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, dataset, null)
   }
 
   @Test
@@ -525,7 +525,7 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     dataset = makeDataset()
     datasetSaved =
-        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, dataset, null)
 
     workspaceSaved = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
     assertEquals(
@@ -551,7 +551,7 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
 
     dataset = makeDataset()
     datasetSaved =
-        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, dataset, null)
 
     var workspaces = workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
     workspaces.forEach {

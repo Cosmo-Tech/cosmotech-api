@@ -171,7 +171,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     dataset = makeDataset("Dataset")
     datasetSaved =
-        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, dataset, null)
 
     parentRunner =
         makeRunnerCreateRequest(
@@ -705,7 +705,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun `test updating (adding) runner's datasetList add runner users to new dataset`() {
     val newDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, null, makeDataset())
+            organizationSaved.id, workspaceSaved.id, makeDataset(), null)
     runnerSaved =
         runnerApiService.updateRunner(
             organizationSaved.id,
@@ -718,7 +718,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
     val datasetUserList =
-        datasetApiService.getDatasetSecurityUsers(
+        datasetApiService.listDatasetSecurityUsers(
             organizationSaved.id, organizationSaved.id, newDataset.id)
     datasetUserList.containsAll(runnerUserList)
   }
@@ -1141,7 +1141,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns defaultName
     organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved =
-        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, dataset, null)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -1181,7 +1181,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns defaultName
     organizationSaved = organizationApiService.createOrganization(organization)
     datasetSaved =
-        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, null, dataset)
+        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, dataset, null)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)

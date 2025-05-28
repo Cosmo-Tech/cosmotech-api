@@ -96,8 +96,7 @@ csm:
         enabled: false
         bundle: ""
       dataset:
-        # TODO: Should be way less than a thousand. See open ticket
-        maxResult: 1000
+        maxResult: 200
       run:
         maxResult: 200
       runner:
