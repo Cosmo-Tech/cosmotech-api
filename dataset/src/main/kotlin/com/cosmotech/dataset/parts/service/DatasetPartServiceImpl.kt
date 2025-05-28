@@ -13,12 +13,13 @@ import org.springframework.stereotype.Service
 @Service
 @Suppress("EmptyDefaultConstructor", "TooManyFunctions")
 class DatasetPartServiceImpl() : CsmPhoenixService(), DatasetApiPartServiceInterface {
+
   override fun createDatasetPart(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      file: Resource?,
-      datasetPart: DatasetPartCreateRequest?
+      datasetPartCreateRequest: DatasetPartCreateRequest,
+      file: Resource?
   ): DatasetPart {
     TODO("Not yet implemented")
   }

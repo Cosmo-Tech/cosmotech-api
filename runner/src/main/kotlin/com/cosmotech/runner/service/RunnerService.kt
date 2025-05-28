@@ -598,7 +598,7 @@ class RunnerService(
                 ?.toList()
 
         if (datasetACL != null && datasetACL.any { it.id == userId })
-            datasetApiService.removeDatasetAccessControl(
+            datasetApiService.deleteDatasetAccessControl(
                 organizationId, workspaceId, datasetId, userId)
       }
     }
