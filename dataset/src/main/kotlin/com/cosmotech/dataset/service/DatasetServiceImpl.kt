@@ -8,6 +8,7 @@ import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
@@ -17,16 +18,20 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.dataset.DatasetApiServiceInterface
+import com.cosmotech.dataset.domain.CreateDatasetRequest
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetPart
+import com.cosmotech.dataset.domain.DatasetPartCreateRequest
 import com.cosmotech.dataset.domain.DatasetPartTypeEnum
+import com.cosmotech.dataset.domain.DatasetPartUpdateRequest
 import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetUpdateRequest
 import com.cosmotech.dataset.domain.EditInfo
-import com.cosmotech.dataset.repository.DatasetRepository
+import com.cosmotech.dataset.repositories.DatasetPartRepository
+import com.cosmotech.dataset.repositories.DatasetRepository
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.service.toGenericSecurity
 import java.time.Instant
@@ -38,6 +43,7 @@ import org.springframework.stereotype.Service
 class DatasetServiceImpl(
     private val workspaceService: WorkspaceApiServiceInterface,
     private val datasetRepository: DatasetRepository,
+    private val datasetPartRepository: DatasetPartRepository,
     private val csmRbac: CsmRbac,
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
@@ -67,6 +73,32 @@ class DatasetServiceImpl(
       CsmResourceNotFoundException(
           "Dataset $datasetId not found in organization $organizationId and workspace $workspaceId")
     }
+  }
+
+  override fun removeDatasetPartFromDataset(dataset: Dataset, datasetPartId: String) {
+    dataset.parts.removeIf { it.id == datasetPartId }
+    // Handle DB/Files deletion here
+    datasetRepository.update(dataset)
+  }
+
+  override fun replaceDatasetPartFromDataset(
+      dataset: Dataset,
+      datasetPartIdToReplace: String,
+      datasetPart: DatasetPart
+  ) {
+    val now = Instant.now().toEpochMilli()
+    val userId = getCurrentAccountIdentifier(csmPlatformProperties)
+    val editInfo = EditInfo(timestamp = now, userId = userId)
+
+    dataset.parts
+        .find { it.id == datasetPartIdToReplace }
+        ?.let {
+          it.description = datasetPart.description
+          it.tags = datasetPart.tags
+          it.updateInfo = editInfo
+        }
+    // Handle DB/Files replacement here
+    datasetRepository.update(dataset)
   }
 
   override fun createDatasetAccessControl(
@@ -100,9 +132,8 @@ class DatasetServiceImpl(
       datasetCreateRequest: DatasetCreateRequest,
       files: List<Resource>?
   ): Dataset {
-    logger.trace("Registering Dataset: {}", datasetCreateRequest)
-
-    require(datasetCreateRequest.name.isNotBlank()) { "Dataset name must not be null or blank" }
+    logger.debug("Registering Dataset: {}", datasetCreateRequest)
+      require(datasetCreateRequest.name.isNotBlank()) { "Dataset name must not be null or blank" }
     val datasetId = idGenerator.generate("dataset")
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
@@ -114,19 +145,7 @@ class DatasetServiceImpl(
 
     val datasetParts =
         datasetCreateRequest.parts
-            ?.map { part ->
-              DatasetPart(
-                  id = idGenerator.generate("datasetpart", prependPrefix = "dp-"),
-                  datasetId = datasetId,
-                  name = part.name,
-                  description = part.description,
-                  tags = part.tags ?: mutableListOf(),
-                  type = part.type ?: DatasetPartTypeEnum.Relational,
-                  organizationId = organizationId,
-                  workspaceId = workspaceId,
-                  createInfo = editInfo,
-                  updateInfo = editInfo)
-            }
+            ?.map { part -> constructDatasetPart(organizationId, workspaceId, datasetId, part) }
             ?.toMutableList()
 
     val createdDataset =
@@ -141,6 +160,7 @@ class DatasetServiceImpl(
             createInfo = editInfo,
             updateInfo = editInfo,
             security = security)
+    logger.debug("Registering Dataset: {}", createdDataset)
 
     return datasetRepository.save(createdDataset)
   }
@@ -313,6 +333,184 @@ class DatasetServiceImpl(
             timestamp = Instant.now().toEpochMilli(),
             userId = getCurrentAccountIdentifier(csmPlatformProperties))
     return datasetRepository.save(dataset)
+  }
+
+  override fun createDatasetPart(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      datasetPartCreateRequest: DatasetPartCreateRequest,
+      file: Resource?
+  ): DatasetPart {
+    getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
+    require(datasetPartCreateRequest.name.isNotBlank()) {
+      "Dataset Part name must not be null or blank"
+    }
+
+    val createdDatasetPart =
+        constructDatasetPart(organizationId, workspaceId, datasetId, datasetPartCreateRequest)
+
+    return datasetPartRepository.save(createdDatasetPart)
+  }
+
+  override fun constructDatasetPart(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      datasetPartCreateRequest: DatasetPartCreateRequest
+  ): DatasetPart {
+    logger.debug("Registering DatasetPart: {}", datasetPartCreateRequest)
+    val now = Instant.now().toEpochMilli()
+    val userId = getCurrentAccountIdentifier(csmPlatformProperties)
+    val editInfo = EditInfo(timestamp = now, userId = userId)
+
+    val createdDatasetPart =
+        DatasetPart(
+            id = idGenerator.generate("datasetpart", prependPrefix = "dp-"),
+            datasetId = datasetId,
+            name = datasetPartCreateRequest.name,
+            description = datasetPartCreateRequest.description,
+            tags = datasetPartCreateRequest.tags ?: mutableListOf(),
+            type = datasetPartCreateRequest.type ?: DatasetPartTypeEnum.Relational,
+            organizationId = organizationId,
+            workspaceId = workspaceId,
+            createInfo = editInfo,
+            updateInfo = editInfo)
+    logger.debug("Registering DatasetPart: {}", createdDatasetPart)
+    return createdDatasetPart
+  }
+
+  override fun deleteDatasetPart(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      datasetPartId: String
+  ) {
+    val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
+
+    val datasetPart =
+        datasetPartRepository
+            .findBy(organizationId, workspaceId, datasetId, datasetPartId)
+            .orElseThrow {
+              CsmResourceNotFoundException(
+                  "Dataset Part $datasetPartId not found in organization $organizationId, " +
+                      "workspace $workspaceId and dataset $datasetId")
+            }
+
+    removeDatasetPartFromDataset(dataset, datasetPartId)
+
+    datasetPartRepository.delete(datasetPart)
+  }
+
+  override fun downloadDatasetPart(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      datasetPartId: String
+  ): Resource {
+    TODO("Not yet implemented")
+  }
+
+  override fun getDatasetPart(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      datasetPartId: String
+  ): DatasetPart {
+    getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
+
+    return datasetPartRepository
+        .findBy(organizationId, workspaceId, datasetId, datasetPartId)
+        .orElseThrow {
+          CsmResourceNotFoundException(
+              "Dataset Part $datasetPartId not found in organization $organizationId, " +
+                  "workspace $workspaceId and dataset $datasetId")
+        }
+  }
+
+  override fun listDatasetParts(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      page: Int?,
+      size: Int?
+  ): List<DatasetPart> {
+    val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
+
+    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    val pageable = constructPageRequest(page, size, defaultPageSize)
+    val isAdmin =
+        csmRbac.isAdmin(dataset.security.toGenericSecurity(datasetId), getCommonRolesDefinition())
+
+    val result: MutableList<DatasetPart>
+    val rbacEnabled = !isAdmin && this.csmPlatformProperties.rbac.enabled
+    if (pageable == null) {
+      result =
+          findAllPaginated(defaultPageSize) {
+            if (rbacEnabled) {
+              val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+              datasetPartRepository
+                  .findByOrganizationIdAndWorkspaceIdAndDatasetId(
+                      organizationId, workspaceId, datasetId, currentUser, it)
+                  .toList()
+            } else {
+              datasetPartRepository.findAll(it).toList()
+            }
+          }
+    } else {
+      result =
+          if (rbacEnabled) {
+            val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+            datasetPartRepository
+                .findByOrganizationIdAndWorkspaceIdAndDatasetId(
+                    organizationId, workspaceId, datasetId, currentUser, pageable)
+                .toList()
+          } else {
+            datasetPartRepository.findAll(pageable).toList()
+          }
+    }
+
+    return result
+  }
+
+  override fun queryData(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      datasetPartId: String,
+      filters: List<String>?,
+      sums: List<String>?,
+      counts: List<String>?,
+      offset: Int?,
+      limit: Int?
+  ): List<Any> {
+    TODO("Not yet implemented")
+  }
+
+  override fun replaceDatasetPart(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      datasetPartId: String,
+      file: Resource?,
+      datasetPartUpdateRequest: DatasetPartUpdateRequest?
+  ): DatasetPart {
+    val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
+
+    val datasetPart =
+        datasetPartRepository
+            .findBy(organizationId, workspaceId, datasetId, datasetPartId)
+            .orElseThrow {
+              CsmResourceNotFoundException(
+                  "Dataset Part $datasetPartId not found in organization $organizationId, " +
+                      "workspace $workspaceId and dataset $datasetId")
+            }
+    datasetPart.description = datasetPartUpdateRequest?.description ?: datasetPart.description
+    datasetPart.tags = datasetPartUpdateRequest?.tags ?: datasetPart.tags
+
+    replaceDatasetPartFromDataset(dataset, datasetPartId, datasetPart)
+
+    return datasetPartRepository.update(datasetPart)
   }
 }
 
