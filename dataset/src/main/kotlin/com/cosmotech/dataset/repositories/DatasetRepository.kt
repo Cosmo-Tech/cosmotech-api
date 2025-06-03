@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.dataset.repository
+package com.cosmotech.dataset.repositories
 
 import com.cosmotech.api.redis.Sanitize
 import com.cosmotech.api.redis.SecurityConstraint

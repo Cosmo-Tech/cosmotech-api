@@ -14,8 +14,6 @@ security:
 tags:
   - name: dataset
     description: Dataset Management
-  - name: dataset part
-    description: Dataset Part Management
 
 paths:
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets:
@@ -429,7 +427,7 @@ paths:
     post:
       operationId: createDatasetPart
       tags:
-        - dataset part
+        - dataset
       summary: Create a data part of a Dataset
       requestBody:
         description: New Dataset part to create.
@@ -462,8 +460,21 @@ paths:
           description: Dataset specified is not found
     get:
       operationId: listDatasetParts
+      parameters:
+        - name: page
+          in: query
+          description: Page number to query (first page is at index 0)
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: Amount of result by page
+          required: false
+          schema:
+            type: integer
       tags:
-        - dataset part
+        - dataset
       summary: Retrieve all dataset parts of a Dataset
       responses:
         "200":
@@ -514,7 +525,7 @@ paths:
     get:
       operationId: getDatasetPart
       tags:
-        - dataset part
+        - dataset
       summary: Retrieve a data part of a Dataset
       responses:
         "200":
@@ -533,7 +544,7 @@ paths:
     put:
       operationId: replaceDatasetPart
       tags:
-        - dataset part
+        - dataset
       summary: Replace existing dataset parts of a Dataset
       requestBody:
         description: New Dataset part
@@ -544,7 +555,7 @@ paths:
               properties:
                 file:
                   $ref: "#/components/schemas/DatasetPartFile"
-                dataset_part:
+                datasetPartUpdateRequest:
                   $ref: '#/components/schemas/DatasetPartUpdateRequest'
       responses:
         "200":
@@ -565,7 +576,7 @@ paths:
     delete:
       operationId: deleteDatasetPart
       tags:
-        - dataset part
+        - dataset
       description: Delete a dataset part
       summary: Delete a Dataset part
       responses:
@@ -641,7 +652,7 @@ paths:
     get:
       operationId: queryData
       tags:
-        - dataset part
+        - dataset
       summary: Get data of a Dataset
       responses:
         "200":
@@ -691,7 +702,7 @@ paths:
     get:
       operationId: downloadDatasetPart
       tags:
-        - dataset part
+        - dataset
       summary: Download data from a dataset part
       responses:
         "200":
