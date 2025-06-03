@@ -438,7 +438,7 @@ jobs:
             -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@0.31.0
         id: scan
         # Add TRIVY_DB_REPOSITORY due to ratelimit issue
         # https://github.com/aquasecurity/trivy-action/issues/389
