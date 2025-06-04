@@ -3,11 +3,7 @@
 package com.cosmotech.workspace.service
 
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.events.AddDatasetToWorkspace
-import com.cosmotech.api.events.AddWorkspaceToDataset
 import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.events.RemoveDatasetFromWorkspace
-import com.cosmotech.api.events.RemoveWorkspaceFromDataset
 import com.cosmotech.api.events.WorkspaceDeleted
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
@@ -53,6 +49,7 @@ import org.springframework.core.io.Resource
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
@@ -217,7 +214,6 @@ internal class WorkspaceServiceImpl(
       CoroutineScope(SecurityCoroutineContext()).launch {
         deleteAllS3WorkspaceObjects(organizationId, workspace)
       }
-      workspace.linkedDatasetIdList?.forEach { deleteDatasetLink(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
       this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, workspaceId))
@@ -251,7 +247,7 @@ internal class WorkspaceServiceImpl(
   override fun createWorkspaceFile(
       organizationId: String,
       workspaceId: String,
-      file: Resource,
+      file: MultipartFile,
       overwrite: Boolean,
       destination: String?
   ): WorkspaceFile {
@@ -259,28 +255,29 @@ internal class WorkspaceServiceImpl(
       throw IllegalArgumentException("Invalid destination: '$destination'. '..' is not allowed")
     }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-    if (file.filename?.contains("..") == true || file.filename?.contains("/") == true) {
+    if (file.originalFilename?.contains("..") == true ||
+        file.originalFilename?.contains("/") == true) {
       throw IllegalArgumentException(
-          "Invalid filename: '${file.filename}'. '..' and '/' are not allowed")
+          "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed")
     }
 
     logger.debug(
         "Uploading file resource to workspace #{} ({}): {} => {}",
         workspace.id,
         workspace.name,
-        file.filename,
+        file.originalFilename,
         destination)
 
     resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
     val fileRelativeDestinationBuilder = StringBuilder()
     if (destination.isNullOrBlank()) {
-      fileRelativeDestinationBuilder.append(file.filename)
+      fileRelativeDestinationBuilder.append(file.originalFilename)
     } else {
       // Using multiple consecutive '/' in the path is not supported in the storage upload
       val destinationSanitized = destination.removePrefix("/").replace(Regex("(/)\\1+"), "/")
       fileRelativeDestinationBuilder.append(destinationSanitized)
       if (destinationSanitized.endsWith("/")) {
-        fileRelativeDestinationBuilder.append(file.filename)
+        fileRelativeDestinationBuilder.append(file.originalFilename)
       }
     }
     val objectKey = "$organizationId/$workspaceId/$fileRelativeDestinationBuilder"
@@ -319,64 +316,6 @@ internal class WorkspaceServiceImpl(
         this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id))
       }
     }
-  }
-
-  override fun createDatasetLink(
-      organizationId: String,
-      workspaceId: String,
-      datasetId: String
-  ): Workspace {
-    organizationService.getVerifiedOrganization(organizationId)
-    this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-    sendAddWorkspaceToDatasetEvent(organizationId, datasetId, workspaceId)
-    return addDatasetToLinkedDatasetIdList(organizationId, workspaceId, datasetId)
-  }
-
-  @EventListener(AddDatasetToWorkspace::class)
-  fun processEventAddDatasetToWorkspace(addDatasetToWorkspace: AddDatasetToWorkspace) {
-    this.getVerifiedWorkspace(
-        addDatasetToWorkspace.organizationId, addDatasetToWorkspace.workspaceId, PERMISSION_WRITE)
-    addDatasetToLinkedDatasetIdList(
-        addDatasetToWorkspace.organizationId,
-        addDatasetToWorkspace.workspaceId,
-        addDatasetToWorkspace.datasetId)
-  }
-
-  override fun deleteDatasetLink(organizationId: String, workspaceId: String, datasetId: String) {
-    this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-    sendRemoveWorkspaceFromDatasetEvent(organizationId, datasetId, workspaceId)
-    removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId)
-  }
-
-  @EventListener(RemoveDatasetFromWorkspace::class)
-  fun processEventRemoveDatasetFromWorkspace(
-      removeDatasetFromWorkspace: RemoveDatasetFromWorkspace
-  ) {
-    this.getVerifiedWorkspace(
-        removeDatasetFromWorkspace.organizationId,
-        removeDatasetFromWorkspace.workspaceId,
-        PERMISSION_WRITE)
-    removeDatasetFromLinkedDatasetIdList(
-        removeDatasetFromWorkspace.organizationId,
-        removeDatasetFromWorkspace.workspaceId,
-        removeDatasetFromWorkspace.datasetId)
-  }
-
-  fun removeDatasetFromLinkedDatasetIdList(
-      organizationId: String,
-      workspaceId: String,
-      datasetId: String
-  ): Workspace {
-    val workspace = getVerifiedWorkspace(organizationId, workspaceId)
-
-    if (workspace.linkedDatasetIdList != null) {
-      if (workspace.linkedDatasetIdList!!.contains(datasetId)) {
-        workspace.linkedDatasetIdList!!.remove(datasetId)
-        return save(workspace)
-      }
-    }
-
-    return workspace
   }
 
   private fun getWorkspaceFiles(organizationId: String, workspaceId: String): List<WorkspaceFile> {
@@ -543,43 +482,6 @@ internal class WorkspaceServiceImpl(
   ): List<String> {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(workspace.security.toGenericSecurity(workspaceId))
-  }
-
-  private fun addDatasetToLinkedDatasetIdList(
-      organizationId: String,
-      workspaceId: String,
-      datasetId: String
-  ): Workspace {
-    val workspace = getWorkspace(organizationId, workspaceId)
-
-    if (workspace.linkedDatasetIdList != null) {
-      if (workspace.linkedDatasetIdList!!.contains(datasetId)) {
-        return workspace
-      } else {
-        workspace.linkedDatasetIdList!!.add(datasetId)
-      }
-    } else {
-      workspace.linkedDatasetIdList = mutableListOf(datasetId)
-    }
-    return save(workspace)
-  }
-
-  private fun sendRemoveWorkspaceFromDatasetEvent(
-      organizationId: String,
-      datasetId: String,
-      workspaceId: String
-  ) {
-    this.eventPublisher.publishEvent(
-        RemoveWorkspaceFromDataset(this, organizationId, datasetId, workspaceId))
-  }
-
-  private fun sendAddWorkspaceToDatasetEvent(
-      organizationId: String,
-      datasetId: String,
-      workspaceId: String
-  ) {
-    this.eventPublisher.publishEvent(
-        AddWorkspaceToDataset(this, organizationId, datasetId, workspaceId))
   }
 
   fun updateSecurityVisibility(workspace: Workspace): Workspace {

@@ -4,16 +4,14 @@ All URIs are relative to *http://localhost:8080*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**createDatasetLink**](WorkspaceApi.md#createDatasetLink) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/link |  |
 | [**createWorkspace**](WorkspaceApi.md#createWorkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace |
 | [**createWorkspaceAccessControl**](WorkspaceApi.md#createWorkspaceAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | Add a control access to the Workspace |
 | [**createWorkspaceFile**](WorkspaceApi.md#createWorkspaceFile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace |
-| [**deleteDatasetLink**](WorkspaceApi.md#deleteDatasetLink) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/link |  |
 | [**deleteWorkspace**](WorkspaceApi.md#deleteWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace |
-| [**deleteWorkspaceAccessControl**](WorkspaceApi.md#deleteWorkspaceAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace |
+| [**deleteWorkspaceAccessControl**](WorkspaceApi.md#deleteWorkspaceAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Workspace |
 | [**deleteWorkspaceFile**](WorkspaceApi.md#deleteWorkspaceFile) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files/delete | Delete a workspace file |
 | [**deleteWorkspaceFiles**](WorkspaceApi.md#deleteWorkspaceFiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files |
-| [**getWorkspace**](WorkspaceApi.md#getWorkspace) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace |
+| [**getWorkspace**](WorkspaceApi.md#getWorkspace) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of a workspace |
 | [**getWorkspaceAccessControl**](WorkspaceApi.md#getWorkspaceAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Get a control access for the Workspace |
 | [**getWorkspaceFile**](WorkspaceApi.md#getWorkspaceFile) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files/download | Download the Workspace File specified |
 | [**getWorkspaceSecurity**](WorkspaceApi.md#getWorkspaceSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security | Get the Workspace security information |
@@ -25,33 +23,6 @@ All URIs are relative to *http://localhost:8080*
 | [**updateWorkspaceAccessControl**](WorkspaceApi.md#updateWorkspaceAccessControl) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Update the specified access to User for a Workspace |
 | [**updateWorkspaceDefaultSecurity**](WorkspaceApi.md#updateWorkspaceDefaultSecurity) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | Update the Workspace default security |
 
-
-<a name="createDatasetLink"></a>
-# **createDatasetLink**
-> Workspace createDatasetLink(organization\_id, workspace\_id, datasetId)
-
-
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| The Organization identifier | [default to null] |
-| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
-| **datasetId** | **String**| dataset id to be linked to | [default to null] |
-
-### Return type
-
-[**Workspace**](../Models/Workspace.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json, application/yaml
 
 <a name="createWorkspace"></a>
 # **createWorkspace**
@@ -135,33 +106,6 @@ Upload a file for the Workspace
 - **Content-Type**: multipart/form-data
 - **Accept**: application/json, application/yaml
 
-<a name="deleteDatasetLink"></a>
-# **deleteDatasetLink**
-> deleteDatasetLink(organization\_id, workspace\_id, datasetId)
-
-
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| The Organization identifier | [default to null] |
-| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
-| **datasetId** | **String**| dataset id to be linked to | [default to null] |
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
 <a name="deleteWorkspace"></a>
 # **deleteWorkspace**
 > deleteWorkspace(organization\_id, workspace\_id)
@@ -192,7 +136,7 @@ null (empty response body)
 # **deleteWorkspaceAccessControl**
 > deleteWorkspaceAccessControl(organization\_id, workspace\_id, identity\_id)
 
-Remove the specified access from the given Organization Workspace
+Remove the specified access from the given Workspace
 
 ### Parameters
 
@@ -272,7 +216,7 @@ null (empty response body)
 # **getWorkspace**
 > Workspace getWorkspace(organization\_id, workspace\_id)
 
-Get the details of an workspace
+Get the details of a workspace
 
 ### Parameters
 

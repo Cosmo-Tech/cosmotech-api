@@ -18,7 +18,6 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.dataset.DatasetApiServiceInterface
-import com.cosmotech.dataset.domain.CreateDatasetRequest
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCreateRequest
@@ -37,6 +36,7 @@ import com.cosmotech.workspace.service.toGenericSecurity
 import java.time.Instant
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 
 @Service
 @Suppress("TooManyFunctions")
@@ -130,10 +130,10 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetCreateRequest: DatasetCreateRequest,
-      files: List<Resource>?
+      files: Array<MultipartFile>
   ): Dataset {
     logger.debug("Registering Dataset: {}", datasetCreateRequest)
-      require(datasetCreateRequest.name.isNotBlank()) { "Dataset name must not be null or blank" }
+    require(datasetCreateRequest.name.isNotBlank()) { "Dataset name must not be null or blank" }
     val datasetId = idGenerator.generate("dataset")
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
@@ -276,7 +276,7 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      files: List<Resource>?,
+      files: Array<MultipartFile>,
       dataset: DatasetUpdateRequest?
   ): List<Dataset> {
     TODO("Not yet implemented")
@@ -339,8 +339,8 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      datasetPartCreateRequest: DatasetPartCreateRequest,
-      file: Resource?
+      file: MultipartFile,
+      datasetPartCreateRequest: DatasetPartCreateRequest
   ): DatasetPart {
     getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
     require(datasetPartCreateRequest.name.isNotBlank()) {
@@ -492,7 +492,7 @@ class DatasetServiceImpl(
       workspaceId: String,
       datasetId: String,
       datasetPartId: String,
-      file: Resource?,
+      file: MultipartFile,
       datasetPartUpdateRequest: DatasetPartUpdateRequest?
   ): DatasetPart {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)

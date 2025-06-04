@@ -115,7 +115,7 @@ paths:
       operationId: getWorkspace
       tags:
         - workspace
-      summary: Get the details of an workspace
+      summary: Get the details of a workspace
       responses:
         "200":
           description: The Workspace details
@@ -362,70 +362,6 @@ paths:
           description: Request succeeded
         "404":
           description: The Workspace or the file specified is unknown or you don't have access to them
-
-  /organizations/{organization_id}/workspaces/{workspace_id}/link:
-    parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
-    post:
-      parameters:
-        - name: datasetId
-          in: query
-          description: dataset id to be linked to
-          required: true
-          schema:
-            type: string
-      operationId: createDatasetLink
-      tags:
-        - workspace
-      responses:
-        "200":
-          description: The workspace details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workspace'
-              examples:
-                BreweryADTUpdated:
-                  $ref: '#/components/examples/BreweryWorkspaceWithLink'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/Workspace'
-              examples:
-                BreweryADTUpdated:
-                  $ref: '#/components/examples/BreweryWorkspaceWithLink'
-        "400":
-          description: Bad request
-        "404":
-          description: The workspace specified is unknown or you don't have access to it
-    delete:
-      parameters:
-        - name: datasetId
-          in: query
-          description: dataset id to be linked to
-          required: true
-          schema:
-            type: string
-      operationId: deleteDatasetLink
-      tags:
-        - workspace
-      responses:
-        "200":
-          description: The request succeeded
-        "400":
-          description: Bad request
-        "404":
-          description: The Dataset specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role}:
     parameters:
@@ -697,7 +633,7 @@ paths:
       operationId: deleteWorkspaceAccessControl
       tags:
         - workspace
-      summary: Remove the specified access from the given Organization Workspace
+      summary: Remove the specified access from the given Workspace
       responses:
         "204":
           description: Request succeeded
@@ -783,11 +719,6 @@ components:
         description:
           type: string
           description: The Workspace description
-        linkedDatasetIdList:
-          type: array
-          description: list of dataset linked to this dataset
-          items:
-            type: string
         version:
           type: string
           description: The Workspace version MAJOR.MINOR.PATCH.
@@ -1052,36 +983,6 @@ components:
         key: brewery
         name: Brewery Analysis
         description: Brewery analysis for stock, production, transport and customer satisfaction
-        version: "1.0.0"
-        tags:
-          - Brewery
-        solution:
-          solutionId: "sol-feo16eua48o"
-          runTemplateFilter:
-            - "run1"
-          defaultRunTemplateDataset:
-            run1: "data1"
-        datasetCopy: true
-        createInfo:
-          timestamp: 123456789
-          userId: admin
-        updateInfo:
-          timestamp: 123456789
-          userId: admin
-        security:
-          default: "viewer"
-          accessControlList:
-            - id: "alice.doe@cosmotech.com"
-              role: "admin"
-    BreweryWorkspaceWithLink:
-      summary: Brewery Workspace with Dataset Link
-      description: Brewery Workspace example with linked dataset
-      value:
-        key: brewery
-        name: Brewery Analysis
-        description: Brewery analysis for stock, production, transport and customer satisfaction
-        linkedDatasetIdList:
-          - "d-pe57ai0h34"
         version: "1.0.0"
         tags:
           - Brewery

@@ -67,8 +67,8 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.core.io.Resource
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.services.s3.S3Client
 
 const val ORGANIZATION_ID = "o-AbCdEf1234"
@@ -148,8 +148,8 @@ class WorkspaceServiceImplTests {
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
     every { workspaceRepository.findBy(any(), any()) } returns Optional.of(workspace)
 
-    val file = mockk<Resource>(relaxed = true)
-    every { file.filename } returns "my_file.txt"
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
 
     val workspaceFile =
         workspaceServiceImpl.createWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, null)
@@ -167,8 +167,8 @@ class WorkspaceServiceImplTests {
         mockk<Organization>()
     every { workspaceRepository.findBy(any(), any()) } returns Optional.of(workspace)
 
-    val file = mockk<Resource>(relaxed = true)
-    every { file.filename } returns "my_file.txt"
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
 
     val workspaceFile =
         workspaceServiceImpl.createWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, "  ")
@@ -184,8 +184,8 @@ class WorkspaceServiceImplTests {
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
     every { workspaceRepository.findBy(any(), any()) } returns Optional.of(workspace)
 
-    val file = mockk<Resource>(relaxed = true)
-    every { file.filename } returns "my_file.txt"
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
 
     val workspaceFile =
         workspaceServiceImpl.createWorkspaceFile(
@@ -202,8 +202,8 @@ class WorkspaceServiceImplTests {
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
     every { workspaceRepository.findBy(any(), any()) } returns Optional.of(workspace)
 
-    val file = mockk<Resource>(relaxed = true)
-    every { file.filename } returns "my_file.txt"
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
 
     val workspaceFile =
         workspaceServiceImpl.createWorkspaceFile(
@@ -220,8 +220,8 @@ class WorkspaceServiceImplTests {
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
     every { workspaceRepository.findBy(any(), any()) } returns Optional.of(workspace)
 
-    val file = mockk<Resource>(relaxed = true)
-    every { file.filename } returns "my_file.txt"
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
 
     val workspaceFile =
         workspaceServiceImpl.createWorkspaceFile(

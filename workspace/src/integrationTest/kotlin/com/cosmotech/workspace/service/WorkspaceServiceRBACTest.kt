@@ -54,11 +54,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.core.io.Resource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.services.s3.S3Client
 
 @ActiveProfiles(profiles = ["workspace-test"])
@@ -72,7 +72,7 @@ class WorkspaceServiceRBACTest : CsmS3TestBase() {
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
-  @RelaxedMockK private lateinit var resource: Resource
+  @RelaxedMockK private lateinit var resource: MultipartFile
 
   @RelaxedMockK private lateinit var resourceScanner: ResourceScanner
   @RelaxedMockK private lateinit var s3Client: S3Client

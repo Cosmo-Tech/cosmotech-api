@@ -442,6 +442,7 @@ paths:
                   $ref: '#/components/schemas/DatasetPartCreateRequest'
               required:
                 - datasetPartCreateRequest
+                - file
       responses:
         "201":
           description: Dataset part successfully created
@@ -557,6 +558,8 @@ paths:
                   $ref: "#/components/schemas/DatasetPartFile"
                 datasetPartUpdateRequest:
                   $ref: '#/components/schemas/DatasetPartUpdateRequest'
+              required:
+                - file
       responses:
         "200":
           description: Dataset part successfully replaced

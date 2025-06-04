@@ -149,7 +149,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     datasetSaved =
-        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, dataset, null)
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
 
     solution = makeSolutionCreateRequest()
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)

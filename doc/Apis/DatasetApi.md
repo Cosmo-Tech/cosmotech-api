@@ -82,7 +82,7 @@ Add a control access to the Dataset
 
 <a name="createDatasetPart"></a>
 # **createDatasetPart**
-> DatasetPart createDatasetPart(organization\_id, workspace\_id, dataset\_id, datasetPartCreateRequest, file)
+> DatasetPart createDatasetPart(organization\_id, workspace\_id, dataset\_id, file, datasetPartCreateRequest)
 
 Create a data part of a Dataset
 
@@ -93,8 +93,8 @@ Create a data part of a Dataset
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **file** | **File**| Data file to upload | [default to null] |
 | **datasetPartCreateRequest** | [**DatasetPartCreateRequest**](../Models/DatasetPartCreateRequest.md)|  | [default to null] |
-| **file** | **File**| Data file to upload | [optional] [default to null] |
 
 ### Return type
 
@@ -442,7 +442,7 @@ Replace existing dataset parts of a Dataset
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **dataset\_id** | **String**| the Dataset identifier | [default to null] |
 | **dataset\_part\_id** | **String**| the Dataset part identifier | [default to null] |
-| **file** | **File**| Data file to upload | [optional] [default to null] |
+| **file** | **File**| Data file to upload | [default to null] |
 | **datasetPartUpdateRequest** | [**DatasetPartUpdateRequest**](../Models/DatasetPartUpdateRequest.md)|  | [optional] [default to null] |
 
 ### Return type
