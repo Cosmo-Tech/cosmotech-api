@@ -528,7 +528,6 @@ entity Workspace {
     * key: String
     * name: String
     description: String
-    linkedDatasetIdList: List<String>
     version: String
     tags: List<String>
     * createInfo: WorkspaceEditInfo

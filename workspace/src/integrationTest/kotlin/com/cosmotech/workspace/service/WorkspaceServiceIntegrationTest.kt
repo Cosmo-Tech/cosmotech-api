@@ -5,11 +5,7 @@ package com.cosmotech.workspace.service
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.api.rbac.*
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -24,24 +20,18 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
-import com.cosmotech.workspace.domain.Workspace
-import com.cosmotech.workspace.domain.WorkspaceAccessControl
-import com.cosmotech.workspace.domain.WorkspaceCreateRequest
-import com.cosmotech.workspace.domain.WorkspaceEditInfo
-import com.cosmotech.workspace.domain.WorkspaceRole
-import com.cosmotech.workspace.domain.WorkspaceSecurity
-import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
-import com.cosmotech.workspace.domain.WorkspaceWebApp
+import com.cosmotech.workspace.domain.*
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import java.io.FileInputStream
 import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -52,6 +42,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.ResourceLoader
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
@@ -114,7 +105,8 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     datasetSaved =
-        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, dataset, null)
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
   }
 
   @Test
@@ -148,13 +140,17 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   @Test
   fun `test create workspace file`() {
 
-    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName")
+    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
+    val input = FileInputStream(resourceTestFile)
+    val multipartFile =
+        MockMultipartFile(
+            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
     logger.info("should create a workspace file")
     val savedFile =
         workspaceApiService.createWorkspaceFile(
-            organizationSaved.id, workspaceSaved.id, resourceTestFile, true, null)
+            organizationSaved.id, workspaceSaved.id, multipartFile, true, null)
 
     assertEquals(fileName, savedFile.fileName)
   }
@@ -162,14 +158,17 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   @Test
   fun `test get workspace file`() {
     logger.info("should get a workspace file")
-    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName")
-
+    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
+    val input = FileInputStream(resourceTestFile)
+    val multipartFile =
+        MockMultipartFile(
+            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
     workspaceApiService.createWorkspaceFile(
-        organizationSaved.id, workspaceSaved.id, resourceTestFile, true, null)
+        organizationSaved.id, workspaceSaved.id, multipartFile, true, null)
 
     val fetchedFile =
         workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
-    val expectedText = resourceTestFile.inputStream.bufferedReader().use { it.readText() }
+    val expectedText = input.bufferedReader().use { it.readText() }
     val retrievedText = fetchedFile.inputStream.bufferedReader().use { it.readText() }
     assertEquals(expectedText, retrievedText)
   }
@@ -179,14 +178,18 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
     logger.info("should list all workspace file")
-    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName")
+    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
+    val input = FileInputStream(resourceTestFile)
+    val multipartFile =
+        MockMultipartFile(
+            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
 
     var workspaceFiles =
         workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
     assertTrue(workspaceFiles.isEmpty())
 
     workspaceApiService.createWorkspaceFile(
-        organizationSaved.id, workspaceSaved.id, resourceTestFile, true, null)
+        organizationSaved.id, workspaceSaved.id, multipartFile, true, null)
 
     workspaceFiles = workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
     assertEquals(1, workspaceFiles.size)
@@ -195,10 +198,14 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   @Test
   fun `test delete workspace file`() {
     logger.info("should delete a workspace file")
-    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName")
+    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
+    val input = FileInputStream(resourceTestFile)
+    val multipartFile =
+        MockMultipartFile(
+            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
 
     workspaceApiService.createWorkspaceFile(
-        organizationSaved.id, workspaceSaved.id, resourceTestFile, true, null)
+        organizationSaved.id, workspaceSaved.id, multipartFile, true, null)
 
     workspaceApiService.deleteWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
 
@@ -213,12 +220,16 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   @Test
   fun `test deleteAll workspace file`() {
     logger.info("should delete all workspace files")
-    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName")
+    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
+    val input = FileInputStream(resourceTestFile)
+    val multipartFile =
+        MockMultipartFile(
+            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
 
     workspaceApiService.createWorkspaceFile(
-        organizationSaved.id, workspaceSaved.id, resourceTestFile, true, null)
+        organizationSaved.id, workspaceSaved.id, multipartFile, true, null)
     workspaceApiService.createWorkspaceFile(
-        organizationSaved.id, workspaceSaved.id, resourceTestFile, true, null)
+        organizationSaved.id, workspaceSaved.id, multipartFile, true, null)
 
     workspaceApiService.deleteAllS3WorkspaceObjects(organizationSaved.id, workspaceSaved)
 
@@ -443,75 +454,6 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
   }
 
   @Test
-  fun `link dataset to workspace`() {
-
-    assertNull(
-        workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id)
-            .linkedDatasetIdList)
-
-    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
-
-    val datasetIds = listOf(datasetSaved.id)
-    checkLinkedDatasetId(datasetIds)
-
-    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
-
-    checkLinkedDatasetId(datasetIds)
-  }
-
-  private fun checkLinkedDatasetId(datasetIds: List<String>) {
-    assertEquals(
-        workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id)
-            .linkedDatasetIdList!!
-            .size,
-        datasetIds.size)
-
-    assertEquals(
-        workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id)
-            .linkedDatasetIdList!!,
-        datasetIds)
-  }
-
-  @Test
-  fun `unlink dataset from workspace`() {
-
-    assertNull(
-        workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id)
-            .linkedDatasetIdList)
-
-    workspaceApiService.createDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
-
-    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
-
-    assertEquals(
-        workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id)
-            .linkedDatasetIdList!!
-            .size,
-        0)
-  }
-
-  @Test
-  fun `unlink dataset from workspace  when there is no link`() {
-
-    assertNull(
-        workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id)
-            .linkedDatasetIdList)
-
-    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
-
-    assertNull(
-        workspaceApiService
-            .getWorkspace(organizationSaved.id, workspaceSaved.id)
-            .linkedDatasetIdList)
-  }
-
-  @Test
   fun `As a viewer, I can only see my information in security property for findWorkspaceById`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     organization =
@@ -525,7 +467,8 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     dataset = makeDataset()
     datasetSaved =
-        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, dataset, null)
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
 
     workspaceSaved = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
     assertEquals(
@@ -551,7 +494,8 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
 
     dataset = makeDataset()
     datasetSaved =
-        datasetApiService.createDataset(organizationSaved.id, workspaceSaved.id, dataset, null)
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
 
     var workspaces = workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
     workspaces.forEach {
@@ -576,7 +520,6 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
             updateInfo = WorkspaceEditInfo(0, ""),
             solution = WorkspaceSolution(solutionSaved.id),
             description = "description",
-            linkedDatasetIdList = null,
             version = "1.0.0",
             tags = mutableListOf("tag1", "tag2"),
             webApp = WorkspaceWebApp(url = "url"),
@@ -619,7 +562,6 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
             updateInfo = WorkspaceEditInfo(0, ""),
             solution = WorkspaceSolution(solutionSaved.id),
             description = "description",
-            linkedDatasetIdList = null,
             version = "1.0.0",
             tags = mutableListOf("tag1", "tag2"),
             webApp = WorkspaceWebApp(url = "url"),
@@ -756,23 +698,6 @@ class WorkspaceServiceIntegrationTest : CsmS3TestBase() {
 
     assertEquals(workspaceUpdated.createInfo, workspaceFetched.createInfo)
     assertEquals(workspaceUpdated.updateInfo, workspaceFetched.updateInfo)
-  }
-
-  @Test
-  fun `assert timestamps are functional for workspace links`() {
-    workspaceSaved =
-        workspaceApiService.createWorkspace(organizationSaved.id, makeWorkspaceCreateRequest())
-    val workspaceLinked =
-        workspaceApiService.createDatasetLink(
-            organizationSaved.id, workspaceSaved.id, datasetSaved.id)
-    assertEquals(workspaceSaved.createInfo, workspaceLinked.createInfo)
-    assertTrue { workspaceSaved.updateInfo.timestamp < workspaceLinked.updateInfo.timestamp }
-
-    workspaceApiService.deleteDatasetLink(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
-    val workspaceUnlinked =
-        workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
-    assertEquals(workspaceLinked.createInfo, workspaceUnlinked.createInfo)
-    assertTrue { workspaceLinked.updateInfo.timestamp < workspaceUnlinked.updateInfo.timestamp }
   }
 
   @Test

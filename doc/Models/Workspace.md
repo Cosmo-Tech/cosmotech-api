@@ -8,7 +8,6 @@
 | **key** | **String** | Technical key for resource name convention and version grouping. Must be unique | [default to null] |
 | **name** | **String** | Workspace name. This name is display in the sample webApp | [default to null] |
 | **description** | **String** | The Workspace description | [optional] [default to null] |
-| **linkedDatasetIdList** | **List** | list of dataset linked to this dataset | [optional] [default to null] |
 | **version** | **String** | The Workspace version MAJOR.MINOR.PATCH. | [optional] [default to null] |
 | **tags** | **List** | The list of tags | [optional] [default to null] |
 | **createInfo** | [**WorkspaceEditInfo**](WorkspaceEditInfo.md) | The details of the Workspace creation | [default to null] |

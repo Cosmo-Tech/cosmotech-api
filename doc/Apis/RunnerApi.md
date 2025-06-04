@@ -7,8 +7,8 @@ All URIs are relative to *http://localhost:8080*
 | [**createRunner**](RunnerApi.md#createRunner) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners | Create a new Runner |
 | [**createRunnerAccessControl**](RunnerApi.md#createRunnerAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access | Add a control access to the Runner |
 | [**deleteRunner**](RunnerApi.md#deleteRunner) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Delete a runner |
-| [**deleteRunnerAccessControl**](RunnerApi.md#deleteRunnerAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Remove the specified access from the given Organization Runner |
-| [**getRunner**](RunnerApi.md#getRunner) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Get the details of an runner |
+| [**deleteRunnerAccessControl**](RunnerApi.md#deleteRunnerAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Remove the specified access from the given Runner |
+| [**getRunner**](RunnerApi.md#getRunner) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Get the details of a runner |
 | [**getRunnerAccessControl**](RunnerApi.md#getRunnerAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Get a control access for the Runner |
 | [**getRunnerSecurity**](RunnerApi.md#getRunnerSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security | Get the Runner security information |
 | [**listRunnerPermissions**](RunnerApi.md#listRunnerPermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/permissions/{role} | Get the Runner permission by given role |
@@ -107,7 +107,7 @@ null (empty response body)
 # **deleteRunnerAccessControl**
 > deleteRunnerAccessControl(organization\_id, workspace\_id, runner\_id, identity\_id)
 
-Remove the specified access from the given Organization Runner
+Remove the specified access from the given Runner
 
 ### Parameters
 
@@ -135,7 +135,7 @@ null (empty response body)
 # **getRunner**
 > Runner getRunner(organization\_id, workspace\_id, runner\_id)
 
-Get the details of an runner
+Get the details of a runner
 
 ### Parameters
 

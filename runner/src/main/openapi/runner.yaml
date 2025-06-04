@@ -132,7 +132,7 @@ paths:
       operationId: getRunner
       tags:
         - runner
-      summary: Get the details of an runner
+      summary: Get the details of a runner
       responses:
         "200":
           description: the Runner details
@@ -586,7 +586,7 @@ paths:
       operationId: deleteRunnerAccessControl
       tags:
         - runner
-      summary: Remove the specified access from the given Organization Runner
+      summary: Remove the specified access from the given Runner
       responses:
         "204":
           description: Request succeeded
