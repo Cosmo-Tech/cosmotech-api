@@ -64,6 +64,15 @@ interface DatasetApiServiceInterface : DatasetApiService {
   )
 
   /**
+   * Adds a specified `DatasetPart` to the given `Dataset`.
+   *
+   * @param dataset The dataset to which the dataset part will be added.
+   * @param datasetPart The dataset part to be added to the dataset.
+   * @return The added dataset part.
+   */
+  fun addDatasetPartToDataset(dataset: Dataset, datasetPart: DatasetPart): DatasetPart
+
+  /**
    * Constructs a dataset part within a specified organization, workspace, and dataset.
    *
    * @param organizationId The ID of the organization where the dataset part is created.
