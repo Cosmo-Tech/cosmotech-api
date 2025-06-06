@@ -550,13 +550,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   @Test
   @WithMockOauth2User
   fun create_workspace_files() {
-    // TODO: here response snippets has wrong value.
-    // response will look like path/to/a/directory/null
-    // instead of path/to/a/directory/test.txt
-    // related bug: https://github.com/OpenAPITools/openapi-generator/issues/20555
-    // a workaround may exist by overriding typeMappings/importMappings
-    // in kotlin-spring openapi generator (see.
-    // https://stackoverflow.com/questions/76720790/how-to-set-type-mappings-for-openapi-generator-in-build-gradle-file)
     val workspaceId =
         createWorkspaceAndReturnId(
             mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
@@ -578,6 +571,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.fileName").value("path/to/a/directory/$fileName"))
         .andDo(MockMvcResultHandlers.print())
         .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/files/POST"))
   }
@@ -602,14 +596,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   @Test
   @WithMockOauth2User
   fun delete_workspace_file() {
-    // TODO: here request snippets has wrong value.
-    // request looks like path/to/a/directory/null
-    // instead of path/to/a/directory/test.txt
-    // related bug: https://github.com/OpenAPITools/openapi-generator/issues/20555
-    // a workaround may exist by overriding typeMappings/importMappings
-    // in kotlin-spring openapi generator (see.
-    // https://stackoverflow.com/questions/76720790/how-to-set-type-mappings-for-openapi-generator-in-build-gradle-file)
-
     val workspaceId =
         createWorkspaceAndReturnId(
             mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
@@ -674,7 +660,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
-                .param("file_name", destination + "null")
+                .param("file_name", destination + fileName)
                 .accept(MediaType.APPLICATION_OCTET_STREAM))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
