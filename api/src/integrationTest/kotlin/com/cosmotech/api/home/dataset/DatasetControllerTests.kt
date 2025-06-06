@@ -2,8 +2,13 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home.dataset
 
+import com.cosmotech.api.home.Constants.ORGANIZATION_USER_EMAIL
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
+import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.constructDatasetCreateRequest
+import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.constructDatasetPartCreateRequest
+import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.createDatasetAndReturnId
+import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.createDatasetPartAndReturnId
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.createOrganizationAndReturnId
 import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.constructSolutionCreateRequest
@@ -23,10 +28,9 @@ import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_NAME
 import com.cosmotech.api.home.run.RunConstants.RequestContent.TAGS
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
 import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetCreateRequest
-import com.cosmotech.dataset.domain.DatasetPartCreateRequest
 import com.cosmotech.dataset.domain.DatasetPartTypeEnum
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.solution.domain.RunTemplateCreateRequest
@@ -42,7 +46,10 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -96,7 +103,7 @@ class DatasetControllerTests : ControllerTestBase() {
             "datasetCreateRequest",
             null,
             MediaType.APPLICATION_JSON_VALUE,
-            JSONObject(constructDataset()).toString().byteInputStream())
+            JSONObject(constructDatasetCreateRequest()).toString().byteInputStream())
     val fileName = "test.txt"
     val fileToUpload =
         this::class.java.getResourceAsStream("/dataset/$fileName")
@@ -145,23 +152,236 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST"))
   }
 
-  fun constructDataset(name: String = DATASET_NAME): DatasetCreateRequest {
-    return DatasetCreateRequest(
-        name = name,
-        description = DATASET_DESCRIPTION,
-        tags = mutableListOf("tag1", "tag2"),
-        parts =
-            mutableListOf(
-                DatasetPartCreateRequest(
-                    name = DATASET_PART_NAME,
-                    description = DATASET_PART_DESCRIPTION,
-                    tags = mutableListOf("tag_part1", "tag_part2"),
-                    type = DatasetPartTypeEnum.Relational)),
-        security =
-            DatasetSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        DatasetAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN))))
+  @Test
+  @WithMockOauth2User
+  fun download_dataset_part() {
+    TODO("Not yet implemented")
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun get_dataset() {
+
+    val datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+    mvc.perform(
+            get("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.name").value(DATASET_NAME))
+        .andExpect(jsonPath("$.description").value(DATASET_DESCRIPTION))
+        .andExpect(jsonPath("$.organizationId").value(organizationId))
+        .andExpect(jsonPath("$.workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.createInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.updateInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.updateInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.parts[0].name").value(DATASET_PART_NAME))
+        .andExpect(jsonPath("$.parts[0].description").value(DATASET_PART_DESCRIPTION))
+        .andExpect(jsonPath("$.parts[0].organizationId").value(organizationId))
+        .andExpect(jsonPath("$.parts[0].workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$.parts[0].tags").value(mutableListOf("tag_part1", "tag_part2")))
+        .andExpect(jsonPath("$.parts[0].type").value(DatasetPartTypeEnum.Relational.value))
+        .andExpect(jsonPath("$.parts[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.parts[0].createInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.parts[0].createInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.parts[0].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.parts[0].updateInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.parts[0].updateInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.tags").value(mutableListOf("tag1", "tag2")))
+        .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/GET"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun delete_dataset() {
+
+    val datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+
+    mvc.perform(
+            delete("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/DELETE"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun create_dataset_access_control() {
+
+    val datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+
+    mvc.perform(
+            post(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    JSONObject(
+                            DatasetAccessControl(
+                                role = ROLE_ADMIN,
+                                id = ORGANIZATION_USER_EMAIL,
+                            ))
+                        .toString())
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$.id").value(ORGANIZATION_USER_EMAIL))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/POST"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun get_dataset_access_control() {
+
+    val datasetSecurity =
+        DatasetSecurity(
+            default = ROLE_NONE,
+            accessControlList =
+                mutableListOf(
+                    DatasetAccessControl(role = ROLE_ADMIN, id = PLATFORM_ADMIN_EMAIL),
+                    DatasetAccessControl(role = ROLE_EDITOR, id = ORGANIZATION_USER_EMAIL)))
+
+    val datasetId =
+        createDatasetAndReturnId(
+            mvc,
+            organizationId,
+            workspaceId,
+            constructDatasetCreateRequest(security = datasetSecurity))
+
+    mvc.perform(
+            get(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL")
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.role").value(ROLE_EDITOR))
+        .andExpect(jsonPath("$.id").value(ORGANIZATION_USER_EMAIL))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}/GET"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun delete_dataset_access_control() {
+
+    val datasetSecurity =
+        DatasetSecurity(
+            default = ROLE_NONE,
+            accessControlList =
+                mutableListOf(
+                    DatasetAccessControl(role = ROLE_ADMIN, id = PLATFORM_ADMIN_EMAIL),
+                    DatasetAccessControl(role = ROLE_EDITOR, id = ORGANIZATION_USER_EMAIL)))
+
+    val datasetId =
+        createDatasetAndReturnId(
+            mvc,
+            organizationId,
+            workspaceId,
+            constructDatasetCreateRequest(security = datasetSecurity))
+
+    mvc.perform(
+            delete(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL")
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}/DELETE"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun create_dataset_part() {
+
+    val datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+
+    val fileName = "test.txt"
+    val fileToUpload =
+        this::class.java.getResourceAsStream("/dataset/$fileName")
+            ?: throw IllegalStateException(
+                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/POST endpoint documentation cannot be null")
+    val file =
+        MockMultipartFile(
+            "file",
+            fileName,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToUpload))
+
+    val datasetPartCreateRequest =
+        MockMultipartFile(
+            "datasetPartCreateRequest",
+            null,
+            MediaType.APPLICATION_JSON_VALUE,
+            JSONObject(constructDatasetPartCreateRequest()).toString().byteInputStream())
+    mvc.perform(
+            multipart(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts")
+                .file(file)
+                .file(datasetPartCreateRequest)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.name").value(DATASET_PART_NAME))
+        .andExpect(jsonPath("$.description").value(DATASET_PART_DESCRIPTION))
+        .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.createInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.updateInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.updateInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.tags").value(mutableListOf("tag_part1", "tag_part2")))
+        .andExpect(jsonPath("$.type").value(DatasetPartTypeEnum.Relational.value))
+        .andExpect(jsonPath("$.organizationId").value(organizationId))
+        .andExpect(jsonPath("$.workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$.datasetId").value(datasetId))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/POST"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun delete_dataset_part() {
+
+    val datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+
+    val datasetPartId =
+        createDatasetPartAndReturnId(
+            mvc, organizationId, workspaceId, datasetId, constructDatasetPartCreateRequest())
+
+    mvc.perform(
+            delete(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId")
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/DELETE"))
   }
 }

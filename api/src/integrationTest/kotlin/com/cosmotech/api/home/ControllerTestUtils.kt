@@ -2,6 +2,11 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home
 
+import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceCreateRequest
+import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_DESCRIPTION
+import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_NAME
+import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_PART_DESCRIPTION
+import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_PART_NAME
 import com.cosmotech.api.home.organization.OrganizationConstants.ORGANIZATION_NAME
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_NAME
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_OWNER_NAME
@@ -11,15 +16,22 @@ import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_REPOSITORY
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_VERSION
 import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_KEY
 import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_NAME
+import com.cosmotech.dataset.domain.DatasetCreateRequest
+import com.cosmotech.dataset.domain.DatasetPartCreateRequest
+import com.cosmotech.dataset.domain.DatasetPartTypeEnum
+import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.domain.*
 import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.domain.*
+import java.io.InputStream
 import org.json.JSONObject
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 
 class ControllerTestUtils {
@@ -313,6 +325,100 @@ class ControllerTestUtils {
           datasetCopy = datasetCopy,
           tags = tags,
           webApp = WorkspaceWebApp(url = url, iframes = iframes, options = options))
+    }
+  }
+
+  object DatasetUtils {
+
+    @JvmStatic
+    fun createDatasetAndReturnId(
+        mvc: MockMvc,
+        organizationId: String,
+        workspaceId: String,
+        datasetCreateRequest: DatasetCreateRequest,
+    ): String {
+
+      val datasetCreateRequest =
+          MockMultipartFile(
+              "datasetCreateRequest",
+              null,
+              MediaType.APPLICATION_JSON_VALUE,
+              JSONObject(datasetCreateRequest).toString().byteInputStream())
+      val files =
+          MockMultipartFile(
+              "files", null, MediaType.MULTIPART_FORM_DATA_VALUE, InputStream.nullInputStream())
+      return JSONObject(
+              mvc.perform(
+                      multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
+                          .file(datasetCreateRequest)
+                          .file(files)
+                          .accept(MediaType.APPLICATION_JSON)
+                          .with(csrf()))
+                  .andReturn()
+                  .response
+                  .contentAsString)
+          .getString("id")
+    }
+
+    @JvmStatic
+    fun createDatasetPartAndReturnId(
+        mvc: MockMvc,
+        organizationId: String,
+        workspaceId: String,
+        datasetId: String,
+        datasetPartCreateRequest: DatasetPartCreateRequest,
+    ): String {
+
+      val datasetPartCreateRequest =
+          MockMultipartFile(
+              "datasetPartCreateRequest",
+              null,
+              MediaType.APPLICATION_JSON_VALUE,
+              JSONObject(datasetPartCreateRequest).toString().byteInputStream())
+      val file =
+          MockMultipartFile(
+              "file", null, MediaType.MULTIPART_FORM_DATA_VALUE, InputStream.nullInputStream())
+      return JSONObject(
+              mvc.perform(
+                      multipart(
+                              "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts")
+                          .file(datasetPartCreateRequest)
+                          .file(file)
+                          .accept(MediaType.APPLICATION_JSON)
+                          .with(csrf()))
+                  .andReturn()
+                  .response
+                  .contentAsString)
+          .getString("id")
+    }
+
+    fun constructDatasetCreateRequest(
+        name: String = DATASET_NAME,
+        security: DatasetSecurity? = null
+    ): DatasetCreateRequest {
+      return DatasetCreateRequest(
+          name = name,
+          description = DATASET_DESCRIPTION,
+          tags = mutableListOf("tag1", "tag2"),
+          parts =
+              mutableListOf(
+                  DatasetPartCreateRequest(
+                      name = DATASET_PART_NAME,
+                      description = DATASET_PART_DESCRIPTION,
+                      tags = mutableListOf("tag_part1", "tag_part2"),
+                      type = DatasetPartTypeEnum.Relational)),
+          security = security)
+    }
+
+    fun constructDatasetPartCreateRequest(
+        name: String = DATASET_PART_NAME,
+        type: DatasetPartTypeEnum = DatasetPartTypeEnum.Relational
+    ): DatasetPartCreateRequest {
+      return DatasetPartCreateRequest(
+          name = name,
+          description = DATASET_PART_DESCRIPTION,
+          tags = mutableListOf("tag_part1", "tag_part2"),
+          type = type)
     }
   }
 }
