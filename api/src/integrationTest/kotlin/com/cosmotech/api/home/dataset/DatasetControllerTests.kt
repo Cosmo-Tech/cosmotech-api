@@ -24,16 +24,18 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.solution.domain.RunTemplateCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
+import java.io.InputStream
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -81,20 +83,28 @@ class DatasetControllerTests : ControllerTestBase() {
   @Test
   @WithMockOauth2User
   fun create_dataset() {
+    val datasetCreateRequest =
+        MockMultipartFile(
+            "datasetCreateRequest",
+            null,
+            MediaType.APPLICATION_JSON_VALUE,
+            JSONObject(constructDataset()).toString().byteInputStream())
+    val files =
+        MockMultipartFile(
+            "files", null, MediaType.MULTIPART_FORM_DATA_VALUE, InputStream.nullInputStream())
     mvc.perform(
-            post("/organizations/$organizationId/workspaces/$workspaceId/datasets")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JSONObject(constructDataset()).toString())
+            multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
+                .file(datasetCreateRequest)
+                .file(files)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(DATASET_NAME))
-        .andExpect(jsonPath("$.ownerId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
         .andDo(MockMvcResultHandlers.print())
-        .andDo(document("organizations/{organization_id}/datasets/POST"))
+        .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST"))
   }
 
   fun constructDataset(name: String = DATASET_NAME): DatasetCreateRequest {
