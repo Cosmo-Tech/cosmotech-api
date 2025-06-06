@@ -3,6 +3,7 @@
 package com.cosmotech.api.home
 
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.run.domain.Run
 import com.cosmotech.runner.domain.Runner
@@ -59,6 +60,7 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)
+    rediSearchIndexer.createIndexFor(DatasetPart::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Runner::class.java)
     rediSearchIndexer.createIndexFor(Run::class.java)
@@ -101,7 +103,6 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
     private const val READER_USER_CREDENTIALS = "readusertest"
     private const val WRITER_USER_CREDENTIALS = "writeusertest"
     private const val DEFAULT_REDIS_PORT = 6379
-    private const val REDIS_STACK_LATEST_TAG_WITH_GRAPH = "6.2.6-v18"
     private const val LOCALSTACK_FULL_IMAGE_NAME = "localstack/localstack:3.5.0"
 
     var postgres: PostgreSQLContainer<*> =
@@ -109,9 +110,7 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
             .withCopyFileToContainer(
                 MountableFile.forClasspathResource("init-db.sql"), "/docker-entrypoint-initdb.d/")
 
-    var redisStackServer =
-        RedisStackContainer(
-            RedisStackContainer.DEFAULT_IMAGE_NAME.withTag(REDIS_STACK_LATEST_TAG_WITH_GRAPH))
+    var redisStackServer = RedisStackContainer(RedisStackContainer.DEFAULT_IMAGE_NAME)
 
     val localStackServer =
         LocalStackContainer(DockerImageName.parse(LOCALSTACK_FULL_IMAGE_NAME))
