@@ -81,6 +81,12 @@ class DatasetServiceImpl(
     datasetRepository.update(dataset)
   }
 
+  override fun addDatasetPartToDataset(dataset: Dataset, datasetPart: DatasetPart): DatasetPart {
+    dataset.parts.add(datasetPart)
+    datasetRepository.update(dataset)
+    return datasetPart
+  }
+
   override fun replaceDatasetPartFromDataset(
       dataset: Dataset,
       datasetPartIdToReplace: String,
@@ -342,15 +348,15 @@ class DatasetServiceImpl(
       file: MultipartFile,
       datasetPartCreateRequest: DatasetPartCreateRequest
   ): DatasetPart {
-    getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
+    val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
     require(datasetPartCreateRequest.name.isNotBlank()) {
       "Dataset Part name must not be null or blank"
     }
 
     val createdDatasetPart =
         constructDatasetPart(organizationId, workspaceId, datasetId, datasetPartCreateRequest)
-
-    return datasetPartRepository.save(createdDatasetPart)
+    datasetPartRepository.save(createdDatasetPart)
+    return addDatasetPartToDataset(dataset, createdDatasetPart)
   }
 
   override fun constructDatasetPart(
