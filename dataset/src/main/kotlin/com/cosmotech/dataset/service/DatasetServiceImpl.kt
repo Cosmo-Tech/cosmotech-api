@@ -29,6 +29,7 @@ import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetUpdateRequest
 import com.cosmotech.dataset.domain.EditInfo
+import com.cosmotech.dataset.part.factories.DatasetPartManagementFactory
 import com.cosmotech.dataset.repositories.DatasetPartRepository
 import com.cosmotech.dataset.repositories.DatasetRepository
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
@@ -45,6 +46,7 @@ class DatasetServiceImpl(
     private val datasetRepository: DatasetRepository,
     private val datasetPartRepository: DatasetPartRepository,
     private val csmRbac: CsmRbac,
+    private val datasetPartManagementFactory: DatasetPartManagementFactory
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   override fun getVerifiedDataset(
@@ -140,6 +142,10 @@ class DatasetServiceImpl(
   ): Dataset {
     logger.debug("Registering Dataset: {}", datasetCreateRequest)
     require(datasetCreateRequest.name.isNotBlank()) { "Dataset name must not be null or blank" }
+    require(files.size == datasetCreateRequest.parts?.size) {
+      "Number of files must be equal to the number of parts if specified. " +
+          "${files.size} != ${datasetCreateRequest.parts?.size} "
+    }
     val datasetId = idGenerator.generate("dataset")
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
@@ -356,6 +362,7 @@ class DatasetServiceImpl(
     val createdDatasetPart =
         constructDatasetPart(organizationId, workspaceId, datasetId, datasetPartCreateRequest)
     datasetPartRepository.save(createdDatasetPart)
+    datasetPartManagementFactory.storeData(datasetPartCreateRequest.type!!.value, file)
     return addDatasetPartToDataset(dataset, createdDatasetPart)
   }
 
