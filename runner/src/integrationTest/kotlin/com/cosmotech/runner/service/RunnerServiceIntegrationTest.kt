@@ -20,7 +20,7 @@ import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
-import com.cosmotech.api.tests.CsmRedisTestBase
+import com.cosmotech.api.tests.CsmTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -59,7 +59,6 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -82,7 +81,7 @@ import redis.clients.jedis.UnifiedJedis
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class RunnerServiceIntegrationTest : CsmRedisTestBase() {
+class RunnerServiceIntegrationTest : CsmTestBase() {
 
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_READER_USER = "test.reader@cosmotech.com"
@@ -129,8 +128,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
       RunnerRunTemplateParameterValue(
           parameterId = "param2", value = "param2value", varType = "String")
 
-  @BeforeAll
-  fun beforeAll() {
+  @BeforeEach
+  fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     mockkStatic("com.cosmotech.api.utils.RedisUtilsKt")
     mockkStatic("org.springframework.web.context.request.RequestContextHolder")
@@ -143,10 +142,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     ReflectionTestUtils.setField(
         solutionApiService, "containerRegistryService", containerRegistryService)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
-  }
-
-  @BeforeEach
-  fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"

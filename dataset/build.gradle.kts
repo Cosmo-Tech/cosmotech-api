@@ -7,4 +7,5 @@ plugins { id("org.jetbrains.kotlinx.kover") }
 dependencies {
   implementation(projects.cosmotechOrganizationApi)
   implementation(projects.cosmotechWorkspaceApi)
+  testImplementation(projects.cosmotechSolutionApi)
 }

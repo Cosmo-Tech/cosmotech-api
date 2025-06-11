@@ -12,7 +12,7 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
-import com.cosmotech.api.tests.CsmRedisTestBase
+import com.cosmotech.api.tests.CsmTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -58,7 +58,7 @@ const val CONNECTED_READER_USER = "test.user@cosmotech.com"
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("FunctionName")
-class SolutionServiceIntegrationTest : CsmRedisTestBase() {
+class SolutionServiceIntegrationTest : CsmTestBase() {
 
   private val logger = LoggerFactory.getLogger(SolutionServiceIntegrationTest::class.java)
 

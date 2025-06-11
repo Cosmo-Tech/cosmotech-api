@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset.part.factories
 
+import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.part.services.DatasetPartManagementService
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
@@ -35,8 +36,8 @@ class DatasetPartManagementFactory(
           ?: throw IllegalStateException(
               "No implementation found for DatasetPartManagementService with name '$implementation'")
 
-  fun storeData(datasetPartType: String, file: MultipartFile) {
+  fun storeData(datasetPartType: String, datasetPart: DatasetPart, file: MultipartFile) {
     val datasetPartManagementService = getDatasetPartManagementService(datasetPartType)
-    datasetPartManagementService.storeData(file)
+    datasetPartManagementService.storeData(file, datasetPart)
   }
 }

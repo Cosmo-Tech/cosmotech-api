@@ -64,6 +64,7 @@ entity DatasetCreateRequest {
 entity DatasetPart {
     * id: String
     * name: String
+    * sourceName: String
     description: String
     * tags: List<String>
     * type: DatasetPartTypeEnum
@@ -76,6 +77,7 @@ entity DatasetPart {
 
 entity DatasetPartCreateRequest {
     * name: String
+    * sourceName: String
     description: String
     tags: List<String>
     type: DatasetPartTypeEnum

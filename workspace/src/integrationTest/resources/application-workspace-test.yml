@@ -124,3 +124,14 @@ csm:
       accessKeyId: "s3_username"
       secretAccessKey: "s3_password"
       region: "dummy"
+    internalResultServices:
+      enabled: true
+      eventBus:
+        enabled: false
+        host: "http://localhost:1234"
+        listener:
+          username: "fakeUser"
+          password: "fakePwd"
+        sender:
+          username: "fakeUser2"
+          password: "fakePwd2"
