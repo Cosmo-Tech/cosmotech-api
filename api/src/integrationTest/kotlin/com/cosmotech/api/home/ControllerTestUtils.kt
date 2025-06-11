@@ -7,6 +7,7 @@ import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_DESCRIPTION
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_NAME
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_PART_DESCRIPTION
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_PART_NAME
+import com.cosmotech.api.home.dataset.DatasetConstants.TEST_FILE_NAME
 import com.cosmotech.api.home.organization.OrganizationConstants.ORGANIZATION_NAME
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_NAME
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_OWNER_NAME
@@ -338,7 +339,7 @@ class ControllerTestUtils {
         datasetCreateRequest: DatasetCreateRequest,
     ): String {
 
-      val datasetCreateRequest =
+      val datasetCreateRequestFile =
           MockMultipartFile(
               "datasetCreateRequest",
               null,
@@ -346,11 +347,14 @@ class ControllerTestUtils {
               JSONObject(datasetCreateRequest).toString().byteInputStream())
       val files =
           MockMultipartFile(
-              "files", null, MediaType.MULTIPART_FORM_DATA_VALUE, InputStream.nullInputStream())
+              "files",
+              TEST_FILE_NAME,
+              MediaType.MULTIPART_FORM_DATA_VALUE,
+              InputStream.nullInputStream())
       return JSONObject(
               mvc.perform(
                       multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
-                          .file(datasetCreateRequest)
+                          .file(datasetCreateRequestFile)
                           .file(files)
                           .accept(MediaType.APPLICATION_JSON)
                           .with(csrf()))
@@ -369,7 +373,7 @@ class ControllerTestUtils {
         datasetPartCreateRequest: DatasetPartCreateRequest,
     ): String {
 
-      val datasetPartCreateRequest =
+      val datasetPartCreateRequestFile =
           MockMultipartFile(
               "datasetPartCreateRequest",
               null,
@@ -377,12 +381,15 @@ class ControllerTestUtils {
               JSONObject(datasetPartCreateRequest).toString().byteInputStream())
       val file =
           MockMultipartFile(
-              "file", null, MediaType.MULTIPART_FORM_DATA_VALUE, InputStream.nullInputStream())
+              "file",
+              TEST_FILE_NAME,
+              MediaType.MULTIPART_FORM_DATA_VALUE,
+              InputStream.nullInputStream())
       return JSONObject(
               mvc.perform(
                       multipart(
                               "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts")
-                          .file(datasetPartCreateRequest)
+                          .file(datasetPartCreateRequestFile)
                           .file(file)
                           .accept(MediaType.APPLICATION_JSON)
                           .with(csrf()))
@@ -406,19 +413,21 @@ class ControllerTestUtils {
                       name = DATASET_PART_NAME,
                       description = DATASET_PART_DESCRIPTION,
                       tags = mutableListOf("tag_part1", "tag_part2"),
-                      type = DatasetPartTypeEnum.Relational)),
+                      type = DatasetPartTypeEnum.File,
+                      sourceName = TEST_FILE_NAME)),
           security = security)
     }
 
     fun constructDatasetPartCreateRequest(
         name: String = DATASET_PART_NAME,
-        type: DatasetPartTypeEnum = DatasetPartTypeEnum.Relational
+        type: DatasetPartTypeEnum = DatasetPartTypeEnum.File
     ): DatasetPartCreateRequest {
       return DatasetPartCreateRequest(
           name = name,
           description = DATASET_PART_DESCRIPTION,
           tags = mutableListOf("tag_part1", "tag_part2"),
-          type = type)
+          type = type,
+          sourceName = TEST_FILE_NAME)
     }
   }
 }

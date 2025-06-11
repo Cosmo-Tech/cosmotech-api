@@ -16,6 +16,7 @@ import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.api.tests.CsmTestBase
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -67,7 +68,7 @@ import software.amazon.awssdk.services.s3.S3Client
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("FunctionName")
-class WorkspaceServiceRBACTest : CsmS3TestBase() {
+class WorkspaceServiceRBACTest : CsmTestBase() {
 
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"

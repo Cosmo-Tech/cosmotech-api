@@ -20,6 +20,7 @@ import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_DESCRIPTION
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_NAME
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_PART_DESCRIPTION
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_PART_NAME
+import com.cosmotech.api.home.dataset.DatasetConstants.TEST_FILE_NAME
 import com.cosmotech.api.home.run.RunConstants.RequestContent.DESCRIPTION
 import com.cosmotech.api.home.run.RunConstants.RequestContent.PARAMETER_GROUP_ID
 import com.cosmotech.api.home.run.RunConstants.RequestContent.PARAMETER_LABELS
@@ -105,15 +106,15 @@ class DatasetControllerTests : ControllerTestBase() {
             null,
             MediaType.APPLICATION_JSON_VALUE,
             JSONObject(constructDatasetCreateRequest()).toString().byteInputStream())
-    val fileName = "test.txt"
+
     val fileToUpload =
-        this::class.java.getResourceAsStream("/dataset/$fileName")
+        this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
             ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST endpoint documentation cannot be null")
+                "$TEST_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST endpoint documentation cannot be null")
     val files =
         MockMultipartFile(
             "files",
-            fileName,
+            TEST_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
             IOUtils.toByteArray(fileToUpload))
     mvc.perform(
@@ -137,8 +138,9 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.parts[0].description").value(DATASET_PART_DESCRIPTION))
         .andExpect(jsonPath("$.parts[0].organizationId").value(organizationId))
         .andExpect(jsonPath("$.parts[0].workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$.parts[0].sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$.parts[0].tags").value(mutableListOf("tag_part1", "tag_part2")))
-        .andExpect(jsonPath("$.parts[0].type").value(DatasetPartTypeEnum.Relational.value))
+        .andExpect(jsonPath("$.parts[0].type").value(DatasetPartTypeEnum.File.value))
         .andExpect(jsonPath("$.parts[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.parts[0].createInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.parts[0].createInfo.timestamp").value(greaterThan(0.toLong())))
@@ -183,8 +185,9 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.parts[0].description").value(DATASET_PART_DESCRIPTION))
         .andExpect(jsonPath("$.parts[0].organizationId").value(organizationId))
         .andExpect(jsonPath("$.parts[0].workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$.parts[0].sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$.parts[0].tags").value(mutableListOf("tag_part1", "tag_part2")))
-        .andExpect(jsonPath("$.parts[0].type").value(DatasetPartTypeEnum.Relational.value))
+        .andExpect(jsonPath("$.parts[0].type").value(DatasetPartTypeEnum.File.value))
         .andExpect(jsonPath("$.parts[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.parts[0].createInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.parts[0].createInfo.timestamp").value(greaterThan(0.toLong())))
@@ -318,15 +321,14 @@ class DatasetControllerTests : ControllerTestBase() {
     val datasetId =
         createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
 
-    val fileName = "test.txt"
     val fileToUpload =
-        this::class.java.getResourceAsStream("/dataset/$fileName")
+        this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
             ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/POST endpoint documentation cannot be null")
+                "$TEST_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/POST endpoint documentation cannot be null")
     val file =
         MockMultipartFile(
             "file",
-            fileName,
+            TEST_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
             IOUtils.toByteArray(fileToUpload))
 
@@ -346,6 +348,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(DATASET_PART_NAME))
         .andExpect(jsonPath("$.description").value(DATASET_PART_DESCRIPTION))
+        .andExpect(jsonPath("$.sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.createInfo.timestamp").value(greaterThan(0.toLong())))
@@ -353,7 +356,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.updateInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.updateInfo.timestamp").value(greaterThan(0.toLong())))
         .andExpect(jsonPath("$.tags").value(mutableListOf("tag_part1", "tag_part2")))
-        .andExpect(jsonPath("$.type").value(DatasetPartTypeEnum.Relational.value))
+        .andExpect(jsonPath("$.type").value(DatasetPartTypeEnum.File.value))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.workspaceId").value(workspaceId))
         .andExpect(jsonPath("$.datasetId").value(datasetId))
@@ -405,6 +408,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.id").value(datasetPartId))
         .andExpect(jsonPath("$.name").value(DATASET_PART_NAME))
         .andExpect(jsonPath("$.description").value(DATASET_PART_DESCRIPTION))
+        .andExpect(jsonPath("$.sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.createInfo.timestamp").value(greaterThan(0.toLong())))
@@ -412,7 +416,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.updateInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.updateInfo.timestamp").value(greaterThan(0.toLong())))
         .andExpect(jsonPath("$.tags").value(mutableListOf("tag_part1", "tag_part2")))
-        .andExpect(jsonPath("$.type").value(DatasetPartTypeEnum.Relational.value))
+        .andExpect(jsonPath("$.type").value(DatasetPartTypeEnum.File.value))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.workspaceId").value(workspaceId))
         .andExpect(jsonPath("$.datasetId").value(datasetId))
@@ -439,6 +443,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].id").value(datasetPartId))
         .andExpect(jsonPath("$[0].name").value(DATASET_PART_NAME))
         .andExpect(jsonPath("$[0].description").value(DATASET_PART_DESCRIPTION))
+        .andExpect(jsonPath("$[0].sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[0].createInfo.timestamp").isNumber)
         .andExpect(jsonPath("$[0].createInfo.timestamp").value(greaterThan(0.toLong())))
@@ -446,7 +451,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].updateInfo.timestamp").isNumber)
         .andExpect(jsonPath("$[0].updateInfo.timestamp").value(greaterThan(0.toLong())))
         .andExpect(jsonPath("$[0].tags").value(mutableListOf("tag_part1", "tag_part2")))
-        .andExpect(jsonPath("$[0].type").value(DatasetPartTypeEnum.Relational.value))
+        .andExpect(jsonPath("$[0].type").value(DatasetPartTypeEnum.File.value))
         .andExpect(jsonPath("$[0].organizationId").value(organizationId))
         .andExpect(jsonPath("$[0].workspaceId").value(workspaceId))
         .andExpect(jsonPath("$[0].datasetId").value(datasetId))
@@ -513,10 +518,11 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].updateInfo.timestamp").value(greaterThan(0.toLong())))
         .andExpect(jsonPath("$[0].parts[0].name").value(DATASET_PART_NAME))
         .andExpect(jsonPath("$[0].parts[0].description").value(DATASET_PART_DESCRIPTION))
+        .andExpect(jsonPath("$[0].parts[0].sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$[0].parts[0].organizationId").value(organizationId))
         .andExpect(jsonPath("$[0].parts[0].workspaceId").value(workspaceId))
         .andExpect(jsonPath("$[0].parts[0].tags").value(mutableListOf("tag_part1", "tag_part2")))
-        .andExpect(jsonPath("$[0].parts[0].type").value(DatasetPartTypeEnum.Relational.value))
+        .andExpect(jsonPath("$[0].parts[0].type").value(DatasetPartTypeEnum.File.value))
         .andExpect(jsonPath("$[0].parts[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[0].parts[0].createInfo.timestamp").isNumber)
         .andExpect(jsonPath("$[0].parts[0].createInfo.timestamp").value(greaterThan(0.toLong())))
@@ -580,6 +586,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andExpect(jsonPath("$.id").value(datasetPartId))
         .andExpect(jsonPath("$.name").value(DATASET_PART_NAME))
+        .andExpect(jsonPath("$.sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$.description").value(newDescription))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
@@ -588,7 +595,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.updateInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.updateInfo.timestamp").value(greaterThan(0.toLong())))
         .andExpect(jsonPath("$.tags").value(newTags))
-        .andExpect(jsonPath("$.type").value(DatasetPartTypeEnum.Relational.value))
+        .andExpect(jsonPath("$.type").value(DatasetPartTypeEnum.File.value))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.workspaceId").value(workspaceId))
         .andExpect(jsonPath("$.datasetId").value(datasetId))

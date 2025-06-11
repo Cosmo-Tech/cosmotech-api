@@ -3,6 +3,7 @@
 package com.cosmotech.dataset.part.services
 
 import com.cosmotech.dataset.domain.DatasetPart
+import org.springframework.core.io.Resource
 import org.springframework.web.multipart.MultipartFile
 
 /**
@@ -13,7 +14,9 @@ import org.springframework.web.multipart.MultipartFile
  */
 interface DatasetPartManagementService {
 
-  fun storeData(file: MultipartFile): DatasetPart?
+  fun storeData(file: MultipartFile, datasetPart: DatasetPart)
+
+  fun getData(datasetPart: DatasetPart): Resource
 
   fun delete(datasetPart: DatasetPart)
 }

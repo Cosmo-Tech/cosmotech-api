@@ -16,7 +16,7 @@ import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VIEWER
-import com.cosmotech.api.tests.CsmRedisTestBase
+import com.cosmotech.api.tests.CsmTestBase
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -57,7 +57,7 @@ import org.springframework.test.util.ReflectionTestUtils
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class SolutionServiceRBACTest : CsmRedisTestBase() {
+class SolutionServiceRBACTest : CsmTestBase() {
 
   val TEST_USER_MAIL = "testuser@mail.fr"
 

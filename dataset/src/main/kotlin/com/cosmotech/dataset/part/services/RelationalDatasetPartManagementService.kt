@@ -4,6 +4,7 @@ package com.cosmotech.dataset.part.services
 
 import com.cosmotech.dataset.domain.DatasetPart
 import org.slf4j.LoggerFactory
+import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
@@ -18,12 +19,18 @@ class RelationalDatasetPartManagementService : DatasetPartManagementService {
 
   private val logger = LoggerFactory.getLogger(RelationalDatasetPartManagementService::class.java)
 
-  override fun storeData(file: MultipartFile): DatasetPart? {
-    logger.debug("Saving file ${file.originalFilename} of size ${file.size} in DB")
-    return null
+  override fun storeData(file: MultipartFile, datasetPart: DatasetPart) {
+    logger.debug("RelationalDatasetPartManagementService#storeData")
+    TODO("Not yet implemented")
+  }
+
+  override fun getData(datasetPart: DatasetPart): Resource {
+    logger.debug("RelationalDatasetPartManagementService#getData")
+    TODO("Not yet implemented")
   }
 
   override fun delete(datasetPart: DatasetPart) {
+    logger.debug("RelationalDatasetPartManagementService#delete")
     TODO("Not yet implemented")
   }
 }

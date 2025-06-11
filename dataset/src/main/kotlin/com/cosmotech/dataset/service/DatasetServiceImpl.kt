@@ -141,11 +141,8 @@ class DatasetServiceImpl(
       files: Array<MultipartFile>
   ): Dataset {
     logger.debug("Registering Dataset: {}", datasetCreateRequest)
-    require(datasetCreateRequest.name.isNotBlank()) { "Dataset name must not be null or blank" }
-    require(files.size == datasetCreateRequest.parts?.size) {
-      "Number of files must be equal to the number of parts if specified. " +
-          "${files.size} != ${datasetCreateRequest.parts?.size} "
-    }
+    validDatasetCreateRequest(datasetCreateRequest, files)
+
     val datasetId = idGenerator.generate("dataset")
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
@@ -157,7 +154,15 @@ class DatasetServiceImpl(
 
     val datasetParts =
         datasetCreateRequest.parts
-            ?.map { part -> constructDatasetPart(organizationId, workspaceId, datasetId, part) }
+            ?.map { part ->
+              val constructDatasetPart =
+                  constructDatasetPart(organizationId, workspaceId, datasetId, part)
+              datasetPartManagementFactory.storeData(
+                  part.type!!.value,
+                  constructDatasetPart,
+                  files.first { it.originalFilename == part.sourceName })
+              constructDatasetPart
+            }
             ?.toMutableList()
 
     val createdDataset =
@@ -355,14 +360,13 @@ class DatasetServiceImpl(
       datasetPartCreateRequest: DatasetPartCreateRequest
   ): DatasetPart {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
-    require(datasetPartCreateRequest.name.isNotBlank()) {
-      "Dataset Part name must not be null or blank"
-    }
+    validDatasetPartCreateRequest(datasetPartCreateRequest, file)
 
     val createdDatasetPart =
         constructDatasetPart(organizationId, workspaceId, datasetId, datasetPartCreateRequest)
+    datasetPartManagementFactory.storeData(
+        datasetPartCreateRequest.type!!.value, createdDatasetPart, file)
     datasetPartRepository.save(createdDatasetPart)
-    datasetPartManagementFactory.storeData(datasetPartCreateRequest.type!!.value, file)
     return addDatasetPartToDataset(dataset, createdDatasetPart)
   }
 
@@ -388,7 +392,8 @@ class DatasetServiceImpl(
             organizationId = organizationId,
             workspaceId = workspaceId,
             createInfo = editInfo,
-            updateInfo = editInfo)
+            updateInfo = editInfo,
+            sourceName = datasetPartCreateRequest.sourceName)
     logger.debug("Registering DatasetPart: {}", createdDatasetPart)
     return createdDatasetPart
   }
@@ -524,6 +529,37 @@ class DatasetServiceImpl(
     replaceDatasetPartFromDataset(dataset, datasetPartId, datasetPart)
 
     return datasetPartRepository.update(datasetPart)
+  }
+
+  private fun validDatasetPartCreateRequest(
+      datasetPartCreateRequest: DatasetPartCreateRequest,
+      file: MultipartFile
+  ) {
+    require(datasetPartCreateRequest.name.isNotBlank()) {
+      "Dataset Part name must not be null or blank"
+    }
+    require(datasetPartCreateRequest.sourceName == file.originalFilename) {
+      "You must upload a file with the same name as the Dataset Part sourceName. " +
+          "You provided ${datasetPartCreateRequest.sourceName} and ${file.originalFilename} instead."
+    }
+  }
+
+  private fun validDatasetCreateRequest(
+      datasetCreateRequest: DatasetCreateRequest,
+      files: Array<MultipartFile>
+  ) {
+    require(datasetCreateRequest.name.isNotBlank()) { "Dataset name must not be null or blank" }
+    require(files.size == datasetCreateRequest.parts?.size) {
+      "Number of files must be equal to the number of parts if specified. " +
+          "${files.size} != ${datasetCreateRequest.parts?.size} "
+    }
+    require(
+        files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
+            datasetCreateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())) {
+          "All files must have the same name as their corresponding Dataset Part. " +
+              "Files: ${files.map { it.originalFilename }}. " +
+              "Dataset Parts: ${datasetCreateRequest.parts?.map { it.sourceName }}."
+        }
   }
 }
 

@@ -17,7 +17,7 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
-import com.cosmotech.api.tests.CsmRedisTestBase
+import com.cosmotech.api.tests.CsmTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -81,7 +81,7 @@ import redis.clients.jedis.UnifiedJedis
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("FunctionName")
-class RunnerServiceRBACTest : CsmRedisTestBase() {
+class RunnerServiceRBACTest : CsmTestBase() {
 
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val TEST_USER_MAIL = "testuser@mail.fr"

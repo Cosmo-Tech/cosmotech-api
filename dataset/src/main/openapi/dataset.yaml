@@ -843,6 +843,11 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           minLength: 1
           maxLength: 50
+        sourceName:
+          type: string
+          description: the source data name (e.g. filename associated to the dataset part)
+          minLength: 1
+          maxLength: 50
         description:
           type: string
         tags:
@@ -877,6 +882,7 @@ components:
       required:
         - id
         - name
+        - sourceName
         - tags
         - type
         - organizationId
@@ -893,6 +899,11 @@ components:
           type: string
           minLength: 1
           maxLength: 50
+        sourceName:
+          description: the source data name (e.g. filename associated to the dataset part)
+          type: string
+          minLength: 1
+          maxLength: 50
         description:
           type: string
         tags:
@@ -903,6 +914,7 @@ components:
           $ref: '#/components/schemas/DatasetPartTypeEnum'
       required:
         - name
+        - sourceName
 
     DatasetPartUpdateRequest:
       type: object

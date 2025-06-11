@@ -7,6 +7,7 @@ import com.cosmotech.api.events.RunDeleted
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.tests.CsmTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -89,7 +90,7 @@ import org.springframework.web.client.RestClientResponseException
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class RunServiceIntegrationTest : CsmRunTestBase() {
+class RunServiceIntegrationTest : CsmTestBase() {
 
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 

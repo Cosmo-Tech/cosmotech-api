@@ -2,8 +2,12 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset.part.services
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.dataset.domain.DatasetPart
+import io.awspring.cloud.s3.S3Template
 import org.slf4j.LoggerFactory
+import org.springframework.core.io.InputStreamResource
+import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
@@ -14,16 +18,57 @@ import org.springframework.web.multipart.MultipartFile
  * system.
  */
 @Service("File")
-class FileDatasetPartManagementService : DatasetPartManagementService {
+class FileDatasetPartManagementService(
+    private val csmPlatformProperties: CsmPlatformProperties,
+    private val s3Template: S3Template
+) : DatasetPartManagementService {
 
   private val logger = LoggerFactory.getLogger(FileDatasetPartManagementService::class.java)
 
-  override fun storeData(file: MultipartFile): DatasetPart? {
-    logger.debug("Saving file ${file.originalFilename} of size ${file.size} as File")
-    return null
+  override fun storeData(file: MultipartFile, datasetPart: DatasetPart) {
+    val organizationId = datasetPart.organizationId
+    val workspaceId = datasetPart.workspaceId
+    val datasetId = datasetPart.datasetId
+    val datasetPartId = datasetPart.id
+    val fileName = datasetPart.sourceName
+    val filePath =
+        constructFilePath(organizationId, workspaceId, datasetId, datasetPartId, fileName)
+    logger.debug("Saving file ${file.originalFilename} of size ${file.size} to $filePath")
+    s3Template.upload(csmPlatformProperties.s3.bucketName, filePath, file.inputStream)
+  }
+
+  override fun getData(datasetPart: DatasetPart): Resource {
+    val filePath =
+        constructFilePath(
+            datasetPart.organizationId,
+            datasetPart.workspaceId,
+            datasetPart.datasetId,
+            datasetPart.id,
+            datasetPart.sourceName)
+    logger.debug(
+        "Downloading file resource for dataset part #{} from path {}", datasetPart.id, filePath)
+    return InputStreamResource(
+        s3Template.download(csmPlatformProperties.s3.bucketName, filePath).inputStream)
   }
 
   override fun delete(datasetPart: DatasetPart) {
-    TODO("Not yet implemented")
+    val filePath =
+        constructFilePath(
+            datasetPart.organizationId,
+            datasetPart.workspaceId,
+            datasetPart.datasetId,
+            datasetPart.id,
+            datasetPart.sourceName)
+    logger.debug("Deleting file resource from workspace #{} from path {}", datasetPart.id, filePath)
+
+    s3Template.deleteObject(csmPlatformProperties.s3.bucketName, filePath)
   }
+
+  fun constructFilePath(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      datasetPartId: String,
+      fileName: String
+  ) = "$organizationId/$workspaceId/$datasetId/$datasetPartId/$fileName"
 }

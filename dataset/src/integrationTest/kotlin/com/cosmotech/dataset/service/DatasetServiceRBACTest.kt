@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset.service
 
-import com.cosmotech.api.tests.CsmRedisTestBase
+import com.cosmotech.api.tests.CsmTestBase
 import io.mockk.junit5.MockKExtension
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class DatasetServiceRBACTest : CsmRedisTestBase() {
+class DatasetServiceRBACTest : CsmTestBase() {
 
   private val logger = LoggerFactory.getLogger(DatasetServiceIntegrationTest::class.java)
 }
