@@ -59,23 +59,6 @@ csm:
       type: hashid
     event-publisher:
       type: in_process
-    images:
-      scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
-      send-datawarehouse: cosmo-tech/azure-data-explorer-connector
-      scenario-data-upload: cosmo-tech/azure-storage-publish:latest
-    containers:
-      - name: "ADTTwingraphImport"
-        imageRegistry: "ghcr.io"
-        imageName: "cosmo-tech/adt-twincache-connector"
-        imageVersion: "0.3.0"
-      - name: "AzureStorageTwingraphImport"
-        imageRegistry: "ghcr.io"
-        imageName: "cosmo-tech/azstorage-twincache-connector"
-        imageVersion: "1.2.0"
-      - name: "TwincacheConnector"
-        imageRegistry: "ghcr.io"
-        imageName: "cosmo-tech/twincache-connector"
-        imageVersion: "0.4.1"
     upload:
       authorized-mime-types:
         workspaces:

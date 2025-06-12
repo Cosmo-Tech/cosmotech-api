@@ -1,0 +1,16 @@
+id,product_name,category,price,stock
+1,Mocha coffee,Beverages,5.50,30
+2,Green tea,Beverages,3.20,45
+3,Dark chocolate,Confectionery,2.80,60
+4,Croissant,Pastry,1.20,20
+5,Whole wheat bread,Bakery,2.00,15
+6,Mineral water,Beverages,1.00,100
+7,Sliced brioche,Bakery,3.30,25
+8,Orange juice,Beverages,2.50,40
+9,Apple pie,Pastry,4.60,10
+10,Chocolate bread,Pastry,1.40,18
+11,Cereal bar,Snacks,1.80,35
+12,Ham sandwich,Snacks,4.50,12
+13,Cola soda,Beverages,1.60,50
+14,Mixed candy,Confectionery,2.40,55
+15,Sandwich bread,Bakery,2.50,22
