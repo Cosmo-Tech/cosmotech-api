@@ -548,10 +548,10 @@ class DatasetServiceImpl(
       datasetCreateRequest: DatasetCreateRequest,
       files: Array<MultipartFile>
   ) {
-    require(datasetCreateRequest.name.isNotBlank()) { "Dataset name must not be null or blank" }
+    require(datasetCreateRequest.name.isNotBlank()) { "Dataset name must not be blank" }
     require(files.size == datasetCreateRequest.parts?.size) {
       "Number of files must be equal to the number of parts if specified. " +
-          "${files.size} != ${datasetCreateRequest.parts?.size} "
+          "${files.size} != ${datasetCreateRequest.parts?.size}"
     }
     require(
         files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
