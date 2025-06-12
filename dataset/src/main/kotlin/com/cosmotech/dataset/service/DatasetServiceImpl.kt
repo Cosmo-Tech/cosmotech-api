@@ -185,6 +185,10 @@ class DatasetServiceImpl(
   override fun deleteDataset(organizationId: String, workspaceId: String, datasetId: String) {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_DELETE)
     datasetRepository.delete(dataset)
+    dataset.parts.forEach {
+      datasetPartRepository.delete(it)
+      datasetPartManagementFactory.removeData(it.type.value, it)
+    }
   }
 
   override fun getDataset(organizationId: String, workspaceId: String, datasetId: String): Dataset {
