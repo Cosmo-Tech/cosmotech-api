@@ -79,7 +79,6 @@ class DatasetServiceImpl(
 
   override fun removeDatasetPartFromDataset(dataset: Dataset, datasetPartId: String) {
     dataset.parts.removeIf { it.id == datasetPartId }
-    // Handle DB/Files deletion here
     datasetRepository.update(dataset)
   }
 
@@ -164,6 +163,10 @@ class DatasetServiceImpl(
               constructDatasetPart
             }
             ?.toMutableList()
+
+    if (!datasetParts.isNullOrEmpty()) {
+      datasetPartRepository.saveAll(datasetParts)
+    }
 
     val createdDataset =
         Dataset(
@@ -420,7 +423,7 @@ class DatasetServiceImpl(
             }
 
     removeDatasetPartFromDataset(dataset, datasetPartId)
-
+    datasetPartManagementFactory.removeData(datasetPart.type.value, datasetPart)
     datasetPartRepository.delete(datasetPart)
   }
 
@@ -539,9 +542,7 @@ class DatasetServiceImpl(
       datasetPartCreateRequest: DatasetPartCreateRequest,
       file: MultipartFile
   ) {
-    require(datasetPartCreateRequest.name.isNotBlank()) {
-      "Dataset Part name must not be null or blank"
-    }
+    require(datasetPartCreateRequest.name.isNotBlank()) { "Dataset Part name must not be blank" }
     require(datasetPartCreateRequest.sourceName == file.originalFilename) {
       "You must upload a file with the same name as the Dataset Part sourceName. " +
           "You provided ${datasetPartCreateRequest.sourceName} and ${file.originalFilename} instead."
