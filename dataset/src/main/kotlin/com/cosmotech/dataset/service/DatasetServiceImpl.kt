@@ -5,6 +5,7 @@ package com.cosmotech.dataset.service
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
@@ -139,6 +140,7 @@ class DatasetServiceImpl(
       datasetCreateRequest: DatasetCreateRequest,
       files: Array<MultipartFile>
   ): Dataset {
+    workspaceService.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_CREATE_CHILDREN)
     logger.debug("Registering Dataset: {}", datasetCreateRequest)
     validDatasetCreateRequest(datasetCreateRequest, files)
 
@@ -618,17 +620,22 @@ class DatasetServiceImpl(
       datasetUpdateRequest: DatasetUpdateRequest,
       files: Array<MultipartFile>
   ) {
-    require(datasetUpdateRequest.name?.isNotBlank() == true) { "Dataset name must not be blank" }
-    require(files.size == datasetUpdateRequest.parts?.size) {
+    require(
+        datasetUpdateRequest.name == null ||
+            (datasetUpdateRequest.name != null && datasetUpdateRequest.name!!.isNotBlank())) {
+          "Dataset name must not be blank"
+        }
+    require(files.size == (datasetUpdateRequest.parts?.size ?: 0)) {
       "Number of files must be equal to the number of parts if specified. " +
           "${files.size} != ${datasetUpdateRequest.parts?.size}"
     }
     require(
         files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
-            datasetUpdateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())) {
+            (datasetUpdateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())
+                ?: emptySet<String>())) {
           "All files must have the same name as their corresponding Dataset Part. " +
               "Files: ${files.map { it.originalFilename }}. " +
-              "Dataset Parts: ${datasetUpdateRequest.parts?.map { it.sourceName }}."
+              "Dataset Parts: ${datasetUpdateRequest.parts?.map { it.sourceName } ?: emptyList()}."
         }
   }
 }
