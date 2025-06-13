@@ -460,7 +460,7 @@ Replace existing dataset parts of a Dataset
 
 <a name="updateDataset"></a>
 # **updateDataset**
-> List updateDataset(organization\_id, workspace\_id, dataset\_id, files, dataset)
+> Dataset updateDataset(organization\_id, workspace\_id, dataset\_id, datasetUpdateRequest, files)
 
 Update a Dataset
 
@@ -473,12 +473,12 @@ Update a Dataset
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **datasetUpdateRequest** | [**DatasetUpdateRequest**](../Models/DatasetUpdateRequest.md)|  | [default to null] |
 | **files** | **List**| Notes:   - Each parts defined in dataset should have a file defined in this list   - Please ensure that upload files order match with data parts list defined     - First file uploaded will match with first dataset parts and so on  | [optional] [default to null] |
-| **dataset** | [**DatasetUpdateRequest**](../Models/DatasetUpdateRequest.md)|  | [optional] [default to null] |
 
 ### Return type
 
-[**List**](../Models/Dataset.md)
+[**Dataset**](../Models/Dataset.md)
 
 ### Authorization
 

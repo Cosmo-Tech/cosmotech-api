@@ -157,20 +157,20 @@ paths:
               properties:
                 files:
                   $ref: "#/components/schemas/DatasetPartFiles"
-                dataset:
+                datasetUpdateRequest:
                   $ref: "#/components/schemas/DatasetUpdateRequest"
+              required:
+                - datasetUpdateRequest
       responses:
         "200":
           description: Dataset successfully updated
           content:
             application/json:
               schema:
-                items:
-                  $ref: "#/components/schemas/Dataset"
+                $ref: "#/components/schemas/Dataset"
             application/yaml:
               schema:
-                items:
-                  $ref: "#/components/schemas/Dataset"
+                $ref: "#/components/schemas/Dataset"
         "400":
           description: Bad request
         "403":

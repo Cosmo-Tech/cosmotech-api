@@ -21,6 +21,7 @@ import com.cosmotech.dataset.domain.DatasetPartCreateRequest
 import com.cosmotech.dataset.domain.DatasetPartTypeEnum
 import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSecurity
+import com.cosmotech.dataset.domain.DatasetUpdateRequest
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -1089,6 +1090,197 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             organizationSaved.id, workspaceSaved.id, createdDataset.id, 1, 5)
     assertNotNull(listDatasetParts)
     assertTrue(listDatasetParts.isEmpty())
+  }
+
+  @Test
+  fun `test downloadDatasetPart`() {
+
+    val datasetPartName = "Customers list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = datasetPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = datasetPartDescription,
+            tags = datasetPartTags,
+            type = DatasetPartTypeEnum.File)
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            parts = mutableListOf(datasetPartCreateRequest))
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(mockMultipartFile))
+
+    val downloadFile =
+        datasetApiService.downloadDatasetPart(
+            organizationSaved.id, workspaceSaved.id, createdDataset.id, createdDataset.parts[0].id)
+
+    val expectedText = FileInputStream(resourceTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(downloadFile).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test updateDataset with File dataset part`() {
+
+    // Create a Dataset with dataset Part
+    val datasetPartName = "Customers list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = datasetPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = datasetPartDescription,
+            tags = datasetPartTags,
+            type = DatasetPartTypeEnum.File)
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            parts = mutableListOf(datasetPartCreateRequest))
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(mockMultipartFile))
+
+    // Create a DatasetUpdateRequest with new dataset part
+    val newDatasetPartName = "Product list"
+    val newDatasetPartDescription = "List of Product"
+    val newDatasetPartTags = mutableListOf("part", "public", "product")
+    val newDatasetPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = newDatasetPartName,
+            sourceName = INVENTORY_SOURCE_FILE_NAME,
+            description = newDatasetPartDescription,
+            tags = newDatasetPartTags,
+            type = DatasetPartTypeEnum.File)
+
+    val newDatasetName = "Shop Dataset"
+    val newDatasetDescription = "Dataset for shop"
+    val newDatasetTags = mutableListOf("dataset", "public", "shop")
+    val newDatasetSecurity =
+        DatasetSecurity(
+            default = ROLE_NONE,
+            accessControlList =
+                mutableListOf(
+                    DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR)))
+    val datasetUpdateRequest =
+        DatasetUpdateRequest(
+            name = newDatasetName,
+            description = newDatasetDescription,
+            tags = newDatasetTags,
+            parts = mutableListOf(newDatasetPartCreateRequest),
+            security = newDatasetSecurity)
+
+    val newDatasetPartTestFile =
+        resourceLoader.getResource("classpath:/$INVENTORY_SOURCE_FILE_NAME").file
+
+    val newDatasetPartFileToSend = FileInputStream(newDatasetPartTestFile)
+
+    val newDatasetPartMockMultipartFile =
+        MockMultipartFile(
+            "files",
+            INVENTORY_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(newDatasetPartFileToSend))
+
+    // Update dataset with all new information + new part instead of the previous one
+    val updatedDataset =
+        datasetApiService.updateDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetUpdateRequest,
+            arrayOf(newDatasetPartMockMultipartFile))
+
+    // check new Dataset simple data
+    assertEquals(newDatasetName, updatedDataset.name)
+    assertEquals(newDatasetDescription, updatedDataset.description)
+    assertEquals(newDatasetTags, updatedDataset.tags)
+    assertEquals(newDatasetSecurity, updatedDataset.security)
+    assertEquals(createdDataset.createInfo, updatedDataset.createInfo)
+    assertEquals(createdDataset.updateInfo.userId, updatedDataset.updateInfo.userId)
+    assertTrue(createdDataset.updateInfo.timestamp < updatedDataset.updateInfo.timestamp)
+
+    // check the new Dataset part is created and corresponding to data specified during update
+    val newDatasetPart =
+        datasetApiService.getDatasetPart(
+            organizationSaved.id, workspaceSaved.id, updatedDataset.id, updatedDataset.parts[0].id)
+    assertTrue(updatedDataset.parts.size == 1)
+    assertEquals(newDatasetPart, updatedDataset.parts[0])
+
+    // check the old Dataset part is not in DB anymore
+    val oldDatasetPartShouldNotExistInDB =
+        assertThrows<CsmResourceNotFoundException> {
+          datasetApiService.getDatasetPart(
+              organizationSaved.id,
+              workspaceSaved.id,
+              createdDataset.id,
+              createdDataset.parts[0].id)
+        }
+    assertEquals(
+        "Dataset Part ${createdDataset.parts[0].id} not found " +
+            "in organization ${organizationSaved.id}, " +
+            "workspace ${workspaceSaved.id} and dataset ${createdDataset.id}",
+        oldDatasetPartShouldNotExistInDB.message)
+
+    // check the old Dataset part is not in s3 storage anymore
+    assertFalse(
+        s3Template.objectExists(
+            csmPlatformProperties.s3.bucketName,
+            constructFilePathForDatasetPart(createdDataset, 0)))
+
+    // check the new Dataset part is in s3 storage now
+    assertTrue(
+        s3Template.objectExists(
+            csmPlatformProperties.s3.bucketName,
+            constructFilePathForDatasetPart(updatedDataset, 0)))
   }
 
   private fun constructFilePathForDatasetPart(createdDataset: Dataset, partIndex: Int): String =

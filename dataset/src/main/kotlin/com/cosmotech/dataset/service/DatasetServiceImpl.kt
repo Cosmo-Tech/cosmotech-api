@@ -157,9 +157,7 @@ class DatasetServiceImpl(
               val constructDatasetPart =
                   constructDatasetPart(organizationId, workspaceId, datasetId, part)
               datasetPartManagementFactory.storeData(
-                  part.type!!.value,
-                  constructDatasetPart,
-                  files.first { it.originalFilename == part.sourceName })
+                  constructDatasetPart, files.first { it.originalFilename == part.sourceName })
               constructDatasetPart
             }
             ?.toMutableList()
@@ -190,7 +188,7 @@ class DatasetServiceImpl(
     datasetRepository.delete(dataset)
     dataset.parts.forEach {
       datasetPartRepository.delete(it)
-      datasetPartManagementFactory.removeData(it.type.value, it)
+      datasetPartManagementFactory.removeData(it)
     }
   }
 
@@ -300,10 +298,54 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      files: Array<MultipartFile>,
-      dataset: DatasetUpdateRequest?
-  ): List<Dataset> {
-    TODO("Not yet implemented")
+      datasetUpdateRequest: DatasetUpdateRequest,
+      files: Array<MultipartFile>
+  ): Dataset {
+    logger.debug("Registering Dataset: {}", datasetUpdateRequest)
+    val previousDataset =
+        getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
+    validDatasetUpdateRequest(datasetUpdateRequest, files)
+
+    val newDatasetParts =
+        datasetUpdateRequest.parts
+            ?.map { part ->
+              val constructDatasetPart =
+                  constructDatasetPart(organizationId, workspaceId, datasetId, part)
+              datasetPartManagementFactory.storeData(
+                  constructDatasetPart, files.first { it.originalFilename == part.sourceName })
+              constructDatasetPart
+            }
+            ?.toMutableList()
+
+    val updatedDataset =
+        Dataset(
+            id = datasetId,
+            name = datasetUpdateRequest.name ?: previousDataset.name,
+            description = datasetUpdateRequest.description ?: previousDataset.description,
+            organizationId = organizationId,
+            workspaceId = workspaceId,
+            tags = datasetUpdateRequest.tags ?: previousDataset.tags,
+            parts = newDatasetParts ?: previousDataset.parts,
+            createInfo = previousDataset.createInfo,
+            updateInfo =
+                EditInfo(
+                    timestamp = Instant.now().toEpochMilli(),
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+            security = datasetUpdateRequest.security ?: previousDataset.security)
+
+    logger.debug("New Dataset info to register: {}", updatedDataset)
+
+    if (newDatasetParts != null) {
+      datasetPartRepository.saveAll(newDatasetParts)
+    }
+    val newDataset = datasetRepository.update(updatedDataset)
+
+    if (previousDataset.parts.isNotEmpty()) {
+      datasetPartRepository.deleteAll(previousDataset.parts)
+      previousDataset.parts.forEach { datasetPartManagementFactory.removeData(it) }
+    }
+
+    return newDataset
   }
 
   override fun updateDatasetAccessControl(
@@ -371,8 +413,7 @@ class DatasetServiceImpl(
 
     val createdDatasetPart =
         constructDatasetPart(organizationId, workspaceId, datasetId, datasetPartCreateRequest)
-    datasetPartManagementFactory.storeData(
-        datasetPartCreateRequest.type!!.value, createdDatasetPart, file)
+    datasetPartManagementFactory.storeData(createdDatasetPart, file)
     datasetPartRepository.save(createdDatasetPart)
     return addDatasetPartToDataset(dataset, createdDatasetPart)
   }
@@ -423,7 +464,7 @@ class DatasetServiceImpl(
             }
 
     removeDatasetPartFromDataset(dataset, datasetPartId)
-    datasetPartManagementFactory.removeData(datasetPart.type.value, datasetPart)
+    datasetPartManagementFactory.removeData(datasetPart)
     datasetPartRepository.delete(datasetPart)
   }
 
@@ -433,7 +474,8 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetPartId: String
   ): Resource {
-    TODO("Not yet implemented")
+    val datasetPart = getDatasetPart(organizationId, workspaceId, datasetId, datasetPartId)
+    return datasetPartManagementFactory.getData(datasetPart)
   }
 
   override fun getDatasetPart(
@@ -509,7 +551,12 @@ class DatasetServiceImpl(
       offset: Int?,
       limit: Int?
   ): List<Any> {
-    TODO("Not yet implemented")
+    val datasetPart = getDatasetPart(organizationId, workspaceId, datasetId, datasetPartId)
+    if (datasetPart.type == DatasetPartTypeEnum.File) {
+      throw IllegalArgumentException("Cannot query data on a File Dataset Part")
+    }
+    // TODO handle DatasetPartTypeEnum == Relational
+    return emptyList()
   }
 
   override fun replaceDatasetPart(
@@ -564,6 +611,24 @@ class DatasetServiceImpl(
           "All files must have the same name as their corresponding Dataset Part. " +
               "Files: ${files.map { it.originalFilename }}. " +
               "Dataset Parts: ${datasetCreateRequest.parts?.map { it.sourceName }}."
+        }
+  }
+
+  private fun validDatasetUpdateRequest(
+      datasetUpdateRequest: DatasetUpdateRequest,
+      files: Array<MultipartFile>
+  ) {
+    require(datasetUpdateRequest.name?.isNotBlank() == true) { "Dataset name must not be blank" }
+    require(files.size == datasetUpdateRequest.parts?.size) {
+      "Number of files must be equal to the number of parts if specified. " +
+          "${files.size} != ${datasetUpdateRequest.parts?.size}"
+    }
+    require(
+        files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
+            datasetUpdateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())) {
+          "All files must have the same name as their corresponding Dataset Part. " +
+              "Files: ${files.map { it.originalFilename }}. " +
+              "Dataset Parts: ${datasetUpdateRequest.parts?.map { it.sourceName }}."
         }
   }
 }
