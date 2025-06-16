@@ -26,6 +26,7 @@ import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.domain.DatasetPartCreateRequest
 import com.cosmotech.dataset.domain.DatasetPartTypeEnum
+import com.cosmotech.dataset.domain.DatasetPartUpdateRequest
 import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetUpdateRequest
@@ -705,6 +706,140 @@ class DatasetServiceRBACTest : CsmTestBase() {
           }
 
   @TestFactory
+  fun `test RBAC createDatasetPart`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC createDatasetPart : $role") {
+              organization =
+                  makeOrganizationCreateRequest(
+                      name = "Organization test",
+                      userName = CONNECTED_DEFAULT_USER,
+                      role = ROLE_USER)
+              organizationSaved = organizationApiService.createOrganization(organization)
+
+              solution = makeSolution()
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+
+              workspace =
+                  makeWorkspaceCreateRequest(userName = CONNECTED_DEFAULT_USER, role = ROLE_USER)
+              workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              dataset =
+                  makeDatasetCreateRequest(
+                      datasetSecurity =
+                          DatasetSecurity(
+                              default = ROLE_NONE,
+                              accessControlList =
+                                  mutableListOf(
+                                      DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                                      DatasetAccessControl(
+                                          id = CONNECTED_DEFAULT_USER, role = role))))
+
+              datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.createDatasetPart(
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetSaved.id,
+                          mockMultipartFiles[0],
+                          makeDatasetPartCreateRequest())
+                    }
+                assertEquals(
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.createDatasetPart(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetSaved.id,
+                      mockMultipartFiles[0],
+                      makeDatasetPartCreateRequest())
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC deleteDatasetPart`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC deleteDatasetPart : $role") {
+              organization =
+                  makeOrganizationCreateRequest(
+                      name = "Organization test",
+                      userName = CONNECTED_DEFAULT_USER,
+                      role = ROLE_USER)
+              organizationSaved = organizationApiService.createOrganization(organization)
+
+              solution = makeSolution()
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+
+              workspace =
+                  makeWorkspaceCreateRequest(userName = CONNECTED_DEFAULT_USER, role = ROLE_USER)
+              workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              dataset =
+                  makeDatasetCreateRequest(
+                      datasetSecurity =
+                          DatasetSecurity(
+                              default = ROLE_NONE,
+                              accessControlList =
+                                  mutableListOf(
+                                      DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                                      DatasetAccessControl(
+                                          id = CONNECTED_DEFAULT_USER, role = role))))
+
+              datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.deleteDatasetPart(
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetSaved.id,
+                          datasetSaved.parts[0].id)
+                    }
+                assertEquals(
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.deleteDatasetPart(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetSaved.id,
+                      datasetSaved.parts[0].id)
+                }
+              }
+            }
+          }
+
+  @TestFactory
   fun `test RBAC downloadDatasetPart`() =
       mapOf(
               ROLE_VIEWER to false,
@@ -769,6 +904,220 @@ class DatasetServiceRBACTest : CsmTestBase() {
               }
             }
           }
+
+  @TestFactory
+  fun `test RBAC getDatasetPart`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC getDatasetPart : $role") {
+              organization =
+                  makeOrganizationCreateRequest(
+                      name = "Organization test",
+                      userName = CONNECTED_DEFAULT_USER,
+                      role = ROLE_USER)
+              organizationSaved = organizationApiService.createOrganization(organization)
+
+              solution = makeSolution()
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+
+              workspace =
+                  makeWorkspaceCreateRequest(userName = CONNECTED_DEFAULT_USER, role = ROLE_USER)
+              workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              dataset =
+                  makeDatasetCreateRequest(
+                      datasetSecurity =
+                          DatasetSecurity(
+                              default = ROLE_NONE,
+                              accessControlList =
+                                  mutableListOf(
+                                      DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                                      DatasetAccessControl(
+                                          id = CONNECTED_DEFAULT_USER, role = role))))
+
+              datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.getDatasetPart(
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetSaved.id,
+                          datasetSaved.parts[0].id)
+                    }
+                assertEquals(
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.getDatasetPart(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetSaved.id,
+                      datasetSaved.parts[0].id)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC listDatasetParts`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC listDatasetParts : $role") {
+              organization =
+                  makeOrganizationCreateRequest(
+                      name = "Organization test",
+                      userName = CONNECTED_DEFAULT_USER,
+                      role = ROLE_USER)
+              organizationSaved = organizationApiService.createOrganization(organization)
+
+              solution = makeSolution()
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+
+              workspace =
+                  makeWorkspaceCreateRequest(userName = CONNECTED_DEFAULT_USER, role = ROLE_USER)
+              workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              dataset =
+                  makeDatasetCreateRequest(
+                      datasetSecurity =
+                          DatasetSecurity(
+                              default = ROLE_NONE,
+                              accessControlList =
+                                  mutableListOf(
+                                      DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                                      DatasetAccessControl(
+                                          id = CONNECTED_DEFAULT_USER, role = role))))
+
+              datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.listDatasetParts(
+                          organizationSaved.id, workspaceSaved.id, datasetSaved.id, null, null)
+                    }
+                assertEquals(
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.listDatasetParts(
+                      organizationSaved.id, workspaceSaved.id, datasetSaved.id, null, null)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC replaceDatasetPart`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC replaceDatasetPart : $role") {
+              organization =
+                  makeOrganizationCreateRequest(
+                      name = "Organization test",
+                      userName = CONNECTED_DEFAULT_USER,
+                      role = ROLE_USER)
+              organizationSaved = organizationApiService.createOrganization(organization)
+
+              solution = makeSolution()
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+
+              workspace =
+                  makeWorkspaceCreateRequest(userName = CONNECTED_DEFAULT_USER, role = ROLE_USER)
+              workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              dataset =
+                  makeDatasetCreateRequest(
+                      datasetSecurity =
+                          DatasetSecurity(
+                              default = ROLE_NONE,
+                              accessControlList =
+                                  mutableListOf(
+                                      DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                                      DatasetAccessControl(
+                                          id = CONNECTED_DEFAULT_USER, role = role))))
+
+              datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.replaceDatasetPart(
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetSaved.id,
+                          datasetSaved.parts[0].id,
+                          mockMultipartFiles[0],
+                          makeDatasetPartUpdateRequest())
+                    }
+                assertEquals(
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.replaceDatasetPart(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetSaved.id,
+                      datasetSaved.parts[0].id,
+                      mockMultipartFiles[0],
+                      makeDatasetPartUpdateRequest())
+                }
+              }
+            }
+          }
+
+  fun makeDatasetPartUpdateRequest(description: String? = null, tags: MutableList<String>? = null) =
+      DatasetPartUpdateRequest(description = description, tags = tags)
+
+  fun makeDatasetPartCreateRequest(
+      datasetPartName: String = "Test dataset part name",
+      datasetPartDescription: String = "Test dataset part description",
+      datasetPartTags: MutableList<String> = mutableListOf("part", "public", "test"),
+      datasetPartSourceName: String = CUSTOMER_SOURCE_FILE_NAME,
+      datasetPartType: DatasetPartTypeEnum = DatasetPartTypeEnum.File
+  ): DatasetPartCreateRequest {
+    return DatasetPartCreateRequest(
+        name = datasetPartName,
+        sourceName = datasetPartSourceName,
+        description = datasetPartDescription,
+        tags = datasetPartTags,
+        type = datasetPartType)
+  }
 
   fun makeDatasetCreateRequest(
       datasetName: String = "Test dataset name",
