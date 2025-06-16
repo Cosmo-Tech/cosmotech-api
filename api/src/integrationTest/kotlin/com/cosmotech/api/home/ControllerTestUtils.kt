@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home
 
-import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceCreateRequest
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_DESCRIPTION
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_NAME
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_PART_DESCRIPTION
@@ -26,7 +25,7 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.domain.*
 import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.domain.*
-import java.io.InputStream
+import org.apache.commons.io.IOUtils
 import org.json.JSONObject
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
@@ -339,6 +338,11 @@ class ControllerTestUtils {
         datasetCreateRequest: DatasetCreateRequest,
     ): String {
 
+      val fileToUpload =
+          this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
+              ?: throw IllegalStateException(
+                  "$TEST_FILE_NAME file used for endpoints test documentation cannot be null")
+
       val datasetCreateRequestFile =
           MockMultipartFile(
               "datasetCreateRequest",
@@ -350,7 +354,7 @@ class ControllerTestUtils {
               "files",
               TEST_FILE_NAME,
               MediaType.MULTIPART_FORM_DATA_VALUE,
-              InputStream.nullInputStream())
+              IOUtils.toByteArray(fileToUpload))
       return JSONObject(
               mvc.perform(
                       multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
@@ -373,6 +377,11 @@ class ControllerTestUtils {
         datasetPartCreateRequest: DatasetPartCreateRequest,
     ): String {
 
+      val fileToUpload =
+          this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
+              ?: throw IllegalStateException(
+                  "$TEST_FILE_NAME file used for endpoints test documentation cannot be null")
+
       val datasetPartCreateRequestFile =
           MockMultipartFile(
               "datasetPartCreateRequest",
@@ -384,7 +393,7 @@ class ControllerTestUtils {
               "file",
               TEST_FILE_NAME,
               MediaType.MULTIPART_FORM_DATA_VALUE,
-              InputStream.nullInputStream())
+              IOUtils.toByteArray(fileToUpload))
       return JSONObject(
               mvc.perform(
                       multipart(
