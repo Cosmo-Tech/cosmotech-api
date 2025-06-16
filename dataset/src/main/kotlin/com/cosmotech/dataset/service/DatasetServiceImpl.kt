@@ -410,7 +410,7 @@ class DatasetServiceImpl(
       file: MultipartFile,
       datasetPartCreateRequest: DatasetPartCreateRequest
   ): DatasetPart {
-    val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
+    val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
     validDatasetPartCreateRequest(datasetPartCreateRequest, file)
 
     val createdDatasetPart =
