@@ -40,6 +40,7 @@ import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.solution.domain.RunTemplateCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import java.io.InputStream
+import org.apache.commons.io.IOUtils
 import org.hamcrest.Matchers.greaterThan
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
@@ -55,7 +56,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.testcontainers.shaded.org.apache.commons.io.IOUtils
 
 @ActiveProfiles(profiles = ["test"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -158,7 +158,30 @@ class DatasetControllerTests : ControllerTestBase() {
   @Test
   @WithMockOauth2User
   fun download_dataset_part() {
-    TODO("Not yet implemented")
+
+    val datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+    val datasetPartId =
+        createDatasetPartAndReturnId(
+            mvc, organizationId, workspaceId, datasetId, constructDatasetPartCreateRequest())
+
+    val fileUploaded =
+        this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
+            ?: throw IllegalStateException(
+                "$TEST_FILE_NAME file used for endpoints test documentation cannot be null")
+
+    mvc.perform(
+            get(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId/download")
+                .accept(MediaType.APPLICATION_OCTET_STREAM))
+        .andExpect(status().is2xxSuccessful)
+        .andExpect { result ->
+          result.response.contentAsString == fileUploaded.bufferedReader().readText()
+        }
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/download/GET"))
   }
 
   @Test
@@ -440,7 +463,6 @@ class DatasetControllerTests : ControllerTestBase() {
             get("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
-        .andExpect(jsonPath("$[0].id").value(datasetPartId))
         .andExpect(jsonPath("$[0].name").value(DATASET_PART_NAME))
         .andExpect(jsonPath("$[0].description").value(DATASET_PART_DESCRIPTION))
         .andExpect(jsonPath("$[0].sourceName").value(TEST_FILE_NAME))
@@ -455,6 +477,21 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].organizationId").value(organizationId))
         .andExpect(jsonPath("$[0].workspaceId").value(workspaceId))
         .andExpect(jsonPath("$[0].datasetId").value(datasetId))
+        .andExpect(jsonPath("$[1].id").value(datasetPartId))
+        .andExpect(jsonPath("$[1].name").value(DATASET_PART_NAME))
+        .andExpect(jsonPath("$[1].description").value(DATASET_PART_DESCRIPTION))
+        .andExpect(jsonPath("$[1].sourceName").value(TEST_FILE_NAME))
+        .andExpect(jsonPath("$[1].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[1].createInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$[1].createInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$[1].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[1].updateInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$[1].updateInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$[1].tags").value(mutableListOf("tag_part1", "tag_part2")))
+        .andExpect(jsonPath("$[1].type").value(DatasetPartTypeEnum.File.value))
+        .andExpect(jsonPath("$[1].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[1].workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$[1].datasetId").value(datasetId))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(

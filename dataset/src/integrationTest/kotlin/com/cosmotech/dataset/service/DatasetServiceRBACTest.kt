@@ -704,6 +704,72 @@ class DatasetServiceRBACTest : CsmTestBase() {
             }
           }
 
+  @TestFactory
+  fun `test RBAC downloadDatasetPart`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC downloadDatasetPart : $role") {
+              organization =
+                  makeOrganizationCreateRequest(
+                      name = "Organization test",
+                      userName = CONNECTED_DEFAULT_USER,
+                      role = ROLE_USER)
+              organizationSaved = organizationApiService.createOrganization(organization)
+
+              solution = makeSolution()
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+
+              workspace =
+                  makeWorkspaceCreateRequest(userName = CONNECTED_DEFAULT_USER, role = ROLE_USER)
+              workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              dataset =
+                  makeDatasetCreateRequest(
+                      datasetSecurity =
+                          DatasetSecurity(
+                              default = ROLE_NONE,
+                              accessControlList =
+                                  mutableListOf(
+                                      DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                                      DatasetAccessControl(
+                                          id = CONNECTED_DEFAULT_USER, role = role))))
+
+              datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.downloadDatasetPart(
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetSaved.id,
+                          datasetSaved.parts[0].id)
+                    }
+                assertEquals(
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.downloadDatasetPart(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetSaved.id,
+                      datasetSaved.parts[0].id)
+                }
+              }
+            }
+          }
+
   fun makeDatasetCreateRequest(
       datasetName: String = "Test dataset name",
       datasetDescription: String = "Test dataset description",
