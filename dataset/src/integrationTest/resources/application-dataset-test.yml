@@ -70,6 +70,8 @@ csm:
           - text/plain
           - text/x-yaml
           - application/json
+        datasets:
+          - text/csv
     authorization:
       tenant-id-jwt-claim: "iss"
       # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
