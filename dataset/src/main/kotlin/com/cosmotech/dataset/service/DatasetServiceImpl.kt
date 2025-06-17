@@ -15,6 +15,7 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
+import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -47,7 +48,8 @@ class DatasetServiceImpl(
     private val datasetRepository: DatasetRepository,
     private val datasetPartRepository: DatasetPartRepository,
     private val csmRbac: CsmRbac,
-    private val datasetPartManagementFactory: DatasetPartManagementFactory
+    private val datasetPartManagementFactory: DatasetPartManagementFactory,
+    private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   override fun getVerifiedDataset(
@@ -550,7 +552,7 @@ class DatasetServiceImpl(
       datasetPartUpdateRequest: DatasetPartUpdateRequest?
   ): DatasetPart {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
-
+    validDatasetPartUpdateRequest(file)
     val datasetPart =
         datasetPartRepository
             .findBy(organizationId, workspaceId, datasetId, datasetPartId)
@@ -580,6 +582,15 @@ class DatasetServiceImpl(
     return datasetPartRepository.update(datasetPart)
   }
 
+  private fun validDatasetPartUpdateRequest(file: MultipartFile) {
+    require(
+        !(file.originalFilename?.contains("..") == true ||
+            file.originalFilename?.contains("/") == true)) {
+          "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
+        }
+    resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.datasets)
+  }
+
   private fun validDatasetPartCreateRequest(
       datasetPartCreateRequest: DatasetPartCreateRequest,
       file: MultipartFile
@@ -589,6 +600,12 @@ class DatasetServiceImpl(
       "You must upload a file with the same name as the Dataset Part sourceName. " +
           "You provided ${datasetPartCreateRequest.sourceName} and ${file.originalFilename} instead."
     }
+    require(
+        !(file.originalFilename?.contains("..") == true ||
+            file.originalFilename?.contains("/") == true)) {
+          "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
+        }
+    resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.datasets)
   }
 
   private fun validDatasetCreateRequest(
@@ -607,6 +624,14 @@ class DatasetServiceImpl(
               "Files: ${files.map { it.originalFilename }}. " +
               "Dataset Parts: ${datasetCreateRequest.parts?.map { it.sourceName }}."
         }
+    files.forEach { file ->
+      require(
+          !(file.originalFilename?.contains("..") == true ||
+              file.originalFilename?.contains("/") == true)) {
+            "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
+          }
+      resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.datasets)
+    }
   }
 
   private fun validDatasetUpdateRequest(
@@ -630,6 +655,15 @@ class DatasetServiceImpl(
               "Files: ${files.map { it.originalFilename }}. " +
               "Dataset Parts: ${datasetUpdateRequest.parts?.map { it.sourceName } ?: emptyList()}."
         }
+
+    files.forEach { file ->
+      require(
+          !(file.originalFilename?.contains("..") == true ||
+              file.originalFilename?.contains("/") == true)) {
+            "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
+          }
+      resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.datasets)
+    }
   }
 }
 
