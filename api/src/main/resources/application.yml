@@ -91,12 +91,9 @@ csm:
       port: "6379"
       username: "default_user"
       password: "default_password"
-      useGraphModule: true
       tls:
         enabled: false
         bundle: ""
-      dataset:
-        maxResult: 200
       run:
         maxResult: 200
       runner:
@@ -150,27 +147,6 @@ csm:
           - ReadWriteOnce
         requests:
           storage: 1Gi
-    images:
-      scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
-      send-datawarehouse: cosmo-tech/azure-data-explorer-connector
-      scenario-data-upload: cosmo-tech/azure-storage-publish:latest
-    containers:
-      - name: "ADTTwingraphImport"
-        imageRegistry: "ghcr.io"
-        imageName: "cosmo-tech/adt-twincache-connector"
-        imageVersion: "0.3.1"
-      - name: "AzureStorageTwingraphImport"
-        imageRegistry: "ghcr.io"
-        imageName: "cosmo-tech/azstorage-twincache-connector"
-        imageVersion: "1.2.1"
-      - name: "TwincacheConnector"
-        imageRegistry: "ghcr.io"
-        imageName: "cosmo-tech/twincache-connector"
-        imageVersion: "0.4.1"
-      - name: "TwincacheTwingraphImport"
-        imageRegistry: "ghcr.io"
-        imageName: "cosmo-tech/twincache-twincache-connector"
-        imageVersion: "0.1.2"
     authorization:
       principal-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"
@@ -178,6 +154,15 @@ csm:
     upload:
       authorized-mime-types:
         workspaces:
+          - application/zip
+          - application/xml
+          - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+          - application/x-tika-ooxml
+          - text/csv
+          - text/plain
+          - text/x-yaml
+          - application/json
+        datasets:
           - application/zip
           - application/xml
           - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
