@@ -51,6 +51,7 @@ import io.mockk.mockkStatic
 import java.io.FileInputStream
 import java.io.InputStream
 import java.util.UUID
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -1877,7 +1878,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         exception.message)
   }
 
-  // TODO queryData
+  @Ignore("This method is not ready yet")
+  @Test
+  fun `test queryData`() {
+    TODO("Not yet implemented")
+  }
 
   private fun constructFilePathForDatasetPart(createdDataset: Dataset, partIndex: Int): String =
       "${createdDataset.organizationId}/${createdDataset.workspaceId}/${createdDataset.id}/${createdDataset.parts[partIndex].id}/${createdDataset.parts[partIndex].sourceName}"
