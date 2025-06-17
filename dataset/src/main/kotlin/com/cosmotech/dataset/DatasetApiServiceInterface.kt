@@ -51,19 +51,6 @@ interface DatasetApiServiceInterface : DatasetApiService {
   fun removeDatasetPartFromDataset(dataset: Dataset, datasetPartId: String)
 
   /**
-   * Replaces a specific part of a dataset within the given dataset.
-   *
-   * @param dataset the dataset
-   * @param datasetPartIdToReplace the unique identifier of the dataset part to be replaced
-   * @param datasetPart the new dataset part
-   */
-  fun replaceDatasetPartFromDataset(
-      dataset: Dataset,
-      datasetPartIdToReplace: String,
-      datasetPart: DatasetPart
-  )
-
-  /**
    * Adds a specified `DatasetPart` to the given `Dataset`.
    *
    * @param dataset The dataset to which the dataset part will be added.

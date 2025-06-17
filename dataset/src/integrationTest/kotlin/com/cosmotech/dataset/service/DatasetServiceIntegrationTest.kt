@@ -19,6 +19,7 @@ import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.domain.DatasetPartCreateRequest
 import com.cosmotech.dataset.domain.DatasetPartTypeEnum
+import com.cosmotech.dataset.domain.DatasetPartUpdateRequest
 import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetUpdateRequest
@@ -255,20 +256,20 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, customerPartFilePath))
     assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, inventoryPartFilePath))
 
-    val customerFownloadFile =
+    val customerDownloadFile =
         s3Template.download(csmPlatformProperties.s3.bucketName, customerPartFilePath)
-    val inventoryFownloadFile =
+    val inventoryDownloadFile =
         s3Template.download(csmPlatformProperties.s3.bucketName, inventoryPartFilePath)
 
     val customerExpectedText =
         FileInputStream(customerTestFile).bufferedReader().use { it.readText() }
     val customerRetrievedText =
-        InputStreamResource(customerFownloadFile).inputStream.bufferedReader().use { it.readText() }
+        InputStreamResource(customerDownloadFile).inputStream.bufferedReader().use { it.readText() }
 
     val inventoryExpectedText =
         FileInputStream(inventoryTestFile).bufferedReader().use { it.readText() }
     val inventoryRetrievedText =
-        InputStreamResource(inventoryFownloadFile).inputStream.bufferedReader().use {
+        InputStreamResource(inventoryDownloadFile).inputStream.bufferedReader().use {
           it.readText()
         }
 
@@ -1282,6 +1283,136 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             csmPlatformProperties.s3.bucketName,
             constructFilePathForDatasetPart(updatedDataset, 0)))
   }
+
+  @Test
+  fun `test replaceDatasetPart`() {
+
+    // Initiate Dataset with a customer dataset part (that will be replaced by the inventory part)
+    val customerPartName = "Customers list"
+    val customerPartDescription = "List of customers"
+    val customerPartTags = mutableListOf("part", "public", "customers")
+    val customerPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = customerPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = customerPartDescription,
+            tags = customerPartTags,
+            type = DatasetPartTypeEnum.File)
+
+    val datasetName = "Shop Dataset"
+    val datasetDescription = "Dataset for shop"
+    val datasetTags = mutableListOf("dataset", "public", "shop")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            parts = mutableListOf(customerPartCreateRequest))
+
+    val customerTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+    val customerFileToSend = FileInputStream(customerTestFile)
+
+    val customerMockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(customerFileToSend))
+
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(customerMockMultipartFile))
+
+    val customerPartFilePath = constructFilePathForDatasetPart(createdDataset, 0)
+    assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, customerPartFilePath))
+
+    val customerDownloadFile =
+        s3Template.download(csmPlatformProperties.s3.bucketName, customerPartFilePath)
+
+    val customerExpectedText =
+        FileInputStream(customerTestFile).bufferedReader().use { it.readText() }
+
+    val customerRetrievedText =
+        InputStreamResource(customerDownloadFile).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(customerExpectedText, customerRetrievedText)
+
+    assertNotNull(createdDataset)
+    assertEquals(datasetName, createdDataset.name)
+    assertEquals(datasetDescription, createdDataset.description)
+    assertEquals(datasetTags, createdDataset.tags)
+    assertEquals(1, createdDataset.parts.size)
+    val datasetPartToReplace = createdDataset.parts[0]
+    assertNotNull(datasetPartToReplace)
+    assertEquals(customerPartName, datasetPartToReplace.name)
+    assertEquals(customerPartDescription, datasetPartToReplace.description)
+    assertEquals(customerPartTags, datasetPartToReplace.tags)
+    assertEquals(CUSTOMER_SOURCE_FILE_NAME, datasetPartToReplace.sourceName)
+    assertEquals(DatasetPartTypeEnum.File, datasetPartToReplace.type)
+
+    // New Part to replace the existing one in the dataset
+    val newDatasetPartDescription = "New Data for customer list"
+    val newDatasetPartTags = mutableListOf("part", "public", "new", "customer")
+    val datasetPartUpdateRequest =
+        DatasetPartUpdateRequest(
+            description = newDatasetPartDescription,
+            tags = newDatasetPartTags,
+        )
+    val newDatasetPartTestFile =
+        resourceLoader.getResource("classpath:/$INVENTORY_SOURCE_FILE_NAME").file
+
+    val newDatasetPartFileToSend = FileInputStream(newDatasetPartTestFile)
+
+    val newDatasetPartMockMultipartFile =
+        MockMultipartFile(
+            "files",
+            INVENTORY_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(newDatasetPartFileToSend))
+
+    val replacedDatasetPart =
+        datasetApiService.replaceDatasetPart(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartToReplace.id,
+            newDatasetPartMockMultipartFile,
+            datasetPartUpdateRequest)
+
+    val datasetWithReplacedPart =
+        datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createdDataset.id)
+    assertTrue(datasetWithReplacedPart.parts.size == 1)
+    assertEquals(replacedDatasetPart, datasetWithReplacedPart.parts[0])
+
+    assertEquals(datasetPartToReplace.id, replacedDatasetPart.id)
+    assertEquals(datasetPartToReplace.name, replacedDatasetPart.name)
+    assertEquals(replacedDatasetPart.description, newDatasetPartDescription)
+    assertEquals(replacedDatasetPart.tags, newDatasetPartTags)
+    assertEquals(CUSTOMER_SOURCE_FILE_NAME, replacedDatasetPart.sourceName)
+    assertEquals(DatasetPartTypeEnum.File, replacedDatasetPart.type)
+
+    val newDatasetPartFilePath = constructFilePathForDatasetPart(datasetWithReplacedPart, 0)
+    assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, newDatasetPartFilePath))
+
+    val newDatasetPartDownloadFile =
+        s3Template.download(csmPlatformProperties.s3.bucketName, newDatasetPartFilePath)
+
+    val newDatasetPartExpectedText =
+        FileInputStream(newDatasetPartTestFile).bufferedReader().use { it.readText() }
+
+    val newDatasetPartRetrievedText =
+        InputStreamResource(newDatasetPartDownloadFile).inputStream.bufferedReader().use {
+          it.readText()
+        }
+
+    assertEquals(newDatasetPartExpectedText, newDatasetPartRetrievedText)
+  }
+
+  // TODO queryData
+  // TODO MimeType upload / replace / create + name with ..
 
   private fun constructFilePathForDatasetPart(createdDataset: Dataset, partIndex: Int): String =
       "${createdDataset.organizationId}/${createdDataset.workspaceId}/${createdDataset.id}/${createdDataset.parts[partIndex].id}/${createdDataset.parts[partIndex].sourceName}"
