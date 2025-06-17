@@ -89,26 +89,6 @@ class DatasetServiceImpl(
     return datasetPart
   }
 
-  override fun replaceDatasetPartFromDataset(
-      dataset: Dataset,
-      datasetPartIdToReplace: String,
-      datasetPart: DatasetPart
-  ) {
-    val now = Instant.now().toEpochMilli()
-    val userId = getCurrentAccountIdentifier(csmPlatformProperties)
-    val editInfo = EditInfo(timestamp = now, userId = userId)
-
-    dataset.parts
-        .find { it.id == datasetPartIdToReplace }
-        ?.let {
-          it.description = datasetPart.description
-          it.tags = datasetPart.tags
-          it.updateInfo = editInfo
-        }
-    // Handle DB/Files replacement here
-    datasetRepository.update(dataset)
-  }
-
   override fun createDatasetAccessControl(
       organizationId: String,
       workspaceId: String,
@@ -303,7 +283,7 @@ class DatasetServiceImpl(
       datasetUpdateRequest: DatasetUpdateRequest,
       files: Array<MultipartFile>
   ): Dataset {
-    logger.debug("Registering Dataset: {}", datasetUpdateRequest)
+    logger.debug("Updating Dataset: {}", datasetUpdateRequest)
     val previousDataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
     validDatasetUpdateRequest(datasetUpdateRequest, files)
@@ -579,11 +559,24 @@ class DatasetServiceImpl(
                   "Dataset Part $datasetPartId not found in organization $organizationId, " +
                       "workspace $workspaceId and dataset $datasetId")
             }
-    datasetPart.description = datasetPartUpdateRequest?.description ?: datasetPart.description
-    datasetPart.tags = datasetPartUpdateRequest?.tags ?: datasetPart.tags
 
-    replaceDatasetPartFromDataset(dataset, datasetPartId, datasetPart)
+    val now = Instant.now().toEpochMilli()
+    val userId = getCurrentAccountIdentifier(csmPlatformProperties)
+    val editInfo = EditInfo(timestamp = now, userId = userId)
 
+    dataset.parts
+        .find { it.id == datasetPartId }
+        ?.let {
+          it.description = datasetPartUpdateRequest?.description ?: it.description
+          it.tags = datasetPartUpdateRequest?.tags ?: it.tags
+          it.updateInfo = editInfo
+
+          datasetPart.description = datasetPartUpdateRequest?.description ?: datasetPart.description
+          datasetPart.tags = datasetPartUpdateRequest?.tags ?: datasetPart.tags
+          datasetPart.updateInfo = editInfo
+        }
+    datasetPartManagementFactory.storeData(datasetPart, file, true)
+    datasetRepository.update(dataset)
     return datasetPartRepository.update(datasetPart)
   }
 

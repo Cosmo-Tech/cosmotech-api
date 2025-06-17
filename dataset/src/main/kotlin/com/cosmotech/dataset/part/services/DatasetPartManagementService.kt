@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile
  */
 interface DatasetPartManagementService {
 
-  fun storeData(file: MultipartFile, datasetPart: DatasetPart)
+  fun storeData(file: MultipartFile, datasetPart: DatasetPart, overwrite: Boolean)
 
   fun getData(datasetPart: DatasetPart): Resource
 

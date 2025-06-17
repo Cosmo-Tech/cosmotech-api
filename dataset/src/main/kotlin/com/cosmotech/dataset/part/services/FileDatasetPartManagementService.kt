@@ -25,7 +25,7 @@ class FileDatasetPartManagementService(
 
   private val logger = LoggerFactory.getLogger(FileDatasetPartManagementService::class.java)
 
-  override fun storeData(file: MultipartFile, datasetPart: DatasetPart) {
+  override fun storeData(file: MultipartFile, datasetPart: DatasetPart, overwrite: Boolean) {
     val organizationId = datasetPart.organizationId
     val workspaceId = datasetPart.workspaceId
     val datasetId = datasetPart.datasetId
@@ -33,6 +33,14 @@ class FileDatasetPartManagementService(
     val fileName = datasetPart.sourceName
     val filePath =
         constructFilePath(organizationId, workspaceId, datasetId, datasetPartId, fileName)
+    val fileAlreadyExists = s3Template.objectExists(csmPlatformProperties.s3.bucketName, filePath)
+
+    check(!(!overwrite && fileAlreadyExists)) { "File $filePath already exists" }
+
+    if (fileAlreadyExists) {
+      logger.debug("Deleting existing file $filePath before overwriting it")
+      s3Template.deleteObject(csmPlatformProperties.s3.bucketName, filePath)
+    }
     logger.debug("Saving file ${file.originalFilename} of size ${file.size} to $filePath")
     s3Template.upload(csmPlatformProperties.s3.bucketName, filePath, file.inputStream)
   }
