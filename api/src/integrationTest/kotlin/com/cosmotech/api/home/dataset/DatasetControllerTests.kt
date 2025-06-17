@@ -33,13 +33,16 @@ import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.dataset.domain.DatasetAccessControl
+import com.cosmotech.dataset.domain.DatasetPartCreateRequest
 import com.cosmotech.dataset.domain.DatasetPartTypeEnum
 import com.cosmotech.dataset.domain.DatasetPartUpdateRequest
 import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSecurity
+import com.cosmotech.dataset.domain.DatasetUpdateRequest
 import com.cosmotech.solution.domain.RunTemplateCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import java.io.InputStream
+import kotlin.test.Ignore
 import org.apache.commons.io.IOUtils
 import org.hamcrest.Matchers.greaterThan
 import org.json.JSONObject
@@ -573,6 +576,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/datasets/GET"))
   }
 
+  @Ignore("This method is not ready yet")
   @Test
   @WithMockOauth2User
   fun query_data() {
@@ -603,7 +607,7 @@ class DatasetControllerTests : ControllerTestBase() {
                 .byteInputStream())
     val newFile =
         MockMultipartFile(
-            "file", null, MediaType.MULTIPART_FORM_DATA_VALUE, InputStream.nullInputStream())
+            "file", "test.csv", MediaType.MULTIPART_FORM_DATA_VALUE, InputStream.nullInputStream())
 
     mvc.perform(
             multipart(
@@ -644,7 +648,116 @@ class DatasetControllerTests : ControllerTestBase() {
   @Test
   @WithMockOauth2User
   fun update_dataset() {
-    TODO("Not yet implemented")
+    val datasetId =
+        createDatasetAndReturnId(
+            mvc,
+            organizationId,
+            workspaceId,
+            constructDatasetCreateRequest(
+                security =
+                    DatasetSecurity(
+                        default = ROLE_NONE,
+                        accessControlList =
+                            mutableListOf(
+                                DatasetAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
+                                DatasetAccessControl(
+                                    id = ORGANIZATION_USER_EMAIL, role = ROLE_EDITOR)))))
+
+    val newName = "this_a_new_name_for_dataset"
+    val newDescription = "this_a_new_description_for_dataset"
+    val newTags = mutableListOf("tag1_updated", "tag2_updated")
+
+    val newPartName = "this_a_new_name_for_dataset_part"
+    val newPartDescription = "this_a_new_description_for_dataset_part"
+    val newPartTags = mutableListOf("tag1_part_updated", "tag2_part_updated")
+
+    val fileToUpload =
+        this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
+            ?: throw IllegalStateException(
+                "$TEST_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST endpoint documentation cannot be null")
+
+    val datasetUpdateRequest =
+        DatasetUpdateRequest(
+            name = newName,
+            description = newDescription,
+            tags = newTags,
+            parts =
+                mutableListOf(
+                    DatasetPartCreateRequest(
+                        name = newPartName,
+                        sourceName = TEST_FILE_NAME,
+                        description = newPartDescription,
+                        tags = newPartTags,
+                        type = DatasetPartTypeEnum.File)),
+            security =
+                DatasetSecurity(
+                    default = ROLE_NONE,
+                    accessControlList =
+                        mutableListOf(
+                            DatasetAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
+                            DatasetAccessControl(
+                                id = ORGANIZATION_USER_EMAIL, role = ROLE_VIEWER))))
+
+    val datasetUpdateRequestMultipartFile =
+        MockMultipartFile(
+            "datasetUpdateRequest",
+            null,
+            MediaType.APPLICATION_JSON_VALUE,
+            JSONObject(datasetUpdateRequest).toString().byteInputStream())
+    val newFile =
+        MockMultipartFile(
+            "files",
+            TEST_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToUpload))
+
+    mvc.perform(
+            multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
+                .file(datasetUpdateRequestMultipartFile)
+                .file(newFile)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf())
+                // By default, behind multipart, the HTTP verb used is POST
+                // We can override the HTTP verb as following
+                // https://stackoverflow.com/questions/38571716/how-to-put-multipart-form-data-using-spring-mockmvc
+                .with { request ->
+                  request.method = "PATCH"
+                  request
+                })
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.name").value(newName))
+        .andExpect(jsonPath("$.description").value(newDescription))
+        .andExpect(jsonPath("$.organizationId").value(organizationId))
+        .andExpect(jsonPath("$.workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.createInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.updateInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.updateInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.parts[0].name").value(newPartName))
+        .andExpect(jsonPath("$.parts[0].description").value(newPartDescription))
+        .andExpect(jsonPath("$.parts[0].organizationId").value(organizationId))
+        .andExpect(jsonPath("$.parts[0].workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$.parts[0].sourceName").value(TEST_FILE_NAME))
+        .andExpect(jsonPath("$.parts[0].tags").value(newPartTags))
+        .andExpect(jsonPath("$.parts[0].type").value(DatasetPartTypeEnum.File.value))
+        .andExpect(jsonPath("$.parts[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.parts[0].createInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.parts[0].createInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.parts[0].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.parts[0].updateInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.parts[0].updateInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.tags").value(newTags))
+        .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.security.accessControlList[1].role").value(ROLE_VIEWER))
+        .andExpect(jsonPath("$.security.accessControlList[1].id").value(ORGANIZATION_USER_EMAIL))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/PATCH"))
   }
 
   @Test

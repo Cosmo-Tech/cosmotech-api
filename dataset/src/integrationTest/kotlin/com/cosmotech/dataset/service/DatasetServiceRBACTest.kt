@@ -55,6 +55,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.io.FileInputStream
 import java.util.UUID
+import kotlin.test.Ignore
 import kotlin.test.assertEquals
 import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.BeforeEach
@@ -1100,6 +1101,18 @@ class DatasetServiceRBACTest : CsmTestBase() {
               }
             }
           }
+
+  @Ignore("This method is not ready yet")
+  @TestFactory
+  fun `test RBAC queryData`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { TODO("Not yet implemented") }
 
   fun makeDatasetPartUpdateRequest(description: String? = null, tags: MutableList<String>? = null) =
       DatasetPartUpdateRequest(description = description, tags = tags)
