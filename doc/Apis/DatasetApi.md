@@ -410,7 +410,7 @@ Get data of a Dataset
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **dataset\_id** | **String**| the Dataset identifier | [default to null] |
-| **dataset\_part\_id** | **String**| the DatasetPart identifier | [default to null] |
+| **dataset\_part\_id** | **String**| the Dataset part identifier | [default to null] |
 | **filters** | [**List**](../Models/String.md)| Property names that should be part of the response data. You can specify a property name like:  - id  - stock  - quantity  - ...  | [optional] [default to null] |
 | **sums** | [**List**](../Models/String.md)| Property names to sum by | [optional] [default to null] |
 | **counts** | [**List**](../Models/String.md)| Property names to count by | [optional] [default to null] |
