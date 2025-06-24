@@ -886,7 +886,7 @@ components:
         createInfo:
           description: The details of the Dataset creation
           allOf:
-            - $ref: '#/components/schemas/EditInfo'
+            - $ref: '#/components/schemas/CreateInfo'
         updateInfo:
           description: The details of the Dataset last update
           allOf:
@@ -928,6 +928,9 @@ components:
           default: []
         security:
           $ref: '#/components/schemas/DatasetSecurity'
+        runnerId:
+          type: string
+          pattern: '^r-\w{10,20}'
       required:
         - name
 
@@ -1137,6 +1140,24 @@ components:
         userId:
           description: The id of the user who did the modification
           type: string
+      required:
+        - timestamp
+        - userId
+
+    CreateInfo:
+      type: object
+      properties:
+        timestamp:
+          description: The timestamp of the creation in millisecond
+          type: integer
+          format: int64
+        userId:
+          description: The id of the user who did the creation
+          type: string
+        runnerId:
+          description: The runner id which has created the dataset (nullable)
+          type: string
+          pattern: '^r-\w{10,20}'
       required:
         - timestamp
         - userId

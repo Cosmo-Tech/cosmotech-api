@@ -31,6 +31,12 @@ entity ContainerResourceSizing {
     * limits: ContainerResourceSizeInfo
 }
 
+entity CreateInfo {
+    * timestamp: Long
+    * userId: String
+    runnerId: String
+}
+
 entity CreatedRun {
     * id: String
 }
@@ -43,7 +49,7 @@ entity Dataset {
     * workspaceId: String
     * tags: List<String>
     * parts: List<DatasetPart>
-    * createInfo: EditInfo
+    * createInfo: CreateInfo
     * updateInfo: EditInfo
     * security: DatasetSecurity
 }
@@ -59,6 +65,7 @@ entity DatasetCreateRequest {
     tags: List<String>
     parts: List<DatasetPartCreateRequest>
     security: DatasetSecurity
+    runnerId: String
 }
 
 entity DatasetPart {
@@ -654,7 +661,7 @@ Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates
 Solution -- SolutionSecurity : security
 Dataset -- "0..*" DatasetPart : parts
-Dataset -- EditInfo : createInfo
+Dataset -- CreateInfo : createInfo
 Dataset -- EditInfo : updateInfo
 Dataset -- DatasetSecurity : security
 Run -- RunEditInfo : createInfo

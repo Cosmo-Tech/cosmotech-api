@@ -416,6 +416,7 @@ class ControllerTestUtils {
           name = name,
           description = DATASET_DESCRIPTION,
           tags = mutableListOf("tag1", "tag2"),
+          runnerId = "r-12345678910",
           parts =
               mutableListOf(
                   DatasetPartCreateRequest(

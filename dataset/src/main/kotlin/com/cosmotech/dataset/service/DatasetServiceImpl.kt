@@ -20,6 +20,7 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.dataset.DatasetApiServiceInterface
+import com.cosmotech.dataset.domain.CreateInfo
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCreateRequest
@@ -130,6 +131,8 @@ class DatasetServiceImpl(
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
     val editInfo = EditInfo(timestamp = now, userId = userId)
+    val createInfo =
+        CreateInfo(timestamp = now, userId = userId, runnerId = datasetCreateRequest.runnerId)
     val security =
         csmRbac
             .initSecurity(datasetCreateRequest.security.toGenericSecurity(datasetId))
@@ -159,7 +162,7 @@ class DatasetServiceImpl(
             workspaceId = workspaceId,
             tags = datasetCreateRequest.tags ?: mutableListOf(),
             parts = datasetParts ?: mutableListOf(),
-            createInfo = editInfo,
+            createInfo = createInfo,
             updateInfo = editInfo,
             security = security)
     logger.debug("Registering Dataset: {}", createdDataset)
