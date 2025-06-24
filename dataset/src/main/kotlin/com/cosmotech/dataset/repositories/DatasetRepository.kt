@@ -40,7 +40,7 @@ interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
   fun findDatasetByTags(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
-      @Param("tags") tags: Set<String>,
+      @Param("tags") tags: List<String>,
       pageRequest: PageRequest
   ): Page<Dataset>
 }

@@ -22,6 +22,7 @@ All URIs are relative to *http://localhost:8080*
 *DatasetApi* | [**listDatasets**](Apis/DatasetApi.md#listdatasets) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets | Retrieve a list of defined Dataset |
 *DatasetApi* | [**queryData**](Apis/DatasetApi.md#querydata) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/query | Get data of a Dataset |
 *DatasetApi* | [**replaceDatasetPart**](Apis/DatasetApi.md#replacedatasetpart) | **PUT** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id} | Replace existing dataset parts of a Dataset |
+*DatasetApi* | [**searchDatasets**](Apis/DatasetApi.md#searchdatasets) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/search | Search Datasets by tags |
 *DatasetApi* | [**updateDataset**](Apis/DatasetApi.md#updatedataset) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id} | Update a Dataset |
 *DatasetApi* | [**updateDatasetAccessControl**](Apis/DatasetApi.md#updatedatasetaccesscontrol) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset |
 *DatasetApi* | [**updateDatasetDefaultSecurity**](Apis/DatasetApi.md#updatedatasetdefaultsecurity) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default | Set the Dataset default security |

@@ -103,6 +103,64 @@ paths:
         "404":
           description: Organization or workspace or dataset specified is not found
 
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/search:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    post:
+      parameters:
+        - name: page
+          in: query
+          description: Page number to query (first page is at index 0)
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: Amount of result by page
+          required: false
+          schema:
+            type: integer
+      operationId: searchDatasets
+      tags:
+        - dataset
+      summary: Search Datasets by tags
+      requestBody:
+        description: the Dataset search parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of tags
+              items:
+                type: string
+          application/yaml:
+            schema:
+              type: array
+              description: List of tags
+              items:
+                type: string
+      responses:
+        "200":
+          description: Dataset list containing tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dataset'
+
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}:
     parameters:
       - name: organization_id
@@ -752,7 +810,9 @@ components:
           readOnly: true
           description: the associated Workspace Id
         tags:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: array
+          description: the list of tags
           items:
             type: string
         parts:
