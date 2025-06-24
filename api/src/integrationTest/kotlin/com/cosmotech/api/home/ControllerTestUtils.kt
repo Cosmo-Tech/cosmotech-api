@@ -434,7 +434,7 @@ class ControllerTestUtils {
       return DatasetPartCreateRequest(
           name = name,
           description = DATASET_PART_DESCRIPTION,
-          tags = mutableListOf("tag_part1", "tag_part2"),
+          tags = mutableListOf("tag_part1", "tag_part3"),
           type = type,
           sourceName = TEST_FILE_NAME)
     }

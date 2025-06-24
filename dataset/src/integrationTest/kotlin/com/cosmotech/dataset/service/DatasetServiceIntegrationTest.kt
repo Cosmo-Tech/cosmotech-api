@@ -1196,6 +1196,63 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
+  fun `test searchDatasetParts`() {
+
+    val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
+
+    val createDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+
+    assertTrue(createDataset.parts.isEmpty())
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val datasetPartName = "Customer list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+
+    val createDatasetPart =
+        datasetApiService.createDatasetPart(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            mockMultipartFile,
+            DatasetPartCreateRequest(
+                name = datasetPartName,
+                sourceName = CUSTOMER_SOURCE_FILE_NAME,
+                description = datasetPartDescription,
+                tags = datasetPartTags,
+                type = DatasetPartTypeEnum.File))
+
+    val foundDatasetParts =
+        datasetApiService.searchDatasetParts(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            listOf("customers"),
+            null,
+            null)
+
+    assertTrue(foundDatasetParts.size == 1)
+    assertEquals(createDatasetPart.id, foundDatasetParts[0].id)
+    assertEquals(datasetPartName, foundDatasetParts[0].name)
+    assertEquals(datasetPartDescription, foundDatasetParts[0].description)
+    assertEquals(datasetPartTags, foundDatasetParts[0].tags)
+    assertEquals(CUSTOMER_SOURCE_FILE_NAME, foundDatasetParts[0].sourceName)
+    assertEquals(DatasetPartTypeEnum.File, foundDatasetParts[0].type)
+  }
+
+  @Test
   fun `test getDatasetPart with wrong id`() {
 
     val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")

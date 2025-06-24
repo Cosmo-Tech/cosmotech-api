@@ -779,6 +779,70 @@ paths:
           description: Dataset part specified is not found
 
 
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/search:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    post:
+      parameters:
+        - name: page
+          in: query
+          description: Page number to query (first page is at index 0)
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: Amount of result by page
+          required: false
+          schema:
+            type: integer
+      operationId: searchDatasetParts
+      tags:
+        - dataset
+      summary: Search Dataset parts by tags
+      requestBody:
+        description: the Dataset parts search parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of tags
+              items:
+                type: string
+          application/yaml:
+            schema:
+              type: array
+              description: List of tags
+              items:
+                type: string
+      responses:
+        "200":
+          description: Dataset part list containing tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DatasetPart'
+
 
 components:
   schemas:
@@ -911,6 +975,7 @@ components:
         description:
           type: string
         tags:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: array
           items:
             type: string

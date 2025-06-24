@@ -382,7 +382,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.updateInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.updateInfo.timestamp").value(greaterThan(0.toLong())))
-        .andExpect(jsonPath("$.tags").value(mutableListOf("tag_part1", "tag_part2")))
+        .andExpect(jsonPath("$.tags").value(mutableListOf("tag_part1", "tag_part3")))
         .andExpect(jsonPath("$.type").value(DatasetPartTypeEnum.File.value))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.workspaceId").value(workspaceId))
@@ -442,7 +442,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.updateInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.updateInfo.timestamp").value(greaterThan(0.toLong())))
-        .andExpect(jsonPath("$.tags").value(mutableListOf("tag_part1", "tag_part2")))
+        .andExpect(jsonPath("$.tags").value(mutableListOf("tag_part1", "tag_part3")))
         .andExpect(jsonPath("$.type").value(DatasetPartTypeEnum.File.value))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.workspaceId").value(workspaceId))
@@ -491,7 +491,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[1].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[1].updateInfo.timestamp").isNumber)
         .andExpect(jsonPath("$[1].updateInfo.timestamp").value(greaterThan(0.toLong())))
-        .andExpect(jsonPath("$[1].tags").value(mutableListOf("tag_part1", "tag_part2")))
+        .andExpect(jsonPath("$[1].tags").value(mutableListOf("tag_part1", "tag_part3")))
         .andExpect(jsonPath("$[1].type").value(DatasetPartTypeEnum.File.value))
         .andExpect(jsonPath("$[1].organizationId").value(organizationId))
         .andExpect(jsonPath("$[1].workspaceId").value(workspaceId))
@@ -500,6 +500,44 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(
             document(
                 "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/GET"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun search_dataset_parts() {
+
+    val datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+
+    val datasetPartId =
+        createDatasetPartAndReturnId(
+            mvc, organizationId, workspaceId, datasetId, constructDatasetPartCreateRequest())
+
+    mvc.perform(
+            post(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JSONArray(listOf("tag_part3")).toString())
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(jsonPath("$[0].id").value(datasetPartId))
+        .andExpect(jsonPath("$[0].name").value(DATASET_PART_NAME))
+        .andExpect(jsonPath("$[0].description").value(DATASET_PART_DESCRIPTION))
+        .andExpect(jsonPath("$[0].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[0].workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$[0].sourceName").value(TEST_FILE_NAME))
+        .andExpect(jsonPath("$[0].tags").value(mutableListOf("tag_part1", "tag_part3")))
+        .andExpect(jsonPath("$[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].createInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$[0].createInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$[0].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].updateInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$[0].updateInfo.timestamp").value(greaterThan(0.toLong())))
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/search/POST"))
   }
 
   @Test

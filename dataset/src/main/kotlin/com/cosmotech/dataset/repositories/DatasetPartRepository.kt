@@ -52,7 +52,7 @@ interface DatasetPartRepository : RedisDocumentRepository<DatasetPart, String> {
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Sanitize @Param("datasetId") datasetId: String,
-      @Param("tags") tags: Set<String>,
+      @Param("tags") tags: List<String>,
       pageRequest: PageRequest
   ): Page<DatasetPart>
 }
