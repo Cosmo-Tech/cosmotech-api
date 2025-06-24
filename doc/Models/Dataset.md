@@ -10,7 +10,7 @@
 | **workspaceId** | **String** | the associated Workspace Id | [default to null] |
 | **tags** | **List** | the list of tags | [default to null] |
 | **parts** | [**List**](DatasetPart.md) |  | [default to null] |
-| **createInfo** | [**EditInfo**](EditInfo.md) | The details of the Dataset creation | [default to null] |
+| **createInfo** | [**CreateInfo**](CreateInfo.md) | The details of the Dataset creation | [default to null] |
 | **updateInfo** | [**EditInfo**](EditInfo.md) | The details of the Dataset last update | [default to null] |
 | **security** | [**DatasetSecurity**](DatasetSecurity.md) |  | [default to null] |
 

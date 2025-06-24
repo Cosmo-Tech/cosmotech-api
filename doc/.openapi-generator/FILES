@@ -10,6 +10,7 @@ Models/AboutInfoVersion.md
 Models/ComponentRolePermissions.md
 Models/ContainerResourceSizeInfo.md
 Models/ContainerResourceSizing.md
+Models/CreateInfo.md
 Models/CreatedRun.md
 Models/Dataset.md
 Models/DatasetAccessControl.md

@@ -133,6 +133,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.workspaceId").value(workspaceId))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.createInfo.runnerId").value("r-12345678910"))
         .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.createInfo.timestamp").value(greaterThan(0.toLong())))
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))

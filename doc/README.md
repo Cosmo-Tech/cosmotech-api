@@ -119,6 +119,7 @@ All URIs are relative to *http://localhost:8080*
  - [ComponentRolePermissions](./Models/ComponentRolePermissions.md)
  - [ContainerResourceSizeInfo](./Models/ContainerResourceSizeInfo.md)
  - [ContainerResourceSizing](./Models/ContainerResourceSizing.md)
+ - [CreateInfo](./Models/CreateInfo.md)
  - [CreatedRun](./Models/CreatedRun.md)
  - [Dataset](./Models/Dataset.md)
  - [DatasetAccessControl](./Models/DatasetAccessControl.md)
