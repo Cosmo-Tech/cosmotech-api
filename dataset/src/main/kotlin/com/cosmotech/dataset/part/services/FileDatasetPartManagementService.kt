@@ -35,7 +35,7 @@ class FileDatasetPartManagementService(
         constructFilePath(organizationId, workspaceId, datasetId, datasetPartId, fileName)
     val fileAlreadyExists = s3Template.objectExists(csmPlatformProperties.s3.bucketName, filePath)
 
-    check(!(!overwrite && fileAlreadyExists)) { "File $filePath already exists" }
+    check(overwrite || !fileAlreadyExists) { "File $filePath already exists" }
 
     if (fileAlreadyExists) {
       logger.debug("Deleting existing file $filePath before overwriting it")
