@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
 @Service
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LargeClass")
 class DatasetServiceImpl(
     private val workspaceService: WorkspaceApiServiceInterface,
     private val datasetRepository: DatasetRepository,
@@ -580,6 +580,37 @@ class DatasetServiceImpl(
     datasetPartManagementFactory.storeData(datasetPart, file, true)
     datasetRepository.update(dataset)
     return datasetPartRepository.update(datasetPart)
+  }
+
+  override fun searchDatasetParts(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      requestBody: List<String>,
+      page: Int?,
+      size: Int?
+  ): List<DatasetPart> {
+    if (requestBody.isEmpty()) {
+      return listDatasetParts(organizationId, workspaceId, datasetId, page, size)
+    }
+    getVerifiedDataset(organizationId, workspaceId, datasetId)
+
+    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    val pageable = constructPageRequest(page, size, defaultPageSize)
+    val datasetPartList =
+        if (pageable != null) {
+          datasetPartRepository
+              .findDatasetPartByTags(organizationId, workspaceId, datasetId, requestBody, pageable)
+              .toList()
+        } else {
+          findAllPaginated(defaultPageSize) {
+            datasetPartRepository
+                .findDatasetPartByTags(organizationId, workspaceId, datasetId, requestBody, it)
+                .toList()
+          }
+        }
+
+    return datasetPartList
   }
 
   override fun searchDatasets(

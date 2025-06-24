@@ -647,6 +647,61 @@ class DatasetServiceRBACTest : CsmTestBase() {
           }
 
   @TestFactory
+  fun `test RBAC searchDatasetParts`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC searchDatasetParts : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+
+              dataset =
+                  makeDatasetCreateRequest(
+                      datasetSecurity =
+                          DatasetSecurity(
+                              default = ROLE_NONE,
+                              accessControlList =
+                                  mutableListOf(
+                                      DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                                      DatasetAccessControl(
+                                          id = CONNECTED_DEFAULT_USER, role = role))))
+              datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.searchDatasetParts(
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetSaved.id,
+                          listOf(),
+                          null,
+                          null)
+                    }
+                assertEquals(
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.searchDatasetParts(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetSaved.id,
+                      listOf(),
+                      null,
+                      null)
+                }
+              }
+            }
+          }
+
+  @TestFactory
   fun `test RBAC updateDatasetAccessControl`() =
       mapOf(
               ROLE_VIEWER to true,
