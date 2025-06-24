@@ -18,18 +18,8 @@ tags:
 paths:
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
     description: Create a dataset
     post:
       operationId: createDataset
@@ -68,18 +58,8 @@ paths:
     get:
       operationId: listDatasets
       parameters:
-        - name: page
-          in: query
-          description: Page number to query (first page is at index 0)
-          required: false
-          schema:
-            type: integer
-        - name: size
-          in: query
-          description: Amount of result by page
-          required: false
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
       tags:
         - dataset
       description: List all datasets
@@ -105,32 +85,12 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/search:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
     post:
       parameters:
-        - name: page
-          in: query
-          description: Page number to query (first page is at index 0)
-          required: false
-          schema:
-            type: integer
-        - name: size
-          in: query
-          description: Amount of result by page
-          required: false
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
       operationId: searchDatasets
       tags:
         - dataset
@@ -163,24 +123,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
     get:
       operationId: getDataset
       tags:
@@ -250,24 +195,9 @@ paths:
           description: Organization or workspace or dataset specified is not found
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
     patch:
       operationId: updateDatasetDefaultSecurity
       tags:
@@ -296,24 +226,9 @@ paths:
           description: the Dataset specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
     post:
       operationId: createDatasetAccessControl
       tags:
@@ -343,24 +258,9 @@ paths:
           description: the Dataset specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
       - name: identity_id
         in: path
         description: the User identifier
@@ -424,24 +324,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/users:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
     get:
       operationId: listDatasetSecurityUsers
       tags:
@@ -464,24 +349,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
     post:
       operationId: createDatasetPart
       tags:
@@ -520,18 +390,8 @@ paths:
     get:
       operationId: listDatasetParts
       parameters:
-        - name: page
-          in: query
-          description: Page number to query (first page is at index 0)
-          required: false
-          schema:
-            type: integer
-        - name: size
-          in: query
-          description: Amount of result by page
-          required: false
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
       tags:
         - dataset
       summary: Retrieve all dataset parts of a Dataset
@@ -557,30 +417,10 @@ paths:
           description: Targeted dataset do not support requests
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_part_id
-        in: path
-        description: the Dataset part identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
+      - $ref: '#/components/parameters/datasetPartId'
     get:
       operationId: getDatasetPart
       tags:
@@ -649,30 +489,10 @@ paths:
           description: Dataset part specified is not found
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/query:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_part_id
-        in: path
-        description: the DatasetPart identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
+      - $ref: '#/components/parameters/datasetPartId'
       - in: query
         name: filters
         schema:
@@ -736,30 +556,10 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/download:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_part_id
-        in: path
-        description: the Dataset part identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
+      - $ref: '#/components/parameters/datasetPartId'
     get:
       operationId: downloadDatasetPart
       tags:
@@ -781,38 +581,13 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/search:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: dataset_id
-        in: path
-        description: the Dataset identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
     post:
       parameters:
-        - name: page
-          in: query
-          description: Page number to query (first page is at index 0)
-          required: false
-          schema:
-            type: integer
-        - name: size
-          in: query
-          description: Amount of result by page
-          required: false
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
       operationId: searchDatasetParts
       tags:
         - dataset
@@ -845,6 +620,50 @@ paths:
 
 
 components:
+  parameters:
+    organizationId:
+      name: organization_id
+      in: path
+      description: the Organization identifier
+      required: true
+      schema:
+        type: string
+    workspaceId:
+      name: workspace_id
+      in: path
+      description: the Workspace identifier
+      required: true
+      schema:
+        type: string
+    datasetId:
+      name: dataset_id
+      in: path
+      description: the Dataset identifier
+      required: true
+      schema:
+        type: string
+    datasetPartId:
+      name: dataset_part_id
+      in: path
+      description: the Dataset part identifier
+      required: true
+      schema:
+        type: string
+    page:
+      name: page
+      in: query
+      description: Page number to query (first page is at index 0)
+      required: false
+      schema:
+        type: integer
+    size:
+      name: size
+      in: query
+      description: Amount of result by page
+      required: false
+      schema:
+        type: integer
+
   schemas:
     # main Dataset object
     Dataset:
