@@ -857,6 +857,7 @@ components:
           type: array
           items:
             type: string
+          default: []
         type:
           $ref: '#/components/schemas/DatasetPartTypeEnum'
       required:
