@@ -45,6 +45,7 @@ import java.io.InputStream
 import kotlin.test.Ignore
 import org.apache.commons.io.IOUtils
 import org.hamcrest.Matchers.greaterThan
+import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -574,6 +575,54 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
         .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/datasets/GET"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun search_datasets() {
+
+    val datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+
+    mvc.perform(
+            post("/organizations/$organizationId/workspaces/$workspaceId/datasets/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JSONArray(listOf("tag1")).toString())
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(jsonPath("$[0].id").value(datasetId))
+        .andExpect(jsonPath("$[0].name").value(DATASET_NAME))
+        .andExpect(jsonPath("$[0].description").value(DATASET_DESCRIPTION))
+        .andExpect(jsonPath("$[0].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[0].workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].createInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$[0].createInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$[0].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].updateInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$[0].updateInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$[0].parts[0].name").value(DATASET_PART_NAME))
+        .andExpect(jsonPath("$[0].parts[0].description").value(DATASET_PART_DESCRIPTION))
+        .andExpect(jsonPath("$[0].parts[0].sourceName").value(TEST_FILE_NAME))
+        .andExpect(jsonPath("$[0].parts[0].organizationId").value(organizationId))
+        .andExpect(jsonPath("$[0].parts[0].workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$[0].parts[0].tags").value(mutableListOf("tag_part1", "tag_part2")))
+        .andExpect(jsonPath("$[0].parts[0].type").value(DatasetPartTypeEnum.File.value))
+        .andExpect(jsonPath("$[0].parts[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].parts[0].createInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$[0].parts[0].createInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$[0].parts[0].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].parts[0].updateInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$[0].parts[0].updateInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$[0].tags").value(mutableListOf("tag1", "tag2")))
+        .andExpect(jsonPath("$[0].security.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/search/POST"))
   }
 
   @Ignore("This method is not ready yet")

@@ -582,6 +582,37 @@ class DatasetServiceImpl(
     return datasetPartRepository.update(datasetPart)
   }
 
+  override fun searchDatasets(
+      organizationId: String,
+      workspaceId: String,
+      requestBody: List<String>,
+      page: Int?,
+      size: Int?
+  ): List<Dataset> {
+    if (requestBody.isEmpty()) {
+      return listDatasets(organizationId, workspaceId, page, size)
+    }
+    workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
+
+    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    val pageable = constructPageRequest(page, size, defaultPageSize)
+    val datasetList =
+        if (pageable != null) {
+          datasetRepository
+              .findDatasetByTags(organizationId, workspaceId, requestBody, pageable)
+              .toList()
+        } else {
+          findAllPaginated(defaultPageSize) {
+            datasetRepository
+                .findDatasetByTags(organizationId, workspaceId, requestBody, it)
+                .toList()
+          }
+        }
+
+    datasetList.forEach { it.security = updateSecurityVisibility(it).security }
+    return datasetList
+  }
+
   private fun validDatasetPartUpdateRequest(file: MultipartFile) {
     require(
         !(file.originalFilename?.contains("..") == true ||

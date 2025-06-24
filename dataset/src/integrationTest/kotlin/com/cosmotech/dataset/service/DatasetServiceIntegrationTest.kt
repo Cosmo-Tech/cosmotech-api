@@ -128,6 +128,27 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
+  fun `test createDataset with no dataset part`() {
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName, description = datasetDescription, tags = datasetTags)
+
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+
+    assertNotNull(createdDataset)
+    assertEquals(datasetName, createdDataset.name)
+    assertEquals(datasetDescription, createdDataset.description)
+    assertEquals(datasetTags, createdDataset.tags)
+    assertEquals(0, createdDataset.parts.size)
+  }
+
+  @Test
   fun `test createDataset with one File dataset part`() {
 
     val datasetPartName = "Customers list"
@@ -823,6 +844,39 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertNotNull(newDatasetAccessControl)
     assertEquals(ROLE_ADMIN, newDatasetAccessControl.role)
     assertEquals(CONNECTED_DEFAULT_USER, newDatasetAccessControl.id)
+  }
+
+  @Test
+  fun `test searchDatasets`() {
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName, description = datasetDescription, tags = datasetTags)
+
+    datasetApiService.createDataset(
+        organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+
+    datasetApiService.createDataset(
+        organizationSaved.id,
+        workspaceSaved.id,
+        DatasetCreateRequest(
+            name = "Other Dataset",
+            description = "Other Dataset ",
+            tags = mutableListOf("dataset", "public", "other")),
+        arrayOf())
+
+    val foundDatasets =
+        datasetApiService.searchDatasets(
+            organizationSaved.id, workspaceSaved.id, listOf("customers"), null, null)
+
+    assertTrue(foundDatasets.size == 1)
+    assertEquals(datasetName, foundDatasets[0].name)
+    assertEquals(datasetDescription, foundDatasets[0].description)
+    assertEquals(datasetTags, foundDatasets[0].tags)
+    assertEquals(0, foundDatasets[0].parts.size)
   }
 
   @Test

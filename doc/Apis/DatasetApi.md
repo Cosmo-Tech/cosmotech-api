@@ -19,6 +19,7 @@ All URIs are relative to *http://localhost:8080*
 | [**listDatasets**](DatasetApi.md#listDatasets) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets | Retrieve a list of defined Dataset |
 | [**queryData**](DatasetApi.md#queryData) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/query | Get data of a Dataset |
 | [**replaceDatasetPart**](DatasetApi.md#replaceDatasetPart) | **PUT** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id} | Replace existing dataset parts of a Dataset |
+| [**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/search | Search Datasets by tags |
 | [**updateDataset**](DatasetApi.md#updateDataset) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id} | Update a Dataset |
 | [**updateDatasetAccessControl**](DatasetApi.md#updateDatasetAccessControl) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset |
 | [**updateDatasetDefaultSecurity**](DatasetApi.md#updateDatasetDefaultSecurity) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default | Set the Dataset default security |
@@ -457,6 +458,35 @@ Replace existing dataset parts of a Dataset
 
 - **Content-Type**: multipart/form-data
 - **Accept**: application/json, application/yaml
+
+<a name="searchDatasets"></a>
+# **searchDatasets**
+> List searchDatasets(organization\_id, workspace\_id, request\_body, page, size)
+
+Search Datasets by tags
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **request\_body** | [**List**](../Models/string.md)| the Dataset search parameters | |
+| **page** | **Integer**| Page number to query (first page is at index 0) | [optional] [default to null] |
+| **size** | **Integer**| Amount of result by page | [optional] [default to null] |
+
+### Return type
+
+[**List**](../Models/Dataset.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
 
 <a name="updateDataset"></a>
 # **updateDataset**

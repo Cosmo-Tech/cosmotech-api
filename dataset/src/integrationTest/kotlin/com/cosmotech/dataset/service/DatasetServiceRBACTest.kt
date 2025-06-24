@@ -243,6 +243,47 @@ class DatasetServiceRBACTest : CsmTestBase() {
           }
 
   @TestFactory
+  fun `test RBAC searchDatasets`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC searchDatasets : $role") {
+              organization =
+                  makeOrganizationCreateRequest(name = "Organization test", role = ROLE_USER)
+              organizationSaved = organizationApiService.createOrganization(organization)
+
+              solution = makeSolution()
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+
+              workspace = makeWorkspaceCreateRequest(role = role)
+              workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.searchDatasets(
+                          organizationSaved.id, workspaceSaved.id, listOf(), null, null)
+                    }
+                assertEquals(
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.searchDatasets(
+                      organizationSaved.id, workspaceSaved.id, listOf(), null, null)
+                }
+              }
+            }
+          }
+
+  @TestFactory
   fun `test RBAC deleteDataset`() =
       mapOf(
               ROLE_VIEWER to true,
