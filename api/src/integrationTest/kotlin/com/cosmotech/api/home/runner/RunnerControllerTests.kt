@@ -7,6 +7,8 @@ import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.UpdateRunnerStatus
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
+import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.constructDatasetCreateRequest
+import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.createDatasetAndReturnId
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.createOrganizationAndReturnId
 import com.cosmotech.api.home.ControllerTestUtils.RunnerUtils.constructRunnerObject
@@ -54,6 +56,7 @@ class RunnerControllerTests : ControllerTestBase() {
   private lateinit var organizationId: String
   private lateinit var workspaceId: String
   private lateinit var solutionId: String
+  private lateinit var datasetId: String
   private val logger = LoggerFactory.getLogger(RunnerControllerTests::class.java)
 
   @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
@@ -91,6 +94,8 @@ class RunnerControllerTests : ControllerTestBase() {
     workspaceId =
         createWorkspaceAndReturnId(
             mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+    datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
   }
 
   @Test
@@ -101,7 +106,7 @@ class RunnerControllerTests : ControllerTestBase() {
     val runTemplateName = "run_template_name"
     val description = "this_is_a_description"
     val tags = mutableListOf("tags1", "tags2")
-    val datasetList = mutableListOf("datasetId1", "datasetId2")
+    val datasetList = mutableListOf(datasetId)
     val runnerParameterId = "parameterId1"
     val runnerParameterValue = "parameter_value"
     val runnerParameterVarType = "this_is_a_vartype"
@@ -190,7 +195,7 @@ class RunnerControllerTests : ControllerTestBase() {
     val runTemplateName = "run_template_name"
     val description = "this_is_a_description"
     val tags = mutableListOf("tags1", "tags2")
-    val datasetList = mutableListOf("datasetId1", "datasetId2")
+    val datasetList = mutableListOf(datasetId)
     val runnerParameterId = "parameterId1"
     val runnerParameterValue = "parameter_value"
     val runnerParameterVarType = "this_is_a_vartype"
@@ -285,7 +290,7 @@ class RunnerControllerTests : ControllerTestBase() {
     val runTemplateName = "run_template_name"
     val description = "this_is_a_description"
     val tags = mutableListOf("tags1", "tags2")
-    val datasetList = mutableListOf("datasetId1", "datasetId2")
+    val datasetList = mutableListOf(datasetId)
     val runnerParameterId = "parameterId1"
     val runnerParameterValue = "parameter_value"
     val runnerParameterVarType = "this_is_a_vartype"
