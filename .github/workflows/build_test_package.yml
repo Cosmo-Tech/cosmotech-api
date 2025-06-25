@@ -150,8 +150,6 @@ jobs:
             packageName: solution
           - testPrefix: Dataset
             packageName: dataset
-          - testPrefix: Connector
-            packageName: connector
           - testPrefix: Run
             packageName: run
           - testPrefix: Runner
@@ -177,7 +175,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew :cosmotech-${{ matrix.service.packageName }}-api:integrationTest --tests "com.cosmotech.${{ matrix.service.packageName }}.service.${{ matrix.service.testPrefix }}ServiceRBACTest" -x spotlessCheck -x openApiValidate
-        if: ${{ matrix.service.packageName  != 'connector' && matrix.service.packageName  != 'run' }}
+        if: ${{ matrix.service.packageName  != 'run' }}
 
       - name: Run ${{ matrix.service.packageName }} integration tests
         env:

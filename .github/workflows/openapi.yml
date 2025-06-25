@@ -24,7 +24,6 @@ jobs:
       matrix:
         project:
           - api
-          - connector-api
           - dataset-api
           - organization-api
           - solution-api
