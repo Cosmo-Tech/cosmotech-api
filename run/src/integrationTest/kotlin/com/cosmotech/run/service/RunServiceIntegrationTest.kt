@@ -146,15 +146,17 @@ class RunServiceIntegrationTest : CsmTestBase() {
     organization = makeOrganizationCreateRequest()
     organizationSaved = organizationApiService.createOrganization(organization)
 
+    solution = makeSolutionCreateRequest()
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+
     workspace = makeWorkspaceCreateRequest(solutionSaved.id, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+    dataset = makeDatasetCreateRequest()
 
     datasetSaved =
         datasetApiService.createDataset(
             organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
-
-    solution = makeSolutionCreateRequest()
-    solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
     runner =
         makeRunnerCreateRequest(
@@ -169,6 +171,8 @@ class RunServiceIntegrationTest : CsmTestBase() {
     every { runnerApiService.getRunner(any(), any(), any()) } returns runnerSaved
     every { eventPublisher.publishEvent(any<RunDeleted>()) } returns Unit
   }
+
+  fun makeDatasetCreateRequest() = DatasetCreateRequest(name = "Dataset Test")
 
   fun makeSolutionCreateRequest() =
       SolutionCreateRequest(

@@ -26,7 +26,7 @@ import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.dataset.domain.DatasetRole
+import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.CreatedRun
@@ -617,12 +617,11 @@ class RunnerService(
   private fun addUserAccessControlOnDataset(dataset: Dataset, roleDefinition: RunnerAccessControl) {
     val newDatasetAcl = dataset.security.accessControlList.toList()
     if (newDatasetAcl.none { it.id == roleDefinition.id }) {
-      datasetApiService.updateDatasetAccessControl(
+      datasetApiService.createDatasetAccessControl(
           organization!!.id,
           workspace!!.id,
           dataset.id,
-          roleDefinition.id,
-          DatasetRole(roleDefinition.role))
+          DatasetAccessControl(roleDefinition.id, roleDefinition.role))
     }
   }
 }
