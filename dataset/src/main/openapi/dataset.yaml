@@ -903,10 +903,6 @@ components:
       items:
         type: object
 
-    DatasetInfo:
-      type: object
-      additionalProperties: true
-
     DatasetSecurity:
       type: object
       description: the dataset security information
