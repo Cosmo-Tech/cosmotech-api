@@ -1,7 +1,5 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-@file:Suppress("DEPRECATION")
-
 package com.cosmotech.runner.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -27,7 +25,6 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCreateRequest
-import com.cosmotech.dataset.repositories.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -46,7 +43,6 @@ import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.indexing.RediSearchIndexer
-import com.redis.testcontainers.RedisStackContainer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -72,9 +68,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import redis.clients.jedis.HostAndPort
-import redis.clients.jedis.Protocol
-import redis.clients.jedis.UnifiedJedis
 
 @ActiveProfiles(profiles = ["runner-test"])
 @ExtendWith(MockKExtension::class)
@@ -95,7 +88,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiService
   @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
-  @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
@@ -118,8 +110,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   lateinit var runnerSaved: Runner
   lateinit var parentRunnerSaved: Runner
 
-  lateinit var jedis: UnifiedJedis
-
   val runTemplateParameterValue1 =
       RunnerRunTemplateParameterValue(
           parameterId = "param1", value = "param1value", isInherited = true, varType = "String")
@@ -133,12 +123,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     mockkStatic("com.cosmotech.api.utils.RedisUtilsKt")
     mockkStatic("org.springframework.web.context.request.RequestContextHolder")
-    val context = getContext(redisStackServer)
-    val containerIp =
-        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
 
-    ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", jedis)
     ReflectionTestUtils.setField(
         solutionApiService, "containerRegistryService", containerRegistryService)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
@@ -625,7 +610,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `test on runner creation with null datasetList when parent has non-empty datasetList`() {
-    val parentDatasetList = mutableListOf("fakeId")
+    val parentDatasetList = mutableListOf(datasetSaved.id)
     val parentRunnerWithNonEmptyDatasetList =
         makeRunnerCreateRequest(datasetList = parentDatasetList)
     assertNotNull(parentRunnerWithNonEmptyDatasetList.datasetList)
@@ -649,7 +634,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `test on runner creation with empty datasetList when parent has non-empty datasetList`() {
-    val parentDatasetList = mutableListOf("fakeId")
+
+    val parentDatasetList = mutableListOf(datasetSaved.id)
     val parentRunnerWithNonEmptyDatasetList =
         makeRunnerCreateRequest(datasetList = parentDatasetList)
     assertNotNull(parentRunnerWithNonEmptyDatasetList.datasetList)
@@ -673,7 +659,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `test on runner creation with non-empty datasetList when parent has non-empty datasetList`() {
-    val parentDatasetList = mutableListOf("fakeDatasetIdParentRunner")
+    val parentDatasetList = mutableListOf(datasetSaved.id)
     val parentRunnerWithNonEmptyDatasetList =
         makeRunnerCreateRequest(datasetList = parentDatasetList)
     assertNotNull(parentRunnerWithNonEmptyDatasetList.datasetList)
@@ -684,7 +670,15 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             .createRunner(
                 organizationSaved.id, workspaceSaved.id, parentRunnerWithNonEmptyDatasetList)
             .id
-    val childDatasetList = mutableListOf("fakeDatasetIdChildRunner")
+
+    val childDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            makeDataset(name = "For Child Runner"),
+            emptyArray())
+
+    val childDatasetList = mutableListOf(childDataset.id)
     val childRunnerWithNonEmptyDatasetList =
         makeRunnerCreateRequest(parentId = parentId, datasetList = childDatasetList)
     val childRunnerDatasetList =
@@ -715,7 +709,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val datasetUserList =
         datasetApiService.listDatasetSecurityUsers(
-            organizationSaved.id, organizationSaved.id, newDataset.id)
+            organizationSaved.id, workspaceSaved.id, newDataset.id)
     datasetUserList.containsAll(runnerUserList)
   }
 
@@ -817,16 +811,20 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             solution = WorkspaceSolution(solutionSaved.id),
             datasetCopy = false)
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-    runner = makeRunnerCreateRequest(datasetList = mutableListOf(datasetSaved.id))
+    val runnerDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, makeDataset(), emptyArray())
+
+    runner = makeRunnerCreateRequest(datasetList = mutableListOf(runnerDataset.id))
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
-    datasetSaved =
+    val datasetRetrieved =
         datasetApiService.getDataset(
             organizationSaved.id, workspaceSaved.id, runnerSaved.datasetList[0])
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
     assertDoesNotThrow {
-      datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
+      datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, datasetRetrieved.id)
     }
   }
 
@@ -839,21 +837,25 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             solution = WorkspaceSolution(solutionSaved.id),
             datasetCopy = true)
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-    runner = makeRunnerCreateRequest(datasetList = mutableListOf(datasetSaved.id))
+    val runnerDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, makeDataset("runnerDataset"), emptyArray())
+    runner = makeRunnerCreateRequest(datasetList = mutableListOf(runnerDataset.id))
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
-    datasetSaved =
-        datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.datasetList[0])
     runnerApiService.createRunnerAccessControl(
         organizationSaved.id,
         workspaceSaved.id,
         runnerSaved.id,
         RunnerAccessControl(id = "id", role = ROLE_EDITOR))
 
+    val retrievedDataset =
+        datasetApiService.getDataset(
+            organizationSaved.id, workspaceSaved.id, runnerSaved.datasetList[0])
+
     val datasetAC =
         datasetApiService.getDatasetAccessControl(
-            organizationSaved.id, workspaceSaved.id, datasetSaved.id, "id")
+            organizationSaved.id, workspaceSaved.id, retrievedDataset.id, "id")
     assertEquals(ROLE_EDITOR, datasetAC.role)
   }
 
@@ -1136,9 +1138,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `As a viewer, I can only see my information in security property for listRunners`() {
     every { getCurrentAccountIdentifier(any()) } returns defaultName
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved =
-        datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -1177,9 +1176,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `As a validator, I can see whole security property for listRunners`() {
     every { getCurrentAccountIdentifier(any()) } returns defaultName
     organizationSaved = organizationApiService.createOrganization(organization)
-    datasetSaved =
-        datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
