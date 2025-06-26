@@ -26,7 +26,6 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetSecurity
-import com.cosmotech.dataset.repositories.DatasetRepository
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -49,12 +48,12 @@ import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.indexing.RediSearchIndexer
-import com.redis.testcontainers.RedisStackContainer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.util.*
+import kotlin.collections.component1
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -71,9 +70,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import redis.clients.jedis.HostAndPort
-import redis.clients.jedis.Protocol
-import redis.clients.jedis.UnifiedJedis
 
 @ActiveProfiles(profiles = ["runner-test"])
 @ExtendWith(MockKExtension::class)
@@ -86,7 +82,6 @@ class RunnerServiceRBACTest : CsmTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val TEST_USER_MAIL = "testuser@mail.fr"
 
-  @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
   @SpykBean lateinit var datasetApiService: DatasetApiServiceInterface
@@ -96,8 +91,6 @@ class RunnerServiceRBACTest : CsmTestBase() {
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
-
-  lateinit var jedis: UnifiedJedis
 
   @BeforeEach
   fun setUp() {
@@ -112,11 +105,6 @@ class RunnerServiceRBACTest : CsmTestBase() {
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Runner::class.java)
 
-    val context = getContext(redisStackServer)
-    val containerIp =
-        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
-    ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", jedis)
     ReflectionTestUtils.setField(
         solutionApiService, "containerRegistryService", containerRegistryService)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
@@ -349,8 +337,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC createRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -360,7 +347,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -464,7 +451,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val organization =
                   makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
@@ -472,7 +459,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -521,11 +508,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -573,8 +560,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC.findRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -584,7 +570,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -748,11 +734,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -807,7 +793,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -816,7 +802,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -852,8 +838,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC deleteRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -863,7 +848,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1027,11 +1012,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1052,7 +1037,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, workspaceSaved.id, runnerSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1085,7 +1070,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1094,7 +1079,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1136,8 +1121,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC updateRunner : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -1147,7 +1131,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1263,7 +1247,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val organization =
                   makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
@@ -1271,7 +1255,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1329,11 +1313,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1394,7 +1378,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1403,7 +1387,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1451,8 +1435,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC getRunnerPermissions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -1462,7 +1445,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1626,11 +1609,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1685,7 +1668,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1694,7 +1677,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -1736,8 +1719,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC getRunnerSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -1747,7 +1729,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1911,11 +1893,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1970,7 +1952,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -1979,7 +1961,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -2021,8 +2003,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC updateRunnerDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -2032,7 +2013,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -2214,11 +2195,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -2279,7 +2260,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -2288,7 +2269,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -2336,8 +2317,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC createRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -2347,7 +2327,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -2515,7 +2495,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val organization =
                   makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
@@ -2523,7 +2503,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -2581,11 +2561,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -2646,7 +2626,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -2655,7 +2635,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -2703,8 +2683,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC getRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -2714,7 +2693,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -2878,11 +2857,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -2937,7 +2916,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -2946,7 +2925,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -2988,8 +2967,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -2999,7 +2977,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -3077,7 +3055,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                     }
                 if (role == ROLE_NONE || role == ROLE_VALIDATOR) {
                   assertEquals(
-                      "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
+                      "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                       exception.message)
                 } else {
                   assertEquals(
@@ -3109,7 +3087,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val organization =
                   makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.createOrganization(organization)
-              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = role)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
@@ -3117,7 +3095,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -3169,11 +3147,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -3228,7 +3206,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -3237,7 +3215,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -3279,8 +3257,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC updateRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -3290,7 +3267,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -3478,11 +3455,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -3545,7 +3522,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -3554,7 +3531,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -3604,8 +3581,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test Organization RBAC listRunnerSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              val organization =
-                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = role)
               val organizationSaved = organizationApiService.createOrganization(organization)
               val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
@@ -3615,7 +3591,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -3779,11 +3755,11 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
               val workspace =
                   makeWorkspaceCreateRequest(
-                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      solutionId = solutionSaved.id, userId = TEST_USER_MAIL, role = role)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -3838,7 +3814,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              val dataset = makeDataset(userId = TEST_USER_MAIL, role = role)
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
               val datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -3847,7 +3823,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                       solutionId = solutionSaved.id,
                       datasetList = mutableListOf(datasetSaved.id),
                       userId = TEST_USER_MAIL,
-                      role = ROLE_ADMIN)
+                      role = role)
               val runnerSaved =
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
