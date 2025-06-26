@@ -620,6 +620,15 @@ paths:
 
 
 components:
+  securitySchemes:
+    oAuth2AuthCode:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        authorizationCode:
+          authorizationUrl: "https://example.com/authorize"
+          tokenUrl: "https://example.com/token"
+          scopes: {}
   parameters:
     organizationId:
       name: organization_id
