@@ -349,28 +349,3 @@ jobs:
         if: ${{ always() }}
         run: |
           helm registry logout ghcr.io || true
-
-  trigger_deployments:
-    runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
-    needs:
-      - scan_and_push_container_images_to_registries
-      - push_helm_charts_to_oci_registries
-
-    steps:
-      - name: Dispatch deployments
-        env:
-          GH_PAT: ${{ secrets.OPENAPI_CLIENTS_GITHUB_PAT }}
-        run: |
-          curl --request POST \
-            --url "https://api.github.com/repos/${{ github.repository }}/dispatches" \
-            --header "Authorization: Bearer ${GH_PAT}" \
-            --header 'content-type: application/json' \
-            --data '{
-                "event_type": "ready_to_deploy",
-                "client_payload": {
-                    "gh_actor": "${{ github.actor }}",
-                    "gh_ref": "${{ github.ref }}",
-                    "gh_sha": "${{ github.sha }}"
-                }
-              }'
