@@ -102,9 +102,10 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
     solution = makeSolution(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
+    workspace = makeWorkspaceCreateRequest(solutionSaved.id, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
+    dataset = makeDatasetCreateRequest()
     datasetSaved =
         datasetApiService.createDataset(
             organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
@@ -116,8 +117,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
     logger.info("should create a second new workspace")
-    val workspace2 =
-        makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace 2")
+    val workspace2 = makeWorkspaceCreateRequest(solutionSaved.id, "Workspace 2")
     workspaceApiService.createWorkspace(organizationSaved.id, workspace2)
     val workspaceRetrieved =
         workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
@@ -161,6 +161,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
     logger.info("should get a workspace file")
     val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
     val input = FileInputStream(resourceTestFile)
+    val expectedFile = FileInputStream(resourceTestFile)
     val multipartFile =
         MockMultipartFile(
             "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
@@ -169,7 +170,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
 
     val fetchedFile =
         workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
-    val expectedText = input.bufferedReader().use { it.readText() }
+    val expectedText = expectedFile.bufferedReader().use { it.readText() }
     val retrievedText = fetchedFile.inputStream.bufferedReader().use { it.readText() }
     assertEquals(expectedText, retrievedText)
   }
@@ -281,8 +282,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
     val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
     val expectedSize = 15
     IntRange(1, workspaceNumber - 1).forEach {
-      val workspace =
-          makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "w-workspace-$it")
+      val workspace = makeWorkspaceCreateRequest(solutionSaved.id, "w-workspace-$it")
       workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     }
     logger.info("should find all workspaces and assert there are $workspaceNumber")
@@ -455,7 +455,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
-  fun `As a viewer, I can only see my information in security property for findWorkspaceById`() {
+  fun `As a viewer, I can only see my information in security property for getWorkspace`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     organization =
         makeOrganizationCreateRequest(
@@ -466,18 +466,15 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
 
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-    dataset = makeDataset()
-    datasetSaved =
-        datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
 
-    workspaceSaved = workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
+    val workspaceRetrieved =
+        workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
     assertEquals(
         WorkspaceSecurity(
             default = ROLE_NONE,
             mutableListOf(WorkspaceAccessControl(CONNECTED_DEFAULT_USER, ROLE_VIEWER))),
-        workspaceSaved.security)
-    assertEquals(1, workspaceSaved.security.accessControlList.size)
+        workspaceRetrieved.security)
+    assertEquals(1, workspaceRetrieved.security.accessControlList.size)
   }
 
   @Test
@@ -492,11 +489,6 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
 
     workspace = makeWorkspaceCreateRequest()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
-
-    dataset = makeDataset()
-    datasetSaved =
-        datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
 
     var workspaces = workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
     workspaces.forEach {
@@ -734,6 +726,8 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
     assertTrue { rbacUpdated.updateInfo.timestamp < rbacDeleted.updateInfo.timestamp }
   }
 
+  fun makeDatasetCreateRequest() = DatasetCreateRequest(name = "Dataset test")
+
   fun makeOrganizationCreateRequest(
       name: String = "Organization Name",
       userName: String = CONNECTED_ADMIN_USER,
@@ -769,8 +763,8 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
   fun makeWorkspaceCreateRequest(
       solutionId: String = solutionSaved.id,
       name: String = "name",
-      userName: String = CONNECTED_ADMIN_USER,
-      role: String = ROLE_ADMIN
+      userName: String = CONNECTED_DEFAULT_USER,
+      role: String = ROLE_VIEWER
   ) =
       WorkspaceCreateRequest(
           key = UUID.randomUUID().toString(),
@@ -785,7 +779,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           WorkspaceAccessControl(id = userName, role = role),
-                          WorkspaceAccessControl(CONNECTED_DEFAULT_USER, "viewer"))))
+                          WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
 
   fun makeDataset(
       name: String = "my_dataset_test",
