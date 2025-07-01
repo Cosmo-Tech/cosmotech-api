@@ -685,15 +685,15 @@ class DatasetServiceImpl(
     require(
         files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty()) {
           "Part File names should be unique during dataset creation. " +
-              "Files: ${files.map { it.originalFilename }}. " +
-              "Dataset Parts: ${datasetCreateRequest.parts?.map { it.sourceName }}."
+              "Multipart file names: ${files.map { it.originalFilename }}. " +
+              "Dataset parts source names: ${datasetCreateRequest.parts?.map { it.sourceName }}."
         }
     require(
         files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
             datasetCreateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())) {
-          "All files must have the same name as their corresponding Dataset Part. " +
-              "Files: ${files.map { it.originalFilename }}. " +
-              "Dataset Parts: ${datasetCreateRequest.parts?.map { it.sourceName }}."
+          "All files must have the same name as corresponding sourceName in a Dataset Part. " +
+              "Multipart file names: ${files.map { it.originalFilename }}. " +
+              "Dataset parts source names: ${datasetCreateRequest.parts?.map { it.sourceName }}."
         }
     files.forEach { file ->
       require(
@@ -720,17 +720,17 @@ class DatasetServiceImpl(
     }
     require(
         files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty()) {
-          "Part File names should be unique during dataset update. " +
-              "Files: ${files.map { it.originalFilename }}. " +
-              "Dataset Parts: ${datasetUpdateRequest.parts?.map { it.sourceName }}."
+          "Multipart file names should be unique during dataset update. " +
+              "Multipart file names: ${files.map { it.originalFilename }}. " +
+              "Dataset parts source names: ${datasetUpdateRequest.parts?.map { it.sourceName }}."
         }
     require(
         files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
             (datasetUpdateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())
                 ?: emptySet<String>())) {
-          "All files must have the same name as their corresponding Dataset Part. " +
-              "Files: ${files.map { it.originalFilename }}. " +
-              "Dataset Parts: ${datasetUpdateRequest.parts?.map { it.sourceName } ?: emptyList()}."
+          "All files must have the same name as corresponding sourceName in a Dataset Part. " +
+              "Multipart file names: ${files.map { it.originalFilename }}. " +
+              "Dataset parts source names: ${datasetUpdateRequest.parts?.map { it.sourceName } ?: emptyList()}."
         }
 
     files.forEach { file ->
