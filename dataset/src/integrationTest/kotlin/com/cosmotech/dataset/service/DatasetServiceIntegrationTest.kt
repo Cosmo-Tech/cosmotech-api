@@ -409,7 +409,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
-  fun `test createDataset with two dataset part with same name`() {
+  fun `test createDataset with two dataset parts and same multipart file name`() {
 
     val customerPartName = "Customers list"
     val customerPartDescription = "List of customers"
@@ -464,8 +464,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         }
     assertEquals(
         "Part File names should be unique during dataset creation. " +
-            "Files: [$CUSTOMER_SOURCE_FILE_NAME, $CUSTOMER_SOURCE_FILE_NAME]. " +
-            "Dataset Parts: [$CUSTOMER_SOURCE_FILE_NAME, anotherFile.txt].",
+            "Multipart file names: [$CUSTOMER_SOURCE_FILE_NAME, $CUSTOMER_SOURCE_FILE_NAME]. " +
+            "Dataset parts source names: [$CUSTOMER_SOURCE_FILE_NAME, anotherFile.txt].",
         exception.message)
   }
 
@@ -588,9 +588,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               arrayOf(mockMultipartFile))
         }
     assertEquals(
-        "All files must have the same name as their corresponding Dataset Part. " +
-            "Files: [customers.csv]. " +
-            "Dataset Parts: [wrongname.csv].",
+        "All files must have the same name as corresponding sourceName in a Dataset Part. " +
+            "Multipart file names: [customers.csv]. " +
+            "Dataset parts source names: [wrongname.csv].",
         exception.message)
   }
 
@@ -1627,7 +1627,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
-  fun `test updateDataset with two dataset part with same name`() {
+  fun `test updateDataset with two dataset parts and same multipart file name`() {
 
     val initialDataset =
         datasetApiService.createDataset(
@@ -1689,9 +1689,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               arrayOf(customerMockMultipartFile, customerMockMultipartFile2))
         }
     assertEquals(
-        "Part File names should be unique during dataset update. " +
-            "Files: [$CUSTOMER_SOURCE_FILE_NAME, $CUSTOMER_SOURCE_FILE_NAME]. " +
-            "Dataset Parts: [$CUSTOMER_SOURCE_FILE_NAME, anotherFile.txt].",
+        "Multipart file names should be unique during dataset update. " +
+            "Multipart file names: [$CUSTOMER_SOURCE_FILE_NAME, $CUSTOMER_SOURCE_FILE_NAME]. " +
+            "Dataset parts source names: [$CUSTOMER_SOURCE_FILE_NAME, anotherFile.txt].",
         exception.message)
   }
 
