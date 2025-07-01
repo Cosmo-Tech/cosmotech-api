@@ -683,6 +683,12 @@ class DatasetServiceImpl(
           "${files.size} != ${datasetCreateRequest.parts?.size}"
     }
     require(
+        files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty()) {
+          "Part File names should be unique during dataset creation. " +
+              "Files: ${files.map { it.originalFilename }}. " +
+              "Dataset Parts: ${datasetCreateRequest.parts?.map { it.sourceName }}."
+        }
+    require(
         files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
             datasetCreateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())) {
           "All files must have the same name as their corresponding Dataset Part. " +
@@ -712,6 +718,12 @@ class DatasetServiceImpl(
       "Number of files must be equal to the number of parts if specified. " +
           "${files.size} != ${datasetUpdateRequest.parts?.size}"
     }
+    require(
+        files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty()) {
+          "Part File names should be unique during dataset update. " +
+              "Files: ${files.map { it.originalFilename }}. " +
+              "Dataset Parts: ${datasetUpdateRequest.parts?.map { it.sourceName }}."
+        }
     require(
         files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
             (datasetUpdateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())
