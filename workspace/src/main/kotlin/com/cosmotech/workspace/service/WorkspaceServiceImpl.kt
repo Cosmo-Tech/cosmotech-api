@@ -53,6 +53,8 @@ import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
+private const val WORKSPACE_FILES_BASE_FOLDER = "workspace-files"
+
 @Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Suppress("TooManyFunctions")
@@ -240,7 +242,9 @@ internal class WorkspaceServiceImpl(
         fileName)
     return InputStreamResource(
         s3Template
-            .download(csmPlatformProperties.s3.bucketName, "$organizationId/$workspaceId/$fileName")
+            .download(
+                csmPlatformProperties.s3.bucketName,
+                "$organizationId/$workspaceId/$WORKSPACE_FILES_BASE_FOLDER/$fileName")
             .inputStream)
   }
 
@@ -280,7 +284,8 @@ internal class WorkspaceServiceImpl(
         fileRelativeDestinationBuilder.append(file.originalFilename)
       }
     }
-    val objectKey = "$organizationId/$workspaceId/$fileRelativeDestinationBuilder"
+    val objectKey =
+        "$organizationId/$workspaceId/$WORKSPACE_FILES_BASE_FOLDER/$fileRelativeDestinationBuilder"
 
     if (!overwrite && s3Template.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
       throw IllegalArgumentException(
@@ -319,7 +324,7 @@ internal class WorkspaceServiceImpl(
   }
 
   private fun getWorkspaceFiles(organizationId: String, workspaceId: String): List<WorkspaceFile> {
-    val prefix = "${organizationId}/${workspaceId}/"
+    val prefix = "${organizationId}/${workspaceId}/$WORKSPACE_FILES_BASE_FOLDER/"
     val listObjectsRequest =
         ListObjectsV2Request.builder()
             .bucket(csmPlatformProperties.s3.bucketName)
@@ -347,7 +352,8 @@ internal class WorkspaceServiceImpl(
         fileName)
 
     s3Template.deleteObject(
-        csmPlatformProperties.s3.bucketName, "$organizationId/${workspace.id}/$fileName")
+        csmPlatformProperties.s3.bucketName,
+        "$organizationId/${workspace.id}/$WORKSPACE_FILES_BASE_FOLDER/$fileName")
   }
 
   override fun deleteAllS3WorkspaceObjects(organizationId: String, workspace: Workspace) {
