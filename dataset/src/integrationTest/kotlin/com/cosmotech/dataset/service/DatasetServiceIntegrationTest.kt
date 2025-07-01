@@ -409,6 +409,67 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
+  fun `test createDataset with two dataset part with same name`() {
+
+    val customerPartName = "Customers list"
+    val customerPartDescription = "List of customers"
+    val customerPartTags = mutableListOf("part", "public", "customers")
+    val customerPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = customerPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = customerPartDescription,
+            tags = customerPartTags,
+            type = DatasetPartTypeEnum.File)
+
+    val datasetName = "Shop Dataset"
+    val datasetDescription = "Dataset for shop"
+    val datasetTags = mutableListOf("dataset", "public", "shop")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            parts =
+                mutableListOf(
+                    customerPartCreateRequest,
+                    DatasetPartCreateRequest(
+                        name = "Part create request 2", sourceName = "anotherFile.txt")))
+
+    val customerTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val customerFileToSend = FileInputStream(customerTestFile)
+
+    val customerMockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(customerFileToSend))
+
+    val customerMockMultipartFile2 =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            InputStream.nullInputStream())
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          datasetApiService.createDataset(
+              organizationSaved.id,
+              workspaceSaved.id,
+              datasetCreateRequest,
+              arrayOf(customerMockMultipartFile, customerMockMultipartFile2))
+        }
+    assertEquals(
+        "Part File names should be unique during dataset creation. " +
+            "Files: [$CUSTOMER_SOURCE_FILE_NAME, $CUSTOMER_SOURCE_FILE_NAME]. " +
+            "Dataset Parts: [$CUSTOMER_SOURCE_FILE_NAME, anotherFile.txt].",
+        exception.message)
+  }
+
+  @Test
   fun `test createDataset with empty files`() {
 
     val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
@@ -1563,6 +1624,75 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         s3Template.objectExists(
             csmPlatformProperties.s3.bucketName,
             constructFilePathForDatasetPart(updatedDataset, 0)))
+  }
+
+  @Test
+  fun `test updateDataset with two dataset part with same name`() {
+
+    val initialDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            DatasetCreateRequest(name = "Dataset without parts"),
+            emptyArray())
+
+    val customerPartName = "Customers list"
+    val customerPartDescription = "List of customers"
+    val customerPartTags = mutableListOf("part", "public", "customers")
+    val customerPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = customerPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = customerPartDescription,
+            tags = customerPartTags,
+            type = DatasetPartTypeEnum.File)
+
+    val datasetName = "Shop Dataset"
+    val datasetDescription = "Dataset for shop"
+    val datasetTags = mutableListOf("dataset", "public", "shop")
+    val datasetUpdateRequest =
+        DatasetUpdateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            parts =
+                mutableListOf(
+                    customerPartCreateRequest,
+                    DatasetPartCreateRequest(
+                        name = "Part create request 2", sourceName = "anotherFile.txt")))
+
+    val customerTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val customerFileToSend = FileInputStream(customerTestFile)
+
+    val customerMockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(customerFileToSend))
+
+    val customerMockMultipartFile2 =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            InputStream.nullInputStream())
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          datasetApiService.updateDataset(
+              organizationSaved.id,
+              workspaceSaved.id,
+              initialDataset.id,
+              datasetUpdateRequest,
+              arrayOf(customerMockMultipartFile, customerMockMultipartFile2))
+        }
+    assertEquals(
+        "Part File names should be unique during dataset update. " +
+            "Files: [$CUSTOMER_SOURCE_FILE_NAME, $CUSTOMER_SOURCE_FILE_NAME]. " +
+            "Dataset Parts: [$CUSTOMER_SOURCE_FILE_NAME, anotherFile.txt].",
+        exception.message)
   }
 
   @Test
