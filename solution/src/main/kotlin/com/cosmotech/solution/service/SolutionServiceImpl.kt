@@ -36,6 +36,7 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionCreateRequest
 import com.cosmotech.solution.domain.SolutionEditInfo
+import com.cosmotech.solution.domain.SolutionFile
 import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.solution.domain.SolutionUpdateRequest
@@ -43,12 +44,14 @@ import com.cosmotech.solution.repository.SolutionRepository
 import java.time.Instant
 import kotlin.collections.mutableListOf
 import org.springframework.context.event.EventListener
+import org.springframework.core.io.Resource
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 
 @Service
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LargeClass")
 class SolutionServiceImpl(
     private val solutionRepository: SolutionRepository,
     private val organizationApiService: OrganizationApiServiceInterface,
@@ -173,6 +176,10 @@ class SolutionServiceImpl(
   override fun listRunTemplates(organizationId: String, solutionId: String): List<RunTemplate> {
     val existingSolution = getVerifiedSolution(organizationId, solutionId)
     return existingSolution.runTemplates
+  }
+
+  override fun listSolutionFiles(organizationId: String, solutionId: String): List<SolutionFile> {
+    TODO("Not yet implemented")
   }
 
   override fun createSolutionRunTemplate(
@@ -369,6 +376,16 @@ class SolutionServiceImpl(
     return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
+  override fun createSolutionFile(
+      organizationId: String,
+      solutionId: String,
+      file: MultipartFile,
+      overwrite: Boolean,
+      destination: String?
+  ): SolutionFile {
+    TODO("Not yet implemented")
+  }
+
   override fun listSolutionParameterGroups(
       organizationId: String,
       solutionId: String
@@ -462,6 +479,14 @@ class SolutionServiceImpl(
     val rbacAccessControl =
         csmRbac.getAccessControl(solution.security.toGenericSecurity(solutionId), identityId)
     return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
+  }
+
+  override fun getSolutionFile(
+      organizationId: String,
+      solutionId: String,
+      fileName: String
+  ): Resource {
+    TODO("Not yet implemented")
   }
 
   override fun createSolutionParameter(
@@ -577,6 +602,14 @@ class SolutionServiceImpl(
         csmRbac.removeUser(solution.security.toGenericSecurity(solutionId), identityId)
     solution.security = rbacSecurity.toResourceSecurity()
     save(solution)
+  }
+
+  override fun deleteSolutionFile(organizationId: String, solutionId: String, fileName: String) {
+    TODO("Not yet implemented")
+  }
+
+  override fun deleteSolutionFiles(organizationId: String, solutionId: String) {
+    TODO("Not yet implemented")
   }
 
   override fun listSolutionSecurityUsers(organizationId: String, solutionId: String): List<String> {

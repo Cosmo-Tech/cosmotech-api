@@ -162,6 +162,15 @@ csm:
           - text/plain
           - text/x-yaml
           - application/json
+        solutions:
+          - application/zip
+          - application/xml
+          - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+          - application/x-tika-ooxml
+          - text/csv
+          - text/plain
+          - text/x-yaml
+          - application/json
         datasets:
           - application/zip
           - application/xml
