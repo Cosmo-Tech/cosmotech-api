@@ -508,6 +508,10 @@ entity SolutionEditInfo {
     * userId: String
 }
 
+entity SolutionFile {
+    * fileName: String
+}
+
 entity SolutionRole {
     * role: String
 }

@@ -15,12 +15,7 @@ tags:
 paths:
   /organizations/{organization_id}/solutions:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
     post:
       operationId: createSolution
       tags:
@@ -63,18 +58,8 @@ paths:
     get:
       operationId: listSolutions
       parameters:
-        - name: page
-          in: query
-          description: Page number to query (zero-based indexing)
-          required: false
-          schema:
-            type: integer
-        - name: size
-          in: query
-          description: Number of records per page
-          required: false
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
       tags:
         - solution
       summary: List all Solutions
@@ -101,18 +86,8 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
     get:
       operationId: getSolution
       tags:
@@ -190,18 +165,8 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}/parameters:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
     get:
       operationId: listSolutionParameters
       tags:
@@ -257,24 +222,9 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
-      - name: parameter_id
-        in: path
-        description: The solution parameter identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
+      - $ref: '#/components/parameters/parameterId'
     get:
       operationId: getSolutionParameter
       tags:
@@ -336,18 +286,8 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}/parameterGroups:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
     post:
       operationId: createSolutionParameterGroup
       tags:
@@ -402,24 +342,9 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
-      - name: parameter_group_id
-        in: path
-        description: The parameter group identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
+      - $ref: '#/components/parameters/parameterGroupId'
     patch:
       operationId: updateSolutionParameterGroup
       tags:
@@ -479,18 +404,8 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}/runTemplates:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
     get:
       operationId: listRunTemplates
       tags:
@@ -545,24 +460,9 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
-      - name: run_template_id
-        in: path
-        description: The Run Template identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
+      - $ref: '#/components/parameters/runTemplateId'
     get:
       operationId: getRunTemplate
       tags:
@@ -620,20 +520,145 @@ paths:
         "404":
           description: Solution or run template not found or insufficient access rights
 
+  /organizations/{organization_id}/solutions/{solution_id}/files:
+    parameters:
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
+    post:
+      operationId: createSolutionFile
+      tags:
+        - solution
+      summary: Upload a file for the Solution
+      requestBody:
+        description: The file to upload
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SolutionFileUpload'
+            examples:
+              use_file_name_as_is:
+                summary: Use the file name as is as destination
+                value:
+                  file: "Lorem Ipsum Dolor Sit Amet"
+              upload_to_solution_root_under_a_different_file_name:
+                summary: Upload to the Solution root folder, but rename the target file
+                value:
+                  destination: "my_file_renamed.txt"
+                  file: "Lorem Ipsum Dolor Sit Amet"
+              upload_to_a_folder:
+                summary: |
+                  Upload to a sub-folder.
+                  Destination may or may not start with a '/', but must end with '/' to be treated as a directory.
+                  Final file path will always be relative to the Solution root location.
+                value:
+                  destination: "path/to/a/directory/"
+                  file: "Lorem Ipsum Dolor Sit Amet"
+              upload_to_a_specific_folder_and_under_a_different_file_name:
+                summary: |
+                  Upload to a sub-folder.
+                  Destination may or may not start with a '/', but must not end with '/'.
+                  Final file path will always be relative to the Solution root location.
+                value:
+                  destination: "/path/to/a/directory/my_file_renamed.txt"
+                  file: "Lorem Ipsum Dolor Sit Amet"
+      responses:
+        "201":
+          description: The file resource details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolutionFile'
+              examples:
+                BrewerySolutionFile:
+                  $ref: '#/components/examples/BrewerySolutionFile'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/SolutionFile'
+              examples:
+                BrewerySolutionFile:
+                  $ref: '#/components/examples/BrewerySolutionFile'
+        "400":
+          description: Bad request
+    get:
+      operationId: listSolutionFiles
+      tags:
+        - solution
+      summary: List all Solution files
+      responses:
+        "200":
+          description: The solution files
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SolutionFile'
+              examples:
+                SolutionFiles:
+                  $ref: '#/components/examples/SolutionFiles'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SolutionFile'
+              examples:
+                SolutionFiles:
+                  $ref: '#/components/examples/SolutionFiles'
+        "404":
+          description: The Solution specified is unknown or you don't have access to it
+    delete:
+      operationId: deleteSolutionFiles
+      tags:
+        - solution
+      summary: Delete all Solution files
+      responses:
+        "204":
+          description: Request succeeded
+        "404":
+          description: The Solution specified is unknown or you don't have access to them
+
+  /organizations/{organization_id}/solutions/{solution_id}/files/download:
+    parameters:
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
+      - $ref: '#/components/parameters/fileName'
+    get:
+      operationId: getSolutionFile
+      tags:
+        - solution
+      summary: Download the Solution File specified
+      responses:
+        "200":
+          description: The solution file as a resource
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: The Solution file specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/solutions/{solution_id}/files/delete:
+    parameters:
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
+      - $ref: '#/components/parameters/fileName'
+    delete:
+      operationId: deleteSolutionFile
+      tags:
+        - solution
+      summary: Delete a solution file
+      responses:
+        "204":
+          description: Request succeeded
+        "404":
+          description: The Solution or the file specified is unknown or you don't have access to them
+
   /organizations/{organization_id}/solutions/{solution_id}/security:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
     get:
       operationId: getSolutionSecurity
       tags:
@@ -654,18 +679,8 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}/security/default:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: the Solution identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
     patch:
       operationId: updateSolutionDefaultSecurity
       tags:
@@ -704,18 +719,8 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}/security/users:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
     get:
       operationId: listSolutionSecurityUsers
       tags:
@@ -746,18 +751,8 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}/security/access:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
     post:
       operationId: createSolutionAccessControl
       tags:
@@ -800,18 +795,8 @@ paths:
 
   /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: solution_id
-        in: path
-        description: The Solution identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
       - name: identity_id
         in: path
         description: The User identifier
@@ -901,6 +886,63 @@ components:
           authorizationUrl: "https://example.com/authorize"
           tokenUrl: "https://example.com/token"
           scopes: {}
+  parameters:
+    organizationId:
+      name: organization_id
+      in: path
+      description: the Organization identifier
+      required: true
+      schema:
+        type: string
+    solutionId:
+      name: solution_id
+      in: path
+      description: the Solution identifier
+      required: true
+      schema:
+        type: string
+    runTemplateId:
+      name: run_template_id
+      in: path
+      description: The Run Template identifier
+      required: true
+      schema:
+        type: string
+    parameterId:
+      name: parameter_id
+      in: path
+      description: The solution parameter identifier
+      required: true
+      schema:
+        type: string
+    parameterGroupId:
+      name: parameter_group_id
+      in: path
+      description: The parameter group identifier
+      required: true
+      schema:
+        type: string
+    fileName:
+      name: file_name
+      in: query
+      description: The file name
+      required: true
+      schema:
+        type: string
+    page:
+      name: page
+      in: query
+      description: Page number to query (first page is at index 0)
+      required: false
+      schema:
+        type: integer
+    size:
+      name: size
+      in: query
+      description: Amount of result by page
+      required: false
+      schema:
+        type: integer
   schemas:
     # Base Solution object
     Solution:
@@ -1136,6 +1178,38 @@ components:
           description: List of Run Templates
           items:
             $ref: '#/components/schemas/RunTemplateCreateRequest'
+
+    SolutionFileUpload:
+      type: object
+      description: Request object for uploading a file to a solution
+      properties:
+        overwrite:
+          type: boolean
+          default: false
+          description: Whether to overwrite an existing file
+        destination:
+          type: string
+          description: |
+            Destination path. Must end with a '/' if specifying a folder.
+            Note that paths may or may not start with a '/', but they are always treated
+            as relative to the Solution root location.
+          example: "path/to/a/directory/"
+        file:
+          type: string
+          format: binary
+          description: The file to upload
+      required:
+        - file
+
+    SolutionFile:
+      type: object
+      description: A Solution File resource
+      properties:
+        fileName:
+          type: string
+          description: The Solution File name
+      required:
+        - fileName
 
     # Security Objects
     SolutionSecurity:
@@ -1656,6 +1730,18 @@ components:
             computeSize: highcpu
             parameterGroups:
               - consumers
+    BrewerySolutionFile:
+      summary: Brewery Solution file example
+      description: Brewery Solution file uploaded return example
+      value:
+        fileName: myData.csv
+    SolutionFiles:
+      summary: Brewery Solution files example
+      description: Brewery Solution files example
+      value:
+        - fileName: myData.csv
+        - fileName: myData2.csv
+        - fileName: myData3.csv
 
     BrewerySolutionAccessControl:
       summary: Set an access control.

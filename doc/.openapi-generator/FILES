@@ -68,6 +68,7 @@ Models/Solution.md
 Models/SolutionAccessControl.md
 Models/SolutionCreateRequest.md
 Models/SolutionEditInfo.md
+Models/SolutionFile.md
 Models/SolutionRole.md
 Models/SolutionSecurity.md
 Models/SolutionUpdateRequest.md
