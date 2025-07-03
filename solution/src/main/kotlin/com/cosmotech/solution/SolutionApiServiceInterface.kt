@@ -20,4 +20,6 @@ interface SolutionApiServiceInterface : SolutionApiService {
       solutionId: String,
       runTemplateId: String
   ): Boolean
+
+  fun deleteAllS3SolutionObjects(organizationId: String, solution: Solution)
 }
