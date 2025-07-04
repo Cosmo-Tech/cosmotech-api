@@ -233,10 +233,18 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
     workspaceApiService.createWorkspaceFile(
         organizationSaved.id, workspaceSaved.id, multipartFile, true, null)
 
-    workspaceApiService.deleteAllS3WorkspaceObjects(organizationSaved.id, workspaceSaved)
+    workspaceApiService.deleteWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
 
-    assertEquals(
-        0, workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id).size)
+    var numberOfTry = 0
+    var workspaceFilesIsEmpty: Boolean
+    do {
+      workspaceFilesIsEmpty =
+          workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id).isEmpty()
+      numberOfTry++
+      Thread.sleep(50)
+    } while (numberOfTry < 100 && !workspaceFilesIsEmpty)
+
+    assertTrue(workspaceFilesIsEmpty)
   }
 
   @Test
