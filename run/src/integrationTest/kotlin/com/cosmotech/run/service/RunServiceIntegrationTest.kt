@@ -36,6 +36,7 @@ import com.cosmotech.runner.domain.LastRunInfo.LastRunStatus
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
+import com.cosmotech.runner.domain.RunnerDatasets
 import com.cosmotech.runner.domain.RunnerEditInfo
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerValidationStatus
@@ -261,7 +262,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
                     timestamp = Instant.now().toEpochMilli(),
                     userId = getCurrentAccountIdentifier(csmPlatformProperties)),
             ownerName = "owner",
-            datasetList = mutableListOf(),
+            datasets = RunnerDatasets(bases = mutableListOf(), parameter = ""),
             workspaceId = workspaceId,
             validationStatus = RunnerValidationStatus.Draft,
             parametersValues = mutableListOf(),

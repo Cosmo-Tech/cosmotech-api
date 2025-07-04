@@ -56,6 +56,7 @@ Models/RunTemplateUpdateRequest.md
 Models/Runner.md
 Models/RunnerAccessControl.md
 Models/RunnerCreateRequest.md
+Models/RunnerDatasets.md
 Models/RunnerEditInfo.md
 Models/RunnerResourceSizing.md
 Models/RunnerRole.md

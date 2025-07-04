@@ -722,11 +722,9 @@ components:
           type: string
           readOnly: true
           description: the Solution Run Template name associated with this Runner
-        datasetList:
-          type: array
-          description: the list of Dataset Id associated to this Runner Run Template
-          items:
-            type: string
+        datasets:
+          description: definition of datasets used by the runner
+          $ref: "#/components/schemas/RunnerDatasets"
         runSizing:
           description: definition of resources needed for the runner run
           $ref: "#/components/schemas/RunnerResourceSizing"
@@ -756,7 +754,7 @@ components:
         - organizationId
         - workspaceId
         - ownerName
-        - datasetList
+        - datasets
         - parametersValues
         - lastRunInfo
         - validationStatus
@@ -1011,6 +1009,21 @@ components:
       required:
         - timestamp
         - userId
+
+    RunnerDatasets:
+      type: object
+      properties:
+        bases:
+          type: array
+          description: a list of Dataset Id used to build the Runner
+          items:
+            type: string
+        parameter:
+          description: The dataset id used for dataset parameters on current Runner
+          type: string
+      required:
+        - bases
+        - parameter
 
   examples:
     BreweryRunnerIn:

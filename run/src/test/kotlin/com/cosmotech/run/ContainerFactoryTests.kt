@@ -19,6 +19,7 @@ import com.cosmotech.runner.domain.LastRunInfo
 import com.cosmotech.runner.domain.LastRunInfo.LastRunStatus
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
+import com.cosmotech.runner.domain.RunnerDatasets
 import com.cosmotech.runner.domain.RunnerEditInfo
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.runner.domain.RunnerSecurity
@@ -223,7 +224,7 @@ class ContainerFactoryTests {
         id = "RunnerId",
         name = "TestRunner",
         runTemplateId = CSM_RUN_TEMPLATE_ID,
-        datasetList = mutableListOf("1", "2"),
+        datasets = RunnerDatasets(bases = mutableListOf("1", "2"), parameter = "3"),
         solutionId = "solution",
         organizationId = "organization",
         workspaceId = "workspace",

@@ -584,7 +584,7 @@ class RunServiceImpl(
             runTemplateId = startInfo.runTemplate.id,
             generateName = startInfo.startContainers.generateName,
             computeSize = startInfo.runTemplate.computeSize,
-            datasetList = runner.datasetList,
+            datasetList = runner.datasets.bases + runner.datasets.parameter,
             createInfo =
                 RunEditInfo(
                     timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),

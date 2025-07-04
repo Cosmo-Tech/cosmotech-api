@@ -464,12 +464,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(runnerAccessControl, runnerAccessControlRegistered)
 
     logger.info(
-        "should add an Access Control and assert it is the one created in the linked datasets")
-    runnerSaved.datasetList.forEach {
-      assertDoesNotThrow {
-        datasetApiService.getDatasetAccessControl(
-            organizationSaved.id, workspaceSaved.id, it, TEST_USER_MAIL)
-      }
+        "should add an Access Control and assert it is the one created in the parameter dataset")
+    assertDoesNotThrow {
+      datasetApiService.getDatasetAccessControl(
+          organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.parameter, TEST_USER_MAIL)
     }
 
     logger.info("should update the Access Control and assert it has been updated")
@@ -482,14 +480,17 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             RunnerRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, runnerAccessControlRegistered.role)
 
-    logger.info("Should not change the datasets access control because ACL already exist on it")
-    runnerSaved.datasetList.forEach {
-      assertEquals(
-          ROLE_VIEWER,
-          datasetApiService
-              .getDatasetAccessControl(organizationSaved.id, workspaceSaved.id, it, TEST_USER_MAIL)
-              .role)
-    }
+    logger.info(
+        "Should not change the parameter dataset access control because ACL already exist on it")
+    assertEquals(
+        ROLE_VIEWER,
+        datasetApiService
+            .getDatasetAccessControl(
+                organizationSaved.id,
+                workspaceSaved.id,
+                runnerSaved.datasets.parameter,
+                TEST_USER_MAIL)
+            .role)
 
     logger.info("should get the list of users and assert there are 2")
     val userList =
@@ -506,12 +507,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     }
 
     logger.info(
-        "should remove the Access Control and assert it has been removed in the linked datasets")
-    runnerSaved.datasetList.forEach {
-      assertThrows<CsmResourceNotFoundException> {
-        datasetApiService.getDatasetAccessControl(
-            organizationSaved.id, workspaceSaved.id, it, TEST_USER_MAIL)
-      }
+        "should remove the Access Control and assert it has been removed in the parameter dataset")
+    assertThrows<CsmResourceNotFoundException> {
+      datasetApiService.getDatasetAccessControl(
+          organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.parameter, TEST_USER_MAIL)
     }
   }
 
@@ -577,14 +576,24 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
-  fun `test on runner delete keep datasets`() {
+  fun `test on runner delete keep bases datasets but not parameters dataset`() {
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
-    runnerSaved.datasetList.forEach { dataset ->
+    runnerSaved.datasets.bases.forEach { dataset ->
       assertDoesNotThrow {
         datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, dataset)
       }
     }
+    val parameterDatasetId = runnerSaved.datasets.parameter
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, parameterDatasetId)
+        }
+    assertEquals(
+        "Dataset $parameterDatasetId not found " +
+            "in organization ${organizationSaved.id} " +
+            "and workspace ${workspaceSaved.id}",
+        exception.message)
   }
 
   @Test
@@ -602,7 +611,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val childRunnerDatasetList =
         runnerApiService
             .createRunner(organizationSaved.id, workspaceSaved.id, childRunnerWithNullDatasetList)
-            .datasetList
+            .datasets
+            .bases
 
     assertNotNull(childRunnerDatasetList)
     assertTrue { childRunnerDatasetList.isEmpty() }
@@ -626,7 +636,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val childRunnerDatasetList =
         runnerApiService
             .createRunner(organizationSaved.id, workspaceSaved.id, childRunnerWithNullDatasetList)
-            .datasetList
+            .datasets
+            .bases
 
     assertNotNull(childRunnerDatasetList)
     assertEquals(parentDatasetList, childRunnerDatasetList)
@@ -651,7 +662,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val childRunnerDatasetList =
         runnerApiService
             .createRunner(organizationSaved.id, workspaceSaved.id, childRunnerWithEmptyDatasetList)
-            .datasetList
+            .datasets
+            .bases
 
     assertNotNull(childRunnerDatasetList)
     assertTrue(childRunnerDatasetList.isEmpty())
@@ -685,7 +697,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         runnerApiService
             .createRunner(
                 organizationSaved.id, workspaceSaved.id, childRunnerWithNonEmptyDatasetList)
-            .datasetList
+            .datasets
+            .bases
 
     assertNotNull(childRunnerDatasetList)
     assertEquals(childDatasetList, childRunnerDatasetList)
@@ -820,7 +833,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val datasetRetrieved =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.datasetList[0])
+            organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.bases[0])
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
     assertDoesNotThrow {
@@ -829,7 +842,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
-  fun `users added to runner RBAC should have the corresponding role set in dataset`() {
+  fun `users added to runner RBAC should not have the corresponding role set in bases datasets`() {
     workspace =
         WorkspaceCreateRequest(
             key = "key",
@@ -851,12 +864,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val retrievedDataset =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.datasetList[0])
+            organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.bases[0])
 
-    val datasetAC =
-        datasetApiService.getDatasetAccessControl(
-            organizationSaved.id, workspaceSaved.id, retrievedDataset.id, "id")
-    assertEquals(ROLE_EDITOR, datasetAC.role)
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          datasetApiService.getDatasetAccessControl(
+              organizationSaved.id, workspaceSaved.id, retrievedDataset.id, "id")
+        }
+    assertEquals("User id not found in ${retrievedDataset.id} component", exception.message)
   }
 
   @Test
