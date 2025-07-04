@@ -2225,10 +2225,18 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     solutionApiService.createSolutionFile(
         organizationSaved.id, solutionSaved.id, multipartFile, true, null)
 
-    solutionApiService.deleteAllS3SolutionObjects(organizationSaved.id, solutionSaved)
+    solutionApiService.deleteSolutionFiles(organizationSaved.id, solutionSaved.id)
 
-    assertEquals(
-        0, solutionApiService.listSolutionFiles(organizationSaved.id, solutionSaved.id).size)
+    var numberOfTry = 0
+    var solutionFilesIsEmpty: Boolean
+    do {
+      solutionFilesIsEmpty =
+          solutionApiService.listSolutionFiles(organizationSaved.id, solutionSaved.id).isEmpty()
+      numberOfTry++
+      Thread.sleep(50)
+    } while (numberOfTry < 100 && !solutionFilesIsEmpty)
+
+    assertTrue(solutionFilesIsEmpty)
   }
 
   @Test

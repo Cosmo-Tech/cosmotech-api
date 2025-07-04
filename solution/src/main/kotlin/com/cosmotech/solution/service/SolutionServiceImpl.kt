@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution.service
 
+import com.amazonaws.SdkClientException
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.events.OrganizationUnregistered
@@ -44,6 +45,7 @@ import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.solution.domain.SolutionUpdateRequest
 import com.cosmotech.solution.repository.SolutionRepository
+import io.awspring.cloud.s3.S3Exception
 import io.awspring.cloud.s3.S3Template
 import java.time.Instant
 import kotlin.collections.mutableListOf
@@ -56,6 +58,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import software.amazon.awssdk.awscore.exception.AwsServiceException
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
@@ -71,7 +74,7 @@ class SolutionServiceImpl(
     private val containerRegistryService: ContainerRegistryService,
     private val s3Client: S3Client,
     private val s3Template: S3Template,
-    private val resourceScanner: ResourceScanner,
+    private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), SolutionApiServiceInterface {
 
   override fun listSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
@@ -193,7 +196,7 @@ class SolutionServiceImpl(
   }
 
   override fun listSolutionFiles(organizationId: String, solutionId: String): List<SolutionFile> {
-    val solution = getSolution(organizationId, solutionId)
+    val solution = getVerifiedSolution(organizationId, solutionId)
 
     logger.debug("List all files for solution #{} ({})", solution.id, solution.name)
     return getSolutionFiles(organizationId, solutionId)
@@ -418,7 +421,7 @@ class SolutionServiceImpl(
         file.originalFilename,
         destination)
 
-    resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+    resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.solutions)
     val fileRelativeDestinationBuilder = StringBuilder()
     if (destination.isNullOrBlank()) {
       fileRelativeDestinationBuilder.append(file.originalFilename)
@@ -433,9 +436,8 @@ class SolutionServiceImpl(
     val objectKey =
         "$organizationId/$solutionId/$SOLUTION_FILES_BASE_FOLDER/$fileRelativeDestinationBuilder"
 
-    if (!overwrite && s3Template.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
-      throw IllegalArgumentException(
-          "File '$fileRelativeDestinationBuilder' already exists, not overwriting it")
+    require(overwrite || !s3Template.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
+      "File '$fileRelativeDestinationBuilder' already exists, not overwriting it"
     }
 
     s3Template.upload(csmPlatformProperties.s3.bucketName, objectKey, file.inputStream)
@@ -705,7 +707,7 @@ class SolutionServiceImpl(
     return solution
   }
 
-  override fun deleteAllS3SolutionObjects(organizationId: String, solution: Solution) {
+  fun deleteAllS3SolutionObjects(organizationId: String, solution: Solution) {
     logger.debug("Deleting all files for solution #{} ({})", solution.id, solution.name)
     val solutionFiles = getSolutionFiles(organizationId, solution.id)
     if (solutionFiles.isEmpty()) {
@@ -720,10 +722,17 @@ class SolutionServiceImpl(
   private fun deleteS3SolutionObject(organizationId: String, solution: Solution, fileName: String) {
     logger.debug(
         "Deleting file resource from solution #{} ({}): {}", solution.id, solution.name, fileName)
-
-    s3Template.deleteObject(
-        csmPlatformProperties.s3.bucketName,
-        "$organizationId/${solution.id}/$SOLUTION_FILES_BASE_FOLDER/$fileName")
+    try {
+      s3Template.deleteObject(
+          csmPlatformProperties.s3.bucketName,
+          "$organizationId/${solution.id}/$SOLUTION_FILES_BASE_FOLDER/$fileName")
+    } catch (e: AwsServiceException) {
+      logger.error("Something wrong happened during $fileName deletion", e)
+    } catch (e: SdkClientException) {
+      logger.error("Something wrong happened during $fileName deletion", e)
+    } catch (e: S3Exception) {
+      logger.error("Something wrong happened during $fileName deletion", e)
+    }
   }
 
   private fun getSolutionFiles(organizationId: String, solutionId: String): List<SolutionFile> {

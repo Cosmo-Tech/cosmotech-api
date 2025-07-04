@@ -695,6 +695,99 @@ class SolutionServiceRBACTest : CsmTestBase() {
           }
 
   @TestFactory
+  fun `test Organization RBAC listSolutionFiles`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC listSolutionFiles : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.createOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+              val fileName = "my_file.txt"
+              val multipartFile =
+                  MockMultipartFile(
+                      "file",
+                      fileName,
+                      MediaType.MULTIPART_FORM_DATA_VALUE,
+                      InputStream.nullInputStream())
+
+              solutionApiService.createSolutionFile(
+                  organizationSaved.id, solutionSaved.id, multipartFile, false, null)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.listSolutionFiles(organizationSaved.id, solutionSaved.id)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.listSolutionFiles(organizationSaved.id, solutionSaved.id)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC listSolutionFiles`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Solution RBAC listSolutionFiles : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization =
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organizationSaved = organizationApiService.createOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+              val fileName = "my_file.txt"
+              val multipartFile =
+                  MockMultipartFile(
+                      "file",
+                      fileName,
+                      MediaType.MULTIPART_FORM_DATA_VALUE,
+                      InputStream.nullInputStream())
+
+              solutionApiService.createSolutionFile(
+                  organizationSaved.id, solutionSaved.id, multipartFile, false, null)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.listSolutionFiles(organizationSaved.id, solutionSaved.id)
+                    }
+                assertEquals(
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.listSolutionFiles(organizationSaved.id, solutionSaved.id)
+                }
+              }
+            }
+          }
+
+  @TestFactory
   fun `test Organization RBAC updateSolution`() =
       mapOf(
               ROLE_VIEWER to false,

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.service
 
+import com.amazonaws.SdkClientException
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.WorkspaceDeleted
@@ -37,6 +38,7 @@ import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.cosmotech.workspace.repository.WorkspaceRepository
+import io.awspring.cloud.s3.S3Exception
 import io.awspring.cloud.s3.S3Template
 import java.time.Instant
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +52,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import software.amazon.awssdk.awscore.exception.AwsServiceException
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
@@ -350,13 +353,20 @@ internal class WorkspaceServiceImpl(
         workspace.id,
         workspace.name,
         fileName)
-
-    s3Template.deleteObject(
-        csmPlatformProperties.s3.bucketName,
-        "$organizationId/${workspace.id}/$WORKSPACE_FILES_BASE_FOLDER/$fileName")
+    try {
+      s3Template.deleteObject(
+          csmPlatformProperties.s3.bucketName,
+          "$organizationId/${workspace.id}/$WORKSPACE_FILES_BASE_FOLDER/$fileName")
+    } catch (e: AwsServiceException) {
+      logger.error("Something wrong happened during $fileName deletion", e)
+    } catch (e: SdkClientException) {
+      logger.error("Something wrong happened during $fileName deletion", e)
+    } catch (e: S3Exception) {
+      logger.error("Something wrong happened during $fileName deletion", e)
+    }
   }
 
-  override fun deleteAllS3WorkspaceObjects(organizationId: String, workspace: Workspace) {
+  fun deleteAllS3WorkspaceObjects(organizationId: String, workspace: Workspace) {
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
     val workspaceFiles = getWorkspaceFiles(organizationId, workspace.id)
     if (workspaceFiles.isEmpty()) {
