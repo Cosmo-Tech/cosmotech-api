@@ -35,6 +35,7 @@ import com.cosmotech.runner.domain.LastRunInfo.LastRunStatus
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
+import com.cosmotech.runner.domain.RunnerDatasets
 import com.cosmotech.runner.domain.RunnerEditInfo
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.runner.domain.RunnerSecurity
@@ -261,7 +262,10 @@ class RunnerService(
               organizationId = organization!!.id,
               workspaceId = workspace!!.id,
               ownerName = "init",
-              datasetList = mutableListOf(),
+              datasets =
+                  RunnerDatasets(
+                      bases = mutableListOf(),
+                      parameter = "TODO: Create and set a new dataset Id here"),
               parametersValues = mutableListOf(),
               lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
               validationStatus = RunnerValidationStatus.Draft,
@@ -296,7 +300,7 @@ class RunnerService(
             "Run Template not found: ${runner.runTemplateId}"
           }
 
-      val beforeMutateDatasetList = this.runner.datasetList
+      val beforeMutateDatasetList = this.runner.datasets.bases
 
       val excludeFields =
           arrayOf(
@@ -311,7 +315,7 @@ class RunnerService(
       consolidateParametersVarType()
 
       // take newly added datasets and propagate existing ACL on it
-      this.runner.datasetList
+      this.runner.datasets.bases
           .filterNot { beforeMutateDatasetList.contains(it) }
           .mapNotNull {
             datasetApiService.findByOrganizationIdWorkspaceIdAndDatasetId(
@@ -338,7 +342,10 @@ class RunnerService(
               description = runnerCreateRequest.description,
               name = runnerCreateRequest.name,
               runTemplateId = runnerCreateRequest.runTemplateId,
-              datasetList = runnerCreateRequest.datasetList ?: mutableListOf(),
+              datasets =
+                  RunnerDatasets(
+                      bases = runnerCreateRequest.datasetList ?: mutableListOf(),
+                      parameter = "TODO: Create and set a new dataset Id here"),
               parametersValues = runnerCreateRequest.parametersValues ?: mutableListOf(),
               parentId = runnerCreateRequest.parentId,
               lastRunInfo =
@@ -367,7 +374,10 @@ class RunnerService(
               description = runnerUpdateRequest.description ?: this.runner.description,
               name = runnerUpdateRequest.name ?: this.runner.name,
               runTemplateId = runnerUpdateRequest.runTemplateId ?: this.runner.runTemplateId,
-              datasetList = runnerUpdateRequest.datasetList ?: this.runner.datasetList,
+              datasets =
+                  RunnerDatasets(
+                      bases = runnerUpdateRequest.datasetList ?: this.runner.datasets.bases,
+                      parameter = this.runner.datasets.parameter),
               parametersValues =
                   runnerUpdateRequest.parametersValues ?: this.runner.parametersValues,
               id = this.runner.id,
@@ -397,6 +407,8 @@ class RunnerService(
     }
 
     fun initParameters(): RunnerInstance = apply {
+
+      // TODO remove/reuse to manage inherited datasets.parameter
       val parentId = this.runner.parentId
       val runnerId = this.runner.id
       if (parentId != null) {
@@ -461,11 +473,11 @@ class RunnerService(
                   IllegalArgumentException(
                       "Parent Id $parentId define on $runnerId does not exists")
                 }
-        val parentDatasetList = parentRunner.datasetList
-
-        if (parentDatasetList.isNotEmpty()) {
+        val parentDatasets = parentRunner.datasets
+        // TODO manage inherited datasets.parameter here
+        if (parentDatasets.bases.isNotEmpty()) {
           if (runnerCreateRequest.datasetList == null) {
-            this.runner.datasetList = parentDatasetList
+            this.runner.datasets.bases = parentDatasets.bases
           }
         }
       }
@@ -487,15 +499,13 @@ class RunnerService(
       val organizationId = this.runner.organizationId
       val workspaceId = this.runner.workspaceId
 
-      // Assign roles on linked datasets if not already present on dataset resource
-      this.runner.datasetList
-          .mapNotNull {
-            datasetApiService.findByOrganizationIdWorkspaceIdAndDatasetId(
-                organizationId, workspaceId, it)
-          }
-          .forEach { dataset ->
-            addUserAccessControlOnDataset(dataset, RunnerAccessControl(userId, datasetRole))
-          }
+      // Assign roles on parameter datasets if not already present on dataset resource
+      val parameterDataset =
+          datasetApiService.findByOrganizationIdWorkspaceIdAndDatasetId(
+              organizationId, workspaceId, this.runner.datasets.parameter)
+      parameterDataset?.let {
+        addUserAccessControlOnDataset(parameterDataset, RunnerAccessControl(userId, datasetRole))
+      }
     }
 
     fun getAccessControlFor(userId: String): RunnerAccessControl {
@@ -589,18 +599,17 @@ class RunnerService(
     private fun removeAccessControlToDatasets(userId: String) {
       val organizationId = this.runner.organizationId
       val workspaceId = this.runner.workspaceId
-      this.runner.datasetList.forEach { datasetId ->
-        val datasetACL =
-            datasetApiService
-                .findByOrganizationIdWorkspaceIdAndDatasetId(organizationId, workspaceId, datasetId)
-                ?.security
-                ?.accessControlList
-                ?.toList()
+      val datasetId = this.runner.datasets.parameter
+      val datasetACL =
+          datasetApiService
+              .findByOrganizationIdWorkspaceIdAndDatasetId(organizationId, workspaceId, datasetId)
+              ?.security
+              ?.accessControlList
+              ?.toList()
 
-        if (datasetACL != null && datasetACL.any { it.id == userId })
-            datasetApiService.deleteDatasetAccessControl(
-                organizationId, workspaceId, datasetId, userId)
-      }
+      if (datasetACL != null && datasetACL.any { it.id == userId })
+          datasetApiService.deleteDatasetAccessControl(
+              organizationId, workspaceId, datasetId, userId)
     }
 
     fun getUsers(): List<String> {

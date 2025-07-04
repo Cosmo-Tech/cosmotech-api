@@ -388,7 +388,7 @@ entity Runner {
     * ownerName: String
     solutionName: String
     runTemplateName: String
-    * datasetList: List<String>
+    * datasets: RunnerDatasets
     runSizing: RunnerResourceSizing
     * parametersValues: List<RunnerRunTemplateParameterValue>
     * lastRunInfo: LastRunInfo
@@ -415,6 +415,11 @@ entity RunnerCreateRequest {
     solutionName: String
     runTemplateName: String
     security: RunnerSecurity
+}
+
+entity RunnerDatasets {
+    * bases: List<String>
+    * parameter: String
 }
 
 entity RunnerEditInfo {
@@ -640,6 +645,7 @@ SolutionUpdateRequest -- "0..*" RunTemplateCreateRequest : runTemplates
 OrganizationCreateRequest -- OrganizationSecurity : security
 Runner -- RunnerEditInfo : createInfo
 Runner -- RunnerEditInfo : updateInfo
+Runner -- RunnerDatasets : datasets
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
 Runner -- LastRunInfo : lastRunInfo
