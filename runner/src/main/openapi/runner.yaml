@@ -1,8 +1,12 @@
 openapi: 3.0.3
 
 info:
-  title: ""
-  version: ""
+  title: Cosmo Tech Runner Manager API
+  description: Cosmo Tech Runner Manager API
+  version: 1.0.0-SNAPSHOT
+
+servers:
+  - url: 'http://localhost:8080'
 
 security:
   - oAuth2AuthCode: []
@@ -14,18 +18,8 @@ tags:
 paths:
   /organizations/{organization_id}/workspaces/{workspace_id}/runners:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
     post:
       operationId: createRunner
       tags:
@@ -72,18 +66,8 @@ paths:
     get:
       operationId: listRunners
       parameters:
-        - name: page
-          in: query
-          description: page number to query (first page is at index 0)
-          required: false
-          schema:
-            type: integer
-        - name: size
-          in: query
-          description: amount of result by page
-          required: false
-          schema:
-            type: integer
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
       tags:
         - runner
       summary: List all Runners
@@ -110,24 +94,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
     get:
       operationId: getRunner
       tags:
@@ -205,24 +174,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/start:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
     post:
       operationId: startRun
       tags:
@@ -243,24 +197,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/stop:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
     post:
       operationId: stopRun
       tags:
@@ -274,24 +213,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/permissions/{role}:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
       - name: role
         in: path
         description: the Role
@@ -326,24 +250,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
     get:
       operationId: getRunnerSecurity
       tags:
@@ -370,24 +279,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/default:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
     patch:
       operationId: updateRunnerDefaultSecurity
       tags:
@@ -436,24 +330,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
     post:
       operationId: createRunnerAccessControl
       tags:
@@ -496,24 +375,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
       - name: identity_id
         in: path
         description: the User identifier
@@ -652,6 +516,42 @@ components:
           authorizationUrl: "https://example.com/authorize"
           tokenUrl: "https://example.com/token"
           scopes: {}
+  parameters:
+    organizationId:
+      name: organization_id
+      in: path
+      description: the Organization identifier
+      required: true
+      schema:
+        type: string
+    workspaceId:
+      name: workspace_id
+      in: path
+      description: the Workspace identifier
+      required: true
+      schema:
+        type: string
+    runnerId:
+      name: runner_id
+      in: path
+      description: the Runner identifier
+      required: true
+      schema:
+        type: string
+    page:
+      name: page
+      in: query
+      description: Page number to query (first page is at index 0)
+      required: false
+      schema:
+        type: integer
+    size:
+      name: size
+      in: query
+      description: Amount of result by page
+      required: false
+      schema:
+        type: integer
   schemas:
     # Base Runner object that includes all information
     Runner:
