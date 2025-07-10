@@ -64,33 +64,3 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  generate_and_push_doc_for_helm_charts:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update Helm Charts documentation
-        run: ./scripts/kubernetes/update-helm-chart-readme.sh
-
-      - name: Set Git identity
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git config --global user.name "$GITHUB_ACTOR"
-
-      - name: Push generated documentation if needed
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          git fetch --prune
-          git pull --rebase --autostash
-          if [[ `git status --porcelain` ]]; then
-            git checkout -b helm_documentation
-            git add api/kubernetes/*/README.md
-            git commit -m "chore(docs): Update generated Helm Charts documentations" \
-              -m "Co-authored-by: csmplatform <csmplatform@users.noreply.github.com>"
-            git push --set-upstream origin helm_documentation
-            gh pr create -B main -H helm_documentation --title 'Merge helm_documentation into main' --body 'Created by Github action'
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

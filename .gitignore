@@ -44,21 +44,12 @@ out/
 # generated
 openapi/plantuml/.openapi-generator/
 openapi/openapi.yaml
-api/kubernetes/cronjob/*.yaml
 
 ### Personal directory ###
 perso
 config/application-dev*.properties
 config/application-*.yml
 !config/application-dev.sample.yml
-api/kubernetes/helm-chart/values-vcr.yaml
-/api/kubernetes/helm-chart/values-JREY*.yaml
 
 ### Logs ###
 logs/*access_log*.log
-
-### Helm ###
-# Chart dependencies
-**/charts/*.tgz
-/kube-prometheus-stack.yaml
-/values-cosmotech-api-deploy.yaml
