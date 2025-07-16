@@ -171,7 +171,7 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solutionName").value(solutionName))
         .andExpect(jsonPath("$.runTemplateName").value(runTemplateName))
         .andExpect(jsonPath("$.tags").value(tags))
-        .andExpect(jsonPath("$.datasetList").value(datasetList))
+        .andExpect(jsonPath("$.datasets.bases").value(datasetList))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
         .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))

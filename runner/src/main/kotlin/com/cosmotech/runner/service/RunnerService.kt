@@ -27,6 +27,10 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
+import com.cosmotech.dataset.domain.DatasetCreateRequest
+import com.cosmotech.dataset.domain.DatasetPart
+import com.cosmotech.dataset.domain.DatasetPartCreateRequest
+import com.cosmotech.dataset.domain.DatasetPartTypeEnum
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.CreatedRun
@@ -43,8 +47,7 @@ import com.cosmotech.runner.domain.RunnerUpdateRequest
 import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.runner.repository.RunnerRepository
 import com.cosmotech.solution.SolutionApiServiceInterface
-import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.toGenericSecurity
@@ -54,6 +57,9 @@ import org.springframework.context.annotation.Scope
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
+
+const val DATASET_PART_VARTYPE_FILE = "%DATASET_PART_ID_FILE%"
+const val DATASET_PART_VARTYPE_DB = "%DATASET_PART_ID_DB%"
 
 @Component
 @Scope("prototype")
@@ -135,7 +141,8 @@ class RunnerService(
     // Notify the deletion
     val runnerDeleted = RunnerDeleted(this, runner.organizationId, runner.workspaceId, runner.id)
     this.eventPublisher.publishEvent(runnerDeleted)
-
+    datasetApiService.deleteDataset(
+        runner.organizationId, runner.workspaceId, runner.datasets.parameter)
     return runnerRepository.delete(runnerInstance.getRunnerDataObjet())
   }
 
@@ -290,7 +297,6 @@ class RunnerService(
 
     fun setValueFrom(runner: Runner): RunnerInstance = apply {
       require(runner.runTemplateId.isNotEmpty()) { "runner does not have a runTemplateId define" }
-
       require(
           solutionApiService.isRunTemplateExist(
               organization!!.id,
@@ -299,8 +305,6 @@ class RunnerService(
               runner.runTemplateId)) {
             "Run Template not found: ${runner.runTemplateId}"
           }
-
-      val beforeMutateDatasetList = this.runner.datasets.bases
 
       val excludeFields =
           arrayOf(
@@ -313,19 +317,6 @@ class RunnerService(
               "security")
       this.runner.compareToAndMutateIfNeeded(runner, excludedFields = excludeFields)
       consolidateParametersVarType()
-
-      // take newly added datasets and propagate existing ACL on it
-      this.runner.datasets.bases
-          .filterNot { beforeMutateDatasetList.contains(it) }
-          .mapNotNull {
-            datasetApiService.findByOrganizationIdWorkspaceIdAndDatasetId(
-                organization!!.id, workspace!!.id, it)
-          }
-          .forEach { dataset ->
-            this.runner.security.accessControlList.forEach { roleDefinition ->
-              addUserAccessControlOnDataset(dataset, roleDefinition)
-            }
-          }
     }
 
     fun setValueFrom(runnerCreateRequest: RunnerCreateRequest): RunnerInstance {
@@ -334,6 +325,13 @@ class RunnerService(
           csmRbac.initSecurity(runnerCreateRequest.security.toGenericSecurity(this.runner.id))
 
       this.setRbacSecurity(security)
+
+      val parameterDataset =
+          datasetApiService.createDataset(
+              organization!!.id,
+              workspace!!.id,
+              DatasetCreateRequest(name = "Dataset attached to ${this.runner.id}"),
+              emptyArray())
 
       return setValueFrom(
           Runner(
@@ -345,7 +343,7 @@ class RunnerService(
               datasets =
                   RunnerDatasets(
                       bases = runnerCreateRequest.datasetList ?: mutableListOf(),
-                      parameter = "TODO: Create and set a new dataset Id here"),
+                      parameter = parameterDataset.id),
               parametersValues = runnerCreateRequest.parametersValues ?: mutableListOf(),
               parentId = runnerCreateRequest.parentId,
               lastRunInfo =
@@ -406,44 +404,180 @@ class RunnerService(
       this.runner.lastRunInfo = LastRunInfo(lastRunId = runId, lastRunStatus = runStatus)
     }
 
-    fun initParameters(): RunnerInstance = apply {
+    fun initParametersFromSolution(): RunnerInstance = apply {
+      val solution =
+          workspace?.solution?.solutionId?.let {
+            solutionApiService.getSolution(organization?.id!!, it)
+          }
+      val runTemplateId = this.runner.runTemplateId
+      val runTemplate =
+          solution?.runTemplates?.find { runTemplate -> runTemplate.id == runTemplateId }
+      requireNotNull(runTemplate) { "Run Template not found: $runTemplateId" }
 
-      // TODO remove/reuse to manage inherited datasets.parameter
-      val parentId = this.runner.parentId
-      val runnerId = this.runner.id
-      if (parentId != null) {
-        val parentRunner =
-            runnerRepository
-                .findBy(this.runner.organizationId, this.runner.workspaceId, parentId)
-                .orElseThrow {
-                  IllegalArgumentException(
-                      "Parent Id $parentId define on $runnerId does not exists")
-                }
-        val solution =
-            workspace?.solution?.solutionId?.let {
-              solutionApiService.getSolution(organization?.id!!, it)
+      val runTemplateParameters =
+          solution.parameterGroups
+              .filter { runTemplate.parameterGroups.contains(it.id) }
+              .flatMap { it.parameters }
+              .mapNotNull { parameterId -> solution.parameters.find { it.id == parameterId } }
+
+      val solutionParameterValues = constructParametersValuesFromSolution(runTemplateParameters)
+
+      val mergedParameterList = mutableListOf<RunnerRunTemplateParameterValue>()
+
+      solutionParameterValues.forEach { solutionParameter ->
+        val parameter =
+            this.runner.parametersValues.firstOrNull {
+              solutionParameter.parameterId == it.parameterId
             }
-        val runTemplateId = this.runner.runTemplateId
-        val runTemplate =
-            solution?.runTemplates?.find { runTemplate -> runTemplate.id == runTemplateId }
-        requireNotNull(runTemplate) { "Run Template not found: $runTemplateId" }
-        val inheritedParameterValues =
-            constructParametersValuesFromParent(
-                parentId, solution, runTemplate, parentRunner, this.runner)
-        val parameterValueList = this.runner.parametersValues
-        parameterValueList.addAll(inheritedParameterValues)
-        this.runner.parametersValues = parameterValueList
-        consolidateParametersVarType()
-
-        // Compute rootId
-        this.runner.parentId?.let {
-          this.runner.rootId =
-              runnerRepository
-                  .findBy(organization!!.id, workspace!!.id, it)
-                  .orElseThrow { IllegalArgumentException("Parent runner not found: $it") }
-                  .rootId ?: this.runner.parentId
+        if (parameter != null) {
+          mergedParameterList.add(parameter)
+        } else {
+          mergedParameterList.add(solutionParameter)
         }
       }
+
+      this.runner.parametersValues = mergedParameterList
+
+      constructDatasetParametersFromSolution(runTemplateParameters, solution.id)
+    }
+
+    fun initParametersFromParent(parentId: String): RunnerInstance = apply {
+      val runnerId = this.runner.id
+      val parentRunner =
+          runnerRepository
+              .findBy(this.runner.organizationId, this.runner.workspaceId, parentId)
+              .orElseThrow {
+                IllegalArgumentException("Parent Id $parentId define on $runnerId does not exists")
+              }
+      val solution =
+          workspace?.solution?.solutionId?.let {
+            solutionApiService.getSolution(organization?.id!!, it)
+          }
+      val runTemplateId = this.runner.runTemplateId
+      val runTemplate =
+          solution?.runTemplates?.find { runTemplate -> runTemplate.id == runTemplateId }
+      requireNotNull(runTemplate) { "Run Template not found: $runTemplateId" }
+
+      val runTemplateParametersIds =
+          solution.parameterGroups
+              .filter { runTemplate.parameterGroups.contains(it.id) }
+              .flatMap { it.parameters }
+
+      val inheritedParameterValues =
+          constructParametersValuesFromParent(
+              runTemplateParametersIds, parentId, parentRunner, this.runner)
+      val parameterValueList = this.runner.parametersValues
+      parameterValueList.addAll(inheritedParameterValues)
+      this.runner.parametersValues = parameterValueList
+      consolidateParametersVarType()
+
+      constructDatasetParametersFromParent(
+          runTemplateParametersIds, parentId, parentRunner, this.runner)
+
+      // Compute rootId
+      this.runner.parentId?.let {
+        this.runner.rootId =
+            runnerRepository
+                .findBy(organization!!.id, workspace!!.id, it)
+                .orElseThrow { IllegalArgumentException("Parent runner not found: $it") }
+                .rootId ?: this.runner.parentId
+      }
+    }
+
+    private fun constructDatasetParametersFromParent(
+        runTemplateParametersIds: List<String>,
+        parentId: String,
+        parent: Runner,
+        runner: Runner
+    ): List<DatasetPart> {
+
+      val datasetPartList = mutableListOf<DatasetPart>()
+      if (runTemplateParametersIds.isNotEmpty()) {
+        val parentDatasetParameters =
+            datasetApiService
+                .listDatasetParts(
+                    organization!!.id, workspace!!.id, parent.datasets.parameter, null, null)
+                .associateBy { it.name }
+
+        runTemplateParametersIds
+            .filter { parentDatasetParameters.contains(it) }
+            .forEach { parameterId ->
+              logger.debug(
+                  "Creating dataset part from parent for parameter $parameterId " +
+                      "in Dataset ${runner.datasets.parameter}")
+              val parentDatasetParameter = parentDatasetParameters[parameterId]
+              if (parentDatasetParameter != null) {
+                datasetPartList.add(
+                    addDatasetPartInDatasetParameter(
+                        parentDatasetParameter, runner.datasets.parameter, parameterId, runner.id))
+              } else {
+                logger.warn(
+                    "Parameter $parameterId not found in parent ($parentId) dataset parameters: " +
+                        "No dataset part will be created")
+              }
+            }
+      }
+
+      return datasetPartList
+    }
+
+    private fun addDatasetPartInDatasetParameter(
+        datasetPartToAdd: DatasetPart,
+        datasetId: String,
+        parameterId: String,
+        runnerId: String
+    ): DatasetPart {
+
+      val sourceName = datasetPartToAdd.sourceName
+      val datasetPartCreateRequest =
+          DatasetPartCreateRequest(
+              name = parameterId,
+              description = "Dataset Part associated to $parameterId parameter",
+              sourceName = sourceName,
+              tags = mutableListOf(runnerId, parameterId),
+              type = datasetPartToAdd.type)
+      val datasetPartResource =
+          datasetApiService.downloadDatasetPart(
+              datasetPartToAdd.organizationId,
+              datasetPartToAdd.workspaceId,
+              datasetPartToAdd.datasetId,
+              datasetPartToAdd.id)
+      return datasetApiService.createDatasetPartFromResource(
+          datasetPartToAdd.organizationId,
+          datasetPartToAdd.workspaceId,
+          datasetId,
+          datasetPartResource,
+          datasetPartCreateRequest)
+    }
+
+    private fun createDatasetPartInDatasetParameter(
+        organizationId: String,
+        workspaceId: String,
+        solutionId: String,
+        datasetId: String,
+        parameterValue: RunnerRunTemplateParameterValue,
+        parameterId: String,
+        runnerId: String
+    ): DatasetPart {
+
+      val partType =
+          when (parameterValue.varType) {
+            DATASET_PART_VARTYPE_FILE -> DatasetPartTypeEnum.File
+            DATASET_PART_VARTYPE_DB -> DatasetPartTypeEnum.Relational
+            else -> DatasetPartTypeEnum.File
+          }
+      val sourceName = parameterValue.value
+      val solutionFileResource =
+          solutionApiService.getSolutionFile(organizationId, solutionId, sourceName)
+      val datasetPartCreateRequest =
+          DatasetPartCreateRequest(
+              name = parameterId,
+              description = "Dataset Part associated to $parameterId parameter",
+              sourceName = sourceName.substringAfterLast("/"),
+              tags = mutableListOf(runnerId, parameterId),
+              type = partType)
+      return datasetApiService.createDatasetPartFromResource(
+          organizationId, workspaceId, datasetId, solutionFileResource, datasetPartCreateRequest)
     }
 
     private fun consolidateParametersVarType() {
@@ -462,24 +596,20 @@ class RunnerService(
       }
     }
 
-    fun initDatasetList(runnerCreateRequest: RunnerCreateRequest): RunnerInstance = apply {
-      val parentId = this.runner.parentId
+    fun initBaseDatasetListFromParent(
+        parentId: String,
+        newDatasetList: List<String>?
+    ): RunnerInstance = apply {
       val runnerId = this.runner.id
-      if (parentId != null) {
-        val parentRunner =
-            runnerRepository
-                .findBy(this.runner.organizationId, this.runner.workspaceId, parentId)
-                .orElseThrow {
-                  IllegalArgumentException(
-                      "Parent Id $parentId define on $runnerId does not exists")
-                }
-        val parentDatasets = parentRunner.datasets
-        // TODO manage inherited datasets.parameter here
-        if (parentDatasets.bases.isNotEmpty()) {
-          if (runnerCreateRequest.datasetList == null) {
-            this.runner.datasets.bases = parentDatasets.bases
-          }
-        }
+      val parentRunner =
+          runnerRepository
+              .findBy(this.runner.organizationId, this.runner.workspaceId, parentId)
+              .orElseThrow {
+                IllegalArgumentException("Parent Id $parentId define on $runnerId does not exists")
+              }
+      val parentBaseDatasets = parentRunner.datasets.bases
+      if (parentBaseDatasets.isNotEmpty() && newDatasetList == null) {
+        this.runner.datasets.bases = parentBaseDatasets
       }
     }
 
@@ -518,7 +648,7 @@ class RunnerService(
       val rbacSecurity = csmRbac.removeUser(this.getRbacSecurity(), userId, this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
 
-      this.removeAccessControlToDatasets(userId)
+      this.removeAccessControlToDatasetParameter(userId)
     }
 
     fun checkUserExists(userId: String) {
@@ -547,36 +677,83 @@ class RunnerService(
           security.accessControlList.map { RbacAccessControl(it.id, it.role) }.toMutableList())
     }
 
+    private fun constructParametersValuesFromSolution(
+        runTemplateParameters: List<RunTemplateParameter>
+    ): List<RunnerRunTemplateParameterValue> {
+
+      val runnerParameters = mutableListOf<RunnerRunTemplateParameterValue>()
+
+      runTemplateParameters
+          .filter {
+            it.varType != DATASET_PART_VARTYPE_FILE && it.varType != DATASET_PART_VARTYPE_DB
+          }
+          .forEach { runTemplateParameter ->
+            runnerParameters.add(
+                RunnerRunTemplateParameterValue(
+                    parameterId = runTemplateParameter.id,
+                    varType = runTemplateParameter.varType,
+                    value = runTemplateParameter.defaultValue ?: "",
+                ))
+          }
+
+      return runnerParameters
+    }
+
+    private fun constructDatasetParametersFromSolution(
+        runTemplateParameters: List<RunTemplateParameter>,
+        solutionId: String
+    ): List<DatasetPart> {
+
+      val datasetPartList = mutableListOf<DatasetPart>()
+      runTemplateParameters
+          .filter {
+            it.varType == DATASET_PART_VARTYPE_FILE || it.varType == DATASET_PART_VARTYPE_DB
+          }
+          .filter { !it.defaultValue.isNullOrBlank() }
+          .forEach { runTemplateParameter ->
+            datasetPartList.add(
+                createDatasetPartInDatasetParameter(
+                    organization!!.id,
+                    workspace!!.id,
+                    solutionId,
+                    runner.datasets.parameter,
+                    RunnerRunTemplateParameterValue(
+                        parameterId = runTemplateParameter.id,
+                        varType = runTemplateParameter.varType,
+                        value = runTemplateParameter.defaultValue!!),
+                    runTemplateParameter.id,
+                    runner.id))
+          }
+      return datasetPartList
+    }
+
     @Suppress("NestedBlockDepth")
     private fun constructParametersValuesFromParent(
-        parentId: String?,
-        solution: Solution?,
-        runTemplate: RunTemplate?,
+        runTemplateParametersIds: List<String>,
+        parentId: String,
         parent: Runner,
         runner: Runner
-    ): MutableList<RunnerRunTemplateParameterValue> {
+    ): List<RunnerRunTemplateParameterValue> {
       val parametersValuesList = mutableListOf<RunnerRunTemplateParameterValue>()
-      logger.debug("Copying parameters values from parent $parentId")
 
-      logger.debug("Getting runTemplate parameters ids")
-      val runTemplateParametersIds =
-          solution
-              ?.parameterGroups
-              ?.filter { parameterGroup ->
-                runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
-              }
-              ?.flatMap { parameterGroup -> parameterGroup.parameters }
-
-      if (!runTemplateParametersIds.isNullOrEmpty()) {
-        val parentParameters = parent.parametersValues.associate { it.parameterId to it }
-        val runnerParameters = runner.parametersValues.associate { it.parameterId to it }
-
-        // TODO:
-        //  Here parameters values are only retrieved from parent runner
-        //  At the moment default parameters values defined in solution.parameters are not handled
-        //  This behaviour is inherited from previously removed Scenario module (in which it was not
-        // handled too)
-        //  Depending on request and priority, it could be defined in next API versions
+      if (runTemplateParametersIds.isNotEmpty()) {
+        logger.debug("Copying parameters values from parent $parentId")
+        val parentParameters =
+            parent.parametersValues
+                .filter { !it.varType.isNullOrBlank() }
+                .filter {
+                  it.varType!! != DATASET_PART_VARTYPE_FILE &&
+                      it.varType!! != DATASET_PART_VARTYPE_DB
+                }
+                .associateBy { it.parameterId }
+        val runnerParameters =
+            runner.parametersValues
+                .filter { !it.varType.isNullOrBlank() }
+                .filter {
+                  it.varType!! != DATASET_PART_VARTYPE_FILE &&
+                      it.varType!! != DATASET_PART_VARTYPE_DB
+                }
+                .associateBy { it.parameterId }
 
         runTemplateParametersIds
             .filter { !runnerParameters.contains(it) }
@@ -596,7 +773,7 @@ class RunnerService(
       return parametersValuesList
     }
 
-    private fun removeAccessControlToDatasets(userId: String) {
+    private fun removeAccessControlToDatasetParameter(userId: String) {
       val organizationId = this.runner.organizationId
       val workspaceId = this.runner.workspaceId
       val datasetId = this.runner.datasets.parameter

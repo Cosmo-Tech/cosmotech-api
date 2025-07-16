@@ -420,6 +420,7 @@ entity RunnerCreateRequest {
 entity RunnerDatasets {
     * bases: List<String>
     * parameter: String
+    parameters: List<Object>
 }
 
 entity RunnerEditInfo {
