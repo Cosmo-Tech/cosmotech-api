@@ -2137,7 +2137,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   private fun constructFilePathForDatasetPart(createdDataset: Dataset, partIndex: Int): String =
-      "${createdDataset.organizationId}/${createdDataset.workspaceId}/${createdDataset.id}/${createdDataset.parts[partIndex].id}/${createdDataset.parts[partIndex].sourceName}"
+      "${createdDataset.organizationId}/${createdDataset.workspaceId}/${createdDataset.id}/${createdDataset.parts[partIndex].id}"
 
   fun makeOrganizationCreateRequest(
       name: String = "Organization Name",

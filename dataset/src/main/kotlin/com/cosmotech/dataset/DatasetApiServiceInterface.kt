@@ -7,6 +7,7 @@ import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.domain.DatasetPartCreateRequest
+import org.springframework.core.io.Resource
 
 interface DatasetApiServiceInterface : DatasetApiService {
 
@@ -72,6 +73,27 @@ interface DatasetApiServiceInterface : DatasetApiService {
       organizationId: String,
       workspaceId: String,
       datasetId: String,
+      datasetPartCreateRequest: DatasetPartCreateRequest
+  ): DatasetPart
+
+  /**
+   * Create a data part of a Dataset from a solution file
+   *
+   * @param organizationId the Organization identifier (required)
+   * @param workspaceId the Workspace identifier (required)
+   * @param datasetId the Dataset identifier (required)
+   * @param file Data file to upload (required)
+   * @param datasetPartCreateRequest (required)
+   * @return Dataset part successfully created (status code 201) or Bad request - Dataset part
+   *   cannot be created (status code 400) or Insufficient permissions on organization or workspace
+   *   or dataset (status code 403) or Dataset specified is not found (status code 404)
+   * @see DatasetApi#createDatasetPart
+   */
+  fun createDatasetPartFromResource(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      datasetId: kotlin.String,
+      file: Resource,
       datasetPartCreateRequest: DatasetPartCreateRequest
   ): DatasetPart
 }

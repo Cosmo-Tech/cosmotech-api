@@ -232,7 +232,9 @@ class DatasetServiceImpl(
                   .findByOrganizationIdAndWorkspaceId(organizationId, workspaceId, currentUser, it)
                   .toList()
             } else {
-              datasetRepository.findAll(it).toList()
+              datasetRepository
+                  .findByOrganizationIdAndWorkspaceIdNoSecurity(organizationId, workspaceId, it)
+                  .toList()
             }
           }
     } else {
@@ -244,7 +246,9 @@ class DatasetServiceImpl(
                     organizationId, workspaceId, currentUser, pageable)
                 .toList()
           } else {
-            datasetRepository.findAll(pageable).toList()
+            datasetRepository
+                .findByOrganizationIdAndWorkspaceIdNoSecurity(organizationId, workspaceId, pageable)
+                .toList()
           }
     }
     result.forEach { it.security = updateSecurityVisibility(it).security }
@@ -405,6 +409,21 @@ class DatasetServiceImpl(
     return addDatasetPartToDataset(dataset, createdDatasetPart)
   }
 
+  override fun createDatasetPartFromResource(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      file: Resource,
+      datasetPartCreateRequest: DatasetPartCreateRequest
+  ): DatasetPart {
+    val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
+    val createdDatasetPart =
+        constructDatasetPart(organizationId, workspaceId, datasetId, datasetPartCreateRequest)
+    datasetPartManagementFactory.storeData(createdDatasetPart, file)
+    datasetPartRepository.save(createdDatasetPart)
+    return addDatasetPartToDataset(dataset, createdDatasetPart)
+  }
+
   override fun constructDatasetPart(
       organizationId: String,
       workspaceId: String,
@@ -508,7 +527,10 @@ class DatasetServiceImpl(
                       organizationId, workspaceId, datasetId, currentUser, it)
                   .toList()
             } else {
-              datasetPartRepository.findAll(it).toList()
+              datasetPartRepository
+                  .findByOrganizationIdAndWorkspaceIdAndDatasetIdNoSecurity(
+                      organizationId, workspaceId, datasetId, it)
+                  .toList()
             }
           }
     } else {
@@ -520,7 +542,10 @@ class DatasetServiceImpl(
                     organizationId, workspaceId, datasetId, currentUser, pageable)
                 .toList()
           } else {
-            datasetPartRepository.findAll(pageable).toList()
+            datasetPartRepository
+                .findByOrganizationIdAndWorkspaceIdAndDatasetIdNoSecurity(
+                    organizationId, workspaceId, datasetId, pageable)
+                .toList()
           }
     }
 
@@ -658,7 +683,10 @@ class DatasetServiceImpl(
             file.originalFilename?.contains("/") == true)) {
           "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
         }
-    resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.datasets)
+    resourceScanner.scanMimeTypes(
+        file.originalFilename!!,
+        file.inputStream,
+        csmPlatformProperties.upload.authorizedMimeTypes.datasets)
   }
 
   private fun validDatasetPartCreateRequest(
@@ -675,7 +703,10 @@ class DatasetServiceImpl(
             file.originalFilename?.contains("/") == true)) {
           "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
         }
-    resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.datasets)
+    resourceScanner.scanMimeTypes(
+        file.originalFilename!!,
+        file.inputStream,
+        csmPlatformProperties.upload.authorizedMimeTypes.datasets)
   }
 
   private fun validDatasetCreateRequest(
@@ -706,7 +737,10 @@ class DatasetServiceImpl(
               file.originalFilename?.contains("/") == true)) {
             "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
           }
-      resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.datasets)
+      resourceScanner.scanMimeTypes(
+          file.originalFilename!!,
+          file.inputStream,
+          csmPlatformProperties.upload.authorizedMimeTypes.datasets)
     }
   }
 
@@ -744,7 +778,10 @@ class DatasetServiceImpl(
               file.originalFilename?.contains("/") == true)) {
             "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
           }
-      resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.datasets)
+      resourceScanner.scanMimeTypes(
+          file.originalFilename!!,
+          file.inputStream,
+          csmPlatformProperties.upload.authorizedMimeTypes.datasets)
     }
   }
 }

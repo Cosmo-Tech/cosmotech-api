@@ -921,6 +921,11 @@ components:
         parameter:
           description: The dataset id used for dataset parameters on current Runner
           type: string
+        parameters:
+          description: The dataset parts retrieved from the parameter property (programmatically fulfilled)
+          type: array
+          items:
+            type: object
       required:
         - bases
         - parameter

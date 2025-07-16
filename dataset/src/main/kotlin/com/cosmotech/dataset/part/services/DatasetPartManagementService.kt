@@ -16,6 +16,8 @@ interface DatasetPartManagementService {
 
   fun storeData(file: MultipartFile, datasetPart: DatasetPart, overwrite: Boolean)
 
+  fun storeData(file: Resource, datasetPart: DatasetPart, overwrite: Boolean)
+
   fun getData(datasetPart: DatasetPart): Resource
 
   fun delete(datasetPart: DatasetPart)

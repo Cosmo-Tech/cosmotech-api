@@ -58,7 +58,7 @@ version = scmVersion.version
 
 // Dependencies version
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
+val cosmotechApiCommonVersion = "2.1.2-JREY-split_datasetList_on_runner-SNAPSHOT"
 val redisOmSpringVersion = "0.9.7"
 val kotlinCoroutinesVersion = "1.10.2"
 val oktaSpringBootVersion = "3.0.7"
@@ -128,6 +128,7 @@ allprojects {
   configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.10") } } }
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")

@@ -52,7 +52,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_READER_USER = "test.user@cosmotech.com"
@@ -2169,6 +2168,18 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
+  fun `test getSolutionFile on non-existing file`() {
+    val fileName = "wrong-name.txt"
+
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          solutionApiService.getSolutionFile(organizationSaved.id, solutionSaved.id, fileName)
+        }
+    assertEquals(
+        "File '$fileName' does not exist in solution ${solutionSaved.id}", exception.message)
+  }
+
+  @Test
   fun `test listSolutionFiles`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
@@ -2204,11 +2215,12 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     solutionApiService.deleteSolutionFile(organizationSaved.id, solutionSaved.id, fileName)
 
     val exception =
-        assertThrows<NoSuchKeyException> {
+        assertThrows<CsmResourceNotFoundException> {
           solutionApiService.getSolutionFile(organizationSaved.id, solutionSaved.id, fileName)
         }
 
-    assertEquals("The specified key does not exist.", exception.awsErrorDetails().errorMessage())
+    assertEquals(
+        "File '$fileName' does not exist in solution ${solutionSaved.id}", exception.message)
   }
 
   @Test
