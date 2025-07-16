@@ -598,7 +598,10 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               ReflectionTestUtils.setField(workspaceApiService, "resourceScanner", resourceScanner)
-              every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
+              every {
+                resourceScanner.scanMimeTypes(
+                    any(), any(), csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+              } returns Unit
 
               if (shouldThrow) {
                 val exception =
@@ -643,7 +646,10 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               ReflectionTestUtils.setField(workspaceApiService, "resourceScanner", resourceScanner)
-              every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
+              every {
+                resourceScanner.scanMimeTypes(
+                    any(), any(), csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+              } returns Unit
 
               if (shouldThrow) {
                 val exception =

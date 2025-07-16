@@ -42,6 +42,11 @@ class DatasetPartManagementFactory(
     datasetPartManagementService.storeData(file, datasetPart, overwrite)
   }
 
+  fun storeData(datasetPart: DatasetPart, file: Resource, overwrite: Boolean = false) {
+    val datasetPartManagementService = getDatasetPartManagementService(datasetPart.type.value)
+    datasetPartManagementService.storeData(file, datasetPart, overwrite)
+  }
+
   fun removeData(datasetPart: DatasetPart) {
     val datasetPartManagementService = getDatasetPartManagementService(datasetPart.type.value)
     datasetPartManagementService.delete(datasetPart)

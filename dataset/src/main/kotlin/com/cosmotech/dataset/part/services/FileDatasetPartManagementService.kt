@@ -5,8 +5,8 @@ package com.cosmotech.dataset.part.services
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.dataset.domain.DatasetPart
 import io.awspring.cloud.s3.S3Template
+import java.io.InputStream
 import org.slf4j.LoggerFactory
-import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -30,19 +30,17 @@ class FileDatasetPartManagementService(
     val workspaceId = datasetPart.workspaceId
     val datasetId = datasetPart.datasetId
     val datasetPartId = datasetPart.id
-    val fileName = datasetPart.sourceName
-    val filePath =
-        constructFilePath(organizationId, workspaceId, datasetId, datasetPartId, fileName)
-    val fileAlreadyExists = s3Template.objectExists(csmPlatformProperties.s3.bucketName, filePath)
+    val filePath = constructFilePath(organizationId, workspaceId, datasetId, datasetPartId)
+    uploadFile(filePath, overwrite, datasetPartId, file.size, file.inputStream)
+  }
 
-    check(overwrite || !fileAlreadyExists) { "File $filePath already exists" }
-
-    if (fileAlreadyExists) {
-      logger.debug("Deleting existing file $filePath before overwriting it")
-      s3Template.deleteObject(csmPlatformProperties.s3.bucketName, filePath)
-    }
-    logger.debug("Saving file ${file.originalFilename} of size ${file.size} to $filePath")
-    s3Template.upload(csmPlatformProperties.s3.bucketName, filePath, file.inputStream)
+  override fun storeData(file: Resource, datasetPart: DatasetPart, overwrite: Boolean) {
+    val organizationId = datasetPart.organizationId
+    val workspaceId = datasetPart.workspaceId
+    val datasetId = datasetPart.datasetId
+    val datasetPartId = datasetPart.id
+    val filePath = constructFilePath(organizationId, workspaceId, datasetId, datasetPartId)
+    uploadFile(filePath, overwrite, datasetPartId, file.contentLength(), file.inputStream)
   }
 
   override fun getData(datasetPart: DatasetPart): Resource {
@@ -51,12 +49,10 @@ class FileDatasetPartManagementService(
             datasetPart.organizationId,
             datasetPart.workspaceId,
             datasetPart.datasetId,
-            datasetPart.id,
-            datasetPart.sourceName)
+            datasetPart.id)
     logger.debug(
         "Downloading file resource for dataset part #{} from path {}", datasetPart.id, filePath)
-    return InputStreamResource(
-        s3Template.download(csmPlatformProperties.s3.bucketName, filePath).inputStream)
+    return s3Template.download(csmPlatformProperties.s3.bucketName, filePath)
   }
 
   override fun delete(datasetPart: DatasetPart) {
@@ -65,8 +61,7 @@ class FileDatasetPartManagementService(
             datasetPart.organizationId,
             datasetPart.workspaceId,
             datasetPart.datasetId,
-            datasetPart.id,
-            datasetPart.sourceName)
+            datasetPart.id)
     logger.debug("Deleting file resource from workspace #{} from path {}", datasetPart.id, filePath)
 
     s3Template.deleteObject(csmPlatformProperties.s3.bucketName, filePath)
@@ -76,7 +71,25 @@ class FileDatasetPartManagementService(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      datasetPartId: String,
-      fileName: String
-  ) = "$organizationId/$workspaceId/$datasetId/$datasetPartId/$fileName"
+      datasetPartId: String
+  ) = "$organizationId/$workspaceId/$datasetId/$datasetPartId"
+
+  private fun uploadFile(
+      filePath: String,
+      overwrite: Boolean,
+      fileName: String,
+      fileSize: Long,
+      file: InputStream
+  ) {
+    val fileAlreadyExists = s3Template.objectExists(csmPlatformProperties.s3.bucketName, filePath)
+
+    check(overwrite || !fileAlreadyExists) { "File $filePath already exists" }
+
+    if (fileAlreadyExists) {
+      logger.debug("Deleting existing file $filePath before overwriting it")
+      s3Template.deleteObject(csmPlatformProperties.s3.bucketName, filePath)
+    }
+    logger.debug("Saving file $fileName of size $fileSize to $filePath")
+    s3Template.upload(csmPlatformProperties.s3.bucketName, filePath, file)
+  }
 }

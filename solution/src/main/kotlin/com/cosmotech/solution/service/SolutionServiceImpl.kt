@@ -52,7 +52,6 @@ import kotlin.collections.mutableListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.springframework.context.event.EventListener
-import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
@@ -421,7 +420,10 @@ class SolutionServiceImpl(
         file.originalFilename,
         destination)
 
-    resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.solutions)
+    resourceScanner.scanMimeTypes(
+        file.originalFilename!!,
+        file.inputStream,
+        csmPlatformProperties.upload.authorizedMimeTypes.solutions)
     val fileRelativeDestinationBuilder = StringBuilder()
     if (destination.isNullOrBlank()) {
       fileRelativeDestinationBuilder.append(file.originalFilename)
@@ -551,12 +553,16 @@ class SolutionServiceImpl(
         solution.id,
         solution.name,
         fileName)
-    return InputStreamResource(
-        s3Template
-            .download(
-                csmPlatformProperties.s3.bucketName,
-                "$organizationId/$solutionId/$SOLUTION_FILES_BASE_FOLDER/$fileName")
-            .inputStream)
+
+    val file =
+        s3Template.download(
+            csmPlatformProperties.s3.bucketName,
+            "$organizationId/$solutionId/$SOLUTION_FILES_BASE_FOLDER/$fileName")
+
+    if (file.isReadable) {
+      return file
+    }
+    throw CsmResourceNotFoundException("File '$fileName' does not exist in solution $solutionId")
   }
 
   override fun createSolutionParameter(

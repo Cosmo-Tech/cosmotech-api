@@ -12,6 +12,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.CreatedRun
 import com.cosmotech.runner.domain.LastRunInfo
@@ -29,7 +30,8 @@ import org.springframework.stereotype.Service
 @Suppress("TooManyFunctions", "UnusedPrivateMember")
 internal class RunnerApiServiceImpl(
     private val csmPlatformProperties: CsmPlatformProperties,
-    private val runnerServiceManager: RunnerServiceManager
+    private val runnerServiceManager: RunnerServiceManager,
+    private val datasetApiServiceInterface: DatasetApiServiceInterface
 ) : RunnerApiServiceInterface {
   override fun getRunnerService(): RunnerService = runnerServiceManager.getRunnerService()
 
@@ -44,20 +46,30 @@ internal class RunnerApiServiceImpl(
             .inWorkspace(workspaceId)
             .userHasPermissionOnWorkspace(PERMISSION_CREATE_CHILDREN)
 
-    val runnerInstance =
-        runnerService
-            .getNewInstance()
-            .setValueFrom(runnerCreateRequest)
-            .initParameters()
-            .initDatasetList(runnerCreateRequest)
+    val runnerInstance = runnerService.getNewInstance().setValueFrom(runnerCreateRequest)
+
+    val parentId = runnerInstance.runner.parentId
+    if (parentId.isNullOrBlank()) {
+      runnerInstance.initParametersFromSolution().apply {
+        runner.datasets.bases = runnerCreateRequest.datasetList ?: mutableListOf()
+      }
+    } else {
+      runnerInstance
+          .initParametersFromParent(parentId)
+          .initBaseDatasetListFromParent(parentId, runnerCreateRequest.datasetList)
+    }
+
     return runnerService.saveInstance(runnerInstance)
   }
 
   override fun getRunner(organizationId: String, workspaceId: String, runnerId: String): Runner {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId)
-
-    return runnerInstance.getRunnerDataObjet()
+    val runner = runnerInstance.getRunnerDataObjet()
+    val listDatasetParts =
+        datasetApiServiceInterface.listDatasetParts(
+            organizationId, workspaceId, runner.datasets.parameter, null, null)
+    return runner.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
   }
 
   override fun updateRunner(

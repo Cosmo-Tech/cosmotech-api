@@ -24,6 +24,10 @@ class RelationalDatasetPartManagementService : DatasetPartManagementService {
     TODO("Not yet implemented")
   }
 
+  override fun storeData(file: Resource, datasetPart: DatasetPart, overwrite: Boolean) {
+    TODO("Not yet implemented")
+  }
+
   override fun getData(datasetPart: DatasetPart): Resource {
     logger.debug("RelationalDatasetPartManagementService#getData")
     TODO("Not yet implemented")

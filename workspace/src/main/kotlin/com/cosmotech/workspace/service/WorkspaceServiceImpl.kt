@@ -275,7 +275,10 @@ internal class WorkspaceServiceImpl(
         file.originalFilename,
         destination)
 
-    resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+    resourceScanner.scanMimeTypes(
+        file.originalFilename!!,
+        file.inputStream,
+        csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
     val fileRelativeDestinationBuilder = StringBuilder()
     if (destination.isNullOrBlank()) {
       fileRelativeDestinationBuilder.append(file.originalFilename)
