@@ -269,10 +269,7 @@ class RunnerService(
               organizationId = organization!!.id,
               workspaceId = workspace!!.id,
               ownerName = "init",
-              datasets =
-                  RunnerDatasets(
-                      bases = mutableListOf(),
-                      parameter = "TODO: Create and set a new dataset Id here"),
+              datasets = RunnerDatasets(bases = mutableListOf(), parameter = "init"),
               parametersValues = mutableListOf(),
               lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
               validationStatus = RunnerValidationStatus.Draft,
@@ -333,6 +330,12 @@ class RunnerService(
               DatasetCreateRequest(name = "Dataset attached to ${this.runner.id}"),
               emptyArray())
 
+      val filteredParameterValues =
+          useOnlyDefinedParameterValues(
+              runnerCreateRequest.solutionId,
+              runnerCreateRequest.runTemplateId,
+              runnerCreateRequest.parametersValues)
+
       return setValueFrom(
           Runner(
               runSizing = runnerCreateRequest.runSizing,
@@ -344,7 +347,7 @@ class RunnerService(
                   RunnerDatasets(
                       bases = runnerCreateRequest.datasetList ?: mutableListOf(),
                       parameter = parameterDataset.id),
-              parametersValues = runnerCreateRequest.parametersValues ?: mutableListOf(),
+              parametersValues = filteredParameterValues,
               parentId = runnerCreateRequest.parentId,
               lastRunInfo =
                   LastRunInfo(
@@ -365,19 +368,29 @@ class RunnerService(
     }
 
     fun setValueFrom(runnerUpdateRequest: RunnerUpdateRequest): RunnerInstance {
+
+      val runTemplateId = runnerUpdateRequest.runTemplateId ?: this.runner.runTemplateId
+
+      val filteredParameterValues =
+          if (runnerUpdateRequest.parametersValues == null) {
+            this.runner.parametersValues
+          } else {
+            useOnlyDefinedParameterValues(
+                this.runner.solutionId, runTemplateId, runnerUpdateRequest.parametersValues)
+          }
+
       return setValueFrom(
           Runner(
               runSizing = runnerUpdateRequest.runSizing ?: this.runner.runSizing,
               tags = runnerUpdateRequest.tags ?: this.runner.tags,
               description = runnerUpdateRequest.description ?: this.runner.description,
               name = runnerUpdateRequest.name ?: this.runner.name,
-              runTemplateId = runnerUpdateRequest.runTemplateId ?: this.runner.runTemplateId,
+              runTemplateId = runTemplateId,
               datasets =
                   RunnerDatasets(
                       bases = runnerUpdateRequest.datasetList ?: this.runner.datasets.bases,
                       parameter = this.runner.datasets.parameter),
-              parametersValues =
-                  runnerUpdateRequest.parametersValues ?: this.runner.parametersValues,
+              parametersValues = filteredParameterValues,
               id = this.runner.id,
               organizationId = this.runner.organizationId,
               security = this.runner.security,
@@ -482,6 +495,31 @@ class RunnerService(
                 .orElseThrow { IllegalArgumentException("Parent runner not found: $it") }
                 .rootId ?: this.runner.parentId
       }
+    }
+
+    private fun useOnlyDefinedParameterValues(
+        solutionId: String,
+        runTemplateId: String,
+        parametersValues: MutableList<RunnerRunTemplateParameterValue>?
+    ): MutableList<RunnerRunTemplateParameterValue> {
+      if (parametersValues.isNullOrEmpty()) return mutableListOf()
+
+      val allowedParametersIds = mutableListOf<String>()
+      val runTemplateParameterGroups =
+          solutionApiService
+              .getRunTemplate(organization!!.id, solutionId, runTemplateId)
+              .parameterGroups
+              .toList()
+
+      runTemplateParameterGroups.forEach {
+        val solutionParameterGroup =
+            solutionApiService.getSolutionParameterGroup(organization!!.id, solutionId, it)
+        allowedParametersIds.addAll(solutionParameterGroup.parameters)
+      }
+
+      return parametersValues
+          .filter { allowedParametersIds.contains(it.parameterId) }
+          .toMutableList()
     }
 
     private fun constructDatasetParametersFromParent(

@@ -925,12 +925,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             parametersValues = mutableListOf(runTemplateParameterValue2))
 
     val assertThrows =
-        assertThrows<IllegalArgumentException> {
+        assertThrows<CsmResourceNotFoundException> {
           runnerApiService.createRunner(
               organizationSaved.id, workspaceSaved.id, runnerWithWrongRunTemplateId)
         }
     assertEquals(
-        "Run Template not found: ${runnerWithWrongRunTemplateId.runTemplateId}",
+        "Solution run template with id ${runnerWithWrongRunTemplateId.runTemplateId} does not exist",
         assertThrows.message)
   }
 
