@@ -28,12 +28,17 @@ import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.dataset.domain.DatasetPartTypeEnum
 import com.cosmotech.runner.domain.*
 import com.cosmotech.runner.domain.ResourceSizeInfo
+import com.cosmotech.runner.service.DATASET_PART_VARTYPE_FILE
 import com.cosmotech.solution.domain.RunTemplateCreateRequest
+import com.cosmotech.solution.domain.RunTemplateParameterCreateRequest
+import com.cosmotech.solution.domain.RunTemplateParameterGroupCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import com.ninjasquad.springmockk.SpykBean
 import io.mockk.every
+import org.apache.commons.io.IOUtils
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,6 +46,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
@@ -61,6 +67,12 @@ class RunnerControllerTests : ControllerTestBase() {
 
   @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
 
+  private val solutionParameterId1 = "param1"
+  private val solutionParameterDefaultValue1 = "this_is_a_default_value"
+  private val solutionParameterVarType1 = "string"
+  private val solutionParameterId2 = "param2"
+  private val solutionParameterDefaultValue2 = "my_folder_test/test.txt"
+
   @BeforeEach
   fun beforeEach() {
 
@@ -74,6 +86,25 @@ class RunnerControllerTests : ControllerTestBase() {
         RunTemplateResourceSizing(
             com.cosmotech.solution.domain.ResourceSizeInfo("cpu_requests", "memory_requests"),
             com.cosmotech.solution.domain.ResourceSizeInfo("cpu_limits", "memory_limits"))
+
+    val parametersList =
+        mutableListOf(
+            RunTemplateParameterCreateRequest(
+                id = solutionParameterId1,
+                varType = solutionParameterVarType1,
+                defaultValue = solutionParameterDefaultValue1,
+            ),
+            RunTemplateParameterCreateRequest(
+                id = solutionParameterId2,
+                varType = DATASET_PART_VARTYPE_FILE,
+                defaultValue = solutionParameterDefaultValue2,
+            ))
+
+    val parameterGroups =
+        mutableListOf(
+            RunTemplateParameterGroupCreateRequest(
+                id = parameterGroupId,
+                parameters = mutableListOf(solutionParameterId1, solutionParameterId2)))
     val runTemplates =
         mutableListOf(
             RunTemplateCreateRequest(
@@ -90,12 +121,36 @@ class RunnerControllerTests : ControllerTestBase() {
     organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
     solutionId =
         createSolutionAndReturnId(
-            mvc, organizationId, constructSolutionCreateRequest(runTemplates = runTemplates))
+            mvc,
+            organizationId,
+            constructSolutionCreateRequest(
+                parameters = parametersList,
+                parameterGroups = parameterGroups,
+                runTemplates = runTemplates))
     workspaceId =
         createWorkspaceAndReturnId(
             mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
     datasetId =
         createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+
+    val fileName = "test.txt"
+    val fileToUpload =
+        this::class.java.getResourceAsStream("/solution/$fileName")
+            ?: throw IllegalStateException(
+                "$fileName file used for organizations/{organization_id}/solutions/{solution_id}/files/POST endpoint documentation cannot be null")
+
+    val mockFile =
+        MockMultipartFile(
+            "file", fileName, MediaType.TEXT_PLAIN_VALUE, IOUtils.toByteArray(fileToUpload))
+
+    mvc.perform(
+            multipart("/organizations/$organizationId/solutions/$solutionId/files")
+                .file(mockFile)
+                .param("overwrite", "true")
+                .param("destination", "my_folder_test/test.txt")
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
   }
 
   @Test
@@ -107,9 +162,7 @@ class RunnerControllerTests : ControllerTestBase() {
     val description = "this_is_a_description"
     val tags = mutableListOf("tags1", "tags2")
     val datasetList = mutableListOf(datasetId)
-    val runnerParameterId = "parameterId1"
     val runnerParameterValue = "parameter_value"
-    val runnerParameterVarType = "this_is_a_vartype"
 
     val parentId =
         createRunnerAndReturnId(
@@ -150,9 +203,9 @@ class RunnerControllerTests : ControllerTestBase() {
             parametersValues =
                 mutableListOf(
                     RunnerRunTemplateParameterValue(
-                        parameterId = runnerParameterId,
+                        parameterId = solutionParameterId1,
                         value = runnerParameterValue,
-                        varType = runnerParameterVarType,
+                        varType = solutionParameterVarType1,
                         isInherited = false)))
 
     mvc.perform(
@@ -177,9 +230,9 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
         .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits"))
         .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits"))
-        .andExpect(jsonPath("$.parametersValues[0].parameterId").value(runnerParameterId))
+        .andExpect(jsonPath("$.parametersValues[0].parameterId").value(solutionParameterId1))
         .andExpect(jsonPath("$.parametersValues[0].value").value(runnerParameterValue))
-        .andExpect(jsonPath("$.parametersValues[0].varType").value(runnerParameterVarType))
+        .andExpect(jsonPath("$.parametersValues[0].varType").value(solutionParameterVarType1))
         .andExpect(jsonPath("$.parametersValues[0].isInherited").value(false))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(NEW_USER_ROLE))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(NEW_USER_ID))
@@ -264,16 +317,21 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solutionName").value(solutionName))
         .andExpect(jsonPath("$.runTemplateName").value(runTemplateName))
         .andExpect(jsonPath("$.tags").value(tags))
-        .andExpect(jsonPath("$.datasetList").value(datasetList))
+        .andExpect(jsonPath("$.datasets.bases").value(datasetList))
+        .andExpect(jsonPath("$.datasets.parameters[0].name").value(solutionParameterId2))
+        .andExpect(jsonPath("$.datasets.parameters[0].type").value(DatasetPartTypeEnum.File.name))
+        .andExpect(
+            jsonPath("$.datasets.parameters[0].sourceName")
+                .value(solutionParameterDefaultValue2.substringAfterLast("/")))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
         .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
         .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits"))
         .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits"))
-        .andExpect(jsonPath("$.parametersValues[0].parameterId").value(runnerParameterId))
-        .andExpect(jsonPath("$.parametersValues[0].value").value(runnerParameterValue))
-        .andExpect(jsonPath("$.parametersValues[0].varType").value(runnerParameterVarType))
-        .andExpect(jsonPath("$.parametersValues[0].isInherited").value(false))
+        .andExpect(jsonPath("$.parametersValues[0].parameterId").value(solutionParameterId1))
+        .andExpect(jsonPath("$.parametersValues[0].value").value(solutionParameterDefaultValue1))
+        .andExpect(jsonPath("$.parametersValues[0].varType").value(solutionParameterVarType1))
+        .andExpect(jsonPath("$.parametersValues[0].isInherited").value(true))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(NEW_USER_ROLE))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(NEW_USER_ID))
         .andDo(MockMvcResultHandlers.print())
@@ -291,7 +349,6 @@ class RunnerControllerTests : ControllerTestBase() {
     val description = "this_is_a_description"
     val tags = mutableListOf("tags1", "tags2")
     val datasetList = mutableListOf(datasetId)
-    val runnerParameterId = "parameterId1"
     val runnerParameterValue = "parameter_value"
     val runnerParameterVarType = "this_is_a_vartype"
 
@@ -327,7 +384,7 @@ class RunnerControllerTests : ControllerTestBase() {
             parametersValues =
                 mutableListOf(
                     RunnerRunTemplateParameterValue(
-                        parameterId = runnerParameterId,
+                        parameterId = solutionParameterId1,
                         value = runnerParameterValue,
                         varType = runnerParameterVarType,
                         isInherited = false)))
@@ -349,15 +406,15 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solutionName").value(solutionName))
         .andExpect(jsonPath("$.runTemplateName").value(runTemplateName))
         .andExpect(jsonPath("$.tags").value(tags))
-        .andExpect(jsonPath("$.datasetList").value(datasetList))
+        .andExpect(jsonPath("$.datasets.bases").value(datasetList))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
         .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
         .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits"))
         .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits"))
-        .andExpect(jsonPath("$.parametersValues[0].parameterId").value(runnerParameterId))
+        .andExpect(jsonPath("$.parametersValues[0].parameterId").value(solutionParameterId1))
         .andExpect(jsonPath("$.parametersValues[0].value").value(runnerParameterValue))
-        .andExpect(jsonPath("$.parametersValues[0].varType").value(runnerParameterVarType))
+        .andExpect(jsonPath("$.parametersValues[0].varType").value(solutionParameterVarType1))
         .andExpect(jsonPath("$.parametersValues[0].isInherited").value(false))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
