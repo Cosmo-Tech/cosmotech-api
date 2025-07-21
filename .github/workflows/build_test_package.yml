@@ -283,3 +283,8 @@ jobs:
           docker image tag com.cosmotech/cosmotech-api:${{github.sha}} \
             ghcr.io/cosmo-tech/cosmotech-api:latest
           docker image push ghcr.io/cosmo-tech/cosmotech-api:latest
+          curl --request POST \
+            --url "https://api.github.com/repos/cosmo-tech/helm-charts/actions/workflows/api_deploy.yml/dispatches" \
+            --header "Accept: application/vnd.github.v3+json" \
+            --header "Authorization: Bearer ${{ secrets.TRIGGER_HELM_CHARTS_WORKFLOW_PAT }}" \
+            --data '{ "ref": "main" }'
