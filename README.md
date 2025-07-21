@@ -22,9 +22,9 @@ It is written in [Kotlin](https://kotlinlang.org/), makes use of the [Spring Boo
 
 ### Version 2.0.0
 
-In this version, several functionnalities were added:
+In this version, several functionalities were added:
 - RBAC/ACL functionnality: the possibility to manage rights/permissions for users on Organization/Workspace/Scenario
-- TwinCache functionnality: the possibility to cache input dataset in a cache solution
+- TwinCache functionality: the possibility to cache input dataset in a cache solution
 - fine grade customization :
   - Image pull policy
   - claim used for users email and users roles
