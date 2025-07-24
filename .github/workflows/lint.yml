@@ -44,6 +44,9 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    outputs:
+      categories: ${{ steps.report-list.outputs.categories }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -63,8 +66,38 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew detekt
 
-      - name: Upload SARIF reports to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Save reports as artifacts
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          sarif_file: 'build/reports/detekt/sarif/'
+          name: sarif-reports
+          path: 'build/reports/detekt/sarif/*.sarif'
+
+      - name: Compute report list
+        id: report-list
+        if: ${{ always() }}
+        working-directory: build/reports/detekt/sarif
+        run: |
+          values=$(ls --width 0 --format commas | sed 's/cosmotech-/"/g' | sed 's/-detekt.sarif/"/g')
+          echo "categories=[$values]" >> "$GITHUB_OUTPUT"
+
+  detekt-upload-sarif:
+    runs-on: ubuntu-latest
+    needs: detekt
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJSON(needs.detekt.outputs.categories) }}
+
+    steps:
+      - name: Retrieve reports
+        uses: actions/download-artifact@v4
+        with:
+          name: sarif-reports
+          path: sarif
+
+      - name: Upload SARIF reports to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'sarif/cosmotech-${{ matrix.category }}-detekt.sarif'
+          category: ${{ matrix.category }}
