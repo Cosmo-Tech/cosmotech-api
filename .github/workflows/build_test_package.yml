@@ -210,7 +210,7 @@ jobs:
 
       - name: Retrieve branch or tag name
         id: refvar
-        run: echo "::set-output name=gitRefName::${GITHUB_REF#refs/*/}"
+        run: echo "gitRefName=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
