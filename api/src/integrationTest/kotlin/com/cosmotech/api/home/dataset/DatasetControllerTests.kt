@@ -682,6 +682,7 @@ class DatasetControllerTests : ControllerTestBase() {
         createDatasetPartAndReturnId(
             mvc, organizationId, workspaceId, datasetId, constructDatasetPartCreateRequest())
 
+    val newSourceName = "source_name_updated.csv"
     val newDescription = "this_a_new_description_for_dataset_part"
     val newTags = mutableListOf("tag_part1_updated", "tag_part2_updated")
 
@@ -690,7 +691,9 @@ class DatasetControllerTests : ControllerTestBase() {
             "datasetPartUpdateRequest",
             null,
             MediaType.APPLICATION_JSON_VALUE,
-            JSONObject(DatasetPartUpdateRequest(description = newDescription, tags = newTags))
+            JSONObject(
+                    DatasetPartUpdateRequest(
+                        sourceName = newSourceName, description = newDescription, tags = newTags))
                 .toString()
                 .byteInputStream())
     val newFile =
@@ -715,7 +718,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andExpect(jsonPath("$.id").value(datasetPartId))
         .andExpect(jsonPath("$.name").value(DATASET_PART_NAME))
-        .andExpect(jsonPath("$.sourceName").value(TEST_FILE_NAME))
+        .andExpect(jsonPath("$.sourceName").value(newSourceName))
         .andExpect(jsonPath("$.description").value(newDescription))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.createInfo.timestamp").isNumber)

@@ -568,21 +568,26 @@ class DatasetServiceImpl(
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
     val editInfo = EditInfo(timestamp = now, userId = userId)
-
+    val datasetPartUpdated = datasetPart.copy()
     dataset.parts
         .find { it.id == datasetPartId }
         ?.let {
+          it.sourceName = datasetPartUpdateRequest?.sourceName ?: it.sourceName
           it.description = datasetPartUpdateRequest?.description ?: it.description
           it.tags = datasetPartUpdateRequest?.tags ?: it.tags
           it.updateInfo = editInfo
 
-          datasetPart.description = datasetPartUpdateRequest?.description ?: datasetPart.description
-          datasetPart.tags = datasetPartUpdateRequest?.tags ?: datasetPart.tags
-          datasetPart.updateInfo = editInfo
+          datasetPartUpdated.sourceName =
+              datasetPartUpdateRequest?.sourceName ?: datasetPart.sourceName
+          datasetPartUpdated.description =
+              datasetPartUpdateRequest?.description ?: datasetPart.description
+          datasetPartUpdated.tags = datasetPartUpdateRequest?.tags ?: datasetPart.tags
+          datasetPartUpdated.updateInfo = editInfo
         }
-    datasetPartManagementFactory.storeData(datasetPart, file, true)
+    datasetPartManagementFactory.removeData(datasetPart)
+    datasetPartManagementFactory.storeData(datasetPartUpdated, file, true)
     datasetRepository.update(dataset)
-    return datasetPartRepository.update(datasetPart)
+    return datasetPartRepository.update(datasetPartUpdated)
   }
 
   override fun searchDatasetParts(

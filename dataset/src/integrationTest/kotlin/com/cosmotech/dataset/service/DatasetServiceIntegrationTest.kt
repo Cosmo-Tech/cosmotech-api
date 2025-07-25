@@ -1932,10 +1932,12 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertEquals(DatasetPartTypeEnum.File, datasetPartToReplace.type)
 
     // New Part to replace the existing one in the dataset
+    val newDatasetSourceName = "updatedResourceFile.csv"
     val newDatasetPartDescription = "New Data for customer list"
     val newDatasetPartTags = mutableListOf("part", "public", "new", "customer")
     val datasetPartUpdateRequest =
         DatasetPartUpdateRequest(
+            sourceName = newDatasetSourceName,
             description = newDatasetPartDescription,
             tags = newDatasetPartTags,
         )
@@ -1967,9 +1969,10 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     assertEquals(datasetPartToReplace.id, replacedDatasetPart.id)
     assertEquals(datasetPartToReplace.name, replacedDatasetPart.name)
+    assertEquals(replacedDatasetPart.sourceName, newDatasetSourceName)
     assertEquals(replacedDatasetPart.description, newDatasetPartDescription)
     assertEquals(replacedDatasetPart.tags, newDatasetPartTags)
-    assertEquals(CUSTOMER_SOURCE_FILE_NAME, replacedDatasetPart.sourceName)
+    assertEquals("updatedResourceFile.csv", replacedDatasetPart.sourceName)
     assertEquals(DatasetPartTypeEnum.File, replacedDatasetPart.type)
 
     val newDatasetPartFilePath = constructFilePathForDatasetPart(datasetWithReplacedPart, 0)
@@ -2029,7 +2032,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     // Create a DatasetUpdateRequest with new dataset part
     val datasetPartUpdateRequest =
         DatasetPartUpdateRequest(
-            description = "Dataset for shop", tags = mutableListOf("dataset", "public", "shop"))
+            sourceName = "updatedResourceFile.csv",
+            description = "Dataset for shop",
+            tags = mutableListOf("dataset", "public", "shop"))
 
     val wrongTypeTestFile =
         resourceLoader.getResource("classpath:/$UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME").file
@@ -2099,7 +2104,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val datasetPartUpdateRequest =
         DatasetPartUpdateRequest(
-            description = "Dataset for shop", tags = mutableListOf("dataset", "public", "shop"))
+            sourceName = "updatedResourceFile.csv",
+            description = "Dataset for shop",
+            tags = mutableListOf("dataset", "public", "shop"))
 
     val wrongTypeMockMultipartFile =
         MockMultipartFile(
