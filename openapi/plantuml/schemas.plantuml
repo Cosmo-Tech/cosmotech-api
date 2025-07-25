@@ -94,6 +94,7 @@ entity DatasetPartTypeEnum {
 }
 
 entity DatasetPartUpdateRequest {
+    sourceName: String
     description: String
     tags: List<String>
 }
