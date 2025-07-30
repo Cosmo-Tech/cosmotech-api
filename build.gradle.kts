@@ -115,6 +115,7 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
   apply(plugin = "project-report")
   apply(plugin = "org.owasp.dependencycheck")
+  apply(plugin = "org.cyclonedx.bom")
 
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
 
@@ -144,6 +145,13 @@ allprojects {
       content { includeModule("io.argoproj.workflow", "argo-client-java") }
     }
     mavenCentral()
+  }
+
+  tasks.cyclonedxBom {
+    includeConfigs = listOf("runtimeClasspath")
+    outputFormat = "xml" // by default it would also generate json
+    projectType = "application"
+    outputName = "cosmotech-api-bom"
   }
 
   tasks.withType<HtmlDependencyReportTask>().configureEach { projects = project.allprojects }
