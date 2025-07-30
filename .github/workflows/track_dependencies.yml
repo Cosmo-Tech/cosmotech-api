@@ -26,3 +26,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew cyclonedxBom
+      - name: Upload CycloneDX BOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: cosmotech-api-bom
+          path: build/reports/cosmotech-api-bom.xml
+          overwrite: true
