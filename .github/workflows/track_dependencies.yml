@@ -1,4 +1,4 @@
-name: track-dependencies
+name: Track Dependencies
 
 on:
   workflow_dispatch:
@@ -23,4 +23,6 @@ jobs:
         with:
           cache-disabled: true
       - name: Track dependencies
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew cyclonedxBom
