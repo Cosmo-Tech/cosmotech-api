@@ -46,7 +46,7 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   id("org.openapi.generator") version "7.13.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.5" apply false
-  id("org.cyclonedx.bom") version "2.1.0"
+  id("org.cyclonedx.bom") version "2.3.1"
 }
 
 scmVersion { tag { prefix.set("") } }
