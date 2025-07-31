@@ -1,0 +1,34 @@
+name: Track Dependencies
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'release/**'
+      - 'DSE/platform_dependencies_PROD-14600' # for debugging during development
+
+jobs:
+  dependency_track:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '23'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4.4.1
+        with:
+          cache-disabled: true
+      - name: Track dependencies
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew cyclonedxBom
+      - name: Upload CycloneDX BOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: cosmotech-api-bom
+          path: build/reports/cosmotech-api-bom.xml
+          overwrite: true
