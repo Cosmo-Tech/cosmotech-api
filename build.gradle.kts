@@ -46,6 +46,7 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   id("org.openapi.generator") version "7.13.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.5" apply false
+  id("org.cyclonedx.bom") version "2.3.1"
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -114,6 +115,7 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
   apply(plugin = "project-report")
   apply(plugin = "org.owasp.dependencycheck")
+  apply(plugin = "org.cyclonedx.bom")
 
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
 
@@ -143,6 +145,13 @@ allprojects {
       content { includeModule("io.argoproj.workflow", "argo-client-java") }
     }
     mavenCentral()
+  }
+
+  tasks.cyclonedxBom {
+    includeConfigs = listOf("runtimeClasspath")
+    outputFormat = "xml" // by default it would also generate json
+    projectType = "application"
+    outputName = "cosmotech-api-bom"
   }
 
   tasks.withType<HtmlDependencyReportTask>().configureEach { projects = project.allprojects }
