@@ -31,3 +31,10 @@ jobs:
           name: cosmotech-api-bom
           path: build/reports/cosmotech-api-bom.xml
           overwrite: true
+      - name: Upload cyclonedx bom to dependency
+        uses: DependencyTrack/gh-upload-sbom@v3
+        with:
+          serverhostname: ${{ secrets.DEPENDENCY_TRACK_SERVER_HOSTNAME }}
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          project: '50a4ad6a-638b-4d7e-9d8e-0310efa85ab9'
+          bomfilename: 'build/reports/cosmotech-api-bom.xml'
