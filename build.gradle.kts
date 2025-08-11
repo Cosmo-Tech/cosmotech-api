@@ -9,6 +9,7 @@ import com.google.cloud.tools.jib.gradle.JibExtension
 import io.gitlab.arturbosch.detekt.Detekt
 import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.cyclonedx.gradle.CycloneDxTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -603,6 +604,7 @@ val copySubProjectsDetektReportsTasks =
                       "${subProject.parent!!.layout.projectDirectory}/build/reports/detekt/$format")
                 }
         subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
+        subProject.tasks.withType<CycloneDxTask> { finalizedBy(copyTask) }
         copyTask
       }
     }
