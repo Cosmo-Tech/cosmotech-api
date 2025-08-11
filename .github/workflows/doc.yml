@@ -17,7 +17,7 @@ jobs:
   generate_and_push_doc_for_openapi:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # Fetch all tags since Gradle project version is built upon SCM
           fetch-depth: 0
