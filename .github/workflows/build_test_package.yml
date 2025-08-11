@@ -40,13 +40,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
             ./gradlew
+            clean
             build
-            -x generateClients
+            spotlessApply
+            detekt
             -x test
             -x integrationTest
-            -x spotlessCheck
-            -x openApiValidate
-            -x detekt
+            --no-build-cache 
+            --rerun-tasks 
+            --refresh-dependencies
 
   controller_tests:
     runs-on: ubuntu-latest
