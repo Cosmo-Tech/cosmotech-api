@@ -31,7 +31,7 @@ class RunEventServiceImpl(private val runApiService: RunApiServiceInterface) :
     hasRunningRuns.response =
         runApiService.listAllRuns(organizationId, workspaceId, runnerId).any {
           val runState =
-              runApiService.getRunStatus(organizationId, workspaceId, runnerId, it.id!!).state
+              runApiService.getRun(organizationId, workspaceId, runnerId, it.id!!).state
                   ?: RunState.Unknown
           runState == RunState.Running
         }
