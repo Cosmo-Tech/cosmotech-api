@@ -802,7 +802,6 @@ components:
           type: string
           description: the source data name (e.g. filename associated to the dataset part)
           minLength: 1
-          maxLength: 50
         description:
           type: string
         tags:
@@ -859,7 +858,6 @@ components:
           description: the source data name (e.g. filename associated to the dataset part)
           type: string
           minLength: 1
-          maxLength: 50
         description:
           type: string
         tags:
@@ -881,7 +879,6 @@ components:
           description: the source data name (e.g. filename associated to the dataset part)
           type: string
           minLength: 1
-          maxLength: 50
         description:
           type: string
         tags:
