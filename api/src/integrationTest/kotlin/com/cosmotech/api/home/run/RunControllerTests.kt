@@ -262,9 +262,6 @@ class RunControllerTests : ControllerTestBase() {
         {
           firstArg<UpdateRunnerStatus>().response = "Successful"
         } andThenAnswer
-        {
-          firstArg<UpdateRunnerStatus>().response = "Successful"
-        } andThenAnswer
         {}
 
     mvc.perform(
