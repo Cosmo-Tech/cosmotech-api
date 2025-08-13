@@ -452,27 +452,28 @@ class RunServiceImpl(
 
       workflowService.stopWorkflow(run)
 
-      if (csmPlatformProperties.internalResultServices?.enabled == true)
-          adminRunStorageTemplate.dropDB(run.id!!)
+      val defaultPageSize = csmPlatformProperties.twincache.run.defaultPageSize
+      val pageRequest = PageRequest.ofSize(defaultPageSize)
+      val runs =
+          runRepository
+              .findByRunnerId(run.organizationId!!, run.workspaceId!!, run.runnerId!!, pageRequest)
+              .toList()
 
-      runRepository.delete(run)
-
-      val runs = listRuns(run.organizationId!!, run.workspaceId!!, run.runnerId!!, null, null)
-      var lastRun: String? = null
-      var lastStart: Long = 0
-      if (runs.isNotEmpty()) {
-        runs.forEach {
-          if (it.createInfo.timestamp >= lastStart) {
-            lastStart = it.createInfo.timestamp
-            lastRun = it.id!!
+      val previousRuns = runs.filter { it.id != run.id }
+      val lastRun =
+          if (previousRuns.isEmpty()) {
+            null
+          } else {
+            previousRuns.maxBy { it.createInfo.timestamp }.id
           }
-        }
-      } else {
-        lastRun = null
-      }
       val runDeleted =
           RunDeleted(this, run.organizationId, run.workspaceId, run.runnerId, run.id!!, lastRun)
       this.eventPublisher.publishEvent(runDeleted)
+
+      if (csmPlatformProperties.internalResultServices?.enabled == true)
+          adminRunStorageTemplate.dropDB(run.id)
+
+      runRepository.delete(run)
     } catch (exception: IllegalStateException) {
       logger.debug(
           "An error occurred while deleting Run {}: {}", run.id, exception.message, exception)
