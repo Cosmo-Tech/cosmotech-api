@@ -518,6 +518,9 @@ class RunnerService(
       }
 
       return parametersValues
+          .filter {
+            it.varType != DATASET_PART_VARTYPE_DB && it.varType != DATASET_PART_VARTYPE_FILE
+          }
           .filter { allowedParametersIds.contains(it.parameterId) }
           .toMutableList()
     }
@@ -631,6 +634,10 @@ class RunnerService(
             ?.find { it.id == runnerParam.parameterId }
             ?.varType
             ?.let { runnerParam.varType = it }
+      }
+
+      this.runner.parametersValues.removeIf {
+        it.varType == DATASET_PART_VARTYPE_FILE || it.varType == DATASET_PART_VARTYPE_DB
       }
     }
 

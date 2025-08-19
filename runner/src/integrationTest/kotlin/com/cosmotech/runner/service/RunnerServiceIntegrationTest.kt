@@ -248,6 +248,49 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
+  fun `test updateRunner and check parameterValues after updating a simple solution parameter to DATASET_PART varType`() {
+
+    // 1 - create a runner with an integer parameter
+    val parameterId = "param1"
+    val creationParameterValue =
+        RunnerRunTemplateParameterValue(parameterId = parameterId, value = "7", varType = "integer")
+    val newRunner =
+        makeRunnerCreateRequest(
+            name = "NewRunner",
+            datasetList = mutableListOf(datasetSaved.id),
+            parametersValues = mutableListOf(creationParameterValue))
+    val newRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
+
+    assertNotNull(newRunnerSaved.parametersValues)
+    assertEquals(1, newRunnerSaved.parametersValues.size)
+    assertEquals(creationParameterValue, newRunnerSaved.parametersValues[0])
+
+    // 2 - the solution parameter varType is changed for a dataset varType
+
+    solutionApiService.updateSolutionParameter(
+        organizationSaved.id,
+        solutionSaved.id,
+        parameterId,
+        RunTemplateParameterUpdateRequest(varType = DATASET_PART_VARTYPE_FILE))
+
+    // 3 - try to update the runner and check that the parameters are updated too
+    val newParameterValue =
+        RunnerRunTemplateParameterValue(
+            parameterId = parameterId, value = "10", varType = "integer")
+
+    val updateRunnerSaved =
+        runnerApiService.updateRunner(
+            organizationSaved.id,
+            workspaceSaved.id,
+            newRunnerSaved.id,
+            RunnerUpdateRequest(parametersValues = mutableListOf(newParameterValue)))
+
+    assertNotNull(updateRunnerSaved.parametersValues)
+    assertTrue(updateRunnerSaved.parametersValues.isEmpty())
+  }
+
+  @Test
   fun `test CRUD operations on Runner as Platform Admin`() {
     every { getCurrentAccountIdentifier(any()) } returns "random_user_with_patform_admin_role"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
