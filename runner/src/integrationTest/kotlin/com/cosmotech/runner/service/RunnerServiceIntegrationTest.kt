@@ -26,6 +26,8 @@ import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetPart
+import com.cosmotech.dataset.domain.DatasetPartCreateRequest
+import com.cosmotech.dataset.domain.DatasetPartTypeEnum
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -42,6 +44,7 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
@@ -155,7 +158,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     solution = makeSolution(organizationSaved.id)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
+    workspace = makeWorkspaceCreateRequest("Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     dataset = makeDataset("Dataset")
@@ -999,10 +1002,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test inherited parameters values`() {
     val runnerSavedParametersValues = runnerSaved.parametersValues
     assertNotNull(runnerSavedParametersValues)
-    assertEquals(2, runnerSavedParametersValues.size)
-    assertEquals(
-        mutableListOf(runTemplateParameterValue2, runTemplateParameterValue1),
-        runnerSavedParametersValues)
+    assertEquals(1, runnerSavedParametersValues.size)
+    assertEquals(mutableListOf(runTemplateParameterValue1), runnerSavedParametersValues)
   }
 
   @Test
@@ -1334,9 +1335,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   @Test
   fun `test runner creation based on solution with dataset's type parameters`() {
 
-    // 1 - Create a solution with dataset parameter reference
-    val solutionFileDestination = "test/dataset/"
-    val solutionParameterDefaultValue = "$solutionFileDestination$CUSTOMERS_FILE_NAME"
+    // 1 - Create a solution
     val solutionCreateRequestWithDatasetParameters =
         SolutionCreateRequest(
             key = UUID.randomUUID().toString(),
@@ -1350,7 +1349,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
                         id = "my_property_name",
-                        defaultValue = solutionParameterDefaultValue,
+                        defaultValue = "ignored_default_value",
                         varType = DATASET_PART_VARTYPE_FILE)),
             runTemplates =
                 mutableListOf(
@@ -1363,21 +1362,46 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         solutionApiService.createSolution(
             organizationSaved.id, solutionCreateRequestWithDatasetParameters)
 
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
+    // 2 - Create a workspace
+    workspace = makeWorkspaceCreateRequest("Workspace")
+
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-    // 2- Upload solution files
+    // 3- Create default workspace's dataset parameter
+
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMERS_FILE_NAME").file
     val input = FileInputStream(resourceTestFile)
     val multipartFile =
         MockMultipartFile("file", CUSTOMERS_FILE_NAME, "text/csv", IOUtils.toByteArray(input))
-    val createSolutionFile =
-        solutionApiService.createSolutionFile(
-            organizationSaved.id, solutionSaved.id, multipartFile, false, solutionFileDestination)
+    val workspaceDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            DatasetCreateRequest(
+                name = "Dataset workspace",
+                description = "Dataset used for default parameter in ${workspaceSaved.id}",
+                parts =
+                    mutableListOf(
+                        DatasetPartCreateRequest(
+                            name = "my_property_name",
+                            sourceName = CUSTOMERS_FILE_NAME,
+                            type = DatasetPartTypeEnum.File))),
+            arrayOf(multipartFile))
 
-    assertEquals(solutionParameterDefaultValue.removePrefix("/"), createSolutionFile.fileName)
+    // 4- Create update workspace with default dataset
 
-    // 3 - Create a runner with the newly created solution using the runTemplate
+    workspaceApiService.updateWorkspace(
+        organizationSaved.id,
+        workspaceSaved.id,
+        WorkspaceUpdateRequest(
+            solution =
+                WorkspaceSolution(
+                    solutionId = solutionSaved.id,
+                    datasetId = workspaceDataset.id,
+                    defaultParameterValues =
+                        mutableMapOf("my_property_name" to workspaceDataset.parts[0].id))))
+
+    // 5 - Create a runner with the newly created solution using the runTemplate
     val runnerCreateRequest =
         RunnerCreateRequest(
             name = "Runner with expected dataset parameter",
@@ -1421,6 +1445,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test runner creation based on solution without dataset's type parameters`() {
 
     // 1 - Create a solution with dataset parameter reference
+    val simpleParameterId = "my_property_name"
+    val simpleParameterDefaultValue = "my_default_value"
+    val simpleParameterVarType = "string"
     val solutionCreateRequestWithDatasetParameters =
         SolutionCreateRequest(
             key = UUID.randomUUID().toString(),
@@ -1428,14 +1455,13 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             parameterGroups =
                 mutableListOf(
                     RunTemplateParameterGroupCreateRequest(
-                        id = "testParameterGroups",
-                        parameters = mutableListOf("my_property_name"))),
+                        id = "testParameterGroups", parameters = mutableListOf(simpleParameterId))),
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
-                        id = "my_property_name",
-                        defaultValue = "my_default_value",
-                        varType = "string")),
+                        id = simpleParameterId,
+                        defaultValue = simpleParameterDefaultValue,
+                        varType = simpleParameterVarType)),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
@@ -1447,7 +1473,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         solutionApiService.createSolution(
             organizationSaved.id, solutionCreateRequestWithDatasetParameters)
 
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
+    workspace = makeWorkspaceCreateRequest("Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     // 2 - Create a runner with the newly created solution using the runTemplate
@@ -1461,7 +1487,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val createdRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runnerCreateRequest)
 
-    // 3 - Check runner parameters
+    // 3 - Check DatasetPart content on runner
     val retrievedRunner =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, createdRunner.id)
     assertNotNull(retrievedRunner.datasets.parameters)
@@ -1471,15 +1497,98 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         datasetApiService.getDataset(
             organizationSaved.id, workspaceSaved.id, retrievedRunner.datasets.parameter)
 
-    assertEquals(datasetParameter.parts.size, retrievedRunner.datasets.parameters!!.size)
+    assertEquals(0, datasetParameter.parts.size)
+
+    // 4 - Check runner parameters
+
+    val runnerParametersValues = retrievedRunner.parametersValues.toList()
+    assertEquals(1, runnerParametersValues.size)
+    val runnerParameterValue = runnerParametersValues[0]
+    assertEquals(simpleParameterId, runnerParameterValue.parameterId)
+    assertEquals(simpleParameterDefaultValue, runnerParameterValue.value)
+    assertEquals(simpleParameterVarType, runnerParameterValue.varType)
+  }
+
+  @Test
+  fun `test runner creation based on solution without dataset's type parameters with overrided parameter value on workspace`() {
+
+    // 1 - Create a solution with simple solution parameter
+    val simpleParameterId = "my_property_name"
+    val simpleParameterDefaultValue = "my_default_value"
+    val simpleParameterVarType = "string"
+    val solutionCreateRequestWithDatasetParameters =
+        SolutionCreateRequest(
+            key = UUID.randomUUID().toString(),
+            name = "My solution with dataset parameter",
+            parameterGroups =
+                mutableListOf(
+                    RunTemplateParameterGroupCreateRequest(
+                        id = "testParameterGroups", parameters = mutableListOf(simpleParameterId))),
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(
+                        id = simpleParameterId,
+                        defaultValue = simpleParameterDefaultValue,
+                        varType = simpleParameterVarType)),
+            runTemplates =
+                mutableListOf(
+                    RunTemplateCreateRequest(
+                        id = "runTemplateId",
+                        parameterGroups = mutableListOf("testParameterGroups"))),
+            repository = "repository",
+            version = "1.0.0")
+    solutionSaved =
+        solutionApiService.createSolution(
+            organizationSaved.id, solutionCreateRequestWithDatasetParameters)
+
+    val simpleParameterOverridedValue = "my_override_value"
+    workspace =
+        makeWorkspaceCreateRequest(
+            name = "Workspace",
+            workspaceSolution =
+                WorkspaceSolution(
+                    solutionId = solutionSaved.id,
+                    defaultParameterValues =
+                        mutableMapOf(simpleParameterId to simpleParameterOverridedValue)))
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+    // 2 - Create a runner with the newly created solution using the runTemplate
+    val runnerCreateRequest =
+        RunnerCreateRequest(
+            name = "Runner with expected dataset parameter",
+            solutionId = solutionSaved.id,
+            runTemplateId = "runTemplateId",
+            ownerName = "Test user")
+
+    val createdRunner =
+        runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runnerCreateRequest)
+
+    // 3 - Check DatasetPart content on runner
+    val retrievedRunner =
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, createdRunner.id)
+    assertNotNull(retrievedRunner.datasets.parameters)
+    assertEquals(0, retrievedRunner.datasets.parameters!!.size)
+
+    val datasetParameter =
+        datasetApiService.getDataset(
+            organizationSaved.id, workspaceSaved.id, retrievedRunner.datasets.parameter)
+
+    assertEquals(0, datasetParameter.parts.size)
+
+    // 4 - Check runner parameters
+
+    val runnerParametersValues = retrievedRunner.parametersValues.toList()
+    assertEquals(1, runnerParametersValues.size)
+    val runnerParameterValue = runnerParametersValues[0]
+    assertEquals(simpleParameterId, runnerParameterValue.parameterId)
+    assertEquals(simpleParameterOverridedValue, runnerParameterValue.value)
+    assertEquals(simpleParameterVarType, runnerParameterValue.varType)
   }
 
   @Test
   fun `test runner creation with parent and solution with only dataset's type parameters`() {
 
     // 1 - Create a solution with dataset parameter reference
-    val solutionFileDestination = "test/dataset/"
-    val solutionParameterDefaultValue = "$solutionFileDestination$CUSTOMERS_FILE_NAME"
     val solutionCreateRequestWithDatasetParameters =
         SolutionCreateRequest(
             key = UUID.randomUUID().toString(),
@@ -1492,9 +1601,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
-                        id = "my_property_name",
-                        defaultValue = solutionParameterDefaultValue,
-                        varType = DATASET_PART_VARTYPE_FILE)),
+                        id = "my_property_name", varType = DATASET_PART_VARTYPE_FILE)),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
@@ -1506,21 +1613,46 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         solutionApiService.createSolution(
             organizationSaved.id, solutionCreateRequestWithDatasetParameters)
 
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
+    // 2 - Create a workspace
+
+    workspace = makeWorkspaceCreateRequest("Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-    // 2- Upload solution files
+    // 3- Create default workspace's dataset parameter
+
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMERS_FILE_NAME").file
     val input = FileInputStream(resourceTestFile)
     val multipartFile =
         MockMultipartFile("file", CUSTOMERS_FILE_NAME, "text/csv", IOUtils.toByteArray(input))
-    val createSolutionFile =
-        solutionApiService.createSolutionFile(
-            organizationSaved.id, solutionSaved.id, multipartFile, false, solutionFileDestination)
+    val workspaceDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            DatasetCreateRequest(
+                name = "Dataset workspace",
+                description = "Dataset used for default parameter in ${workspaceSaved.id}",
+                parts =
+                    mutableListOf(
+                        DatasetPartCreateRequest(
+                            name = "my_property_name",
+                            sourceName = CUSTOMERS_FILE_NAME,
+                            type = DatasetPartTypeEnum.File))),
+            arrayOf(multipartFile))
+    // 4- Create update workspace with default dataset
 
-    assertEquals(solutionParameterDefaultValue.removePrefix("/"), createSolutionFile.fileName)
+    workspaceApiService.updateWorkspace(
+        organizationSaved.id,
+        workspaceSaved.id,
+        WorkspaceUpdateRequest(
+            solution =
+                WorkspaceSolution(
+                    solutionId = solutionSaved.id,
+                    datasetId = workspaceDataset.id,
+                    defaultParameterValues =
+                        mutableMapOf("my_property_name" to workspaceDataset.parts[0].id))))
 
-    // 3 - Create a parent runner with the newly created solution using the runTemplate
+    // 5 - Create a parent runner with the newly created solution using the runTemplate with no
+    // value
     val parentRunnerCreateRequest =
         RunnerCreateRequest(
             name = "Parent Runner with expected dataset parameter",
@@ -1536,18 +1668,13 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val retrievedParentRunner =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, parentCreatedRunner.id)
     assertNotNull(retrievedParentRunner.datasets.parameters)
-    assertNotEquals(0, retrievedParentRunner.datasets.parameters!!.size)
+    assertEquals(1, retrievedParentRunner.datasets.parameters!!.size)
 
     val datasetParameterFromParentRunner =
         datasetApiService.getDataset(
             organizationSaved.id, workspaceSaved.id, retrievedParentRunner.datasets.parameter)
 
-    assertEquals(
-        datasetParameterFromParentRunner.parts.size,
-        retrievedParentRunner.datasets.parameters!!.size)
-    assertEquals(
-        datasetParameterFromParentRunner.parts,
-        retrievedParentRunner.datasets.parameters!! as MutableList<DatasetPart>)
+    assertEquals(1, datasetParameterFromParentRunner.parts.size)
 
     // 5 - Create a child runner
     val childRunnerCreateRequest =
@@ -1620,11 +1747,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test runner creation with parent and solution with dataset's type and normal parameters`() {
 
     // 1 - Create a solution with dataset parameter reference
-    val solutionFileDestination = "test/dataset/"
-    val solutionParameterDefaultValue = "$solutionFileDestination$CUSTOMERS_FILE_NAME"
     val parameterStringId = "my_property_name"
     val parameterStringDefaultValue = "This is my default name"
     val parameterStringVarType = "string"
+    val parameterFileId = "my_property_file"
     val solutionCreateRequestWithDatasetParameters =
         SolutionCreateRequest(
             key = UUID.randomUUID().toString(),
@@ -1633,13 +1759,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 mutableListOf(
                     RunTemplateParameterGroupCreateRequest(
                         id = "testParameterGroups",
-                        parameters = mutableListOf("my_property_file", parameterStringId))),
+                        parameters = mutableListOf(parameterFileId, parameterStringId))),
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
-                        id = "my_property_file",
-                        defaultValue = solutionParameterDefaultValue,
-                        varType = DATASET_PART_VARTYPE_FILE),
+                        id = parameterFileId, varType = DATASET_PART_VARTYPE_FILE),
                     RunTemplateParameterCreateRequest(
                         id = parameterStringId,
                         defaultValue = parameterStringDefaultValue,
@@ -1655,21 +1779,44 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         solutionApiService.createSolution(
             organizationSaved.id, solutionCreateRequestWithDatasetParameters)
 
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
+    workspace = makeWorkspaceCreateRequest("Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-    // 2- Upload solution files
+    // 2- Create default workspace's dataset parameter
+
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMERS_FILE_NAME").file
     val input = FileInputStream(resourceTestFile)
     val multipartFile =
         MockMultipartFile("file", CUSTOMERS_FILE_NAME, "text/csv", IOUtils.toByteArray(input))
-    val createSolutionFile =
-        solutionApiService.createSolutionFile(
-            organizationSaved.id, solutionSaved.id, multipartFile, false, solutionFileDestination)
+    val workspaceDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            DatasetCreateRequest(
+                name = "Dataset workspace",
+                description = "Dataset used for default parameter in ${workspaceSaved.id}",
+                parts =
+                    mutableListOf(
+                        DatasetPartCreateRequest(
+                            name = parameterFileId,
+                            sourceName = CUSTOMERS_FILE_NAME,
+                            type = DatasetPartTypeEnum.File))),
+            arrayOf(multipartFile))
 
-    assertEquals(solutionParameterDefaultValue, createSolutionFile.fileName)
+    // 3- Create update workspace with default dataset
 
-    // 3 - Create a parent runner with the newly created solution using the runTemplate
+    workspaceApiService.updateWorkspace(
+        organizationSaved.id,
+        workspaceSaved.id,
+        WorkspaceUpdateRequest(
+            solution =
+                WorkspaceSolution(
+                    solutionId = solutionSaved.id,
+                    datasetId = workspaceDataset.id,
+                    defaultParameterValues =
+                        mutableMapOf(parameterFileId to workspaceDataset.parts[0].id))))
+
+    // 4 - Create a parent runner with the newly created solution using the runTemplate
     val parentRunnerCreateRequest =
         RunnerCreateRequest(
             name = "Parent Runner with expected dataset parameter",
@@ -1681,7 +1828,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         runnerApiService.createRunner(
             organizationSaved.id, workspaceSaved.id, parentRunnerCreateRequest)
 
-    // 4 - Check parent runner parameters
+    // 5 - Check parent runner parameters
     val retrievedParentRunner =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, parentCreatedRunner.id)
     assertEquals(1, retrievedParentRunner.parametersValues.size)
@@ -1703,7 +1850,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         datasetParameterFromParentRunner.parts,
         retrievedParentRunner.datasets.parameters!! as MutableList<DatasetPart>)
 
-    // 5 - Create a child runner
+    // 6 - Create a child runner
     val childRunnerCreateRequest =
         RunnerCreateRequest(
             name = "Child Runner with expected dataset parameter",
@@ -1716,7 +1863,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         runnerApiService.createRunner(
             organizationSaved.id, workspaceSaved.id, childRunnerCreateRequest)
 
-    // 6 - Check child runner parameters
+    // 7 - Check child runner parameters
     val retrievedChildRunner =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, childCreatedRunner.id)
     assertNotNull(retrievedChildRunner.datasets.parameters)
@@ -1760,7 +1907,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         solutionApiService.createSolution(
             organizationSaved.id, solutionCreateRequestWithDatasetParameters)
 
-    workspace = makeWorkspaceCreateRequest(organizationSaved.id, solutionSaved.id, "Workspace")
+    workspace = makeWorkspaceCreateRequest("Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     // 2 - Create a parent runner with the newly created solution using the runTemplate
@@ -1872,19 +2019,15 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                           OrganizationAccessControl(id = userName, role = role))))
 
   fun makeWorkspaceCreateRequest(
-      organizationId: String = organizationSaved.id,
-      solutionId: String = solutionSaved.id,
       name: String = "name",
+      workspaceSolution: WorkspaceSolution = WorkspaceSolution(solutionId = solutionSaved.id),
       userName: String = defaultName,
       role: String = ROLE_ADMIN
   ) =
       WorkspaceCreateRequest(
           key = UUID.randomUUID().toString(),
           name = name,
-          solution =
-              WorkspaceSolution(
-                  solutionId = solutionId,
-              ),
+          solution = workspaceSolution,
           security =
               WorkspaceSecurity(
                   default = ROLE_NONE,

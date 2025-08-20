@@ -929,6 +929,17 @@ components:
           type: string
           description: The Solution Id attached to this workspace
           pattern: '^sol-\w{10,20}'
+        datasetId:
+          type: string
+          description: |
+            The Dataset Id attached to this workspace.
+            This dataset will be used to store default values for Solution parameters with file's varType.
+          pattern: '^d-\w{10,20}'
+        defaultParameterValues:
+          type: object
+          description: A map of parameterId/value to set default values for Solution parameters with simple varType (int, string, ...)
+          additionalProperties:
+            type: string
         runTemplateFilter:
           type: array
           description: The list of Solution Run Template Id to filter

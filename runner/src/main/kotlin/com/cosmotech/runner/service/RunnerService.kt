@@ -30,7 +30,6 @@ import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.domain.DatasetPartCreateRequest
-import com.cosmotech.dataset.domain.DatasetPartTypeEnum
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.CreatedRun
@@ -417,7 +416,7 @@ class RunnerService(
       this.runner.lastRunInfo = LastRunInfo(lastRunId = runId, lastRunStatus = runStatus)
     }
 
-    fun initParametersFromSolution(): RunnerInstance = apply {
+    fun initParameters(): RunnerInstance = apply {
       val solution =
           workspace?.solution?.solutionId?.let {
             solutionApiService.getSolution(organization?.id!!, it)
@@ -433,7 +432,7 @@ class RunnerService(
               .flatMap { it.parameters }
               .mapNotNull { parameterId -> solution.parameters.find { it.id == parameterId } }
 
-      val solutionParameterValues = constructParametersValuesFromSolution(runTemplateParameters)
+      val solutionParameterValues = constructParametersValues(runTemplateParameters)
 
       val mergedParameterList = mutableListOf<RunnerRunTemplateParameterValue>()
 
@@ -451,7 +450,7 @@ class RunnerService(
 
       this.runner.parametersValues = mergedParameterList
 
-      constructDatasetParametersFromSolution(runTemplateParameters, solution.id)
+      constructDatasetParameters(runTemplateParameters, this.runner.datasets.parameter)
     }
 
     fun initParametersFromParent(parentId: String): RunnerInstance = apply {
@@ -591,34 +590,39 @@ class RunnerService(
           datasetPartCreateRequest)
     }
 
-    private fun createDatasetPartInDatasetParameter(
+    private fun createPartInDatasetParameter(
         organizationId: String,
         workspaceId: String,
-        solutionId: String,
-        datasetId: String,
-        parameterValue: RunnerRunTemplateParameterValue,
+        datasetParameterId: String,
+        workspaceDatasetId: String,
         parameterId: String,
+        defaultParameterPartId: String,
         runnerId: String
     ): DatasetPart {
 
-      val partType =
-          when (parameterValue.varType) {
-            DATASET_PART_VARTYPE_FILE -> DatasetPartTypeEnum.File
-            DATASET_PART_VARTYPE_DB -> DatasetPartTypeEnum.Relational
-            else -> DatasetPartTypeEnum.File
-          }
-      val sourceName = parameterValue.value
-      val solutionFileResource =
-          solutionApiService.getSolutionFile(organizationId, solutionId, sourceName)
+      val defaultDatasetPart =
+          datasetApiService.getDatasetPart(
+              organizationId, workspaceId, workspaceDatasetId, defaultParameterPartId)
+
       val datasetPartCreateRequest =
           DatasetPartCreateRequest(
               name = parameterId,
               description = "Dataset Part associated to $parameterId parameter",
-              sourceName = sourceName.substringAfterLast("/"),
-              tags = mutableListOf(runnerId, parameterId),
-              type = partType)
+              sourceName = defaultDatasetPart.sourceName,
+              tags =
+                  mutableListOf(runnerId, parameterId, datasetParameterId, defaultParameterPartId),
+              type = defaultDatasetPart.type)
+
+      val datasetPartResource =
+          datasetApiService.downloadDatasetPart(
+              organizationId, workspaceId, workspaceDatasetId, defaultParameterPartId)
+
       return datasetApiService.createDatasetPartFromResource(
-          organizationId, workspaceId, datasetId, solutionFileResource, datasetPartCreateRequest)
+          organizationId,
+          workspaceId,
+          datasetParameterId,
+          datasetPartResource,
+          datasetPartCreateRequest)
     }
 
     private fun consolidateParametersVarType() {
@@ -722,7 +726,7 @@ class RunnerService(
           security.accessControlList.map { RbacAccessControl(it.id, it.role) }.toMutableList())
     }
 
-    private fun constructParametersValuesFromSolution(
+    private fun constructParametersValues(
         runTemplateParameters: List<RunTemplateParameter>
     ): List<RunnerRunTemplateParameterValue> {
 
@@ -733,42 +737,50 @@ class RunnerService(
             it.varType != DATASET_PART_VARTYPE_FILE && it.varType != DATASET_PART_VARTYPE_DB
           }
           .forEach { runTemplateParameter ->
+            val defaultParameterValue =
+                workspace!!.solution.defaultParameterValues?.get(runTemplateParameter.id)
+                    ?: runTemplateParameter.defaultValue
             runnerParameters.add(
                 RunnerRunTemplateParameterValue(
                     parameterId = runTemplateParameter.id,
                     varType = runTemplateParameter.varType,
-                    value = runTemplateParameter.defaultValue ?: "",
+                    value = defaultParameterValue ?: "",
                 ))
           }
 
       return runnerParameters
     }
 
-    private fun constructDatasetParametersFromSolution(
+    private fun constructDatasetParameters(
         runTemplateParameters: List<RunTemplateParameter>,
-        solutionId: String
+        datasetParameterId: String
     ): List<DatasetPart> {
 
       val datasetPartList = mutableListOf<DatasetPart>()
-      runTemplateParameters
-          .filter {
-            it.varType == DATASET_PART_VARTYPE_FILE || it.varType == DATASET_PART_VARTYPE_DB
-          }
-          .filter { !it.defaultValue.isNullOrBlank() }
-          .forEach { runTemplateParameter ->
-            datasetPartList.add(
-                createDatasetPartInDatasetParameter(
-                    organization!!.id,
-                    workspace!!.id,
-                    solutionId,
-                    runner.datasets.parameter,
-                    RunnerRunTemplateParameterValue(
-                        parameterId = runTemplateParameter.id,
-                        varType = runTemplateParameter.varType,
-                        value = runTemplateParameter.defaultValue!!),
-                    runTemplateParameter.id,
-                    runner.id))
-          }
+      val workspaceDatasetId = workspace!!.solution.datasetId
+      if (workspaceDatasetId != null) {
+        runTemplateParameters
+            .filter {
+              it.varType == DATASET_PART_VARTYPE_FILE || it.varType == DATASET_PART_VARTYPE_DB
+            }
+            .forEach { runTemplateParameter ->
+              val parameterId = runTemplateParameter.id
+              val defaultParameterPartId =
+                  workspace!!.solution.defaultParameterValues?.get(parameterId)
+              if (defaultParameterPartId != null) {
+                datasetPartList.add(
+                    createPartInDatasetParameter(
+                        organization!!.id,
+                        workspace!!.id,
+                        datasetParameterId,
+                        workspaceDatasetId,
+                        parameterId,
+                        defaultParameterPartId,
+                        runner.id))
+              }
+            }
+      }
+
       return datasetPartList
     }
 
