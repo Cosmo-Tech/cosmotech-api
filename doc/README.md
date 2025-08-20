@@ -66,26 +66,21 @@ All URIs are relative to *http://localhost:8080*
 *RunnerApi* | [**updateRunnerDefaultSecurity**](Apis/RunnerApi.md#updaterunnerdefaultsecurity) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/default | Set the Runner default security |
 | *SolutionApi* | [**createSolution**](Apis/SolutionApi.md#createsolution) | **POST** /organizations/{organization_id}/solutions | Create a new solution |
 *SolutionApi* | [**createSolutionAccessControl**](Apis/SolutionApi.md#createsolutionaccesscontrol) | **POST** /organizations/{organization_id}/solutions/{solution_id}/security/access | Create solution access control |
-*SolutionApi* | [**createSolutionFile**](Apis/SolutionApi.md#createsolutionfile) | **POST** /organizations/{organization_id}/solutions/{solution_id}/files | Upload a file for the Solution |
 *SolutionApi* | [**createSolutionParameter**](Apis/SolutionApi.md#createsolutionparameter) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameters | Create solution parameter for a solution |
 *SolutionApi* | [**createSolutionParameterGroup**](Apis/SolutionApi.md#createsolutionparametergroup) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Create a solution parameter group |
 *SolutionApi* | [**createSolutionRunTemplate**](Apis/SolutionApi.md#createsolutionruntemplate) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Create a solution run template |
 *SolutionApi* | [**deleteSolution**](Apis/SolutionApi.md#deletesolution) | **DELETE** /organizations/{organization_id}/solutions/{solution_id} | Delete a solution |
 *SolutionApi* | [**deleteSolutionAccessControl**](Apis/SolutionApi.md#deletesolutionaccesscontrol) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Delete solution access control |
-*SolutionApi* | [**deleteSolutionFile**](Apis/SolutionApi.md#deletesolutionfile) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/files/delete | Delete a solution file |
-*SolutionApi* | [**deleteSolutionFiles**](Apis/SolutionApi.md#deletesolutionfiles) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/files | Delete all Solution files |
 *SolutionApi* | [**deleteSolutionParameter**](Apis/SolutionApi.md#deletesolutionparameter) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Delete specific parameter from the solution |
 *SolutionApi* | [**deleteSolutionParameterGroup**](Apis/SolutionApi.md#deletesolutionparametergroup) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id} | Delete a parameter group from the solution |
 *SolutionApi* | [**deleteSolutionRunTemplate**](Apis/SolutionApi.md#deletesolutionruntemplate) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Delete a specific run template |
 *SolutionApi* | [**getRunTemplate**](Apis/SolutionApi.md#getruntemplate) | **GET** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Retrieve a solution run templates |
 *SolutionApi* | [**getSolution**](Apis/SolutionApi.md#getsolution) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution |
 *SolutionApi* | [**getSolutionAccessControl**](Apis/SolutionApi.md#getsolutionaccesscontrol) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Get solution access control |
-*SolutionApi* | [**getSolutionFile**](Apis/SolutionApi.md#getsolutionfile) | **GET** /organizations/{organization_id}/solutions/{solution_id}/files/download | Download the Solution File specified |
 *SolutionApi* | [**getSolutionParameter**](Apis/SolutionApi.md#getsolutionparameter) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Get the details of a solution parameter |
 *SolutionApi* | [**getSolutionParameterGroup**](Apis/SolutionApi.md#getsolutionparametergroup) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id} | Get details of a solution parameter group |
 *SolutionApi* | [**getSolutionSecurity**](Apis/SolutionApi.md#getsolutionsecurity) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security | Get solution security information |
 *SolutionApi* | [**listRunTemplates**](Apis/SolutionApi.md#listruntemplates) | **GET** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | List all solution run templates |
-*SolutionApi* | [**listSolutionFiles**](Apis/SolutionApi.md#listsolutionfiles) | **GET** /organizations/{organization_id}/solutions/{solution_id}/files | List all Solution files |
 *SolutionApi* | [**listSolutionParameterGroups**](Apis/SolutionApi.md#listsolutionparametergroups) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | List all solution parameter groups |
 *SolutionApi* | [**listSolutionParameters**](Apis/SolutionApi.md#listsolutionparameters) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameters | List all solution parameters |
 *SolutionApi* | [**listSolutionSecurityUsers**](Apis/SolutionApi.md#listsolutionsecurityusers) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/users | List solution security users |
@@ -183,7 +178,6 @@ All URIs are relative to *http://localhost:8080*
  - [SolutionAccessControl](./Models/SolutionAccessControl.md)
  - [SolutionCreateRequest](./Models/SolutionCreateRequest.md)
  - [SolutionEditInfo](./Models/SolutionEditInfo.md)
- - [SolutionFile](./Models/SolutionFile.md)
  - [SolutionRole](./Models/SolutionRole.md)
  - [SolutionSecurity](./Models/SolutionSecurity.md)
  - [SolutionUpdateRequest](./Models/SolutionUpdateRequest.md)

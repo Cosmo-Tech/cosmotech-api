@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution.service
 
-import com.amazonaws.SdkClientException
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.events.OrganizationUnregistered
@@ -11,15 +10,12 @@ import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
-import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
-import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
-import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
@@ -40,28 +36,16 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionCreateRequest
 import com.cosmotech.solution.domain.SolutionEditInfo
-import com.cosmotech.solution.domain.SolutionFile
 import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.solution.domain.SolutionUpdateRequest
 import com.cosmotech.solution.repository.SolutionRepository
-import io.awspring.cloud.s3.S3Exception
-import io.awspring.cloud.s3.S3Template
 import java.time.Instant
 import kotlin.collections.mutableListOf
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.springframework.context.event.EventListener
-import org.springframework.core.io.Resource
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
-import software.amazon.awssdk.awscore.exception.AwsServiceException
-import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
-
-private const val SOLUTION_FILES_BASE_FOLDER = "solution-files"
 
 @Service
 @Suppress("TooManyFunctions", "LargeClass")
@@ -70,10 +54,7 @@ class SolutionServiceImpl(
     private val organizationApiService: OrganizationApiServiceInterface,
     private val csmRbac: CsmRbac,
     private val csmAdmin: CsmAdmin,
-    private val containerRegistryService: ContainerRegistryService,
-    private val s3Client: S3Client,
-    private val s3Template: S3Template,
-    private val resourceScanner: ResourceScanner
+    private val containerRegistryService: ContainerRegistryService
 ) : CsmPhoenixService(), SolutionApiServiceInterface {
 
   override fun listSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
@@ -192,13 +173,6 @@ class SolutionServiceImpl(
   override fun listRunTemplates(organizationId: String, solutionId: String): List<RunTemplate> {
     val existingSolution = getVerifiedSolution(organizationId, solutionId)
     return existingSolution.runTemplates
-  }
-
-  override fun listSolutionFiles(organizationId: String, solutionId: String): List<SolutionFile> {
-    val solution = getVerifiedSolution(organizationId, solutionId)
-
-    logger.debug("List all files for solution #{} ({})", solution.id, solution.name)
-    return getSolutionFiles(organizationId, solutionId)
   }
 
   override fun createSolutionRunTemplate(
@@ -395,57 +369,6 @@ class SolutionServiceImpl(
     return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
-  override fun createSolutionFile(
-      organizationId: String,
-      solutionId: String,
-      file: MultipartFile,
-      overwrite: Boolean,
-      destination: String?
-  ): SolutionFile {
-
-    require(destination?.contains("..") != true) {
-      "Invalid destination: '$destination'. '..' is not allowed"
-    }
-    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
-    require(
-        file.originalFilename?.contains("..") != true &&
-            file.originalFilename?.contains("/") != true) {
-          "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
-        }
-
-    logger.debug(
-        "Uploading file resource to solution #{} ({}): {} => {}",
-        solution.id,
-        solution.name,
-        file.originalFilename,
-        destination)
-
-    resourceScanner.scanMimeTypes(
-        file.originalFilename!!,
-        file.inputStream,
-        csmPlatformProperties.upload.authorizedMimeTypes.solutions)
-    val fileRelativeDestinationBuilder = StringBuilder()
-    if (destination.isNullOrBlank()) {
-      fileRelativeDestinationBuilder.append(file.originalFilename)
-    } else {
-      // Using multiple consecutive '/' in the path is not supported in the storage upload
-      val destinationSanitized = destination.removePrefix("/").replace(Regex("(/)\\1+"), "/")
-      fileRelativeDestinationBuilder.append(destinationSanitized)
-      if (destinationSanitized.endsWith("/")) {
-        fileRelativeDestinationBuilder.append(file.originalFilename)
-      }
-    }
-    val objectKey =
-        "$organizationId/$solutionId/$SOLUTION_FILES_BASE_FOLDER/$fileRelativeDestinationBuilder"
-
-    require(overwrite || !s3Template.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
-      "File '$fileRelativeDestinationBuilder' already exists, not overwriting it"
-    }
-
-    s3Template.upload(csmPlatformProperties.s3.bucketName, objectKey, file.inputStream)
-    return SolutionFile(fileName = fileRelativeDestinationBuilder.toString())
-  }
-
   override fun listSolutionParameterGroups(
       organizationId: String,
       solutionId: String
@@ -539,30 +462,6 @@ class SolutionServiceImpl(
     val rbacAccessControl =
         csmRbac.getAccessControl(solution.security.toGenericSecurity(solutionId), identityId)
     return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
-  }
-
-  override fun getSolutionFile(
-      organizationId: String,
-      solutionId: String,
-      fileName: String
-  ): Resource {
-    require(".." !in fileName) { "Invalid filename: '$fileName'. '..' is not allowed" }
-    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ)
-    logger.debug(
-        "Downloading file resource from solution #{} ({}): {}",
-        solution.id,
-        solution.name,
-        fileName)
-
-    val file =
-        s3Template.download(
-            csmPlatformProperties.s3.bucketName,
-            "$organizationId/$solutionId/$SOLUTION_FILES_BASE_FOLDER/$fileName")
-
-    if (file.isReadable) {
-      return file
-    }
-    throw CsmResourceNotFoundException("File '$fileName' does not exist in solution $solutionId")
   }
 
   override fun createSolutionParameter(
@@ -680,19 +579,6 @@ class SolutionServiceImpl(
     save(solution)
   }
 
-  override fun deleteSolutionFile(organizationId: String, solutionId: String, fileName: String) {
-    require(".." !in fileName) { "Invalid filename: '$fileName'. '..' is not allowed" }
-    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
-    deleteS3SolutionObject(organizationId, solution, fileName)
-  }
-
-  override fun deleteSolutionFiles(organizationId: String, solutionId: String) {
-    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
-    CoroutineScope(SecurityCoroutineContext()).launch {
-      deleteAllS3SolutionObjects(organizationId, solution)
-    }
-  }
-
   override fun listSolutionSecurityUsers(organizationId: String, solutionId: String): List<String> {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(solution.security.toGenericSecurity(solutionId))
@@ -711,51 +597,6 @@ class SolutionServiceImpl(
         }
     csmRbac.verify(solution.security.toGenericSecurity(solutionId), requiredPermission)
     return solution
-  }
-
-  fun deleteAllS3SolutionObjects(organizationId: String, solution: Solution) {
-    logger.debug("Deleting all files for solution #{} ({})", solution.id, solution.name)
-    val solutionFiles = getSolutionFiles(organizationId, solution.id)
-    if (solutionFiles.isEmpty()) {
-      logger.debug("No file to delete for workspace #{} ({})", solution.id, solution.name)
-    } else {
-      solutionFiles.forEach { file ->
-        deleteS3SolutionObject(organizationId, solution, file.fileName)
-      }
-    }
-  }
-
-  private fun deleteS3SolutionObject(organizationId: String, solution: Solution, fileName: String) {
-    logger.debug(
-        "Deleting file resource from solution #{} ({}): {}", solution.id, solution.name, fileName)
-    try {
-      s3Template.deleteObject(
-          csmPlatformProperties.s3.bucketName,
-          "$organizationId/${solution.id}/$SOLUTION_FILES_BASE_FOLDER/$fileName")
-    } catch (e: AwsServiceException) {
-      logger.error("Something wrong happened during $fileName deletion", e)
-    } catch (e: SdkClientException) {
-      logger.error("Something wrong happened during $fileName deletion", e)
-    } catch (e: S3Exception) {
-      logger.error("Something wrong happened during $fileName deletion", e)
-    }
-  }
-
-  private fun getSolutionFiles(organizationId: String, solutionId: String): List<SolutionFile> {
-    val prefix = "${organizationId}/${solutionId}/$SOLUTION_FILES_BASE_FOLDER/"
-    val listObjectsRequest =
-        ListObjectsV2Request.builder()
-            .bucket(csmPlatformProperties.s3.bucketName)
-            .prefix(prefix)
-            .build()
-
-    return s3Client
-        .listObjectsV2Paginator(listObjectsRequest)
-        .stream()
-        .flatMap {
-          it.contents().stream().map { SolutionFile(fileName = it.key().removePrefix(prefix)) }
-        }
-        .toList()
   }
 
   fun updateSecurityVisibility(solution: Solution): Solution {

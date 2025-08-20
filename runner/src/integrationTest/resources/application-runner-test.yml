@@ -66,7 +66,7 @@ csm:
           - text/plain
           - text/x-yaml
           - application/json
-        solutions:
+        datasets:
           - application/zip
           - application/xml
           - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet

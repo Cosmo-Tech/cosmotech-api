@@ -50,7 +50,7 @@ internal class RunnerApiServiceImpl(
 
     val parentId = runnerInstance.runner.parentId
     if (parentId.isNullOrBlank()) {
-      runnerInstance.initParametersFromSolution().apply {
+      runnerInstance.initParameters().apply {
         runner.datasets.bases = runnerCreateRequest.datasetList ?: mutableListOf()
       }
     } else {

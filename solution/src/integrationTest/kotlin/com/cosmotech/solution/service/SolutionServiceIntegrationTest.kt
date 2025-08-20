@@ -28,14 +28,12 @@ import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.io.FileInputStream
 import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
@@ -47,7 +45,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.ResourceLoader
-import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
@@ -2127,128 +2124,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
         }
 
     assertEquals("One or several solution items have same id : runTemplates", exception.message)
-  }
-
-  @Test
-  fun `test createSolutionFile`() {
-
-    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
-    val input = FileInputStream(resourceTestFile)
-    val multipartFile =
-        MockMultipartFile(
-            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-
-    logger.info("should create a solution file")
-    val savedFile =
-        solutionApiService.createSolutionFile(
-            organizationSaved.id, solutionSaved.id, multipartFile, true, null)
-
-    assertEquals(fileName, savedFile.fileName)
-  }
-
-  @Test
-  fun `test getSolutionFile`() {
-    logger.info("should get a solution file")
-    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
-    val input = FileInputStream(resourceTestFile)
-    val expectedFile = FileInputStream(resourceTestFile)
-    val multipartFile =
-        MockMultipartFile(
-            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
-
-    solutionApiService.createSolutionFile(
-        organizationSaved.id, solutionSaved.id, multipartFile, true, null)
-
-    val fetchedFile =
-        solutionApiService.getSolutionFile(organizationSaved.id, solutionSaved.id, fileName)
-    val expectedText = expectedFile.bufferedReader().use { it.readText() }
-    val retrievedText = fetchedFile.inputStream.bufferedReader().use { it.readText() }
-    assertEquals(expectedText, retrievedText)
-  }
-
-  @Test
-  fun `test getSolutionFile on non-existing file`() {
-    val fileName = "wrong-name.txt"
-
-    val exception =
-        assertThrows<CsmResourceNotFoundException> {
-          solutionApiService.getSolutionFile(organizationSaved.id, solutionSaved.id, fileName)
-        }
-    assertEquals(
-        "File '$fileName' does not exist in solution ${solutionSaved.id}", exception.message)
-  }
-
-  @Test
-  fun `test listSolutionFiles`() {
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-
-    logger.info("should list all solution file")
-    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
-    val input = FileInputStream(resourceTestFile)
-    val multipartFile =
-        MockMultipartFile(
-            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
-
-    var solutionFiles = solutionApiService.listSolutionFiles(organizationSaved.id, solutionSaved.id)
-    assertTrue(solutionFiles.isEmpty())
-
-    solutionApiService.createSolutionFile(
-        organizationSaved.id, solutionSaved.id, multipartFile, true, null)
-
-    solutionFiles = solutionApiService.listSolutionFiles(organizationSaved.id, solutionSaved.id)
-    assertEquals(1, solutionFiles.size)
-  }
-
-  @Test
-  fun `test deleteSolutionFile`() {
-    logger.info("should delete a solution file")
-    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
-    val input = FileInputStream(resourceTestFile)
-    val multipartFile =
-        MockMultipartFile(
-            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
-
-    solutionApiService.createSolutionFile(
-        organizationSaved.id, solutionSaved.id, multipartFile, true, null)
-
-    solutionApiService.deleteSolutionFile(organizationSaved.id, solutionSaved.id, fileName)
-
-    val exception =
-        assertThrows<CsmResourceNotFoundException> {
-          solutionApiService.getSolutionFile(organizationSaved.id, solutionSaved.id, fileName)
-        }
-
-    assertEquals(
-        "File '$fileName' does not exist in solution ${solutionSaved.id}", exception.message)
-  }
-
-  @Test
-  fun `test deleteSolutionFiles`() {
-    logger.info("should delete all solution files")
-    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
-    val input = FileInputStream(resourceTestFile)
-    val multipartFile =
-        MockMultipartFile(
-            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
-
-    solutionApiService.createSolutionFile(
-        organizationSaved.id, solutionSaved.id, multipartFile, true, null)
-    solutionApiService.createSolutionFile(
-        organizationSaved.id, solutionSaved.id, multipartFile, true, null)
-
-    solutionApiService.deleteSolutionFiles(organizationSaved.id, solutionSaved.id)
-
-    var numberOfTry = 0
-    var solutionFilesIsEmpty: Boolean
-    do {
-      solutionFilesIsEmpty =
-          solutionApiService.listSolutionFiles(organizationSaved.id, solutionSaved.id).isEmpty()
-      numberOfTry++
-      Thread.sleep(50)
-    } while (numberOfTry < 100 && !solutionFilesIsEmpty)
-
-    assertTrue(solutionFilesIsEmpty)
   }
 
   @Test

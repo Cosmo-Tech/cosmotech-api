@@ -81,6 +81,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                     WorkspaceAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
                     WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE)))
 
+    val workspaceDatasetId = "d-12345678910"
     mvc.perform(
             post("/organizations/$organizationId/workspaces")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -90,6 +91,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                 WORKSPACE_KEY,
                                 WORKSPACE_NAME,
                                 solutionId,
+                                workspaceDatasetId,
+                                mutableMapOf(
+                                    "solution_parameter1" to "solution_parameter1_defaultValue",
+                                    "solution_parameter2" to "solution_parameter2_defaultValue"),
                                 description,
                                 version,
                                 runTemplateFilter,
@@ -113,6 +118,13 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solution.runTemplateFilter").value(runTemplateFilter))
         .andExpect(
             jsonPath("$.solution.defaultRunTemplateDataset").value(defaultRunTemplateDataset))
+        .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
+        .andExpect(
+            jsonPath("$.solution.defaultParameterValues.solution_parameter1")
+                .value("solution_parameter1_defaultValue"))
+        .andExpect(
+            jsonPath("$.solution.defaultParameterValues.solution_parameter2")
+                .value("solution_parameter2_defaultValue"))
         .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.webApp.url").value(url))
@@ -151,6 +163,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
 
+    val workspaceDatasetId = "d-12345678910"
     mvc.perform(
             patch("/organizations/$organizationId/workspaces/$workspaceId")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -160,6 +173,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                 WORKSPACE_KEY,
                                 WORKSPACE_NAME,
                                 solutionId,
+                                workspaceDatasetId,
+                                mutableMapOf(
+                                    "solution_parameter1" to "solution_parameter1_defaultValue",
+                                    "solution_parameter2" to "solution_parameter2_defaultValue"),
                                 description,
                                 runTemplateFilter,
                                 defaultRunTemplateDataset,
@@ -180,6 +197,13 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solution.runTemplateFilter").value(runTemplateFilter))
         .andExpect(
             jsonPath("$.solution.defaultRunTemplateDataset").value(defaultRunTemplateDataset))
+        .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
+        .andExpect(
+            jsonPath("$.solution.defaultParameterValues.solution_parameter1")
+                .value("solution_parameter1_defaultValue"))
+        .andExpect(
+            jsonPath("$.solution.defaultParameterValues.solution_parameter2")
+                .value("solution_parameter2_defaultValue"))
         .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.webApp.url").value(url))
@@ -230,6 +254,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[0].organizationId").value(organizationId))
         .andExpect(jsonPath("$[0].solution.solutionId").value(solutionId))
+        .andExpect(jsonPath("$[0].solution.datasetId").value(null))
+        .andExpect(jsonPath("$[0].solution.defaultParameterValues").value(null))
         .andExpect(jsonPath("$[0].security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
@@ -240,6 +266,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[1].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[1].organizationId").value(organizationId))
         .andExpect(jsonPath("$[1].solution.solutionId").value(solutionId))
+        .andExpect(jsonPath("$[1].solution.datasetId").value(null))
+        .andExpect(jsonPath("$[1].solution.defaultParameterValues").value(null))
         .andExpect(jsonPath("$[1].security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$[1].security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$[1].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
@@ -268,6 +296,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
+
+    val workspaceDatasetId = "d-12345678910"
     val workspaceSecurity =
         WorkspaceSecurity(
             default = ROLE_NONE,
@@ -283,6 +313,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 WORKSPACE_KEY,
                 WORKSPACE_NAME,
                 solutionId,
+                workspaceDatasetId,
+                mutableMapOf(
+                    "solution_parameter1" to "solution_parameter1_defaultValue",
+                    "solution_parameter2" to "solution_parameter2_defaultValue"),
                 description,
                 version,
                 runTemplateFilter,
@@ -312,6 +346,13 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.webApp.url").value(url))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.solution.solutionId").value(solutionId))
+        .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
+        .andExpect(
+            jsonPath("$.solution.defaultParameterValues.solution_parameter1")
+                .value("solution_parameter1_defaultValue"))
+        .andExpect(
+            jsonPath("$.solution.defaultParameterValues.solution_parameter2")
+                .value("solution_parameter2_defaultValue"))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))

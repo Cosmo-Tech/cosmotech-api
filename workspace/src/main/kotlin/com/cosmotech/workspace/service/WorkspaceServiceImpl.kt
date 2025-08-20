@@ -166,7 +166,6 @@ internal class WorkspaceServiceImpl(
       workspaceUpdateRequest: WorkspaceUpdateRequest
   ): Workspace {
     val existingWorkspace = this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-    // Security cannot be changed by updateWorkspace
 
     val updatedWorkspace =
         Workspace(
@@ -183,27 +182,16 @@ internal class WorkspaceServiceImpl(
             datasetCopy = workspaceUpdateRequest.datasetCopy ?: existingWorkspace.datasetCopy,
             security = existingWorkspace.security)
 
-    var hasChanged =
+    // Validate that solutionId refers to an existing one
+    if (updatedWorkspace.solution.solutionId != existingWorkspace.solution.solutionId) {
+      updatedWorkspace.solution.solutionId.let { solutionService.getSolution(organizationId, it) }
+    }
+
+    val hasChanged =
         existingWorkspace
             .compareToAndMutateIfNeeded(
-                updatedWorkspace, excludedFields = arrayOf("ownerId", "security", "solution"))
+                updatedWorkspace, excludedFields = arrayOf("ownerId", "security"))
             .isNotEmpty()
-
-    if (updatedWorkspace.solution.solutionId != existingWorkspace.solution.solutionId) {
-      // Validate solution ID
-      updatedWorkspace.solution.solutionId.let { solutionService.getSolution(organizationId, it) }
-      existingWorkspace.solution.solutionId = updatedWorkspace.solution.solutionId
-      hasChanged = true
-    } else if (updatedWorkspace.solution.runTemplateFilter !=
-        existingWorkspace.solution.runTemplateFilter ||
-        updatedWorkspace.solution.defaultRunTemplateDataset !=
-            existingWorkspace.solution.defaultRunTemplateDataset) {
-
-      existingWorkspace.solution.runTemplateFilter = updatedWorkspace.solution.runTemplateFilter
-      existingWorkspace.solution.defaultRunTemplateDataset =
-          updatedWorkspace.solution.defaultRunTemplateDataset
-      hasChanged = true
-    }
 
     return if (hasChanged) {
       save(existingWorkspace)

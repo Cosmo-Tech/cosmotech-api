@@ -515,10 +515,6 @@ entity SolutionEditInfo {
     * userId: String
 }
 
-entity SolutionFile {
-    * fileName: String
-}
-
 entity SolutionRole {
     * role: String
 }
@@ -595,6 +591,8 @@ entity WorkspaceSecurity {
 
 entity WorkspaceSolution {
     * solutionId: String
+    datasetId: String
+    defaultParameterValues: Map
     runTemplateFilter: List<String>
     defaultRunTemplateDataset: Map
 }
