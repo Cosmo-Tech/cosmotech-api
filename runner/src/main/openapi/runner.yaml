@@ -1,12 +1,8 @@
 openapi: 3.0.3
 
 info:
-  title: Cosmo Tech Runner Manager API
-  description: Cosmo Tech Runner Manager API
-  version: 1.0.0-SNAPSHOT
-
-servers:
-  - url: 'http://localhost:8080'
+  title: ""
+  version: ""
 
 security:
   - oAuth2AuthCode: []

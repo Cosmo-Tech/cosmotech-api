@@ -246,15 +246,16 @@ internal class WorkspaceServiceImpl(
       overwrite: Boolean,
       destination: String?
   ): WorkspaceFile {
-    if (destination?.contains("..") == true) {
-      throw IllegalArgumentException("Invalid destination: '$destination'. '..' is not allowed")
+    require(destination?.contains("..") != true) {
+      "Invalid destination: '$destination'. '..' is not allowed"
     }
+    require(file.originalFilename?.isBlank() != true) { "File name must not be blank" }
+    require(
+        file.originalFilename?.contains("..") != true &&
+            file.originalFilename?.startsWith("/") != true) {
+          "Invalid filename: '${file.originalFilename}'. File name should neither contains '..' nor and starts by '/'."
+        }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-    if (file.originalFilename?.contains("..") == true ||
-        file.originalFilename?.contains("/") == true) {
-      throw IllegalArgumentException(
-          "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed")
-    }
 
     logger.debug(
         "Uploading file resource to workspace #{} ({}): {} => {}",

@@ -598,9 +598,10 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               ReflectionTestUtils.setField(workspaceApiService, "resourceScanner", resourceScanner)
+              every { resource.originalFilename } returns "fakeName"
               every {
                 resourceScanner.scanMimeTypes(
-                    any(), any(), csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+                    "fakeName", any(), csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
               } returns Unit
 
               if (shouldThrow) {
@@ -646,9 +647,10 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               ReflectionTestUtils.setField(workspaceApiService, "resourceScanner", resourceScanner)
+              every { resource.originalFilename } returns "fakeName"
               every {
                 resourceScanner.scanMimeTypes(
-                    any(), any(), csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+                    "fakeName", any(), csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
               } returns Unit
 
               if (shouldThrow) {

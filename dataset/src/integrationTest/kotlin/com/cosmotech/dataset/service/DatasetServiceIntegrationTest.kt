@@ -296,7 +296,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         }
 
     assertEquals(
-        "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. '..' and '/' are not allowed",
+        "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. File name should neither contains '..' nor starts by '/'.",
         exception.message)
   }
 
@@ -1083,7 +1083,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                   type = DatasetPartTypeEnum.File))
         }
     assertEquals(
-        "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. '..' and '/' are not allowed",
+        "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. File name should neither contains '..' nor starts by '/'.",
         exception.message)
   }
 
@@ -1858,7 +1858,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               arrayOf(wrongTypeMockMultipartFile))
         }
     assertEquals(
-        "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. '..' and '/' are not allowed",
+        "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. File name should neither contains '..' nor starts by '/'.",
         exception.message)
   }
 
@@ -2126,7 +2126,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               datasetPartUpdateRequest)
         }
     assertEquals(
-        "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. '..' and '/' are not allowed",
+        "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. File name should neither contains '..' nor starts by '/'.",
         exception.message)
   }
 

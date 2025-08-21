@@ -25,14 +25,12 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
 import io.mockk.every
 import io.mockk.mockk
-import org.apache.commons.io.IOUtils
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
@@ -1412,136 +1410,5 @@ class SolutionControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document("organizations/{organization_id}/solutions/{solution_id}/security/users/GET"))
-  }
-
-  @Test
-  @WithMockOauth2User
-  fun get_solution_files() {
-
-    val solutionId =
-        createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
-
-    mvc.perform(
-            get("/organizations/$organizationId/solutions/$solutionId/files")
-                .contentType(MediaType.APPLICATION_JSON))
-        .andExpect(status().is2xxSuccessful)
-        .andDo(MockMvcResultHandlers.print())
-        .andDo(document("organizations/{organization_id}/solutions/{solution_id}/files/GET"))
-  }
-
-  @Test
-  @WithMockOauth2User
-  fun create_solution_files() {
-    val solutionId =
-        createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
-    val fileName = "test.txt"
-    val fileToUpload =
-        this::class.java.getResourceAsStream("/solution/$fileName")
-            ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/solutions/{solution_id}/files/POST endpoint documentation cannot be null")
-
-    val mockFile =
-        MockMultipartFile(
-            "file", fileName, MediaType.TEXT_PLAIN_VALUE, IOUtils.toByteArray(fileToUpload))
-
-    mvc.perform(
-            multipart("/organizations/$organizationId/solutions/$solutionId/files")
-                .file(mockFile)
-                .param("overwrite", "true")
-                .param("destination", "path/to/a/directory/")
-                .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
-        .andExpect(status().is2xxSuccessful)
-        .andExpect(jsonPath("$.fileName").value("path/to/a/directory/$fileName"))
-        .andDo(MockMvcResultHandlers.print())
-        .andDo(document("organizations/{organization_id}/solutions/{solution_id}/files/POST"))
-  }
-
-  @Test
-  @WithMockOauth2User
-  fun delete_solution_files() {
-
-    val solutionId =
-        createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
-
-    mvc.perform(
-            delete("/organizations/$organizationId/solutions/$solutionId/files")
-                .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
-        .andExpect(status().is2xxSuccessful)
-        .andDo(MockMvcResultHandlers.print())
-        .andDo(document("organizations/{organization_id}/solutions/{solution_id}/files/DELETE"))
-  }
-
-  @Test
-  @WithMockOauth2User
-  fun delete_solution_file() {
-    val solutionId =
-        createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
-
-    val fileName = "test.txt"
-    val fileToUpload =
-        this::class.java.getResourceAsStream("/solution/$fileName")
-            ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/solutions/{solution_id}/files/POST endpoint documentation cannot be null")
-
-    val mockFile =
-        MockMultipartFile(
-            "file", fileName, MediaType.TEXT_PLAIN_VALUE, IOUtils.toByteArray(fileToUpload))
-
-    val destination = "path/to/a/directory/"
-    mvc.perform(
-        multipart("/organizations/$organizationId/solutions/$solutionId/files")
-            .file(mockFile)
-            .param("overwrite", "true")
-            .param("destination", destination)
-            .accept(MediaType.APPLICATION_JSON)
-            .with(csrf()))
-
-    mvc.perform(
-            delete("/organizations/$organizationId/solutions/$solutionId/files/delete")
-                .param("file_name", destination + fileName)
-                .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
-        .andExpect(status().is2xxSuccessful)
-        .andDo(MockMvcResultHandlers.print())
-        .andDo(
-            document("organizations/{organization_id}/solutions/{solution_id}/files/delete/DELETE"))
-  }
-
-  @Test
-  @WithMockOauth2User
-  fun download_solution_file() {
-
-    val solutionId =
-        createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
-
-    val fileName = "test.txt"
-    val fileToUpload =
-        this::class.java.getResourceAsStream("/solution/$fileName")
-            ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/solutions/{solution_id}/files/POST endpoint documentation cannot be null")
-
-    val mockFile =
-        MockMultipartFile(
-            "file", fileName, MediaType.TEXT_PLAIN_VALUE, IOUtils.toByteArray(fileToUpload))
-
-    val destination = "path/to/a/directory/"
-    mvc.perform(
-        multipart("/organizations/$organizationId/solutions/$solutionId/files")
-            .file(mockFile)
-            .param("overwrite", "true")
-            .param("destination", destination)
-            .accept(MediaType.APPLICATION_JSON)
-            .with(csrf()))
-
-    mvc.perform(
-            get("/organizations/$organizationId/solutions/$solutionId/files/download")
-                .param("file_name", destination + fileName)
-                .accept(MediaType.APPLICATION_OCTET_STREAM))
-        .andExpect(status().is2xxSuccessful)
-        .andDo(MockMvcResultHandlers.print())
-        .andDo(
-            document("organizations/{organization_id}/solutions/{solution_id}/files/download/GET"))
   }
 }

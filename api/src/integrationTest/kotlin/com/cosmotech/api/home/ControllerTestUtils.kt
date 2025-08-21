@@ -31,6 +31,7 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 
@@ -376,6 +377,28 @@ class ControllerTestUtils {
     }
 
     @JvmStatic
+    fun getDatasetPartsId(
+        mvc: MockMvc,
+        organizationId: String,
+        workspaceId: String,
+        datasetId: String,
+    ): Array<String> {
+      val parts =
+          JSONObject(
+                  mvc.perform(
+                          get(
+                                  "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
+                              .accept(MediaType.APPLICATION_JSON)
+                              .with(csrf()))
+                      .andReturn()
+                      .response
+                      .contentAsString)
+              .getJSONArray("parts")
+
+      return Array(parts.length()) { i -> parts.getJSONObject(i).getString("id") }
+    }
+
+    @JvmStatic
     fun createDatasetPartAndReturnId(
         mvc: MockMvc,
         organizationId: String,
@@ -417,6 +440,7 @@ class ControllerTestUtils {
 
     fun constructDatasetCreateRequest(
         name: String = DATASET_NAME,
+        datasetPartName: String = DATASET_PART_NAME,
         security: DatasetSecurity? = null
     ): DatasetCreateRequest {
       return DatasetCreateRequest(
@@ -427,7 +451,7 @@ class ControllerTestUtils {
           parts =
               mutableListOf(
                   DatasetPartCreateRequest(
-                      name = DATASET_PART_NAME,
+                      name = datasetPartName,
                       description = DATASET_PART_DESCRIPTION,
                       tags = mutableListOf("tag_part1", "tag_part2"),
                       type = DatasetPartTypeEnum.File,

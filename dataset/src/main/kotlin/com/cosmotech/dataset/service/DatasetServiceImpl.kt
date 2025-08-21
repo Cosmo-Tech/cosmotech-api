@@ -580,7 +580,7 @@ class DatasetServiceImpl(
       datasetPartUpdateRequest: DatasetPartUpdateRequest?
   ): DatasetPart {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
-    validDatasetPartUpdateRequest(file)
+    validateFile(file)
     val datasetPart =
         datasetPartRepository
             .findBy(organizationId, workspaceId, datasetId, datasetPartId)
@@ -677,18 +677,6 @@ class DatasetServiceImpl(
     return datasetList
   }
 
-  private fun validDatasetPartUpdateRequest(file: MultipartFile) {
-    require(
-        !(file.originalFilename?.contains("..") == true ||
-            file.originalFilename?.contains("/") == true)) {
-          "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
-        }
-    resourceScanner.scanMimeTypes(
-        file.originalFilename!!,
-        file.inputStream,
-        csmPlatformProperties.upload.authorizedMimeTypes.datasets)
-  }
-
   private fun validDatasetPartCreateRequest(
       datasetPartCreateRequest: DatasetPartCreateRequest,
       file: MultipartFile
@@ -698,13 +686,19 @@ class DatasetServiceImpl(
       "You must upload a file with the same name as the Dataset Part sourceName. " +
           "You provided ${datasetPartCreateRequest.sourceName} and ${file.originalFilename} instead."
     }
-    require(
-        !(file.originalFilename?.contains("..") == true ||
-            file.originalFilename?.contains("/") == true)) {
-          "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
-        }
+
+    validateFile(file)
+  }
+
+  private fun validateFile(file: MultipartFile) {
+    val originalFilename = file.originalFilename
+
+    require(!originalFilename.isNullOrBlank()) { "File name must not be null or blank" }
+    require(!originalFilename.contains("..") && !originalFilename.startsWith("/")) {
+      "Invalid filename: '${originalFilename}'. File name should neither contains '..' nor starts by '/'."
+    }
     resourceScanner.scanMimeTypes(
-        file.originalFilename!!,
+        originalFilename,
         file.inputStream,
         csmPlatformProperties.upload.authorizedMimeTypes.datasets)
   }
@@ -731,17 +725,7 @@ class DatasetServiceImpl(
               "Multipart file names: ${files.map { it.originalFilename }}. " +
               "Dataset parts source names: ${datasetCreateRequest.parts?.map { it.sourceName }}."
         }
-    files.forEach { file ->
-      require(
-          !(file.originalFilename?.contains("..") == true ||
-              file.originalFilename?.contains("/") == true)) {
-            "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
-          }
-      resourceScanner.scanMimeTypes(
-          file.originalFilename!!,
-          file.inputStream,
-          csmPlatformProperties.upload.authorizedMimeTypes.datasets)
-    }
+    files.forEach { file -> validateFile(file) }
   }
 
   private fun validDatasetUpdateRequest(
@@ -772,17 +756,7 @@ class DatasetServiceImpl(
               "Dataset parts source names: ${datasetUpdateRequest.parts?.map { it.sourceName } ?: emptyList()}."
         }
 
-    files.forEach { file ->
-      require(
-          !(file.originalFilename?.contains("..") == true ||
-              file.originalFilename?.contains("/") == true)) {
-            "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
-          }
-      resourceScanner.scanMimeTypes(
-          file.originalFilename!!,
-          file.inputStream,
-          csmPlatformProperties.upload.authorizedMimeTypes.datasets)
-    }
+    files.forEach { file -> validateFile(file) }
   }
 }
 
