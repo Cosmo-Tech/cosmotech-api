@@ -87,6 +87,8 @@ class WorkspaceServiceImplTests {
   @Suppress("unused") @RelaxedMockK private lateinit var s3Client: S3Client
   @RelaxedMockK private lateinit var s3Template: S3Template
 
+  @RelaxedMockK private lateinit var workspaceFile: MultipartFile
+
   @Suppress("unused") @MockK private var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
   @Suppress("unused") @MockK private var idGenerator: CsmIdGenerator = mockk(relaxed = true)
 
@@ -429,8 +431,9 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC upload workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
+              every { workspaceFile.originalFilename } returns "fakeName"
               workspaceServiceImpl.createWorkspaceFile(
-                  it.organization.id, it.workspace.id, mockk(relaxed = true), true, "name")
+                  it.organization.id, it.workspace.id, workspaceFile, true, "name")
             }
           }
 

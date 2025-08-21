@@ -25,6 +25,7 @@ import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCreateRequest
+import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
@@ -102,6 +103,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)
+    rediSearchIndexer.createIndexFor(DatasetPart::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Runner::class.java)
 
@@ -2402,37 +2404,36 @@ class RunnerServiceRBACTest : CsmTestBase() {
                           role = ROLE_ADMIN)
                   val runnerSaved =
                       runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
-                  assertDoesNotThrow {
-                    assertTrue(
-                        datasetSaved.security.accessControlList
-                            .filter { datasetAccessControl ->
-                              datasetAccessControl.id == "unknown_user@test.com"
-                            }
-                            .isEmpty())
 
-                    runnerApiService.createRunnerAccessControl(
-                        organizationSaved.id,
-                        workspaceSaved.id,
-                        runnerSaved.id,
-                        RunnerAccessControl("unknown_user@test.com", role))
+                  assertTrue(
+                      datasetSaved.security.accessControlList.none { datasetAccessControl ->
+                        datasetAccessControl.id == "unknown_user@test.com"
+                      })
 
-                    val datasetWithUpgradedACL =
-                        datasetApiService.getDataset(
-                            organizationSaved.id, workspaceSaved.id, datasetSaved.id)
-                    var datasetRole = role
-                    if (role == ROLE_VALIDATOR) {
-                      datasetRole = ROLE_USER
-                    }
-                    assertEquals(
-                        true,
-                        datasetWithUpgradedACL.security.accessControlList
-                            .filter { datasetAccessControl ->
-                              datasetAccessControl.id == "unknown_user@test.com"
-                            }
-                            .any { datasetAccessControl ->
-                              datasetAccessControl.role == datasetRole
-                            })
-                  }
+                  runnerApiService.createRunnerAccessControl(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      runnerSaved.id,
+                      RunnerAccessControl("unknown_user@test.com", role))
+
+                  val baseDatasetRunner =
+                      datasetApiService.getDataset(
+                          organizationSaved.id, workspaceSaved.id, datasetSaved.id)
+
+                  assertTrue(
+                      baseDatasetRunner.security.accessControlList.none {
+                        it.id == "unknown_user@test.com"
+                      })
+
+                  val parameterDatasetRunner =
+                      datasetApiService.getDataset(
+                          organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.parameter)
+
+                  assertTrue(
+                      parameterDatasetRunner.security.accessControlList.any { access ->
+                        access.id == "unknown_user@test.com" &&
+                            access.role == (role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER)
+                      })
                 }
           }
 
@@ -2470,11 +2471,21 @@ class RunnerServiceRBACTest : CsmTestBase() {
         workspaceSaved.id,
         runnerSaved.id,
         RunnerAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
-    val datasetWithUpgradedACL =
+    val baseDatasetsRunnerAccessShouldNotHaveBeenModified =
         datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, datasetSaved.id)
     assertEquals(
+        false,
+        baseDatasetsRunnerAccessShouldNotHaveBeenModified.security.accessControlList.any {
+            datasetAccessControl ->
+          datasetAccessControl.id == TEST_USER_MAIL
+        })
+    val parameterDatasetsRunnerAccessShouldHaveBeenModified =
+        datasetApiService.getDataset(
+            organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.parameter)
+    assertEquals(
         true,
-        datasetWithUpgradedACL.security.accessControlList.any { datasetAccessControl ->
+        parameterDatasetsRunnerAccessShouldHaveBeenModified.security.accessControlList.any {
+            datasetAccessControl ->
           datasetAccessControl.id == TEST_USER_MAIL
         })
   }
@@ -3011,15 +3022,15 @@ class RunnerServiceRBACTest : CsmTestBase() {
 
   @TestFactory
   fun `test Dataset RBAC deleteRunnerAccessControl`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
+      listOf(
+              ROLE_VIEWER,
+              ROLE_EDITOR,
+              ROLE_VALIDATOR,
+              ROLE_USER,
+              ROLE_NONE,
+              ROLE_ADMIN,
           )
-          .map { (role, shouldThrow) ->
+          .map { role ->
             dynamicTest("Test Dataset RBAC deleteRunnerAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organization =
@@ -3047,26 +3058,9 @@ class RunnerServiceRBACTest : CsmTestBase() {
                   runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      runnerApiService.deleteRunnerAccessControl(
-                          organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
-                    }
-                if (role == ROLE_NONE || role == ROLE_VALIDATOR) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
-              } else {
-                assertDoesNotThrow {
-                  runnerApiService.deleteRunnerAccessControl(
-                      organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
-                }
+              assertDoesNotThrow {
+                runnerApiService.deleteRunnerAccessControl(
+                    organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
               }
             }
           }

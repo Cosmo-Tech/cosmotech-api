@@ -30,6 +30,7 @@ import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.domain.DatasetPartCreateRequest
+import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.CreatedRun
@@ -317,16 +318,29 @@ class RunnerService(
 
     fun setValueFrom(runnerCreateRequest: RunnerCreateRequest): RunnerInstance {
 
-      val security =
-          csmRbac.initSecurity(runnerCreateRequest.security.toGenericSecurity(this.runner.id))
+      val runnerSecurity = runnerCreateRequest.security
+      val security = csmRbac.initSecurity(runnerSecurity.toGenericSecurity(this.runner.id))
 
       this.setRbacSecurity(security)
+
+      val datasetSecurity =
+          DatasetSecurity(
+              security.default,
+              security.accessControlList
+                  .distinctBy { it.id }
+                  .map { access ->
+                    DatasetAccessControl(
+                        id = access.id,
+                        role = access.role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER)
+                  }
+                  .toMutableList())
 
       val parameterDataset =
           datasetApiService.createDataset(
               organization!!.id,
               workspace!!.id,
-              DatasetCreateRequest(name = "Dataset attached to ${this.runner.id}"),
+              DatasetCreateRequest(
+                  name = "Dataset attached to ${this.runner.id}", security = datasetSecurity),
               emptyArray())
 
       val filteredParameterValues =

@@ -9,6 +9,7 @@ import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.constructDatasetCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.createDatasetAndReturnId
+import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.getDatasetPartsId
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.createOrganizationAndReturnId
 import com.cosmotech.api.home.ControllerTestUtils.RunnerUtils.constructRunnerObject
@@ -19,6 +20,7 @@ import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.createSolutionAn
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.createWorkspaceAndReturnId
 import com.cosmotech.api.home.annotations.WithMockOauth2User
+import com.cosmotech.api.home.dataset.DatasetConstants.TEST_FILE_NAME
 import com.cosmotech.api.home.organization.OrganizationConstants
 import com.cosmotech.api.home.runner.RunnerConstants.NEW_USER_ID
 import com.cosmotech.api.home.runner.RunnerConstants.NEW_USER_ROLE
@@ -36,9 +38,10 @@ import com.cosmotech.solution.domain.RunTemplateCreateRequest
 import com.cosmotech.solution.domain.RunTemplateParameterCreateRequest
 import com.cosmotech.solution.domain.RunTemplateParameterGroupCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
+import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.ninjasquad.springmockk.SpykBean
 import io.mockk.every
-import org.apache.commons.io.IOUtils
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -46,7 +49,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.context.ActiveProfiles
@@ -71,7 +73,7 @@ class RunnerControllerTests : ControllerTestBase() {
   private val solutionParameterDefaultValue1 = "this_is_a_default_value"
   private val solutionParameterVarType1 = "string"
   private val solutionParameterId2 = "param2"
-  private val solutionParameterDefaultValue2 = "my_folder_test/test.txt"
+  private val solutionParameterDefaultValue2 = "ignored_value_with_this_varType"
 
   @BeforeEach
   fun beforeEach() {
@@ -130,24 +132,29 @@ class RunnerControllerTests : ControllerTestBase() {
     workspaceId =
         createWorkspaceAndReturnId(
             mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+
     datasetId =
-        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+        createDatasetAndReturnId(
+            mvc,
+            organizationId,
+            workspaceId,
+            constructDatasetCreateRequest(datasetPartName = solutionParameterId2))
 
-    val fileName = "test.txt"
-    val fileToUpload =
-        this::class.java.getResourceAsStream("/solution/$fileName")
-            ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/solutions/{solution_id}/files/POST endpoint documentation cannot be null")
-
-    val mockFile =
-        MockMultipartFile(
-            "file", fileName, MediaType.TEXT_PLAIN_VALUE, IOUtils.toByteArray(fileToUpload))
+    val datasetParts = getDatasetPartsId(mvc, organizationId, workspaceId, datasetId)
 
     mvc.perform(
-            multipart("/organizations/$organizationId/solutions/$solutionId/files")
-                .file(mockFile)
-                .param("overwrite", "true")
-                .param("destination", "my_folder_test/test.txt")
+            patch("/organizations/$organizationId/workspaces/$workspaceId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    JSONObject(
+                            WorkspaceUpdateRequest(
+                                solution =
+                                    WorkspaceSolution(
+                                        solutionId = solutionId,
+                                        datasetId = datasetId,
+                                        defaultParameterValues =
+                                            mutableMapOf(solutionParameterId2 to datasetParts[0]))))
+                        .toString())
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -320,9 +327,7 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.datasets.bases").value(datasetList))
         .andExpect(jsonPath("$.datasets.parameters[0].name").value(solutionParameterId2))
         .andExpect(jsonPath("$.datasets.parameters[0].type").value(DatasetPartTypeEnum.File.name))
-        .andExpect(
-            jsonPath("$.datasets.parameters[0].sourceName")
-                .value(solutionParameterDefaultValue2.substringAfterLast("/")))
+        .andExpect(jsonPath("$.datasets.parameters[0].sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
         .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
