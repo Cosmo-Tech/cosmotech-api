@@ -52,9 +52,9 @@ paths:
         "400":
           description: Bad request
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
-          description: Organization or workspace specified is not found
+          description: Organization, workspace specified is not found
     get:
       operationId: listDatasets
       parameters:
@@ -79,9 +79,9 @@ paths:
                 items:
                   $ref: "#/components/schemas/Dataset"
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
-          description: Organization or workspace or dataset specified is not found
+          description: Organization, workspace or dataset specified is not found
 
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/search:
     parameters:
@@ -143,9 +143,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/Dataset"
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
-          description: Organization or workspace or dataset specified is not found
+          description: Organization, workspace or dataset specified is not found
     patch:
       operationId: updateDataset
       tags:
@@ -177,9 +177,9 @@ paths:
         "400":
           description: Bad request
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
-          description: Organization or workspace or dataset specified is not found
+          description: Organization, workspace or dataset specified is not found
     delete:
       operationId: deleteDataset
       tags:
@@ -190,7 +190,7 @@ paths:
         "204":
           description: Dataset successfully deleted
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Organization or workspace or dataset specified is not found
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default:
@@ -384,7 +384,7 @@ paths:
         "400":
           description: Bad request - Dataset part cannot be created
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Dataset specified is not found
     get:
@@ -410,7 +410,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/DatasetPart"
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Dataset specified is not found
         "422":
@@ -437,7 +437,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DatasetPart'
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Dataset part specified is not found
     put:
@@ -469,7 +469,38 @@ paths:
               schema:
                 $ref: "#/components/schemas/DatasetPart"
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
+        "404":
+          description: Dataset part specified is not found
+        "422":
+          description: Targeted dataset do not support requests
+    patch:
+      operationId: updateDatasetPart
+      tags:
+        - dataset
+      summary: Update existing dataset parts information of a Dataset
+      requestBody:
+        required: true
+        description: Dataset part information to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetPartUpdateRequest'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/DatasetPartUpdateRequest'
+      responses:
+        "200":
+          description: Dataset part information successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetPart"
+            application/yaml:
+              schema:
+                $ref: "#/components/schemas/DatasetPart"
+        "403":
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Dataset part specified is not found
         "422":
@@ -484,7 +515,7 @@ paths:
         "204":
           description: Dataset part successfully deleted
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Dataset part specified is not found
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/query:
@@ -548,7 +579,7 @@ paths:
         "400":
           description: Bad request - Data cannot be retrieved from provided information
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Dataset specified is not found or you don't have access to it
         "422":
@@ -574,7 +605,7 @@ paths:
                 type: string
                 format: binary
         "403":
-          description: Insufficient permissions on organization or workspace or dataset
+          description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Dataset part specified is not found
 
