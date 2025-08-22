@@ -24,6 +24,7 @@ All URIs are relative to *http://localhost:8080*
 | [**updateDataset**](DatasetApi.md#updateDataset) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id} | Update a Dataset |
 | [**updateDatasetAccessControl**](DatasetApi.md#updateDatasetAccessControl) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset |
 | [**updateDatasetDefaultSecurity**](DatasetApi.md#updateDatasetDefaultSecurity) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default | Set the Dataset default security |
+| [**updateDatasetPart**](DatasetApi.md#updateDatasetPart) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id} | Update existing dataset parts information of a Dataset |
 
 
 <a name="createDataset"></a>
@@ -606,4 +607,33 @@ Set the Dataset default security
 
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
+
+<a name="updateDatasetPart"></a>
+# **updateDatasetPart**
+> DatasetPart updateDatasetPart(organization\_id, workspace\_id, dataset\_id, dataset\_part\_id, DatasetPartUpdateRequest)
+
+Update existing dataset parts information of a Dataset
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **dataset\_part\_id** | **String**| the Dataset part identifier | [default to null] |
+| **DatasetPartUpdateRequest** | [**DatasetPartUpdateRequest**](../Models/DatasetPartUpdateRequest.md)| Dataset part information to update | |
+
+### Return type
+
+[**DatasetPart**](../Models/DatasetPart.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json, application/yaml
 

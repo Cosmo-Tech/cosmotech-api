@@ -571,6 +571,45 @@ class DatasetServiceImpl(
     return emptyList()
   }
 
+  override fun updateDatasetPart(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+      datasetPartId: String,
+      datasetPartUpdateRequest: DatasetPartUpdateRequest
+  ): DatasetPart {
+    val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
+    val datasetPart =
+        datasetPartRepository
+            .findBy(organizationId, workspaceId, datasetId, datasetPartId)
+            .orElseThrow {
+              CsmResourceNotFoundException(
+                  "Dataset Part $datasetPartId not found in organization $organizationId, " +
+                      "workspace $workspaceId and dataset $datasetId")
+            }
+    val now = Instant.now().toEpochMilli()
+    val userId = getCurrentAccountIdentifier(csmPlatformProperties)
+    val editInfo = EditInfo(timestamp = now, userId = userId)
+
+    dataset.parts
+        .find { it.id == datasetPartId }
+        ?.let {
+          it.sourceName = datasetPartUpdateRequest.sourceName ?: it.sourceName
+          it.description = datasetPartUpdateRequest.description ?: it.description
+          it.tags = datasetPartUpdateRequest.tags ?: it.tags
+          it.updateInfo = editInfo
+        }
+
+    val datasetPartUpdater = datasetPart.copy()
+    datasetPartUpdater.sourceName = datasetPartUpdateRequest.sourceName ?: datasetPart.sourceName
+    datasetPartUpdater.description = datasetPartUpdateRequest.description ?: datasetPart.description
+    datasetPartUpdater.tags = datasetPartUpdateRequest.tags ?: datasetPart.tags
+    datasetPartUpdater.updateInfo = editInfo
+
+    datasetRepository.update(dataset)
+    return datasetPartRepository.update(datasetPartUpdater)
+  }
+
   override fun replaceDatasetPart(
       organizationId: String,
       workspaceId: String,

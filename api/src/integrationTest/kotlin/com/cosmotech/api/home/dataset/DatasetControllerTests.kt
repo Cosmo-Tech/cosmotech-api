@@ -738,6 +738,56 @@ class DatasetControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
+  fun update_dataset_part() {
+
+    val datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+
+    val datasetPartId =
+        createDatasetPartAndReturnId(
+            mvc, organizationId, workspaceId, datasetId, constructDatasetPartCreateRequest())
+
+    val newSourceName = "source_name_updated.csv"
+    val newDescription = "this_a_new_description_for_dataset_part"
+    val newTags = mutableListOf("tag_part1_updated", "tag_part2_updated")
+
+    mvc.perform(
+            patch(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId")
+                .content(
+                    JSONObject(
+                            DatasetPartUpdateRequest(
+                                sourceName = newSourceName,
+                                description = newDescription,
+                                tags = newTags))
+                        .toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf()))
+        .andExpect(status().is2xxSuccessful)
+        .andDo(MockMvcResultHandlers.print())
+        .andExpect(jsonPath("$.id").value(datasetPartId))
+        .andExpect(jsonPath("$.name").value(DATASET_PART_NAME))
+        .andExpect(jsonPath("$.sourceName").value(newSourceName))
+        .andExpect(jsonPath("$.description").value(newDescription))
+        .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.createInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.updateInfo.timestamp").isNumber)
+        .andExpect(jsonPath("$.updateInfo.timestamp").value(greaterThan(0.toLong())))
+        .andExpect(jsonPath("$.tags").value(newTags))
+        .andExpect(jsonPath("$.type").value(DatasetPartTypeEnum.File.value))
+        .andExpect(jsonPath("$.organizationId").value(organizationId))
+        .andExpect(jsonPath("$.workspaceId").value(workspaceId))
+        .andExpect(jsonPath("$.datasetId").value(datasetId))
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/PATCH"))
+  }
+
+  @Test
+  @WithMockOauth2User
   fun update_dataset() {
     val datasetId =
         createDatasetAndReturnId(
