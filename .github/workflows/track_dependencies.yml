@@ -1,0 +1,39 @@
+name: Track Dependencies
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'release/v4-onprem'
+
+jobs:
+  dependency_track:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '23'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4.4.1
+        with:
+          cache-disabled: true
+      - name: Track dependencies
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew cyclonedxBom
+      - name: Upload CycloneDX BOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: cosmotech-api-bom
+          path: build/reports/cosmotech-api-bom.xml
+          overwrite: true
+      - name: Upload cyclonedx bom to dependency
+        uses: DependencyTrack/gh-upload-sbom@v3
+        with:
+          serverhostname: ${{ secrets.DEPENDENCY_TRACK_SERVER_HOSTNAME }}
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          project: 'c3a3a2fa-86a9-4961-be0d-4dbb5cea7176'
+          bomfilename: 'build/reports/cosmotech-api-bom.xml'
