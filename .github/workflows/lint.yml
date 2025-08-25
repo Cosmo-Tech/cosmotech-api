@@ -44,6 +44,9 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    outputs:
+      categories: ${{ steps.report-list.outputs.categories }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -63,50 +66,38 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew detekt
 
+      - name: Save reports as artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: sarif-reports
+          path: 'build/reports/detekt/sarif/*.sarif'
+
+      - name: Compute report list
+        id: report-list
+        if: ${{ always() }}
+        working-directory: build/reports/detekt/sarif
+        run: |
+          values=$(ls --width 0 --format commas | sed 's/cosmotech-/"/g' | sed 's/-detekt.sarif/"/g')
+          echo "categories=[$values]" >> "$GITHUB_OUTPUT"
+
+  detekt-upload-sarif:
+    runs-on: ubuntu-latest
+    needs: detekt
+    strategy:
+      fail-fast: false
+      matrix:
+        category: ${{ fromJSON(needs.detekt.outputs.categories) }}
+
+    steps:
+      - name: Retrieve reports
+        uses: actions/download-artifact@v4
+        with:
+          name: sarif-reports
+          path: sarif
+
       - name: Upload SARIF reports to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
-        if: ${{ always() }}
         with:
-          sarif_file: 'build/reports/detekt/sarif/'
-
-  helm-lint:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: v3.6.0
-
-      - name: Lint Helm Chart (api) with helm
-        run: helm lint api/kubernetes/helm-chart
-
-  kube-linter:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        chart:
-          - helm-chart
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: mkdir -p api/kubernetes/.sarif
-
-      - name: Scan '${{ matrix.chart }}' Chart with kube-linter
-        uses: stackrox/kube-linter-action@v1.0.5
-        with:
-          directory: api/kubernetes/${{ matrix.chart }}
-          config: api/kubernetes/.kube-linter.yaml
-          format: sarif
-          output-file: api/kubernetes/.sarif/${{ matrix.chart }}.sarif
-          version: 0.2.5
-
-      - name: Upload SARIF file
-        if: ${{ always() }}
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: api/kubernetes/.sarif/${{ matrix.chart }}.sarif
-
+          sarif_file: 'sarif/cosmotech-${{ matrix.category }}-detekt.sarif'
+          category: ${{ matrix.category }}
