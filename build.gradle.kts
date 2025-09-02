@@ -45,7 +45,7 @@ plugins {
   id("com.github.jk1.dependency-license-report") version "2.9"
   id("org.jetbrains.kotlinx.kover") version "0.9.1"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
-  id("org.openapi.generator") version "7.13.0" apply false
+  id("org.openapi.generator") version "7.15.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.5" apply false
   id("org.cyclonedx.bom") version "2.3.1"
 }
