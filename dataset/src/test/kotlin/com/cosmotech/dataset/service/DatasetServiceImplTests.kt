@@ -31,7 +31,6 @@ import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import java.io.File
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -42,11 +41,11 @@ import org.apache.commons.compress.archivers.ArchiveException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.core.io.ByteArrayResource
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import org.springframework.web.multipart.MultipartFile
 import redis.clients.jedis.UnifiedJedis
 import redis.clients.jedis.graph.ResultSet
 
@@ -237,11 +236,11 @@ class DatasetServiceImplTests {
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
 
-    val fileName = this::class.java.getResource("/Users.csv")?.file
-    val file = File(fileName!!)
-    val resource = ByteArrayResource(file.readBytes())
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
+
     assertThrows<ArchiveException> {
-      datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
+      datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, file)
     }
   }
 
@@ -256,12 +255,13 @@ class DatasetServiceImplTests {
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
 
-    val fileName = this::class.java.getResource("/Users.7z")?.file
-    val file = File(fileName!!)
-    val resource = ByteArrayResource(file.readBytes())
+    val file = mockk<MultipartFile>(relaxed = true)
+    val inputStream = this::class.java.getResourceAsStream("/Users.7z")
+    every { file.originalFilename } returns "Users.7z"
+    every { file.inputStream } returns inputStream!!
 
     assertThrows<IllegalArgumentException> {
-      datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
+      datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, file)
     }
   }
 
@@ -271,13 +271,13 @@ class DatasetServiceImplTests {
         baseDataset()
             .copy(
                 sourceType = DatasetSourceType.ADT, source = SourceInfo("http://storage.location"))
-    val fileName = this::class.java.getResource("/Graph.zip")?.file
-    val file = File(fileName!!)
-    val resource = ByteArrayResource(file.readBytes())
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
+
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
-      datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
+      datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, file)
     }
   }
 
@@ -287,13 +287,13 @@ class DatasetServiceImplTests {
         baseDataset()
             .copy(
                 sourceType = DatasetSourceType.File, source = SourceInfo("http://storage.location"))
-    val fileName = this::class.java.getResource("/Graph.zip")?.file
-    val file = File(fileName!!)
-    val resource = ByteArrayResource(file.readBytes())
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
+
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
-      datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
+      datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, file)
     }
   }
 
@@ -305,15 +305,17 @@ class DatasetServiceImplTests {
                 ingestionStatus = IngestionStatusEnum.NONE,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
-    val fileName = this::class.java.getResource("/Graph.zip")?.file
-    val file = File(fileName!!)
-    val resource = ByteArrayResource(file.readBytes())
+    val file = mockk<MultipartFile>(relaxed = true)
+    val inputStream = this::class.java.getResourceAsStream("/Graph.zip")
+    every { file.originalFilename } returns "Graph.zip"
+    every { file.inputStream } returns inputStream!!
+
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { unifiedJedis.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
 
-    val fileUploadValidation = datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
+    val fileUploadValidation = datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, file)
 
     assertEquals(
         FileUploadValidation(
