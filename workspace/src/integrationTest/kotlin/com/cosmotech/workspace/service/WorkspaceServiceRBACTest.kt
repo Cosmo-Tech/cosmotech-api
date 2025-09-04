@@ -34,7 +34,7 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.redis.om.spring.RediSearchIndexer
+import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
@@ -54,11 +54,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.core.io.Resource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import org.springframework.web.multipart.MultipartFile
 
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
@@ -71,7 +71,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
-  @RelaxedMockK private lateinit var resource: Resource
+  @RelaxedMockK private lateinit var resource: MultipartFile
 
   @RelaxedMockK private lateinit var resourceScanner: ResourceScanner
 
@@ -626,7 +626,11 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                           role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               ReflectionTestUtils.setField(workspaceApiService, "resourceScanner", resourceScanner)
-              every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
+              every { resource.originalFilename } returns "fakeName"
+              every {
+                resourceScanner.scanMimeTypes(
+                    "fakeName", any(), csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+              } returns Unit
 
               if (shouldThrow) {
                 val exception =
@@ -674,7 +678,11 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                           role = role))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               ReflectionTestUtils.setField(workspaceApiService, "resourceScanner", resourceScanner)
-              every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
+              every { resource.originalFilename } returns "fakeName"
+              every {
+                resourceScanner.scanMimeTypes(
+                    "fakeName", any(), csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+              } returns Unit
 
               if (shouldThrow) {
                 val exception =

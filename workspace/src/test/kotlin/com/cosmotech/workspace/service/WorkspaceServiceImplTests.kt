@@ -62,8 +62,8 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.core.io.Resource
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.web.multipart.MultipartFile
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"
@@ -145,8 +145,8 @@ class WorkspaceServiceImplTests {
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
     every { workspaceRepository.findByIdOrNull(any()) } returns workspace
 
-    val file = mockk<Resource>(relaxed = true)
-    every { file.filename } returns "my_file.txt"
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
 
     val workspaceFile =
         workspaceServiceImpl.uploadWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, null)
@@ -166,8 +166,8 @@ class WorkspaceServiceImplTests {
         mockk<Organization>()
     every { workspaceRepository.findByIdOrNull(any()) } returns workspace
 
-    val file = mockk<Resource>(relaxed = true)
-    every { file.filename } returns "my_file.txt"
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
 
     val workspaceFile =
         workspaceServiceImpl.uploadWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, "  ")
@@ -185,8 +185,8 @@ class WorkspaceServiceImplTests {
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
     every { workspaceRepository.findByIdOrNull(any()) } returns workspace
 
-    val file = mockk<Resource>(relaxed = true)
-    every { file.filename } returns "my_file.txt"
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
 
     val workspaceFile =
         workspaceServiceImpl.uploadWorkspaceFile(
@@ -207,8 +207,8 @@ class WorkspaceServiceImplTests {
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
     every { workspaceRepository.findByIdOrNull(any()) } returns workspace
 
-    val file = mockk<Resource>(relaxed = true)
-    every { file.filename } returns "my_file.txt"
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
 
     val workspaceFile =
         workspaceServiceImpl.uploadWorkspaceFile(
@@ -228,8 +228,8 @@ class WorkspaceServiceImplTests {
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
     every { workspaceRepository.findByIdOrNull(any()) } returns workspace
 
-    val file = mockk<Resource>(relaxed = true)
-    every { file.filename } returns "my_file.txt"
+    val file = mockk<MultipartFile>(relaxed = true)
+    every { file.originalFilename } returns "my_file.txt"
 
     val workspaceFile =
         workspaceServiceImpl.uploadWorkspaceFile(
@@ -443,8 +443,10 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC upload workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
+              val file = mockk<MultipartFile>(relaxed = true)
+              every { file.originalFilename } returns "fakeName"
               workspaceServiceImpl.uploadWorkspaceFile(
-                  it.organization.id!!, it.workspace.id!!, mockk(relaxed = true), true, "name")
+                  it.organization.id!!, it.workspace.id!!, file, true, "name")
             }
           }
 
@@ -573,6 +575,7 @@ class WorkspaceServiceImplTests {
                   it.organization.id!!, it.workspace.id!!, "2$CONNECTED_DEFAULT_USER")
             }
           }
+
   @TestFactory
   fun `test RBAC get workspace security users`() =
       mapOf(
