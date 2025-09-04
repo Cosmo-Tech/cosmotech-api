@@ -1,20 +1,18 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+// no-import
 
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins { id("org.jetbrains.kotlinx.kover") }
 
+val argoClientJavaVersion = "v3.6.10"
+val retroFitVersion = "2.11.0"
+val okHttpBom = "4.12.0"
+val testContainersRabbitMQVersion = "1.20.6"
+val springRabbitMQTestVersion = "3.2.4"
+
 dependencies {
-  implementation("io.argoproj.workflow:argo-client-java:v3.5.11")
-  implementation("com.squareup.retrofit2:retrofit:2.9.0")
-  implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
-
-  implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
-  implementation("com.squareup.okhttp3:okhttp")
-  implementation("com.squareup.okhttp3:logging-interceptor")
-  implementation("org.springframework.boot:spring-boot-starter-amqp")
-
   implementation(projects.cosmotechConnectorApi)
   implementation(projects.cosmotechDatasetApi)
   implementation(projects.cosmotechOrganizationApi)
@@ -22,12 +20,16 @@ dependencies {
   implementation(projects.cosmotechWorkspaceApi)
   implementation(projects.cosmotechRunnerApi)
 
-  testImplementation("org.testng:testng:7.8.0")
-  testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.4")
-  testImplementation("org.testcontainers:postgresql:1.19.7")
-  testImplementation("org.testcontainers:rabbitmq:1.19.7")
-  testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.2")
-  testImplementation("org.springframework.amqp:spring-rabbit-test:3.1.4")
+  implementation("io.argoproj.workflow:argo-client-java:$argoClientJavaVersion")
+  implementation("com.squareup.retrofit2:retrofit:$retroFitVersion")
+  implementation("com.squareup.retrofit2:converter-scalars:$retroFitVersion")
+  implementation(platform("com.squareup.okhttp3:okhttp-bom:$okHttpBom"))
+  implementation("com.squareup.okhttp3:okhttp")
+  implementation("com.squareup.okhttp3:logging-interceptor")
+  implementation("org.springframework.boot:spring-boot-starter-amqp")
+
+  testImplementation("org.testcontainers:rabbitmq:$testContainersRabbitMQVersion")
+  testImplementation("org.springframework.amqp:spring-rabbit-test:$springRabbitMQTestVersion")
 }
 
 tasks.withType<GenerateTask> { additionalProperties.put("modelMutable", false) }
