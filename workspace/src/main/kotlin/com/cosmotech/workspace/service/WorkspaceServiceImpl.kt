@@ -58,6 +58,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 
 @Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -208,36 +209,41 @@ internal class WorkspaceServiceImpl(
   override fun uploadWorkspaceFile(
       organizationId: String,
       workspaceId: String,
-      file: Resource,
+      file: MultipartFile,
       overwrite: Boolean,
       destination: String?
   ): WorkspaceFile {
-    if (destination?.contains("..") == true) {
-      throw IllegalArgumentException("Invalid destination: '$destination'. '..' is not allowed")
+    require(destination?.contains("..") != true) {
+      "Invalid destination: '$destination'. '..' is not allowed"
     }
+    require(file.originalFilename?.isBlank() != true) { "File name must not be blank" }
+    require(
+        file.originalFilename?.contains("..") != true &&
+            file.originalFilename?.startsWith("/") != true) {
+          "Invalid filename: '${file.originalFilename}'. '..' and '/' are not allowed"
+        }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-    if (file?.filename?.contains("..") == true || file?.filename?.contains("/") == true) {
-      throw IllegalArgumentException(
-          "Invalid filename: '${file.filename}'. '..' and '/' are not allowed")
-    }
 
     logger.debug(
         "Uploading file resource to workspace #{} ({}): {} => {}",
         workspace.id,
         workspace.name,
-        file.filename,
+        file.originalFilename,
         destination)
 
-    resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+    resourceScanner.scanMimeTypes(
+        file.originalFilename!!,
+        file.inputStream,
+        csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
     val fileRelativeDestinationBuilder = StringBuilder()
     if (destination.isNullOrBlank()) {
-      fileRelativeDestinationBuilder.append(file.filename)
+      fileRelativeDestinationBuilder.append(file.originalFilename)
     } else {
       // Using multiple consecutive '/' in the path is not supported in the storage upload
       val destinationSanitized = destination.removePrefix("/").replace(Regex("(/)\\1+"), "/")
       fileRelativeDestinationBuilder.append(destinationSanitized)
       if (destinationSanitized.endsWith("/")) {
-        fileRelativeDestinationBuilder.append(file.filename)
+        fileRelativeDestinationBuilder.append(file.originalFilename)
       }
     }
 
@@ -548,6 +554,7 @@ internal class WorkspaceServiceImpl(
     this.eventPublisher.publishEvent(
         AddWorkspaceToDataset(this, organizationId, datasetId, workspaceId))
   }
+
   private fun sendDeleteHistoricalDataWorkspaceEvent(
       organizationId: String,
       it: Workspace,

@@ -36,7 +36,7 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.redis.om.spring.RediSearchIndexer
+import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
@@ -559,6 +559,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
         version = "1.0",
         ioTypes = listOf(IoTypesEnum.read))
   }
+
   fun makeDataset(
       organizationId: String = organizationSaved.id!!,
       name: String = "name",
