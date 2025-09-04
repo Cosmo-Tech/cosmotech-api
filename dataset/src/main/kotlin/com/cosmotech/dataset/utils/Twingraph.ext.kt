@@ -28,6 +28,7 @@ enum class CsmGraphEntityType {
   RELATION,
   NODE
 }
+
 // To support simple quoted jsonstring from ADT
 val jsonObjectMapper: ObjectMapper =
     objectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
@@ -41,7 +42,8 @@ fun GraphEntity.toCsmGraphEntity(type: CsmGraphEntityType): CsmGraphEntity {
   val label =
       when (type) {
         CsmGraphEntityType.RELATION -> (this as Edge).relationshipType
-        CsmGraphEntityType.NODE -> (this as Node).takeIf { it.numberOfLabels > 0 }?.getLabel(0)
+        CsmGraphEntityType.NODE ->
+            (this as Node).takeIf { it.numberOfLabels > 0 }?.getLabel(0)
                 ?: throw IndexOutOfBoundsException("Node has no label: $entityId")
       }
 

@@ -187,7 +187,7 @@ class RunnerService(
   fun listInstances(pageRequest: PageRequest): List<Runner> {
     val isPlatformAdmin =
         getCurrentAuthenticatedRoles(this.csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
-    var runners = listOf<Runner>()
+    var runners: List<Runner>
     if (!this.csmPlatformProperties.rbac.enabled || isPlatformAdmin) {
       runners =
           runnerRepository
@@ -324,8 +324,7 @@ class RunnerService(
               runnerRepository
                   .findBy(organization!!.id!!, workspace!!.id!!, it)
                   .orElseThrow { IllegalArgumentException("Parent runner not found: ${it}") }
-                  .rootId
-                  ?: this.runner.parentId
+                  .rootId ?: this.runner.parentId
         }
       }
     }
@@ -434,8 +433,7 @@ class RunnerService(
           runner.security
               ?.accessControlList
               ?.map { RbacAccessControl(it.id, it.role) }
-              ?.toMutableList()
-              ?: mutableListOf())
+              ?.toMutableList() ?: mutableListOf())
     }
 
     @Suppress("NestedBlockDepth")
