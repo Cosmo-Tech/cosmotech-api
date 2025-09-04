@@ -33,7 +33,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.redis.om.spring.RediSearchIndexer
+import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -1088,6 +1088,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       }
     }
   }
+
   @Nested
   inner class AsPlatformAdmin {
 
