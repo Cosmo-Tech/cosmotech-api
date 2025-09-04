@@ -3,13 +3,13 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.*
-import com.github.jk1.license.task.CheckLicenseTask
 import com.github.jk1.license.task.ReportTask
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
 import io.gitlab.arturbosch.detekt.Detekt
-import java.io.FileOutputStream
+import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.cyclonedx.gradle.CycloneDxTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -24,20 +24,29 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // implementations/configurations in a 'buildSrc' included build.
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
+buildscript {
+  configurations.all {
+    // Due to bug OpenAPITools/openapi-generator#20375 when we use another
+    // plugin that also depends on jmustache the newer version ends up being
+    // used and it breaks the generation of the python client.
+    resolutionStrategy.force("com.samskivert:jmustache:1.15")
+  }
+}
+
 plugins {
-  val kotlinVersion = "1.9.23"
+  val kotlinVersion = "2.0.21"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
-  id("pl.allegro.tech.build.axion-release") version "1.15.5"
-  id("com.diffplug.spotless") version "6.22.0"
-  id("org.springframework.boot") version "3.2.12" apply false
+  id("pl.allegro.tech.build.axion-release") version "1.18.18"
+  id("com.diffplug.spotless") version "7.0.3"
+  id("org.springframework.boot") version "3.4.9" apply false
   id("project-report")
-  id("org.owasp.dependencycheck") version "9.0.2"
-  id("com.github.jk1.dependency-license-report") version "2.5"
-  id("org.jetbrains.kotlinx.kover") version "0.7.4"
-  id("io.gitlab.arturbosch.detekt") version "1.23.6"
-  id("org.openapi.generator") version "7.8.0" apply false
-  id("com.google.cloud.tools.jib") version "3.4.0" apply false
+  id("org.owasp.dependencycheck") version "12.1.0"
+  id("com.github.jk1.dependency-license-report") version "2.9"
+  id("org.jetbrains.kotlinx.kover") version "0.9.1"
+  id("io.gitlab.arturbosch.detekt") version "1.23.8"
+  id("org.openapi.generator") version "7.13.0" apply false
+  id("com.google.cloud.tools.jib") version "3.4.5" apply false
   id("org.cyclonedx.bom") version "2.3.1"
 }
 
@@ -48,73 +57,54 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 // Dependencies version
-
-// Required versions
-val jacksonVersion = "2.15.3"
-val springWebVersion = "6.1.4"
-
-// Implementation
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "2.0.2"
-val jedisVersion = "4.4.6"
-val springOauthVersion = "6.2.2"
-val redisOmSpringVersion = "0.9.1"
-val kotlinCoroutinesCoreVersion = "1.7.3"
-val oktaSpringBootVersion = "3.0.5"
-val springDocVersion = "2.5.0"
-val swaggerParserVersion = "2.1.22"
-val commonsCsvVersion = "1.10.0"
+val cosmotechApiCommonVersion = "2.0.3-cve_fixes-SNAPSHOT"
+val redisOmSpringVersion = "0.9.10"
+val kotlinCoroutinesVersion = "1.10.2"
+val oktaSpringBootVersion = "3.0.7"
+val springDocVersion = "2.8.12"
+val swaggerParserVersion = "2.1.31"
+val commonsCsvVersion = "1.14.0"
 val apiValidationVersion = "3.0.2"
-val kubernetesClientVersion = "21.0.0"
+val kubernetesClientVersion = "22.0.0"
+val orgJsonVersion = "20240303"
+val jacksonModuleKotlinVersion = "2.18.3"
+val testNgVersion = "7.8.0"
 
 // Checks
-val detektVersion = "1.23.6"
+val detektVersion = "1.23.8"
 
 // Tests
-val jUnitBomVersion = "5.10.0"
-val mockkVersion = "1.13.8"
+val jUnitBomVersion = "5.12.2"
+val mockkVersion = "1.14.0"
 val awaitilityKVersion = "4.2.0"
-val testcontainersRedis = "1.6.4"
+val testContainersRedisVersion = "1.6.4"
+val testContainersPostgreSQLVersion = "1.20.6"
 val springMockkVersion = "4.0.2"
-
-var licenseReportDir = "$projectDir/doc/licenses"
 
 val configBuildDir = "${layout.buildDirectory.get()}/config"
 
 mkdir(configBuildDir)
 
-fun downloadLicenseConfigFile(name: String): String {
-  val localPath = "$configBuildDir/$name"
-  val f = file(localPath)
-  f.delete()
-  val url = "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/main/config/$name"
-  logger.info("Downloading license config file from $url to $localPath")
-  uri(url).toURL().openStream().use { it.copyTo(FileOutputStream(f)) }
-  return localPath
+dependencyCheck {
+  // Configure dependency check plugin. It checks for publicly disclosed
+  // vulnerabilities in project dependencies. To use it, you need to have an
+  // API key from the NVD (National Vulnerability Database), pass it by setting
+  // the environment variable NVD_API_key (See project README.md: Static Code
+  // Analysis -> Vulnerability report).
+  nvd { apiKey = System.getenv("NVD_API_key") }
 }
 
-val licenseNormalizerPath = downloadLicenseConfigFile("license-normalizer-bundle.json")
-val licenseAllowedPath =
-    if (project.properties["useLocalLicenseAllowedFile"] == "true") {
-      "$projectDir/config/allowed-licenses.json"
-    } else {
-      downloadLicenseConfigFile("allowed-licenses.json")
-    }
-
-logger.info("Using licenses allowed file: $licenseAllowedPath")
-
-val licenseEmptyPath = downloadLicenseConfigFile("empty-dependencies-resume.json")
-// Plugin uses a generated report to check the licenses in a prepation task
-val hardCodedLicensesReportPath = "project-licenses-for-check-license-task.json"
-
 licenseReport {
-  outputDir = licenseReportDir
-  allowedLicensesFile = file(licenseAllowedPath)
-  renderers =
-      arrayOf<ReportRenderer>(
-          InventoryHtmlReportRenderer("index.html"),
-          JsonReportRenderer("project-licenses-for-check-license-task.json", false))
-  filters = arrayOf<LicenseBundleNormalizer>(LicenseBundleNormalizer(licenseNormalizerPath, true))
+  allowedLicensesFile =
+      "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/allowed-licenses.json"
+  val bundle =
+      "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/license-normalizer-bundle.json"
+
+  renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"))
+  filters =
+      arrayOf<LicenseBundleNormalizer>(
+          LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true))
 }
 
 allprojects {
@@ -125,14 +115,25 @@ allprojects {
   apply(plugin = "org.owasp.dependencycheck")
   apply(plugin = "org.cyclonedx.bom")
 
+  version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
+
   java {
     targetCompatibility = JavaVersion.VERSION_21
     sourceCompatibility = JavaVersion.VERSION_21
     toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
   }
-  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.1") } } }
+  configurations {
+    all {
+      resolutionStrategy {
+        force("com.redis.om:redis-om-spring:0.9.10")
+        force("com.google.code.gson:gson:2.13.1")
+        force("io.netty:netty-handler:4.2.4.Final")
+      }
+    }
+  }
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
@@ -169,7 +170,7 @@ allprojects {
         """
         // Copyright (c) Cosmo Tech.
         // Licensed under the MIT license.
-      """
+        """
             .trimIndent()
 
     java {
@@ -178,14 +179,14 @@ allprojects {
       licenseHeader(licenseHeaderComment)
     }
     kotlin {
-      ktfmt("0.41")
+      ktfmt()
       target("**/*.kt")
       licenseHeader(licenseHeaderComment)
     }
     kotlinGradle {
-      ktfmt("0.41")
+      ktfmt()
       target("**/*.kts")
-      //      licenseHeader(licenseHeaderComment, "import")
+      licenseHeader(licenseHeaderComment, "(import |// no-import)")
     }
   }
 
@@ -198,13 +199,13 @@ subprojects {
   apply(plugin = "org.openapi.generator")
   apply(plugin = "com.google.cloud.tools.jib")
 
-  version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
-
   val projectDirName = projectDir.relativeTo(rootDir).name
   val openApiDefinitionFile = file("${projectDir}/src/main/openapi/${projectDirName}.yaml")
 
   val openApiServerSourcesGenerationDir =
       "${layout.buildDirectory.get()}/generated-sources/openapi/kotlin-spring"
+
+  val testWorkingDirPath = "${layout.buildDirectory.get()}/run"
 
   sourceSets {
     create("integrationTest") {
@@ -269,11 +270,13 @@ subprojects {
   }
 
   dependencies {
+    // https://youtrack.jetbrains.com/issue/KT-71057/POM-file-unusable-after-upgrading-to-2.0.20-from-2.0.10
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.21"))
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesCoreVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     implementation(
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
@@ -283,13 +286,8 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-undertow") {
-      constraints {
-        implementation("org.jboss.xnio:xnio-api:3.8.16.Final")
-        implementation("io.undertow:undertow-core:2.3.16.Final")
-      }
-    }
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
+    implementation("org.springframework.boot:spring-boot-starter-undertow")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
     implementation("io.kubernetes:client-java:${kubernetesClientVersion}")
@@ -297,28 +295,31 @@ subprojects {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}")
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.security:spring-security-oauth2-jose:${springOauthVersion}")
-    implementation(
-        "org.springframework.security:spring-security-oauth2-resource-server:${springOauthVersion}")
+    implementation("org.springframework.security:spring-security-oauth2-jose") {
+      constraints { implementation("com.nimbusds:nimbus-jose-jwt:10.4.2") }
+    }
+    implementation("org.springframework.security:spring-security-oauth2-resource-server")
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
-    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}") {
-      constraints { implementation("ai.djl:api:0.28.0") }
-    }
+    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
     implementation("org.springframework.data:spring-data-redis")
     implementation("org.springframework:spring-jdbc")
     implementation("org.postgresql:postgresql")
 
-    implementation("org.json:json:20240303")
+    implementation("org.json:json:${orgJsonVersion}")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.awaitility:awaitility-kotlin:$awaitilityKVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.testng:testng:${testNgVersion}")
+    testImplementation(
+        "com.redis.testcontainers:testcontainers-redis-junit:${testContainersRedisVersion}")
+    testImplementation("org.testcontainers:postgresql:${testContainersPostgreSQLVersion}")
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
       // Drop legacy Junit < 5
       exclude(module = "junit")
@@ -326,7 +327,8 @@ subprojects {
     }
     integrationTestImplementation("com.ninja-squad:springmockk:$springMockkVersion")
     // developmentOnly("org.springframework.boot:spring-boot-devtools")
-    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    integrationTestImplementation(
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
 
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
   }
@@ -368,7 +370,7 @@ subprojects {
   tasks.check { dependsOn(integrationTest) }
 
   tasks.withType<Test> {
-    val testWorkingDir = file("${layout.buildDirectory.get()}/run")
+    val testWorkingDir = file(testWorkingDirPath)
     workingDir = testWorkingDir
 
     doFirst { testWorkingDir.mkdirs() }
@@ -464,11 +466,16 @@ subprojects {
         openApiDefinitionFile
       }
   tasks.register<Copy>("copyOpenApiYamlToMainResources") {
+    group = "openapi"
+    description = "Copy openapi.yaml files to \$buildDir/resources/main/static/openapi.yaml"
     from(openApiFileDefinition)
     into("${layout.buildDirectory.get()}/resources/main/static")
     rename { if (it != "openapi.yaml") "openapi.yaml" else it }
   }
+
   tasks.register<Copy>("copyOpenApiYamlToTestResources") {
+    group = "openapi"
+    description = "Copy test openapi.yaml files to \$buildDir/resources/test/static/openapi.yaml"
     from(openApiFileDefinition)
     into("${layout.buildDirectory.get()}/resources/test/static")
     rename { if (it != "openapi.yaml") "openapi.yaml" else it }
@@ -533,6 +540,9 @@ val copySubProjectsDetektReportsTasks =
                     "${subProject.projectDir.relativeTo(rootDir)}"
                         .capitalizeAsciiOnly()
                         .replace("/", "_")) {
+                  group = "detekt"
+                  description =
+                      "Copy sub-projects detekt reports to \$projectDir/build/reports/detekt/\$format"
                   dependsOn("spotlessKotlin", "spotlessKotlinGradle", "spotlessJava")
                   from(
                       file(
@@ -541,6 +551,7 @@ val copySubProjectsDetektReportsTasks =
                       "${subProject.parent!!.layout.projectDirectory}/build/reports/detekt/$format")
                 }
         subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
+        subProject.tasks.withType<CycloneDxTask> { finalizedBy(copyTask) }
         copyTask
       }
     }
@@ -552,56 +563,64 @@ tasks.register<Copy>("copySubProjectsDetektReports") {
 
 tasks.getByName("detekt") { finalizedBy("copySubProjectsDetektReports") }
 
-extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverReportExtension> {
-  defaults {
-    // reports configs for XML, HTML, verify reports
+extensions.configure<KoverProjectExtension>("kover") {
+  reports {
+    filters {
+      excludes {
+        projects { cosmotechApi }
+        classes("com.cosmotech.Application*")
+        classes("com.cosmotech.*.api.*")
+        classes("com.cosmotech.*.domain.*")
+      }
+    }
   }
-  filters {
-    excludes {
-      projects { excludes { cosmotechApi } }
-      classes("com.cosmotech.Application*")
-      classes("com.cosmotech.*.api.*")
-      classes("com.cosmotech.*.domain.*")
+}
+
+kover {
+  reports {
+    total {
+      // reports configs for XML, HTML, verify reports
     }
   }
 }
 
 // https://github.com/jk1/Gradle-License-Report/blob/master/README.md
-tasks.register<ReportTask>("generateLicenseDoc") {}
-
-tasks.register<CheckLicenseTask>("validateLicense") {
-  dependsOn("generateLicenseDoc")
-  // Gradle task must be rerun each time to take new allowed-license into account.
-  // Due to an issue in the plugin, we must define each module name for null licenses
-  // to avoid false negatives in the allowed-license file.
-  outputs.upToDateWhen { false }
+tasks.register<ReportTask>("generateLicenseDoc") {
+  group = "license"
+  description = "Generate Licenses report"
 }
 
-tasks.register("displayLicensesNotAllowed") {
-  val notAllowedFile =
-      file(
-          buildString {
-            append(licenseReportDir)
-            append("/dependencies-without-allowed-license.json")
-          })
-  val dependenciesEmptyResumeTemplate = file(licenseEmptyPath)
-  if (notAllowedFile.exists() && dependenciesEmptyResumeTemplate.exists()) {
-    if (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText()) {
-      logger.warn("Licenses not allowed:")
-      logger.warn(notAllowedFile.readText())
-      logger.warn(
-          "Please review licenses and add new license check rules in https://github.com/Cosmo-Tech/cosmotech-license")
-    } else {
-      logger.warn("No error in licences detected!")
+tasks.register("generateAllReports") {
+  group = "reporting"
+  description =
+      """Generates all available reports (test, coverage, dependencies, licenses, detekt)
+    |/!\ Warning: Please do not run this task locally, tests are really resource consuming
+  """
+          .trimMargin()
+  dependsOn(
+      // Test reports, need to gather them first
+      // Please do not run this task locally, tests are really resource consuming
+      "test",
+      "integrationTest",
+      // Coverage reports
+      "koverHtmlReport",
+      // Dependency reports
+      "htmlDependencyReport",
+      // License reports
+      "generateLicenseReport",
+      // Code analysis reports
+      "detekt")
+  doLast {
+    // Create reports directory if it doesn't exist
+    val reportsDir = layout.buildDirectory.get().dir("reports").asFile
+    reportsDir.mkdirs()
+    // Copy the template file to the reports directory
+    copy {
+      from("api/src/main/resources") {
+        include("reports-index.html")
+        include("reports-style.css")
+      }
+      into(reportsDir)
     }
-  }
-}
-
-gradle.buildFinished {
-  if (project.properties["skipLicenses"] != "true") {
-    val validateLicenseTask = tasks.getByName("validateLicense")
-    validateLicenseTask.run {}
-    val displayTask = tasks.getByName("displayLicensesNotAllowed")
-    displayTask.run {}
   }
 }
