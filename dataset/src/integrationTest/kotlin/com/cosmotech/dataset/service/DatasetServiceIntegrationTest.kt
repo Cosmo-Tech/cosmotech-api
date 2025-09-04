@@ -54,7 +54,7 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
-import com.redis.om.spring.RediSearchIndexer
+import com.redis.om.spring.indexing.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -62,7 +62,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.io.File
 import java.time.Instant
 import java.util.*
 import kotlin.test.Test
@@ -79,11 +78,11 @@ import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.core.io.ByteArrayResource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import org.springframework.web.multipart.MultipartFile
 import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.Protocol
 import redis.clients.jedis.UnifiedJedis
@@ -503,6 +502,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(1, datasetList.size)
     assertEquals(datasetNotReachableByCurrentUserBecausePartOfAnotherOrganization, datasetList[0])
   }
+
   @Test
   fun `test find All Datasets with wrong pagination params`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
@@ -529,8 +529,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Create a Graph with a ZIP Entry")
     logger.info(
         "loading nodes: Double=2, Single=1, Users=9 & relationships: Double=2, Single=1, Follows=2")
-    val file = this::class.java.getResource("/integrationTest.zip")?.file
-    val resource = ByteArrayResource(File(file!!).readBytes())
+
+    val file = mockk<MultipartFile>(relaxed = true)
+    val inputStream = this::class.java.getResourceAsStream("/integrationTest.zip")
+    every { file.originalFilename } returns "integrationTest.zip"
+    every { file.inputStream } returns inputStream!!
+
     organizationSaved = organizationApiService.registerOrganization(organization)
     dataset = makeDatasetWithRole()
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -540,7 +544,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         dataset.copy(sourceType = DatasetSourceType.File))
 
     val fileUploadValidation =
-        datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+        datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, file)
     assertEquals(
         FileUploadValidation(
             mutableListOf(
@@ -745,10 +749,13 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     organizationSaved = organizationApiService.registerOrganization(organization)
     dataset.apply { sourceType = DatasetSourceType.File }
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-    val file = this::class.java.getResource("/integrationTest.zip")?.file
-    val resource = ByteArrayResource(File(file!!).readBytes())
 
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    val file = mockk<MultipartFile>(relaxed = true)
+    val inputStream = this::class.java.getResourceAsStream("/integrationTest.zip")
+    every { file.originalFilename } returns "integrationTest.zip"
+    every { file.inputStream } returns inputStream!!
+
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, file)
 
     var datasetStatus: String
     do {
@@ -770,10 +777,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     organizationSaved = organizationApiService.registerOrganization(organization)
     dataset.apply { sourceType = DatasetSourceType.File }
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-    val file = this::class.java.getResource("/brokenGraph.zip")?.file
-    val resource = ByteArrayResource(File(file!!).readBytes())
-
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    val file = mockk<MultipartFile>(relaxed = true)
+    val inputStream = this::class.java.getResourceAsStream("/brokenGraph.zip")
+    every { file.originalFilename } returns "brokenGraph.zip"
+    every { file.inputStream } returns inputStream!!
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, file)
 
     var datasetStatus: String
     do {
@@ -830,11 +838,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     organizationSaved = organizationApiService.registerOrganization(organization)
     dataset.apply { sourceType = DatasetSourceType.File }
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-
-    val fileName = this::class.java.getResource("/integrationTest.zip")?.file
-    val file = File(fileName!!)
-    val resource = ByteArrayResource(file.readBytes())
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    val file = mockk<MultipartFile>(relaxed = true)
+    var inputStream = this::class.java.getResourceAsStream("/integrationTest.zip")
+    every { file.originalFilename } returns "integrationTest.zip"
+    every { file.inputStream } returns inputStream!!
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, file)
     do {
       Thread.sleep(50L)
     } while (datasetApiService.getDatasetTwingraphStatus(
@@ -848,8 +856,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val queryResult =
         datasetApiService.twingraphQuery(
             organizationSaved.id!!, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
-
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    val reuploadFile = mockk<MultipartFile>(relaxed = true)
+    inputStream = this::class.java.getResourceAsStream("/integrationTest.zip")
+    every { reuploadFile.originalFilename } returns "integrationTest.zip"
+    every { reuploadFile.inputStream } returns inputStream!!
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, reuploadFile)
     do {
       Thread.sleep(50L)
     } while (datasetApiService.getDatasetTwingraphStatus(
@@ -907,10 +918,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
 
     every { datasetApiService.query(any(), any()) } returns mockk()
-    val fileName = this::class.java.getResource("/integrationTest.zip")?.file
-    val file = File(fileName!!)
-    val resource = ByteArrayResource(file.readBytes())
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    val file = mockk<MultipartFile>(relaxed = true)
+    val inputStream = this::class.java.getResourceAsStream("/integrationTest.zip")
+    every { file.originalFilename } returns "integrationTest.zip"
+    every { file.inputStream } returns inputStream!!
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, file)
     do {
       Thread.sleep(50L)
       datasetStatus =
@@ -1134,6 +1146,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         OrganizationAccessControl(id = userName, role = role))))
   }
+
   fun makeDataset(
       organizationId: String = organizationSaved.id!!,
       parentId: String = "",

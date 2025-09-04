@@ -47,7 +47,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.ninjasquad.springmockk.SpykBean
-import com.redis.om.spring.RediSearchIndexer
+import com.redis.om.spring.indexing.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -55,7 +55,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.io.File
+import java.io.InputStream
 import java.util.*
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -72,13 +72,13 @@ import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.core.io.ByteArrayResource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import org.springframework.web.multipart.MultipartFile
 import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.UnifiedJedis
 
@@ -105,7 +105,6 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   lateinit var dataset: Dataset
   lateinit var dataset2: Dataset
   lateinit var datasetSaved: Dataset
-  lateinit var retrievedDataset1: Dataset
 
   lateinit var jedis: UnifiedJedis
   lateinit var organization: Organization
@@ -243,18 +242,21 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               materializeTwingraph()
 
               val datasetTwinGraphQuery = DatasetTwinGraphQuery("MATCH (n) RETURN n")
-              val resource = ByteArrayResource("".toByteArray())
-              every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
+
+              every {
+                resourceScanner.scanMimeTypes(any(), any(), listOf("text/csv", "text/plain"))
+              } returns Unit
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
+              val file = mockk<MultipartFile>(relaxed = true)
+              val inputStream = this::class.java.getResourceAsStream("/integrationTest.zip")
+              every { file.originalFilename } returns "integrationTest.zip"
+              every { file.inputStream } returns inputStream!!
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.twingraphBatchUpdate(
-                          organizationSaved.id!!,
-                          datasetSaved.id!!,
-                          datasetTwinGraphQuery,
-                          resource)
+                          organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery, file)
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -262,7 +264,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.twingraphBatchUpdate(
-                      organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery, resource)
+                      organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery, file)
                 }
               }
             }
@@ -288,18 +290,18 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               materializeTwingraph()
 
               val datasetTwinGraphQuery = DatasetTwinGraphQuery("MATCH (n) RETURN n")
-              val resource = ByteArrayResource("".toByteArray())
-              every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
+              every {
+                resourceScanner.scanMimeTypes(any(), any(), listOf("text/csv", "text/plain"))
+              } returns Unit
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
+              val file = mockk<MultipartFile>(relaxed = true)
+              every { file.originalFilename } returns "nullEmptyStream.zip"
+              every { file.inputStream } returns InputStream.nullInputStream()
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.twingraphBatchUpdate(
-                          organizationSaved.id!!,
-                          datasetSaved.id!!,
-                          datasetTwinGraphQuery,
-                          resource)
+                          organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery, file)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -313,7 +315,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.twingraphBatchUpdate(
-                      organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery, resource)
+                      organizationSaved.id!!, datasetSaved.id!!, datasetTwinGraphQuery, file)
                 }
               }
             }
@@ -1663,25 +1665,28 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               val dataset =
                   makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.File)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val fileName = this::class.java.getResource("/integrationTest.zip")?.file
-              val file = File(fileName!!)
-              val resource = ByteArrayResource(file.readBytes())
-
+              every {
+                resourceScanner.scanMimeTypes(any(), any(), listOf("text/csv", "text/plain"))
+              } returns Unit
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              val file = mockk<MultipartFile>(relaxed = true)
+              val inputStream = this::class.java.getResourceAsStream("/integrationTest.zip")
+              every { file.originalFilename } returns "integrationTest.zip"
+              every { file.inputStream } returns inputStream!!
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.uploadTwingraph(
-                          organizationSaved.id!!, datasetSaved.id!!, resource)
+                          organizationSaved.id!!, datasetSaved.id!!, file)
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.uploadTwingraph(
-                      organizationSaved.id!!, datasetSaved.id!!, resource)
+                  datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, file)
                 }
               }
             }
@@ -1704,9 +1709,15 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset = makeDatasetWithRole(role = role, sourceType = DatasetSourceType.File)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val fileName = this::class.java.getResource("/integrationTest.zip")?.file
-              val file = File(fileName!!)
-              val resource = ByteArrayResource(file.readBytes())
+              every {
+                resourceScanner.scanMimeTypes(any(), any(), listOf("text/csv", "text/plain"))
+              } returns Unit
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              val file = mockk<MultipartFile>(relaxed = true)
+              val inputStream = this::class.java.getResourceAsStream("/integrationTest.zip")
+              every { file.originalFilename } returns "integrationTest.zip"
+              every { file.inputStream } returns inputStream!!
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1714,7 +1725,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.uploadTwingraph(
-                          organizationSaved.id!!, datasetSaved.id!!, resource)
+                          organizationSaved.id!!, datasetSaved.id!!, file)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -1727,8 +1738,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 }
               } else {
                 assertDoesNotThrow {
-                  datasetApiService.uploadTwingraph(
-                      organizationSaved.id!!, datasetSaved.id!!, resource)
+                  datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, file)
                 }
               }
             }
@@ -2312,6 +2322,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
         ioTypes = listOf(),
         id = "c-AbCdEf123")
   }
+
   fun makeDataset(
       id: String,
       name: String,

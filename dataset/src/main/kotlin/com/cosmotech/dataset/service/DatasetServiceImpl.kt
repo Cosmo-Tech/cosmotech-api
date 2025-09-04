@@ -99,6 +99,7 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import org.springframework.web.multipart.MultipartFile
 import redis.clients.jedis.UnifiedJedis
 import redis.clients.jedis.exceptions.JedisDataException
 import redis.clients.jedis.graph.Record
@@ -194,9 +195,7 @@ class DatasetServiceImpl(
     dataset.takeUnless {
       datasetSourceType in listOf(DatasetSourceType.ADT, DatasetSourceType.AzureStorage) &&
           dataset.source == null
-    }
-        ?: throw IllegalArgumentException(
-            "Source cannot be null for source type 'ADT' or 'Storage'")
+    } ?: throw IllegalArgumentException("Source cannot be null for source type 'ADT' or 'Storage'")
 
     var twingraphId: String? = null
 
@@ -335,7 +334,7 @@ class DatasetServiceImpl(
   override fun uploadTwingraph(
       organizationId: String,
       datasetId: String,
-      body: Resource
+      body: MultipartFile
   ): FileUploadValidation {
 
     checkIfGraphFunctionalityIsAvailable()
@@ -702,16 +701,27 @@ class DatasetServiceImpl(
     }
   }
 
+  private fun validateFile(file: MultipartFile) {
+    val originalFilename = file.originalFilename
+
+    require(!originalFilename.isNullOrBlank()) { "File name must not be null or blank" }
+    require(!originalFilename.contains("..") && !originalFilename.startsWith("/")) {
+      "Invalid filename: '${originalFilename}'. File name should neither contains '..' nor starts by '/'."
+    }
+    resourceScanner.scanMimeTypes(
+        originalFilename, file.inputStream, listOf("text/csv", "text/plain"))
+  }
+
   override fun twingraphBatchUpdate(
       organizationId: String,
       datasetId: String,
       twinGraphQuery: DatasetTwinGraphQuery,
-      body: Resource
+      body: MultipartFile
   ): TwinGraphBatchResult {
     checkIfGraphFunctionalityIsAvailable()
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
-    resourceScanner.scanMimeTypes(body, listOf("text/csv", "text/plain"))
+    validateFile(body)
 
     val result = TwinGraphBatchResult(0, 0, mutableListOf())
     trx(dataset) { localDataset ->
@@ -1004,8 +1014,7 @@ class DatasetServiceImpl(
     val datasetCompatibilityMap =
         existingDataset.compatibility
             ?.associateBy { "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}" }
-            ?.toMutableMap()
-            ?: mutableMapOf()
+            ?.toMutableMap() ?: mutableMapOf()
     datasetCompatibilityMap.putAll(
         datasetCompatibility
             .filter { it.solutionKey.isNotBlank() }
@@ -1033,19 +1042,21 @@ class DatasetServiceImpl(
 
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
-    var datasetList = listOf<Dataset>()
+    var datasetList: List<Dataset>
     if (pageable != null) {
       datasetList =
           datasetRepository
               .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), pageable)
               .toList()
+    } else {
+      datasetList =
+          findAllPaginated(defaultPageSize) {
+            datasetRepository
+                .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
+                .toList()
+          }
     }
-    datasetList =
-        findAllPaginated(defaultPageSize) {
-          datasetRepository
-              .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
-              .toList()
-        }
+
     datasetList.forEach { it.security = updateSecurityVisibility(it).security }
     return datasetList
   }
