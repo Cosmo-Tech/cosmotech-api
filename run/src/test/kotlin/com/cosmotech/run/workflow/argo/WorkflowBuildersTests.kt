@@ -20,6 +20,7 @@ import kotlin.test.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 
 private const val DEFAULT_ENTRY_POINT = "entrypoint.py"
 private const val csmSimulationId = "simulationrunid"
@@ -109,7 +110,8 @@ class WorkflowBuildersTests {
   fun `Template has simulator no entrypoint`() {
     val src = getRunContainer()
     val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
-    assertNull(template.container?.command)
+    assertNotNull(template.container?.command)
+    assertTrue(template.container?.command?.isEmpty() == true)
   }
 
   @Test
@@ -117,7 +119,8 @@ class WorkflowBuildersTests {
     val src = getRunContainer()
     val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties)
     val expected: String? = null
-    assertEquals(expected, template.container?.command)
+    assertNotNull(template.container?.command)
+    assertTrue(template.container?.command?.isEmpty() == true)
   }
 
   @Test
@@ -511,7 +514,7 @@ class WorkflowBuildersTests {
     val src = getRunContainer()
     val template = buildTemplate(ORGANIZATION_ID, null, src, csmPlatformProperties, true)
     assertNotNull(template.container)
-    assertNull(template.container!!.envFrom)
+    assertTrue(template.container?.envFrom?.isEmpty() == true)
   }
 
   private fun getRunContainer(name: String = "default"): RunContainer {
