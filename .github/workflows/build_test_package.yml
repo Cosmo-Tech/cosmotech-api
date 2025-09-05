@@ -33,6 +33,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Build with Gradle
@@ -71,6 +72,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run unit tests
@@ -101,6 +103,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run Connector integration tests
@@ -131,6 +134,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run RBAC Dataset integration tests
@@ -166,6 +170,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run Organization integration tests
@@ -201,6 +206,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run Solution integration tests
@@ -237,6 +243,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run Workspace integration tests
@@ -273,6 +280,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run Runner integration tests
@@ -308,6 +316,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Launch Run integration tests
@@ -338,6 +347,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run HomeController integration tests
@@ -384,6 +394,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Build local Container Image for scanning
