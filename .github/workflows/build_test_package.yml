@@ -33,6 +33,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Build with Gradle
@@ -95,6 +96,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run ${{ matrix.service.testPrefix }} controller tests
@@ -125,6 +127,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run unit tests
@@ -173,6 +176,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Run RBAC ${{ matrix.service.packageName }} integration tests
@@ -219,6 +223,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Build local Container Image for scanning
