@@ -49,7 +49,7 @@ version = scmVersion.version
 
 // Dependencies version
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "2.1.2-upgrades-SNAPSHOT"
+val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
 val redisOmSpringVersion = "0.9.10"
 val kotlinCoroutinesVersion = "1.10.2"
 val springDocVersion = "2.8.12"
@@ -127,7 +127,6 @@ allprojects {
   }
 
   repositories {
-    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
