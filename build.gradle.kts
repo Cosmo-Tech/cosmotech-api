@@ -24,28 +24,19 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // implementations/configurations in a 'buildSrc' included build.
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
-buildscript {
-  configurations.all {
-    // Due to bug OpenAPITools/openapi-generator#20375 when we use another
-    // plugin that also depends on jmustache the newer version ends up being
-    // used and it breaks the generation of the python client.
-    resolutionStrategy.force("com.samskivert:jmustache:1.15")
-  }
-}
-
 plugins {
   val kotlinVersion = "2.0.21"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
-  id("pl.allegro.tech.build.axion-release") version "1.18.18"
-  id("com.diffplug.spotless") version "7.0.3"
-  id("org.springframework.boot") version "3.4.4" apply false
+  id("pl.allegro.tech.build.axion-release") version "1.20.1"
+  id("com.diffplug.spotless") version "7.2.1"
+  id("org.springframework.boot") version "3.5.5" apply false
   id("project-report")
-  id("org.owasp.dependencycheck") version "12.1.0"
+  id("org.owasp.dependencycheck") version "12.1.3"
   id("com.github.jk1.dependency-license-report") version "2.9"
   id("org.jetbrains.kotlinx.kover") version "0.9.1"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
-  id("org.openapi.generator") version "7.13.0" apply false
+  id("org.openapi.generator") version "7.15.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.5" apply false
   id("org.cyclonedx.bom") version "2.3.1"
 }
@@ -64,31 +55,30 @@ val springBootVersion = "3.4.4"
 val springSecurityJwtVersion = "1.1.1.RELEASE"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
-val redisOmSpringVersion = "0.9.7"
+val redisOmSpringVersion = "0.9.10"
 val kotlinCoroutinesVersion = "1.10.2"
-val oktaSpringBootVersion = "3.0.7"
-val springDocVersion = "2.8.8"
-val swaggerParserVersion = "2.1.31"
-val commonsCsvVersion = "1.14.0"
-val apiValidationVersion = "3.0.2"
+val springDocVersion = "2.8.12"
+val swaggerParserVersion = "2.1.33"
+val commonsCsvVersion = "1.14.1"
+val apiValidationVersion = "3.1.1"
 val kubernetesClientVersion = "22.0.0"
-val orgJsonVersion = "20240303"
+val orgJsonVersion = "20250517"
 val jacksonModuleKotlinVersion = "2.18.3"
-val testNgVersion = "7.8.0"
+val testNgVersion = "7.11.0"
 val testContainersRedisVersion = "1.6.4"
-val testContainersPostgreSQLVersion = "1.20.6"
-val testContainersLocalStackVersion = "1.20.6"
-val commonCompressVersion = "1.27.1"
-val awsSpringVersion = "3.3.0"
+val testContainersPostgreSQLVersion = "1.21.3"
+val testContainersLocalStackVersion = "1.21.3"
+val commonCompressVersion = "1.28.0"
+val awsSpringVersion = "3.4.0"
+val nettyVersion = "4.2.5.Final"
 
 // Checks
 val detektVersion = "1.23.8"
 
 // Tests
-val jUnitBomVersion = "5.12.2"
-val mockkVersion = "1.14.0"
-val awaitilityKVersion = "4.2.0"
+val jUnitBomVersion = "5.13.4"
+val mockkVersion = "1.14.5"
+val awaitilityKVersion = "4.3.0"
 val springMockkVersion = "4.0.2"
 
 val configBuildDir = "${layout.buildDirectory.get()}/config"
@@ -131,7 +121,15 @@ allprojects {
     sourceCompatibility = JavaVersion.VERSION_21
     toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
   }
-  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.10") } } }
+  configurations {
+    all {
+      resolutionStrategy {
+        force("io.netty:netty-codec:$nettyVersion")
+        force("io.netty:netty-handler:$nettyVersion")
+        force("io.netty:netty-codec-http:$nettyVersion")
+      }
+    }
+  }
 
   repositories {
     maven {
@@ -278,12 +276,7 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-undertow") {
-      constraints {
-        implementation("org.jboss.xnio:xnio-api:3.8.16.Final")
-        implementation("io.undertow:undertow-core:2.3.18.Final")
-      }
-    }
+    implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
@@ -308,9 +301,10 @@ subprojects {
                 }
           }
         }
-    implementation("org.springframework.security:spring-security-oauth2-jose")
+    implementation("org.springframework.security:spring-security-oauth2-jose") {
+      constraints { implementation("com.nimbusds:nimbus-jose-jwt:10.4.2") }
+    }
     implementation("org.springframework.security:spring-security-oauth2-resource-server")
-    implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
