@@ -30,7 +30,7 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.20.1"
   id("com.diffplug.spotless") version "7.2.1"
-  id("org.springframework.boot") version "3.5.5" apply false
+  id("org.springframework.boot") version "3.5.3" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.1.3"
   id("com.github.jk1.dependency-license-report") version "2.9"
@@ -50,7 +50,7 @@ version = scmVersion.version
 // Dependencies version
 val kotlinJvmTarget = 21
 val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
-val redisOmSpringVersion = "0.9.10"
+val redisOmSpringVersion = "1.0.0"
 val kotlinCoroutinesVersion = "1.10.2"
 val springDocVersion = "2.8.12"
 val swaggerParserVersion = "2.1.33"
@@ -313,7 +313,9 @@ subprojects {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
     testImplementation("org.testng:testng:$testNgVersion")
     testImplementation(
-        "com.redis.testcontainers:testcontainers-redis-junit:$testContainersRedisVersion")
+        "com.redis.testcontainers:testcontainers-redis-junit:$testContainersRedisVersion") {
+          constraints { implementation("com.redis:lettucemod:4.4.0") }
+        }
     testImplementation("org.testcontainers:postgresql:$testContainersPostgreSQLVersion")
     testImplementation("org.testcontainers:localstack:$testContainersLocalStackVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
