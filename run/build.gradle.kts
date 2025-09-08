@@ -1,14 +1,16 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+// no-import
+
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins { id("org.jetbrains.kotlinx.kover") }
 
-val argoClientJavaVersion = "v3.5.11"
+val argoClientJavaVersion = "v3.6.10"
 val retroFitVersion = "2.11.0"
 val okHttpBom = "4.12.0"
-val testContainersRabbitMQVersion = "1.20.6"
-val springRabbitMQTestVersion = "3.2.4"
+val testContainersRabbitMQVersion = "1.21.3"
+val springRabbitMQTestVersion = "3.2.6"
 
 dependencies {
   implementation(projects.cosmotechDatasetApi)
