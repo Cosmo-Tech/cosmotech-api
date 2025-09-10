@@ -442,7 +442,7 @@ class DatasetServiceImpl(
             name = datasetPartCreateRequest.name,
             description = datasetPartCreateRequest.description,
             tags = datasetPartCreateRequest.tags ?: mutableListOf(),
-            type = datasetPartCreateRequest.type ?: DatasetPartTypeEnum.Relational,
+            type = datasetPartCreateRequest.type ?: DatasetPartTypeEnum.File,
             organizationId = organizationId,
             workspaceId = workspaceId,
             createInfo = editInfo,
