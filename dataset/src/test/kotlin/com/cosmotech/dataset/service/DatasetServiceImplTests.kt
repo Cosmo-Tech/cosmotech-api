@@ -44,7 +44,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.PageRequest
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.UnifiedJedis
@@ -104,7 +104,9 @@ class DatasetServiceImplTests {
   @Test
   fun `findAllDatasets should return empty list when no dataset exists`() {
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
-    every { datasetRepository.findAll(any<Pageable>()) } returns Page.empty()
+    every {
+      datasetRepository.findByOrganizationIdNoSecurity(any<String>(), any<PageRequest>())
+    } returns Page.empty()
 
     val result = datasetService.findAllDatasets(ORGANIZATION_ID, null, null)
     assertEquals(emptyList(), result)
