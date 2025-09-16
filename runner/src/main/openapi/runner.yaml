@@ -675,7 +675,6 @@ components:
             type: string
         solutionId:
           type: string
-          readOnly: true
           description: the Solution Id associated with this Runner
           pattern: '^sol-\w{10,20}'
           example: "sol-123456aBcDeF"
@@ -705,17 +704,14 @@ components:
           default: []
         ownerName:
           type: string
-          readOnly: true
           description: the name of the owner
           minLength: 1
         solutionName:
           type: string
-          readOnly: true
           description: the Solution name
           minLength: 1
         runTemplateName:
           type: string
-          readOnly: true
           description: the Solution Run Template name associated with this Runner
           minLength: 1
         security:
@@ -765,12 +761,10 @@ components:
           minLength: 1
         solutionName:
           type: string
-          readOnly: true
           description: the Solution name
           minLength: 1
         runTemplateName:
           type: string
-          readOnly: true
           description: the Solution Run Template name associated with this Runner
           minLength: 1
     RunnerSecurity:
@@ -847,7 +841,7 @@ components:
           description: the parameter Id
         varType:
           type: string
-          readOnly: true
+
           description: the parameter value type
         value:
           type: string
