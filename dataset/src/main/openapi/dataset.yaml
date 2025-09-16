@@ -922,8 +922,8 @@ components:
       description: The dataset part Type
       enum:
         - File
-        - Relational
-      default: Relational
+        - DB
+      default: File
 
     DatasetPartFiles:
       type: array
