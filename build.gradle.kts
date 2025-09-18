@@ -58,7 +58,7 @@ version = scmVersion.version
 
 // Dependencies version
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "2.1.0-beta3"
+val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
 val redisOmSpringVersion = "0.9.7"
 val kotlinCoroutinesVersion = "1.10.2"
 val oktaSpringBootVersion = "3.0.7"
