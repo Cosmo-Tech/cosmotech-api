@@ -121,11 +121,12 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetCreateRequest: DatasetCreateRequest,
-      files: Array<MultipartFile>
+      files: Array<MultipartFile>?
   ): Dataset {
+    val filesUploaded = files ?: emptyArray()
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_CREATE_CHILDREN)
     logger.debug("Registering Dataset: {}", datasetCreateRequest)
-    validDatasetCreateRequest(datasetCreateRequest, files)
+    validDatasetCreateRequest(datasetCreateRequest, filesUploaded)
 
     val datasetId = idGenerator.generate("dataset")
     val now = Instant.now().toEpochMilli()
@@ -144,7 +145,8 @@ class DatasetServiceImpl(
               val constructDatasetPart =
                   constructDatasetPart(organizationId, workspaceId, datasetId, part)
               datasetPartManagementFactory.storeData(
-                  constructDatasetPart, files.first { it.originalFilename == part.sourceName })
+                  constructDatasetPart,
+                  filesUploaded.first { it.originalFilename == part.sourceName })
               constructDatasetPart
             }
             ?.toMutableList()
@@ -290,12 +292,13 @@ class DatasetServiceImpl(
       workspaceId: String,
       datasetId: String,
       datasetUpdateRequest: DatasetUpdateRequest,
-      files: Array<MultipartFile>
+      files: Array<MultipartFile>?
   ): Dataset {
     logger.debug("Updating Dataset: {}", datasetUpdateRequest)
+    val filesUploaded = files ?: emptyArray()
     val previousDataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
-    validDatasetUpdateRequest(datasetUpdateRequest, files)
+    validDatasetUpdateRequest(datasetUpdateRequest, filesUploaded)
 
     val newDatasetParts =
         datasetUpdateRequest.parts
@@ -303,7 +306,8 @@ class DatasetServiceImpl(
               val constructDatasetPart =
                   constructDatasetPart(organizationId, workspaceId, datasetId, part)
               datasetPartManagementFactory.storeData(
-                  constructDatasetPart, files.first { it.originalFilename == part.sourceName })
+                  constructDatasetPart,
+                  filesUploaded.first { it.originalFilename == part.sourceName })
               constructDatasetPart
             }
             ?.toMutableList()
