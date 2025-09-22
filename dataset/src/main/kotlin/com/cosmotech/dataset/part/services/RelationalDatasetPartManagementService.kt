@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.io.InputStream
 
 /**
  * Service implementation for managing dataset parts in a relational database.
@@ -15,16 +16,21 @@ import org.springframework.web.multipart.MultipartFile
  * including saving and deleting dataset part entities.
  */
 @Service("Relational")
-class RelationalDatasetPartManagementService : DatasetPartManagementService {
+class RelationalDatasetPartManagementService(private val PostgresJDBC: JdbcTemplatePostgres) :
+    DatasetPartManagementService {
 
   private val logger = LoggerFactory.getLogger(RelationalDatasetPartManagementService::class.java)
 
   override fun storeData(file: MultipartFile, datasetPart: DatasetPart, overwrite: Boolean) {
-    logger.debug("RelationalDatasetPartManagementService#storeData")
-    TODO("Not yet implemented")
+    storeData(file.inputStream, datasetPart, overwrite)
   }
 
   override fun storeData(file: Resource, datasetPart: DatasetPart, overwrite: Boolean) {
+    storeData(file.inputStream, datasetPart, overwrite)
+  }
+
+  fun storeData(file: InputStream, datasetPart: DatasetPart, overwrite: Boolean) {
+
     TODO("Not yet implemented")
   }
 
