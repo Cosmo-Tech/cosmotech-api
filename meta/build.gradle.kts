@@ -3,3 +3,5 @@
 // no-import
 
 plugins { id("org.jetbrains.kotlinx.kover") }
+
+dependencies { implementation(projects.cosmotechCommonApi) }

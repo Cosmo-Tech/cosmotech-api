@@ -9,4 +9,5 @@ dependencies {
   implementation(projects.cosmotechOrganizationApi)
   implementation(projects.cosmotechSolutionApi)
   implementation(projects.cosmotechWorkspaceApi)
+  implementation(projects.cosmotechCommonApi)
 }
