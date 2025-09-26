@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.runner.service
 
-import com.cosmotech.api.events.TriggerRunnerEvent
+import com.cosmotech.common.events.TriggerRunnerEvent
 import com.cosmotech.runner.RunnerEventServiceInterface
 import com.cosmotech.runner.api.RunnerApiService
 import org.springframework.stereotype.Service

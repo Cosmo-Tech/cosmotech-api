@@ -3,7 +3,7 @@
 package com.cosmotech.api.home.factories
 
 import com.cosmotech.api.home.annotations.WithMockOauth2User
-import com.cosmotech.api.utils.objectMapper
+import com.cosmotech.common.utils.objectMapper
 import com.fasterxml.jackson.core.JacksonException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper

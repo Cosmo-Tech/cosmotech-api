@@ -2,17 +2,17 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset.service
 
-import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.tests.CsmTestBase
-import com.cosmotech.api.utils.getCurrentAccountIdentifier
-import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.exceptions.CsmAccessForbiddenException
+import com.cosmotech.common.exceptions.CsmResourceNotFoundException
+import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_EDITOR
+import com.cosmotech.common.rbac.ROLE_NONE
+import com.cosmotech.common.rbac.ROLE_USER
+import com.cosmotech.common.tests.CsmTestBase
+import com.cosmotech.common.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
+import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
@@ -106,7 +106,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
   @BeforeEach
   fun setUp() {
-    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")

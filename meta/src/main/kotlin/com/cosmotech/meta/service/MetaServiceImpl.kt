@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.meta.service
 
-import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.utils.getAboutInfo
+import com.cosmotech.common.CsmPhoenixService
+import com.cosmotech.common.utils.getAboutInfo
 import com.cosmotech.meta.MetaApiServiceInterface
 import com.cosmotech.meta.domain.AboutInfo
 import com.cosmotech.meta.domain.AboutInfoVersion

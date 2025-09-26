@@ -3,8 +3,8 @@
 package com.cosmotech.api.home.organization
 
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_NONE
 
 /**
  * Constant class that contains for Organization endpoints:

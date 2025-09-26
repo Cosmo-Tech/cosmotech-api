@@ -1,1 +1,1 @@
-org.springframework.boot.env.EnvironmentPostProcessor=com.cosmotech.api.config.CsmPlatformEnvironmentPostProcessor
+org.springframework.boot.env.EnvironmentPostProcessor=com.cosmotech.common.config.CsmPlatformEnvironmentPostProcessor

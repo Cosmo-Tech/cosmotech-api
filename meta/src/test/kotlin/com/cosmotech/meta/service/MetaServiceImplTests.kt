@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.meta.service
 
-import com.cosmotech.api.utils.getAboutInfo
+import com.cosmotech.common.utils.getAboutInfo
 import com.cosmotech.meta.domain.AboutInfoVersion
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -22,7 +22,7 @@ class MetaServiceImplTests {
 
   @BeforeEach
   fun beforeEach() {
-    mockkStatic("com.cosmotech.api.utils.AboutInfoKt")
+    mockkStatic("com.cosmotech.common.utils.AboutInfoKt")
   }
 
   @TestFactory

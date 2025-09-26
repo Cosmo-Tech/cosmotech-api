@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.service
 
-import com.cosmotech.api.events.AskRunStatusEvent
-import com.cosmotech.api.events.HasRunningRuns
+import com.cosmotech.common.events.AskRunStatusEvent
+import com.cosmotech.common.events.HasRunningRuns
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunEventServiceInterface
 import com.cosmotech.run.domain.RunState

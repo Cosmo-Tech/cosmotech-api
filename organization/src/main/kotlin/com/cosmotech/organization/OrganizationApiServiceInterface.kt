@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.organization
 
-import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.common.rbac.PERMISSION_READ
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 

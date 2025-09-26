@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.repository
 
-import com.cosmotech.api.redis.Sanitize
-import com.cosmotech.api.redis.SecurityConstraint
+import com.cosmotech.common.redis.Sanitize
+import com.cosmotech.common.redis.SecurityConstraint
 import com.cosmotech.workspace.domain.Workspace
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
