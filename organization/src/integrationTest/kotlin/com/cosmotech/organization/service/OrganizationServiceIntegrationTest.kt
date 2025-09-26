@@ -361,6 +361,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   component = "organization",
                   roles =
                       mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_USER to
                               mutableListOf(
@@ -386,6 +387,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   component = "workspace",
                   roles =
                       mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_USER to
                               mutableListOf(
@@ -411,6 +413,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   component = "runner",
                   roles =
                       mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_EDITOR to
                               mutableListOf(
@@ -741,19 +744,6 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                 organizationRegistered.id, OTHER_TEST_USER_ID)
         assertEquals(
             OrganizationAccessControl(id = OTHER_TEST_USER_ID, ROLE_VIEWER), otherUserACLRetrieved)
-      }
-    }
-
-    @Test
-    fun `createOrganizationAccessControl as resource admin (ROLE_NONE)`() {
-      assertThrows<CsmClientException> {
-        val name = "o-connector-test-1"
-        val organizationRegistered =
-            organizationApiService.createOrganization(makeSimpleOrganizationCreateRequest(name))
-
-        val otherUserACL = OrganizationAccessControl(id = OTHER_TEST_USER_ID, role = ROLE_NONE)
-        organizationApiService.createOrganizationAccessControl(
-            organizationRegistered.id, otherUserACL)
       }
     }
 
@@ -1329,6 +1319,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                 component = "organization",
                 roles =
                     mutableMapOf(
+                        ROLE_NONE to mutableListOf<String>(),
                         ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                         ROLE_USER to
                             mutableListOf(
@@ -1354,6 +1345,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                 component = "workspace",
                 roles =
                     mutableMapOf(
+                        ROLE_NONE to mutableListOf<String>(),
                         ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                         ROLE_USER to
                             mutableListOf(
@@ -1379,6 +1371,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                 component = "runner",
                 roles =
                     mutableMapOf(
+                        ROLE_NONE to mutableListOf<String>(),
                         ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                         ROLE_EDITOR to
                             mutableListOf(
@@ -1768,19 +1761,6 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
               organizationRegistered.id, OTHER_TEST_USER_ID)
       assertEquals(
           OrganizationAccessControl(OTHER_TEST_USER_ID, ROLE_VIEWER), otherUserACLRetrieved)
-    }
-  }
-
-  @Test
-  fun `createOrganizationAccessControl as resource admin (ROLE_NONE)`() {
-    assertThrows<CsmClientException> {
-      val name = "o-connector-test-1"
-      val organizationRegistered =
-          organizationApiService.createOrganization(makeSimpleOrganizationCreateRequest(name))
-
-      val otherUserACL = OrganizationAccessControl(id = OTHER_TEST_USER_ID, role = ROLE_NONE)
-      organizationApiService.createOrganizationAccessControl(
-          organizationRegistered.id, otherUserACL)
     }
   }
 
