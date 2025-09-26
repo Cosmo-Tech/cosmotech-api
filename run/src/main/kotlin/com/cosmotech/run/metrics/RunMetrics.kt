@@ -2,13 +2,13 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.metrics
 
-import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.events.CsmEventPublisher
-import com.cosmotech.api.events.PersistentMetricEvent
-import com.cosmotech.api.events.RunStart
-import com.cosmotech.api.metrics.DownSamplingAggregationType
-import com.cosmotech.api.metrics.PersistentMetric
-import com.cosmotech.api.metrics.PersitentMetricType
+import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.events.CsmEventPublisher
+import com.cosmotech.common.events.PersistentMetricEvent
+import com.cosmotech.common.events.RunStart
+import com.cosmotech.common.metrics.DownSamplingAggregationType
+import com.cosmotech.common.metrics.PersistentMetric
+import com.cosmotech.common.metrics.PersitentMetricType
 import com.cosmotech.runner.domain.Runner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener

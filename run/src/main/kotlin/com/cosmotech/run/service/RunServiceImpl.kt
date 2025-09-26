@@ -2,19 +2,19 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.service
 
-import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.events.RunDeleted
-import com.cosmotech.api.events.RunStart
-import com.cosmotech.api.events.RunStop
-import com.cosmotech.api.events.RunnerDeleted
-import com.cosmotech.api.events.UpdateRunnerStatus
-import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.rbac.PERMISSION_DELETE
-import com.cosmotech.api.rbac.PERMISSION_READ
-import com.cosmotech.api.rbac.PERMISSION_WRITE
-import com.cosmotech.api.rbac.getRunnerRolesDefinition
-import com.cosmotech.api.utils.constructPageRequest
-import com.cosmotech.api.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.CsmPhoenixService
+import com.cosmotech.common.events.RunDeleted
+import com.cosmotech.common.events.RunStart
+import com.cosmotech.common.events.RunStop
+import com.cosmotech.common.events.RunnerDeleted
+import com.cosmotech.common.events.UpdateRunnerStatus
+import com.cosmotech.common.rbac.CsmRbac
+import com.cosmotech.common.rbac.PERMISSION_DELETE
+import com.cosmotech.common.rbac.PERMISSION_READ
+import com.cosmotech.common.rbac.PERMISSION_WRITE
+import com.cosmotech.common.rbac.getRunnerRolesDefinition
+import com.cosmotech.common.utils.constructPageRequest
+import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
 import com.cosmotech.run.config.createDB

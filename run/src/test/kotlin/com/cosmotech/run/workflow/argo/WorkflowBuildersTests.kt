@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.workflow.argo
 
-import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.run.domain.RunContainer
 import com.cosmotech.run.workflow.RunStartContainers
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTask

@@ -2,24 +2,24 @@
 // Licensed under the MIT license.
 package com.cosmotech.organization.service
 
-import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.rbac.CsmAdmin
-import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.rbac.PERMISSION_DELETE
-import com.cosmotech.api.rbac.PERMISSION_READ
-import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
-import com.cosmotech.api.rbac.PERMISSION_WRITE
-import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.getAllRolesDefinition
-import com.cosmotech.api.rbac.getCommonRolesDefinition
-import com.cosmotech.api.rbac.model.RbacAccessControl
-import com.cosmotech.api.rbac.model.RbacSecurity
-import com.cosmotech.api.utils.constructPageRequest
-import com.cosmotech.api.utils.findAllPaginated
-import com.cosmotech.api.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.CsmPhoenixService
+import com.cosmotech.common.events.OrganizationUnregistered
+import com.cosmotech.common.exceptions.CsmResourceNotFoundException
+import com.cosmotech.common.rbac.CsmAdmin
+import com.cosmotech.common.rbac.CsmRbac
+import com.cosmotech.common.rbac.PERMISSION_DELETE
+import com.cosmotech.common.rbac.PERMISSION_READ
+import com.cosmotech.common.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.common.rbac.PERMISSION_WRITE
+import com.cosmotech.common.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.common.rbac.ROLE_NONE
+import com.cosmotech.common.rbac.getAllRolesDefinition
+import com.cosmotech.common.rbac.getCommonRolesDefinition
+import com.cosmotech.common.rbac.model.RbacAccessControl
+import com.cosmotech.common.rbac.model.RbacSecurity
+import com.cosmotech.common.utils.constructPageRequest
+import com.cosmotech.common.utils.findAllPaginated
+import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.ComponentRolePermissions
 import com.cosmotech.organization.domain.Organization
@@ -139,7 +139,7 @@ class OrganizationServiceImpl(
 
   override fun getOrganizationPermissions(organizationId: String, role: String): List<String> {
     getVerifiedOrganization(organizationId, PERMISSION_READ_SECURITY)
-    return com.cosmotech.api.rbac.getPermissions(role, getCommonRolesDefinition())
+    return com.cosmotech.common.rbac.getPermissions(role, getCommonRolesDefinition())
   }
 
   override fun getOrganizationSecurity(organizationId: String): OrganizationSecurity {

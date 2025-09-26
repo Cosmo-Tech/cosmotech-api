@@ -16,9 +16,9 @@ import com.cosmotech.api.home.organization.OrganizationConstants.NEW_USER_ID
 import com.cosmotech.api.home.organization.OrganizationConstants.NEW_USER_ROLE
 import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_KEY
 import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_NAME
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_NONE
+import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import org.apache.commons.io.IOUtils

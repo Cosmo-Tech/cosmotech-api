@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.workflow.argo
 
-import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.events.WorkflowStatusRequest
-import com.cosmotech.api.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.events.WorkflowStatusRequest
+import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.run.CONTAINER_CSM_ORC
 import com.cosmotech.run.ORGANIZATION_ID_LABEL
 import com.cosmotech.run.RUNNER_ID_LABEL

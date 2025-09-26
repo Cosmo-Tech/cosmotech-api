@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.service.amqp
 
-import com.cosmotech.api.events.RunStart
+import com.cosmotech.common.events.RunStart
 import com.cosmotech.run.config.RabbitMqConfigModel
 import com.cosmotech.runner.domain.Runner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression

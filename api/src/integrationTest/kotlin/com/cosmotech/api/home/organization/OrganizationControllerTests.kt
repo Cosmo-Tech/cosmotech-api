@@ -18,10 +18,10 @@ import com.cosmotech.api.home.organization.OrganizationConstants.RequestContent.
 import com.cosmotech.api.home.organization.OrganizationConstants.RequestContent.MINIMAL_ORGANIZATION_REQUEST_CREATION
 import com.cosmotech.api.home.organization.OrganizationConstants.RequestContent.MINIMAL_ORGANIZATION_REQUEST_UPDATE
 import com.cosmotech.api.home.organization.OrganizationConstants.RequestContent.ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_VIEWER
-import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
+import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_NONE
+import com.cosmotech.common.rbac.ROLE_VIEWER
+import com.cosmotech.common.security.ROLE_ORGANIZATION_USER
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory

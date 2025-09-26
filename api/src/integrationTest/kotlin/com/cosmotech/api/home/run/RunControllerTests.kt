@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home.run
 
-import com.cosmotech.api.events.CsmEventPublisher
-import com.cosmotech.api.events.UpdateRunnerStatus
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
@@ -51,6 +49,8 @@ import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKFLOW_PHASE
 import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKFLOW_PROGRESS
 import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKSPACE_KEY
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
+import com.cosmotech.common.events.CsmEventPublisher
+import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
 import com.cosmotech.run.domain.*

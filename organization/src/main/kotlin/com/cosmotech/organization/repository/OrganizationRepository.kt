@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.organization.repository
 
-import com.cosmotech.api.redis.SecurityConstraint
+import com.cosmotech.common.redis.SecurityConstraint
 import com.cosmotech.organization.domain.Organization
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository

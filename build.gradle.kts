@@ -129,14 +129,6 @@ allprojects {
 
   repositories {
     maven {
-      name = "GitHubPackages"
-      url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
-      credentials {
-        username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-        password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-      }
-    }
-    maven {
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj/argo-client-java")
       credentials {
@@ -332,8 +324,6 @@ subprojects {
     // developmentOnly("org.springframework.boot:spring-boot-devtools")
     integrationTestImplementation(
         "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
-
-    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
   }
 
   tasks.withType<KotlinCompile> {

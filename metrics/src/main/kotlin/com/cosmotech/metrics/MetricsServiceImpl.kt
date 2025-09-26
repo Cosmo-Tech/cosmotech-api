@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 package com.cosmotech.metrics
 
-import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.events.PersistentMetricEvent
-import com.cosmotech.api.metrics.PersistentMetric
-import com.cosmotech.api.metrics.toRedisAggregation
+import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.events.PersistentMetricEvent
+import com.cosmotech.common.metrics.PersistentMetric
+import com.cosmotech.common.metrics.toRedisAggregation
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service

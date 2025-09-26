@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home.solution
 
-import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
@@ -18,9 +17,10 @@ import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_NAME
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_REPOSITORY
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_SDK_VERSION
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_VERSION
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.common.containerregistry.ContainerRegistryService
+import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_NONE
+import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
 import io.mockk.every

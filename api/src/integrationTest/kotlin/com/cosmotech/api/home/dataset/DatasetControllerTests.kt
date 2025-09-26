@@ -28,10 +28,10 @@ import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_COMPU
 import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_NAME
 import com.cosmotech.api.home.run.RunConstants.RequestContent.TAGS
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_EDITOR
+import com.cosmotech.common.rbac.ROLE_NONE
+import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetPart

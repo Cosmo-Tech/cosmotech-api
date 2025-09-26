@@ -2,16 +2,16 @@
 // Licensed under the MIT license.
 package com.cosmotech.runner.service
 
-import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.events.RunDeleted
-import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
-import com.cosmotech.api.rbac.PERMISSION_DELETE
-import com.cosmotech.api.rbac.PERMISSION_LAUNCH
-import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
-import com.cosmotech.api.rbac.PERMISSION_WRITE
-import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
-import com.cosmotech.api.rbac.getRunnerRolesDefinition
-import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.events.RunDeleted
+import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
+import com.cosmotech.common.rbac.PERMISSION_DELETE
+import com.cosmotech.common.rbac.PERMISSION_LAUNCH
+import com.cosmotech.common.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.common.rbac.PERMISSION_WRITE
+import com.cosmotech.common.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.common.rbac.getRunnerRolesDefinition
+import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.CreatedRun
@@ -221,7 +221,7 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
 
-    return com.cosmotech.api.rbac.getPermissions(role, getRunnerRolesDefinition())
+    return com.cosmotech.common.rbac.getPermissions(role, getRunnerRolesDefinition())
   }
 
   override fun listRunnerSecurityUsers(

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset
 
-import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.common.rbac.PERMISSION_READ
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetPart

@@ -4,4 +4,4 @@
 
 plugins { id("org.jetbrains.kotlinx.kover") }
 
-dependencies {}
+dependencies { implementation(projects.cosmotechCommonApi) }

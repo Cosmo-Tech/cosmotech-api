@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset.part.services
 
-import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.dataset.domain.DatasetPart
 import io.awspring.cloud.s3.S3Template
 import java.io.InputStream

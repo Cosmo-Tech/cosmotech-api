@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.runner.service
 
-import com.cosmotech.api.rbac.model.RbacAccessControl
-import com.cosmotech.api.rbac.model.RbacSecurity
+import com.cosmotech.common.rbac.model.RbacAccessControl
+import com.cosmotech.common.rbac.model.RbacSecurity
 import com.cosmotech.runner.domain.Runner
 
 // for compatibility

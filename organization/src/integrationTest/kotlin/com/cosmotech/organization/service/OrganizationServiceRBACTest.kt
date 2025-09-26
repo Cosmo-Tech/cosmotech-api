@@ -2,23 +2,23 @@
 // Licensed under the MIT license.
 package com.cosmotech.organization.service
 
-import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.rbac.PERMISSION_DELETE
-import com.cosmotech.api.rbac.PERMISSION_READ
-import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
-import com.cosmotech.api.rbac.PERMISSION_WRITE
-import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VALIDATOR
-import com.cosmotech.api.rbac.ROLE_VIEWER
-import com.cosmotech.api.tests.CsmTestBase
-import com.cosmotech.api.utils.getCurrentAccountIdentifier
-import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.exceptions.CsmAccessForbiddenException
+import com.cosmotech.common.rbac.PERMISSION_DELETE
+import com.cosmotech.common.rbac.PERMISSION_READ
+import com.cosmotech.common.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.common.rbac.PERMISSION_WRITE
+import com.cosmotech.common.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_EDITOR
+import com.cosmotech.common.rbac.ROLE_NONE
+import com.cosmotech.common.rbac.ROLE_USER
+import com.cosmotech.common.rbac.ROLE_VALIDATOR
+import com.cosmotech.common.rbac.ROLE_VIEWER
+import com.cosmotech.common.tests.CsmTestBase
+import com.cosmotech.common.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
+import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -62,12 +62,12 @@ class OrganizationServiceRBACTest : CsmTestBase() {
 
   @BeforeAll
   fun globalSetup() {
-    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
   }
 
   @BeforeEach
   fun setUp() {
-    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()

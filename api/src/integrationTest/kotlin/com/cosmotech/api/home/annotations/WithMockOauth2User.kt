@@ -6,7 +6,7 @@ import com.cosmotech.api.home.Constants.DEFAULT_ISSUER
 import com.cosmotech.api.home.Constants.DEFAULT_SUBJECT
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.factories.WithMockOauth2UserSecurityContextFactory
-import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
+import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
 import org.springframework.security.test.context.support.WithSecurityContext
 
 /**

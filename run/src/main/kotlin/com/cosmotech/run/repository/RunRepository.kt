@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.repository
 
-import com.cosmotech.api.redis.Sanitize
+import com.cosmotech.common.redis.Sanitize
 import com.cosmotech.run.domain.Run
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository

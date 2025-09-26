@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.exceptions
 
+import com.cosmotech.common.exceptions.CsmExceptionHandling
 import java.net.URI
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order

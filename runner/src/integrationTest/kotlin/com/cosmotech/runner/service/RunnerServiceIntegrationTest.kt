@@ -2,26 +2,26 @@
 // Licensed under the MIT license.
 package com.cosmotech.runner.service
 
-import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.containerregistry.ContainerRegistryService
-import com.cosmotech.api.events.CsmEventPublisher
-import com.cosmotech.api.events.HasRunningRuns
-import com.cosmotech.api.events.RunStart
-import com.cosmotech.api.events.UpdateRunnerStatus
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VALIDATOR
-import com.cosmotech.api.rbac.ROLE_VIEWER
-import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
-import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
-import com.cosmotech.api.tests.CsmTestBase
-import com.cosmotech.api.utils.getCurrentAccountIdentifier
-import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.containerregistry.ContainerRegistryService
+import com.cosmotech.common.events.CsmEventPublisher
+import com.cosmotech.common.events.HasRunningRuns
+import com.cosmotech.common.events.RunStart
+import com.cosmotech.common.events.UpdateRunnerStatus
+import com.cosmotech.common.exceptions.CsmAccessForbiddenException
+import com.cosmotech.common.exceptions.CsmResourceNotFoundException
+import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_EDITOR
+import com.cosmotech.common.rbac.ROLE_NONE
+import com.cosmotech.common.rbac.ROLE_USER
+import com.cosmotech.common.rbac.ROLE_VALIDATOR
+import com.cosmotech.common.rbac.ROLE_VIEWER
+import com.cosmotech.common.security.ROLE_ORGANIZATION_USER
+import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
+import com.cosmotech.common.tests.CsmTestBase
+import com.cosmotech.common.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
+import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCreateRequest
@@ -131,14 +131,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @BeforeEach
   fun setUp() {
-    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    mockkStatic("com.cosmotech.api.utils.RedisUtilsKt")
+    mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
+    mockkStatic("com.cosmotech.common.utils.RedisUtilsKt")
     mockkStatic("org.springframework.web.context.request.RequestContextHolder")
 
     ReflectionTestUtils.setField(
         solutionApiService, "containerRegistryService", containerRegistryService)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
-    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)

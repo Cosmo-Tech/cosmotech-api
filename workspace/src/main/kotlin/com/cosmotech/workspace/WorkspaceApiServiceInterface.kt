@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace
 
-import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.common.rbac.PERMISSION_READ
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 

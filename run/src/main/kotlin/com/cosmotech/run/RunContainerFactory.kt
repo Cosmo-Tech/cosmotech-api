@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 package com.cosmotech.run
 
-import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.containerregistry.ContainerRegistryService
-import com.cosmotech.api.utils.sanitizeForKubernetes
+import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.containerregistry.ContainerRegistryService
+import com.cosmotech.common.utils.sanitizeForKubernetes
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.run.container.BASIC_SIZING
