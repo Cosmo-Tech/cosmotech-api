@@ -106,16 +106,19 @@ csm:
         tls:
           enabled: false
       storage:
+        host: "[fill-this-value]" # postgresql-NAMESPACE.NAMESPACE.svc.cluster.local
+        port: 5432
         admin:
           password: "[fill-this-value]"
           username: "[fill-this-value]"
-        host: "[fill-this-value]" # postgresql-NAMESPACE.NAMESPACE.svc.cluster.local
-        port: 5432
         reader:
           password: "[fill-this-value]"
           username: cosmotech_api_reader
         writer:
           password: "[fill-this-value]"
           username: cosmotech_api_writer
+        db:
+          name: cosmotech
+          schema: datasets
 
 
