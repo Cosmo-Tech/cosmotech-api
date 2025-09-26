@@ -364,6 +364,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "organization",
                   roles =
                       mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_USER to
                               mutableListOf(
@@ -389,6 +390,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "workspace",
                   roles =
                       mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_USER to
                               mutableListOf(
@@ -414,6 +416,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "runner",
                   roles =
                       mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_EDITOR to
                               mutableListOf(
@@ -739,19 +742,6 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             organizationApiService.getOrganizationAccessControl(
                 organizationRegistered.id!!, OTHER_TEST_USER_ID)
         assertEquals(otherUserACL, otherUserACLRetrieved)
-      }
-    }
-
-    @Test
-    fun `addOrganizationAccessControl as resource admin (ROLE_NONE)`() {
-      assertThrows<CsmClientException> {
-        val name = "o-connector-test-1"
-        val organizationRegistered =
-            organizationApiService.registerOrganization(createTestOrganization(name))
-
-        val otherUserACL = OrganizationAccessControl(id = OTHER_TEST_USER_ID, role = ROLE_NONE)
-        organizationApiService.addOrganizationAccessControl(
-            organizationRegistered.id!!, otherUserACL)
       }
     }
 
@@ -1316,6 +1306,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "organization",
                   roles =
                       mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_USER to
                               mutableListOf(
@@ -1341,6 +1332,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "workspace",
                   roles =
                       mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_USER to
                               mutableListOf(
@@ -1366,6 +1358,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                   component = "runner",
                   roles =
                       mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ),
                           ROLE_EDITOR to
                               mutableListOf(
@@ -1766,19 +1759,6 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             organizationApiService.getOrganizationAccessControl(
                 organizationRegistered.id!!, OTHER_TEST_USER_ID)
         assertEquals(otherUserACL, otherUserACLRetrieved)
-      }
-    }
-
-    @Test
-    fun `addOrganizationAccessControl as resource admin (ROLE_NONE)`() {
-      assertThrows<CsmClientException> {
-        val name = "o-connector-test-1"
-        val organizationRegistered =
-            organizationApiService.registerOrganization(createTestOrganization(name))
-
-        val otherUserACL = OrganizationAccessControl(id = OTHER_TEST_USER_ID, role = ROLE_NONE)
-        organizationApiService.addOrganizationAccessControl(
-            organizationRegistered.id!!, otherUserACL)
       }
     }
 
