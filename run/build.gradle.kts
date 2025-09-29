@@ -16,6 +16,7 @@ dependencies {
   implementation(projects.cosmotechSolutionApi)
   implementation(projects.cosmotechWorkspaceApi)
   implementation(projects.cosmotechRunnerApi)
+  implementation(projects.cosmotechCommonApi)
 
   implementation("io.argoproj.workflow:argo-client-java:$argoClientJavaVersion")
   implementation("com.squareup.retrofit2:retrofit:$retroFitVersion")

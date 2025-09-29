@@ -2,24 +2,24 @@
 // Licensed under the MIT license.
 package com.cosmotech.organization.service
 
-import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.events.CsmEventPublisher
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.rbac.CsmAdmin
-import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VALIDATOR
-import com.cosmotech.api.rbac.ROLE_VIEWER
-import com.cosmotech.api.rbac.model.RbacAccessControl
-import com.cosmotech.api.rbac.model.RbacSecurity
-import com.cosmotech.api.utils.getCurrentAccountIdentifier
-import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.events.CsmEventPublisher
+import com.cosmotech.common.exceptions.CsmAccessForbiddenException
+import com.cosmotech.common.exceptions.CsmResourceNotFoundException
+import com.cosmotech.common.id.CsmIdGenerator
+import com.cosmotech.common.rbac.CsmAdmin
+import com.cosmotech.common.rbac.CsmRbac
+import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_EDITOR
+import com.cosmotech.common.rbac.ROLE_NONE
+import com.cosmotech.common.rbac.ROLE_USER
+import com.cosmotech.common.rbac.ROLE_VALIDATOR
+import com.cosmotech.common.rbac.ROLE_VIEWER
+import com.cosmotech.common.rbac.model.RbacAccessControl
+import com.cosmotech.common.rbac.model.RbacSecurity
+import com.cosmotech.common.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
+import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationEditInfo
@@ -67,7 +67,7 @@ class OrganizationServiceImplTests {
   fun setUp() {
     every { csmPlatformProperties.rbac.enabled } returns true
 
-    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns USER_ID
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()

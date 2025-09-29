@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.metrics
 
-import com.cosmotech.api.metrics.PersistentMetric
+import com.cosmotech.common.metrics.PersistentMetric
 
 interface MetricsService {
   /**

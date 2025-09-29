@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.service.amqp
 
-import com.cosmotech.api.events.WorkspaceDeleted
+import com.cosmotech.common.events.WorkspaceDeleted
 import com.cosmotech.run.config.RabbitMqConfigModel
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.ApplicationListener

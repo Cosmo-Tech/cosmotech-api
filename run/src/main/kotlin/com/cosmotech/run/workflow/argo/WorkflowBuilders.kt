@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.workflow.argo
 
-import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.run.CSM_DAG_ROOT
 import com.cosmotech.run.container.BASIC_SIZING
 import com.cosmotech.run.container.getLimitsMap
