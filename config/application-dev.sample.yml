@@ -117,7 +117,7 @@ csm:
         writer:
           password: "[fill-this-value]"
           username: cosmotech_api_writer
-        db:
+        datasets:
           name: cosmotech
           schema: datasets
 
