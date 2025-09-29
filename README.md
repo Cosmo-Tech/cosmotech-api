@@ -148,11 +148,6 @@ You can run the application via the `bootRun` Gradle task, like so:
 Once the application is started, you can head to the Swagger UI exposed at http://localhost:8080 to
 navigate through the API.
 
-If you use another Identity Provider like Okta, you must set the gradle property IdentityProvider:
-```shell
-./gradlew :cosmotech-api:bootRun -PidentityProvider=okta
-```
-
 If you need to call endpoints that require access to a kubernetes cluster, it will use the current context from your kubernetes local config file.
 If you want to use a different context/cluster without changing your default settings, you may pass the `useKubernetesContext` property to the JVM:
 ```shell
