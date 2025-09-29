@@ -80,7 +80,6 @@ class CsmRbacTests {
 
   private val DEFAULT_IDENTITY_PROVIDER =
       CsmPlatformProperties.CsmIdentityProvider(
-          "identityProviderCode",
           authorizationUrl = "http://my-fake-authorization.url/autorize",
           tokenUrl = "http://my-fake-token.url/token",
           adminGroup = CUSTOM_ADMIN_GROUP,

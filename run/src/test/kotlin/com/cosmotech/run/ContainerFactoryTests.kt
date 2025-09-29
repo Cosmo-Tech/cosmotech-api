@@ -77,7 +77,6 @@ class ContainerFactoryTests {
         )
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(
-            code = "keycloak",
             defaultScopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             tokenUrl = "http://this_is_a_fake_token_url.com",
@@ -185,7 +184,6 @@ class ContainerFactoryTests {
         image = "twinengines.azurecr.io/" + solution.repository + ":" + solution.version,
         envVars =
             mapOf(
-                "IDENTITY_PROVIDER" to "keycloak",
                 "CSM_API_SCOPE" to "/.default",
                 "CSM_API_URL" to csmPlatformProperties.api.baseUrl,
                 "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",

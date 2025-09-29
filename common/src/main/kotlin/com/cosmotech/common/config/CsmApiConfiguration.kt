@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.config
 
-import com.cosmotech.common.config.CsmPlatformProperties.Vendor.ON_PREMISE
 import com.cosmotech.common.utils.yamlObjectMapper
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -50,13 +49,10 @@ open class CsmPlatformEnvironmentPostProcessor : EnvironmentPostProcessor {
       environment: ConfigurableEnvironment,
       application: SpringApplication
   ) {
-    val platform = (System.getenv("CSM_PLATFORM_VENDOR") ?: ON_PREMISE.toString()).lowercase()
-    addSpringProfile(platform, environment)
-    val identityProvider = (System.getenv("IDENTITY_PROVIDER") ?: "keycloak")
-    addSpringProfile(identityProvider, environment)
+    addSpringProfile(environment)
   }
 
-  private fun addSpringProfile(profile: String, environment: ConfigurableEnvironment) {
+  private fun addSpringProfile(environment: ConfigurableEnvironment, profile: String = "keycloak") {
     if (profile.isNotBlank()) {
       if (environment.activeProfiles.none { profile.equals(it, ignoreCase = true) }) {
         log.debug("Adding '$profile' as an active profile")

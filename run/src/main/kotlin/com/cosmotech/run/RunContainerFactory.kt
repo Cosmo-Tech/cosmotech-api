@@ -330,7 +330,6 @@ internal fun getMinimalCommonEnvVars(
   val containerScopes = getContainerScopes(csmPlatformProperties)
   val commonEnvVars =
       mapOf(
-          IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider.code),
           IDP_TENANT_ID to csmPlatformProperties.identityProvider.identity.tenantId,
           IDP_CLIENT_ID to csmPlatformProperties.identityProvider.identity.clientId,
           IDP_CLIENT_SECRET to csmPlatformProperties.identityProvider.identity.clientSecret,
