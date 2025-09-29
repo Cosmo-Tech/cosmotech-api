@@ -12,9 +12,6 @@ data class CsmPlatformProperties(
     /** API Configuration */
     val api: Api,
 
-    /** Platform vendor */
-    val vendor: Vendor = Vendor.ON_PREMISE,
-
     /** Id Generator */
     val idGenerator: IdGenerator,
 
@@ -33,10 +30,7 @@ data class CsmPlatformProperties(
     /** Authorization Configuration */
     val authorization: Authorization = Authorization(),
 
-    /**
-     * Identity provider used for (Entra ID ,Okta, Keycloak) if openapi default configuration needs
-     * to be overwritten
-     */
+    /** Identity provider used if openapi default configuration needs to be overwritten */
     val identityProvider: CsmIdentityProvider,
 
     /** Twin Data Layer configuration */
@@ -296,33 +290,14 @@ data class CsmPlatformProperties(
       val password: String? = null,
   )
 
-  enum class Vendor {
-    /** Microsoft Azure : https://azure.microsoft.com/en-us/ */
-    AZURE,
-    ON_PREMISE
-  }
-
   data class CsmIdentityProvider(
-      /** okta|azure|keycloak */
-      val code: String,
-
-      /**
-       * entry sample :
-       * - {"http://dev.api.cosmotech.com/platform" to "Platform scope"}
-       * - {"default" to "Default scope"}
-       */
+      /** Scopes */
       val defaultScopes: Map<String, String> = emptyMap(),
 
-      /**
-       * - "https://{yourOktaDomain}/oauth2/default/v1/authorize"
-       * - "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
-       */
+      /** Authorization URL */
       val authorizationUrl: String,
 
-      /**
-       * - "https://{yourOktaDomain}/oauth2/default/v1/token"
-       * - "https://login.microsoftonline.com/common/oauth2/v2.0/token"
-       */
+      /** Token URL */
       val tokenUrl: String,
 
       /**
