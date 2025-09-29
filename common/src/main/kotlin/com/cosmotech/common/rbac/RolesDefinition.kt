@@ -22,6 +22,8 @@ const val PERMISSION_DELETE = "delete"
 const val PERMISSION_LAUNCH = "launch"
 const val PERMISSION_VALIDATE = "validate"
 
+val NO_PERMISSIONS = emptyList<String>()
+
 val COMMON_ROLE_READER_PERMISSIONS = listOf(PERMISSION_READ)
 val COMMON_ROLE_USER_PERMISSIONS =
     listOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN)
@@ -92,6 +94,7 @@ fun getCommonRolesDefinition(): RolesDefinition {
   return RolesDefinition(
       permissions =
           mutableMapOf(
+              ROLE_NONE to NO_PERMISSIONS,
               ROLE_VIEWER to COMMON_ROLE_READER_PERMISSIONS,
               ROLE_USER to COMMON_ROLE_USER_PERMISSIONS,
               ROLE_EDITOR to COMMON_ROLE_EDITOR_PERMISSIONS,
@@ -104,6 +107,7 @@ fun getRunnerRolesDefinition(): RolesDefinition {
   return RolesDefinition(
       permissions =
           mutableMapOf(
+              ROLE_NONE to NO_PERMISSIONS,
               ROLE_VIEWER to RUNNER_ROLE_VIEWER_PERMISSIONS,
               ROLE_EDITOR to RUNNER_ROLE_EDITOR_PERMISSIONS,
               ROLE_VALIDATOR to RUNNER_ROLE_VALIDATOR_PERMISSIONS,
