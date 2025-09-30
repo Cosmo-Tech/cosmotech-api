@@ -57,6 +57,12 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 // Dependencies version
+val jacksonVersion = "2.18.3"
+val springWebVersion = "6.2.9"
+val bouncyCastleJdk18Version = "1.81"
+val springBootVersion = "3.4.4"
+val springSecurityJwtVersion = "1.1.1.RELEASE"
+val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
 val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
 val redisOmSpringVersion = "0.9.7"
@@ -286,6 +292,22 @@ subprojects {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}")
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation(
+        "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springOauthAutoConfigureVersion}") {
+          constraints {
+            implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+            implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+            implementation("org.springframework:spring-web:$springWebVersion")
+            implementation("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
+            implementation(
+                "org.springframework.security:spring-security-jwt:${springSecurityJwtVersion}") {
+                  exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
+                  constraints {
+                    implementation("org.bouncycastle:bcpkix-jdk18on:${bouncyCastleJdk18Version}")
+                  }
+                }
+          }
+        }
     implementation("org.springframework.security:spring-security-oauth2-jose")
     implementation("org.springframework.security:spring-security-oauth2-resource-server")
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
