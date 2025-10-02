@@ -707,7 +707,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
   @Test
   fun `test find All Solutions with different pagination params`() {
     val numberOfSolutions = 20
-    val defaultPageSize = csmPlatformProperties.twincache.solution.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.solution.defaultPageSize
     val expectedSize = 15
     IntRange(1, numberOfSolutions - 1).forEach {
       solutionApiService.createSolution(

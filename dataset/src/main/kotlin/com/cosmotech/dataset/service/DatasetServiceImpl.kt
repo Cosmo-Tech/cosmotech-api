@@ -218,7 +218,7 @@ class DatasetServiceImpl(
       size: Int?
   ): List<Dataset> {
     val workspace = workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
-    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     val isAdmin =
         csmRbac.isAdmin(
@@ -514,7 +514,7 @@ class DatasetServiceImpl(
   ): List<DatasetPart> {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
 
-    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     val isAdmin =
         csmRbac.isAdmin(dataset.security.toGenericSecurity(datasetId), getCommonRolesDefinition())
@@ -671,7 +671,7 @@ class DatasetServiceImpl(
     }
     getVerifiedDataset(organizationId, workspaceId, datasetId)
 
-    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     val datasetPartList =
         if (pageable != null) {
@@ -701,7 +701,7 @@ class DatasetServiceImpl(
     }
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
 
-    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     val datasetList =
         if (pageable != null) {

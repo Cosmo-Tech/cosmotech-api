@@ -43,7 +43,7 @@ class OrganizationServiceImpl(
 ) : CsmPhoenixService(), OrganizationApiServiceInterface {
 
   override fun listOrganizations(page: Int?, size: Int?): List<Organization> {
-    val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.organization.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
     val result: MutableList<Organization>

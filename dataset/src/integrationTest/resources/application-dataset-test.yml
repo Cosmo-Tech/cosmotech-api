@@ -3,6 +3,14 @@ management:
     enabled-by-default: false
 
 spring:
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: "http://localhost:9000/realms/fakeTenant"
+          jwk-set-uri: "http://localhost:9000/realms/fakeTenant/protocol/openid-connect/certs"
+          audiences:
+            - "cosmotech"
   data:
     redis:
       host: "localhost"
@@ -34,7 +42,6 @@ csm:
       password: "test"
       checkSolutionImage: false
     identityProvider:
-      code: on_premise_one
       authorizationUrl: "http://fake_url:8080/authorize"
       tokenUrl: "http://fake_url:8080/token"
       containerScopes:
@@ -89,18 +96,30 @@ csm:
           - ReadWriteOnce
         requests:
           storage: 1Gi
-    twincache:
-      host: "localhost"
-      port: "6379"
-      username: "default"
-      useGraphModule: true
-      # Leave it as blank as there's no auth with test container
-      password:
-      tls:
-        enabled: false
-        bundle: ""
-      dataset:
-        default-page-size: 5
+    databases:
+      resources:
+        host: "localhost"
+        port: "6379"
+        username: "default"
+        # Leave it as blank as there's no auth with test container
+        password:
+        tls:
+          enabled: false
+          bundle: ""
+        connector:
+          default-page-size: 5
+      data:
+        admin:
+          password: "password"
+          username: cosmotech_api_admin
+        host: "localhost"
+        port: 5432
+        reader:
+          password: "password"
+          username: cosmotech_api_reader
+        writer:
+          password: "password"
+          username: cosmotech_api_writer
     rbac:
       enabled: true
     s3:
@@ -109,14 +128,3 @@ csm:
       accessKeyId: "s3_username"
       secretAccessKey: "s3_password"
       region: "dummy"
-    internalResultServices:
-      enabled: true
-      eventBus:
-        enabled: false
-        host: "http://localhost:1234"
-        listener:
-          username: "fakeUser"
-          password: "fakePwd"
-        sender:
-          username: "fakeUser2"
-          password: "fakePwd2"
