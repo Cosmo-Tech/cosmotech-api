@@ -7,8 +7,6 @@ plugins { id("org.jetbrains.kotlinx.kover") }
 val argoClientJavaVersion = "v3.5.11"
 val retroFitVersion = "2.11.0"
 val okHttpBom = "4.12.0"
-val testContainersRabbitMQVersion = "1.20.6"
-val springRabbitMQTestVersion = "3.2.4"
 
 dependencies {
   implementation(projects.cosmotechDatasetApi)
@@ -24,10 +22,6 @@ dependencies {
   implementation(platform("com.squareup.okhttp3:okhttp-bom:$okHttpBom"))
   implementation("com.squareup.okhttp3:okhttp")
   implementation("com.squareup.okhttp3:logging-interceptor")
-  implementation("org.springframework.boot:spring-boot-starter-amqp")
-
-  testImplementation("org.testcontainers:rabbitmq:$testContainersRabbitMQVersion")
-  testImplementation("org.springframework.amqp:spring-rabbit-test:$springRabbitMQTestVersion")
 }
 
 tasks.withType<GenerateTask> { additionalProperties.put("modelMutable", false) }

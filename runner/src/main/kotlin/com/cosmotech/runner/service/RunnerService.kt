@@ -151,7 +151,7 @@ class RunnerService(
       workspaceId: String,
       parentId: String
   ): List<Runner> {
-    val defaultPageSize = csmPlatformProperties.twincache.runner.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.runner.defaultPageSize
     var pageRequest: Pageable = PageRequest.ofSize(defaultPageSize)
 
     val runners = mutableListOf<Runner>()

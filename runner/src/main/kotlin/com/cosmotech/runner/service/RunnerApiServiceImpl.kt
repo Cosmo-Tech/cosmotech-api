@@ -99,7 +99,7 @@ internal class RunnerApiServiceImpl(
   ): List<Runner> {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
 
-    val defaultPageSize = csmPlatformProperties.twincache.runner.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.runner.defaultPageSize
     val pageRequest =
         constructPageRequest(page, size, defaultPageSize) ?: PageRequest.of(0, defaultPageSize)
     return runnerService.listInstances(pageRequest)

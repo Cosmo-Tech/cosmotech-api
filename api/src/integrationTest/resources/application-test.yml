@@ -29,14 +29,9 @@ spring:
 
 csm:
   platform:
-    internalResultServices:
-      enabled: true
-      eventBus:
-        enabled: false
     containerRegistry:
       checkSolutionImage: false
     identityProvider:
-      code: keycloak
       authorizationUrl: "http://fake_url:8080/authorize"
       tokenUrl: "http://fake_url:8080/token"
       containerScopes:
@@ -102,17 +97,31 @@ csm:
           - ReadWriteOnce
         requests:
           storage: 1Gi
-    twincache:
-      host: "localhost"
-      port: "6379"
-      username: "default"
-      # Leave it as blank as there's no auth with test container
-      password:
-      tls:
-        enabled: false
-        bundle: ""
-      connector:
-        default-page-size: 5
+    databases:
+      resources:
+        host: "localhost"
+        port: "6379"
+        username: "default"
+        # Leave it as blank as there's no auth with test container
+        password:
+        tls:
+          enabled: false
+          bundle: ""
+        connector:
+          default-page-size: 5
+      data:
+        schema: "postgres"
+        admin:
+          password: "password"
+          username: cosmotech_api_admin
+        host: "localhost"
+        port: 5432
+        reader:
+          password: "password"
+          username: cosmotech_api_reader
+        writer:
+          password: "password"
+          username: cosmotech_api_writer
     rbac:
       enabled: true
     s3:
