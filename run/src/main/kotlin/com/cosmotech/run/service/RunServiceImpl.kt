@@ -3,6 +3,10 @@
 package com.cosmotech.run.service
 
 import com.cosmotech.common.CsmPhoenixService
+import com.cosmotech.common.config.createDB
+import com.cosmotech.common.config.dropDB
+import com.cosmotech.common.config.existTable
+import com.cosmotech.common.config.toDataTableName
 import com.cosmotech.common.events.RunDeleted
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.RunStop
@@ -17,10 +21,6 @@ import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
-import com.cosmotech.run.config.createDB
-import com.cosmotech.run.config.dropDB
-import com.cosmotech.run.config.existTable
-import com.cosmotech.run.config.toDataTableName
 import com.cosmotech.run.container.StartInfo
 import com.cosmotech.run.domain.QueryResult
 import com.cosmotech.run.domain.Run
@@ -43,7 +43,6 @@ import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import java.sql.SQLException
 import java.time.Instant
-import org.apache.commons.lang3.NotImplementedException
 import org.postgresql.util.PGobject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
@@ -99,34 +98,29 @@ class RunServiceImpl(
     private val runnerApiService: RunnerApiServiceInterface,
     private val runRepository: RunRepository,
     private val csmRbac: CsmRbac,
-    private val adminRunStorageTemplate: JdbcTemplate
+    private val adminUserJdbcTemplate: JdbcTemplate
 ) : CsmPhoenixService(), RunApiServiceInterface {
 
-  @Value("\${csm.platform.internalResultServices.storage.admin.username}")
+  @Value("\${csm.platform.databases.data.admin.username}")
   private lateinit var adminStorageUsername: String
 
-  @Value("\${csm.platform.internalResultServices.storage.admin.password}")
+  @Value("\${csm.platform.databases.data.admin.password}")
   private lateinit var adminStoragePassword: String
 
-  @Value("\${csm.platform.internalResultServices.storage.writer.username}")
+  @Value("\${csm.platform.databases.data.writer.username}")
   private lateinit var writerStorageUsername: String
 
-  @Value("\${csm.platform.internalResultServices.storage.writer.password}")
+  @Value("\${csm.platform.databases.data.writer.password}")
   private lateinit var writerStoragePassword: String
 
-  @Value("\${csm.platform.internalResultServices.storage.reader.username}")
+  @Value("\${csm.platform.databases.data.reader.username}")
   private lateinit var readerStorageUsername: String
 
-  @Value("\${csm.platform.internalResultServices.storage.reader.password}")
+  @Value("\${csm.platform.databases.data.reader.password}")
   private lateinit var readerStoragePassword: String
 
-  @Value("\${csm.platform.internalResultServices.storage.host}") private lateinit var host: String
-  @Value("\${csm.platform.internalResultServices.storage.port}") private lateinit var port: String
-
-  private val notImplementedExceptionMessage =
-      "The API is configured to use the external result data service. " +
-          "This endpoint is deactivated so, use scenario/scenariorun endpoints instead. " +
-          "To change that, set the API configuration entry 'csm.platform.use-internal-result-services' to true"
+  @Value("\${csm.platform.databases.data.host}") private lateinit var host: String
+  @Value("\${csm.platform.databases.data.port}") private lateinit var port: String
 
   override fun listRuns(
       organizationId: String,
@@ -138,7 +132,7 @@ class RunServiceImpl(
     // This call verify the user read authorization in the Runner
     runnerApiService.getRunner(organizationId, workspaceId, runnerId)
 
-    val defaultPageSize = csmPlatformProperties.twincache.run.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.run.defaultPageSize
     val pageable =
         constructPageRequest(page, size, defaultPageSize) ?: PageRequest.of(0, defaultPageSize)
 
@@ -156,7 +150,7 @@ class RunServiceImpl(
     // This call verify the user read authorization in the Runner
     runnerApiService.getRunner(organizationId, workspaceId, runnerId)
 
-    val defaultPageSize = csmPlatformProperties.twincache.run.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.run.defaultPageSize
     var pageRequest: Pageable = PageRequest.ofSize(defaultPageSize)
 
     val runs = mutableListOf<Run>()
@@ -318,7 +312,6 @@ class RunServiceImpl(
       sendRunDataRequest: SendRunDataRequest
   ): RunData {
 
-    checkInternalResultDataServiceConfiguration()
     val run = getRun(organizationId, workspaceId, runnerId, runId)
     run.hasPermission(PERMISSION_WRITE)
 
@@ -335,7 +328,6 @@ class RunServiceImpl(
       runDataQuery: RunDataQuery
   ): QueryResult {
 
-    checkInternalResultDataServiceConfiguration()
     getRun(organizationId, workspaceId, runnerId, runId)
 
     val runtimeDS =
@@ -452,7 +444,7 @@ class RunServiceImpl(
 
       workflowService.stopWorkflow(run)
 
-      val defaultPageSize = csmPlatformProperties.twincache.run.defaultPageSize
+      val defaultPageSize = csmPlatformProperties.databases.resources.run.defaultPageSize
       val pageRequest = PageRequest.ofSize(defaultPageSize)
       val runs =
           runRepository
@@ -470,8 +462,7 @@ class RunServiceImpl(
           RunDeleted(this, run.organizationId, run.workspaceId, run.runnerId, run.id!!, lastRun)
       this.eventPublisher.publishEvent(runDeleted)
 
-      if (csmPlatformProperties.internalResultServices?.enabled == true)
-          adminRunStorageTemplate.dropDB(run.id)
+      adminUserJdbcTemplate.dropDB(run.id)
 
       runRepository.delete(run)
     } catch (exception: IllegalStateException) {
@@ -512,46 +503,44 @@ class RunServiceImpl(
     val runner = runStartRequest.runnerData as Runner
     val runId = idGenerator.generate("run", prependPrefix = "run-")
 
-    if (csmPlatformProperties.internalResultServices?.enabled == true) {
-      val dbComment =
-          "organizationId=${runner.organizationId}, workspaceId=${runner.workspaceId}, runnerId=${runner.id}"
-      adminRunStorageTemplate.createDB(runId, dbComment)
+    val dbComment =
+        "organizationId=${runner.organizationId}, workspaceId=${runner.workspaceId}, runnerId=${runner.id}"
+    adminUserJdbcTemplate.createDB(runId, dbComment)
 
-      val runtimeDS =
-          DriverManagerDataSource(
-              "jdbc:postgresql://$host:$port/$runId", adminStorageUsername, adminStoragePassword)
-      runtimeDS.setDriverClassName(POSTGRESQL_DRIVER_CLASS_NAME)
-      val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
-      val connection = runDBJdbcTemplate.dataSource!!.connection
-      try {
-        connection.autoCommit = false
-        connection
-            .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $readerStorageUsername")
-            .executeUpdate()
-        connection
-            .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $writerStorageUsername")
-            .executeUpdate()
+    val runtimeDS =
+        DriverManagerDataSource(
+            "jdbc:postgresql://$host:$port/$runId", adminStorageUsername, adminStoragePassword)
+    runtimeDS.setDriverClassName(POSTGRESQL_DRIVER_CLASS_NAME)
+    val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
+    val connection = runDBJdbcTemplate.dataSource!!.connection
+    try {
+      connection.autoCommit = false
+      connection
+          .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $readerStorageUsername")
+          .executeUpdate()
+      connection
+          .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $writerStorageUsername")
+          .executeUpdate()
 
-        connection
-            .prepareStatement("GRANT CREATE ON SCHEMA public to $writerStorageUsername")
-            .executeUpdate()
+      connection
+          .prepareStatement("GRANT CREATE ON SCHEMA public to $writerStorageUsername")
+          .executeUpdate()
 
-        connection
-            .prepareStatement("GRANT USAGE ON SCHEMA public to $writerStorageUsername")
-            .executeUpdate()
+      connection
+          .prepareStatement("GRANT USAGE ON SCHEMA public to $writerStorageUsername")
+          .executeUpdate()
 
-        connection
-            .prepareStatement(
-                "ALTER DEFAULT PRIVILEGES FOR USER  $writerStorageUsername IN SCHEMA public " +
-                    "GRANT SELECT ON TABLES TO $readerStorageUsername;")
-            .executeUpdate()
-        connection.commit()
-      } catch (e: SQLException) {
-        connection.rollback()
-        throw e
-      } finally {
-        connection.close()
-      }
+      connection
+          .prepareStatement(
+              "ALTER DEFAULT PRIVILEGES FOR USER  $writerStorageUsername IN SCHEMA public " +
+                  "GRANT SELECT ON TABLES TO $readerStorageUsername;")
+          .executeUpdate()
+      connection.commit()
+    } catch (e: SQLException) {
+      connection.rollback()
+      throw e
+    } finally {
+      connection.close()
     }
 
     val startInfo =
@@ -651,12 +640,6 @@ class RunServiceImpl(
     val runner =
         runnerApiService.getRunner(this.organizationId!!, this.workspaceId!!, this.runnerId!!)
     csmRbac.verify(runner.getRbac(), permission, getRunnerRolesDefinition())
-  }
-
-  internal fun checkInternalResultDataServiceConfiguration() {
-    if (csmPlatformProperties.internalResultServices?.enabled != true) {
-      throw NotImplementedException(notImplementedExceptionMessage)
-    }
   }
 
   @EventListener(RunnerDeleted::class)

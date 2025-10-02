@@ -87,8 +87,8 @@ class ContainerFactoryTests {
                     tenantId = "my_tenant_id",
                     clientId = "my_client_id",
                     clientSecret = "my_client_secret"))
-    every { csmPlatformProperties.twincache } returns
-        CsmPlatformProperties.CsmTwinCacheProperties(
+    every { csmPlatformProperties.databases.resources } returns
+        CsmPlatformProperties.CsmDatabasesProperties.CsmResourcesProperties(
             host = "this_is_a_host",
             port = "6973",
             password = "this_is_a_password",
@@ -101,32 +101,19 @@ class ContainerFactoryTests {
             password = "password",
             username = "username")
 
-    every { csmPlatformProperties.internalResultServices } returns
-        CsmPlatformProperties.CsmServiceResult(
-            enabled = true,
-            eventBus =
-                CsmPlatformProperties.CsmServiceResult.CsmEventBus(
-                    host = "localhost",
-                    port = 6379,
-                    listener =
-                        CsmPlatformProperties.CsmServiceResult.CsmEventBus.CsmEventBusUser(
-                            password = "password", username = "username"),
-                    sender =
-                        CsmPlatformProperties.CsmServiceResult.CsmEventBus.CsmEventBusUser(
-                            password = "password", username = "username")),
-            storage =
-                CsmPlatformProperties.CsmServiceResult.CsmStorage(
-                    host = "localhost",
-                    port = 5432,
-                    admin =
-                        CsmPlatformProperties.CsmServiceResult.CsmStorage.CsmStorageUser(
-                            password = "password", username = "username"),
-                    reader =
-                        CsmPlatformProperties.CsmServiceResult.CsmStorage.CsmStorageUser(
-                            username = "username", password = "password"),
-                    writer =
-                        CsmPlatformProperties.CsmServiceResult.CsmStorage.CsmStorageUser(
-                            username = "username", password = "password")))
+    every { csmPlatformProperties.databases.data } returns
+        CsmPlatformProperties.CsmDatabasesProperties.CsmDataIOProperties(
+            host = "localhost",
+            port = 5432,
+            admin =
+                CsmPlatformProperties.CsmDatabasesProperties.CsmDataIOProperties.CsmStorageUser(
+                    password = "password", username = "username"),
+            reader =
+                CsmPlatformProperties.CsmDatabasesProperties.CsmDataIOProperties.CsmStorageUser(
+                    username = "username", password = "password"),
+            writer =
+                CsmPlatformProperties.CsmDatabasesProperties.CsmDataIOProperties.CsmStorageUser(
+                    username = "username", password = "password"))
 
     factory =
         RunContainerFactory(
@@ -173,12 +160,6 @@ class ContainerFactoryTests {
       runId: String
   ): RunContainer {
 
-    val eventHubUri =
-        "amqp://" +
-            "${csmPlatformProperties.internalResultServices?.eventBus?.host}:" +
-            "${csmPlatformProperties.internalResultServices?.eventBus?.port}/" +
-            workspace.id
-
     return RunContainer(
         name = CONTAINER_CSM_ORC,
         image = "twinengines.azurecr.io/" + solution.repository + ":" + solution.version,
@@ -190,10 +171,10 @@ class ContainerFactoryTests {
                 "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
                 "CSM_OUTPUT_ABSOLUTE_PATH" to "/pkg/share/Simulation/Output",
                 "CSM_TEMP_ABSOLUTE_PATH" to "/usr/tmp",
-                "TWIN_CACHE_HOST" to csmPlatformProperties.twincache.host,
-                "TWIN_CACHE_PORT" to csmPlatformProperties.twincache.port,
-                "TWIN_CACHE_PASSWORD" to csmPlatformProperties.twincache.password,
-                "TWIN_CACHE_USERNAME" to csmPlatformProperties.twincache.username,
+                "TWIN_CACHE_HOST" to csmPlatformProperties.databases.resources.host,
+                "TWIN_CACHE_PORT" to csmPlatformProperties.databases.resources.port,
+                "TWIN_CACHE_PASSWORD" to csmPlatformProperties.databases.resources.password,
+                "TWIN_CACHE_USERNAME" to csmPlatformProperties.databases.resources.username,
                 "IDP_CLIENT_ID" to csmPlatformProperties.identityProvider.identity.clientId,
                 "IDP_CLIENT_SECRET" to csmPlatformProperties.identityProvider.identity.clientSecret,
                 "IDP_BASE_URL" to csmPlatformProperties.identityProvider.serverBaseUrl,
@@ -203,11 +184,7 @@ class ContainerFactoryTests {
                 "CSM_WORKSPACE_ID" to workspace.id,
                 "CSM_RUNNER_ID" to runner.id,
                 "CSM_RUN_ID" to runId,
-                "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
-                "CSM_PROBES_MEASURES_TOPIC" to eventHubUri,
-                "CSM_AMQPCONSUMER_USER" to "username",
-                "CSM_AMQPCONSUMER_PASSWORD" to "password",
-            ),
+                "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID),
         entrypoint = "entrypoint.py",
         nodeLabel = runTemplate.computeSize!!.removeSuffix("pool"),
         runSizing =

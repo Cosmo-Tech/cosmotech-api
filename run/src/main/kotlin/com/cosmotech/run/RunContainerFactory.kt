@@ -26,7 +26,6 @@ import com.cosmotech.workspace.domain.Workspace
 import org.springframework.stereotype.Component
 
 const val CONTAINER_CSM_ORC = "csmorchestrator"
-internal const val IDENTITY_PROVIDER = "IDENTITY_PROVIDER"
 internal const val IDP_CLIENT_ID = "IDP_CLIENT_ID"
 internal const val IDP_CLIENT_SECRET = "IDP_CLIENT_SECRET"
 internal const val IDP_BASE_URL = "IDP_BASE_URL"
@@ -53,16 +52,12 @@ private const val PARAMETERS_RUN_VAR = "CSM_RUN_ID"
 
 private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
-private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
 private const val NODE_PARAM_NONE = "%NONE%"
 const val NODE_LABEL_DEFAULT = "basic"
 private const val NODE_LABEL_HIGH_CPU = "highcpu"
 private const val NODE_LABEL_HIGH_MEMORY = "highmemory"
 const val NODE_LABEL_SUFFIX = "pool"
 private const val GENERATE_NAME_SUFFIX = "-"
-
-internal const val CSM_AMQPCONSUMER_USER_ENV_VAR = "CSM_AMQPCONSUMER_USER"
-internal const val CSM_AMQPCONSUMER_PASSWORD_ENV_VAR = "CSM_AMQPCONSUMER_PASSWORD"
 
 internal const val CSM_JOB_ID_LABEL_KEY = "cosmotech.com/job_id"
 internal const val WORKFLOW_TYPE_LABEL = "cosmotech.com/workflowtype"
@@ -174,8 +169,6 @@ class RunContainerFactory(
 
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
 
-    envVars.putAll(getEventBusEnvVars(workspace))
-
     val customSizing = runSizing ?: (runTemplateSizing ?: defaultSizing)
 
     containers.add(
@@ -278,25 +271,6 @@ class RunContainerFactory(
             "runTemplateId $runTemplateId not found in Solution ${solution.id}")
   }
 
-  private fun getEventBusEnvVars(workspace: Workspace): Map<String, String> {
-
-    val envVars: MutableMap<String, String> = mutableMapOf()
-
-    if (csmPlatformProperties.internalResultServices?.enabled == true) {
-      val internalServiceInfo = csmPlatformProperties.internalResultServices!!
-      val eventHubUri =
-          "amqp://" +
-              "${internalServiceInfo.eventBus.host}:${internalServiceInfo.eventBus.port}/${workspace.id}"
-      envVars.putAll(
-          mapOf(
-              CSM_AMQPCONSUMER_USER_ENV_VAR to internalServiceInfo.eventBus.sender.username,
-              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to internalServiceInfo.eventBus.sender.password,
-              EVENT_HUB_MEASURES_VAR to eventHubUri))
-    }
-
-    return envVars.toMap()
-  }
-
   private fun getImageName(registry: String, repository: String, version: String? = null): String {
     var imageRef = if (registry.isNotEmpty()) "$registry/" else ""
     imageRef += repository
@@ -319,7 +293,7 @@ internal fun getMinimalCommonEnvVars(
 ): Map<String, String> {
 
   val twinCacheEnvVars: MutableMap<String, String> = mutableMapOf()
-  val twinCacheInfo = csmPlatformProperties.twincache
+  val twinCacheInfo = csmPlatformProperties.databases.resources
   twinCacheEnvVars.putAll(
       mapOf(
           TWIN_CACHE_HOST to (twinCacheInfo.host),

@@ -111,7 +111,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
     @Test
     fun `listOrganizations with correct values`() {
       val numberOfOrganizationToCreate = 20
-      val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
+      val defaultPageSize = csmPlatformProperties.databases.resources.organization.defaultPageSize
 
       batchOrganizationCreation(numberOfOrganizationToCreate)
       testlistOrganizations(null, null, numberOfOrganizationToCreate)
@@ -1101,7 +1101,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
     @Test
     fun `find All Organizations with correct values`() {
       val numberOfOrganizationToCreate = 20
-      val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
+      val defaultPageSize = csmPlatformProperties.databases.resources.organization.defaultPageSize
 
       batchOrganizationCreation(numberOfOrganizationToCreate)
       testlistOrganizations(null, null, numberOfOrganizationToCreate)
@@ -2175,7 +2175,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
       numberOfOrganizationCreated: Int,
       numberOfOrganizationReachableByTestUser: Int
   ) {
-    val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.organization.defaultPageSize
 
     testlistOrganizations(null, null, numberOfOrganizationReachableByTestUser)
     testlistOrganizations(0, null, defaultPageSize)

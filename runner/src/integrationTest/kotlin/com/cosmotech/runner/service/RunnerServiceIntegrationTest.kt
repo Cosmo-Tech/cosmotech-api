@@ -337,7 +337,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     // We create more runner than there can be on one page of default size to assert
     // deleteAllRunners still works with high quantities of runners
-    repeat(csmPlatformProperties.twincache.runner.defaultPageSize + 1) {
+    repeat(csmPlatformProperties.databases.resources.runner.defaultPageSize + 1) {
       runnerApiService.createRunner(
           organizationSaved.id, workspaceSaved.id, makeRunnerCreateRequest())
     }
@@ -346,7 +346,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   @Test
   fun `test find All Runners with different pagination params`() {
     val numberOfRunners = 20
-    val defaultPageSize = csmPlatformProperties.twincache.runner.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.runner.defaultPageSize
     val expectedSize = 15
     IntRange(1, numberOfRunners - 1).forEach {
       val runner =
