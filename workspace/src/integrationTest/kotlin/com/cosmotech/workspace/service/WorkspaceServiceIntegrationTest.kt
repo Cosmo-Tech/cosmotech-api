@@ -287,7 +287,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
   fun `test find All Workspaces with different pagination params`() {
 
     val workspaceNumber = 20
-    val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.workspace.defaultPageSize
     val expectedSize = 15
     IntRange(1, workspaceNumber - 1).forEach {
       val workspace = makeWorkspaceCreateRequest(solutionSaved.id, "w-workspace-$it")

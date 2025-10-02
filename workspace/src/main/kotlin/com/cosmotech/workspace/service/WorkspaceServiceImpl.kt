@@ -76,7 +76,7 @@ internal class WorkspaceServiceImpl(
     val isAdmin =
         csmRbac.isAdmin(
             organization.security.toGenericSecurity(organizationId), getCommonRolesDefinition())
-    val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.workspace.defaultPageSize
     var result: List<Workspace>
     var pageable = constructPageRequest(page, size, defaultPageSize)
 
@@ -307,14 +307,12 @@ internal class WorkspaceServiceImpl(
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     val organizationId = organizationUnregistered.organizationId
     val pageable: Pageable =
-        Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
+        Pageable.ofSize(csmPlatformProperties.databases.resources.workspace.defaultPageSize)
     val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
     workspaces.forEach {
       deleteAllS3WorkspaceObjects(organizationId, it)
       workspaceRepository.delete(it)
-      if (csmPlatformProperties.internalResultServices?.enabled == true) {
-        this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id))
-      }
+      this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id))
     }
   }
 

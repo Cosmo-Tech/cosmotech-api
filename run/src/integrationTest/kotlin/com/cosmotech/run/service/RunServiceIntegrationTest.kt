@@ -3,6 +3,9 @@
 package com.cosmotech.run.service
 
 import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.config.existDB
+import com.cosmotech.common.config.existTable
+import com.cosmotech.common.config.toDataTableName
 import com.cosmotech.common.events.RunDeleted
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.rbac.ROLE_ADMIN
@@ -21,9 +24,6 @@ import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
-import com.cosmotech.run.config.existDB
-import com.cosmotech.run.config.existTable
-import com.cosmotech.run.config.toDataTableName
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunDataQuery
 import com.cosmotech.run.domain.RunEditInfo
@@ -112,7 +112,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
   @SpykBean @Autowired lateinit var runApiService: RunApiServiceInterface
   @Autowired lateinit var eventPublisher: com.cosmotech.common.events.CsmEventPublisher
 
-  @Autowired lateinit var adminRunStorageTemplate: JdbcTemplate
+  @Autowired lateinit var adminUserJdbcTemplate: JdbcTemplate
 
   lateinit var dataset: DatasetCreateRequest
   lateinit var solution: SolutionCreateRequest
@@ -329,7 +329,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
   @Test
   fun `test find All Runs with different pagination params`() {
     val numberOfRuns = 20
-    val defaultPageSize = csmPlatformProperties.twincache.run.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.run.defaultPageSize
     val expectedSize = 15
 
     IntRange(1, numberOfRuns).forEach {
@@ -463,15 +463,14 @@ class RunServiceIntegrationTest : CsmTestBase() {
     fun setUp() {
       runSavedId =
           mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, solutionSaved.id)
-      assertTrue(adminRunStorageTemplate.existDB(runSavedId))
+      assertTrue(adminUserJdbcTemplate.existDB(runSavedId))
 
-      val internalResultServices = csmPlatformProperties.internalResultServices!!
+      val databaseIO = csmPlatformProperties.databases.data
       val runtimeDS =
           DriverManagerDataSource(
-              "jdbc:postgresql://${internalResultServices.storage.host}:${internalResultServices.storage.port}" +
-                  "/$runSavedId",
-              internalResultServices.storage.reader.username,
-              internalResultServices.storage.reader.password)
+              "jdbc:postgresql://${databaseIO.host}:${databaseIO.port}" + "/$runSavedId",
+              databaseIO.reader.username,
+              databaseIO.reader.password)
       runtimeDS.setDriverClassName("org.postgresql.Driver")
       readerRunStorageTemplate = JdbcTemplate(runtimeDS)
     }
@@ -479,7 +478,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
     @Test
     fun `test deleteRun should remove the database`() {
       runApiService.deleteRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, runSavedId)
-      assertFalse(adminRunStorageTemplate.existDB(runSavedId))
+      assertFalse(adminUserJdbcTemplate.existDB(runSavedId))
     }
 
     @Test

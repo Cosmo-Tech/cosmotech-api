@@ -60,7 +60,7 @@ class SolutionServiceImpl(
   override fun listSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
     organizationApiService.getVerifiedOrganization(organizationId)
 
-    val defaultPageSize = csmPlatformProperties.twincache.solution.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.databases.resources.solution.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
     val result: MutableList<Solution>
@@ -308,7 +308,7 @@ class SolutionServiceImpl(
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     val pageable: Pageable =
-        Pageable.ofSize(csmPlatformProperties.twincache.solution.defaultPageSize)
+        Pageable.ofSize(csmPlatformProperties.databases.resources.solution.defaultPageSize)
     val solutions =
         solutionRepository
             .findByOrganizationId(organizationUnregistered.organizationId, pageable)
