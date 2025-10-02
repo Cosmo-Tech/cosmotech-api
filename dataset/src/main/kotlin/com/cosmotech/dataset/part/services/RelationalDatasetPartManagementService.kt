@@ -2,17 +2,23 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset.part.services
 
-import com.cosmotech.common.postgres.PostgresConfiguration
+import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.config.PostgresConfiguration
 import com.cosmotech.dataset.domain.DatasetPart
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import kotlin.use
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
+import org.apache.commons.csv.CSVPrinter
 import org.apache.commons.csv.CSVRecord
 import org.slf4j.LoggerFactory
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.sql.SQLException
 
 /**
  * Service implementation for managing dataset parts in a relational database.
@@ -21,8 +27,10 @@ import org.springframework.web.multipart.MultipartFile
  * including saving and deleting dataset part entities.
  */
 @Service("Relational")
-class RelationalDatasetPartManagementService(val postgresConfiguration: PostgresConfiguration) :
-    DatasetPartManagementService {
+class RelationalDatasetPartManagementService(
+    val postgresConfiguration: PostgresConfiguration,
+    val csmPlatformProperties: CsmPlatformProperties
+) : DatasetPartManagementService {
 
   private val logger = LoggerFactory.getLogger(RelationalDatasetPartManagementService::class.java)
 
@@ -74,10 +82,10 @@ class RelationalDatasetPartManagementService(val postgresConfiguration: Postgres
       }
 
       connection.commit()
-    } catch (ex: Exception) {
+    } catch (ex: SQLException) {
       connection.rollback()
       logger.error("Transaction Failed and roll back was performed.")
-      ex.printStackTrace()
+      throw ex
     } finally {
       connection.close()
     }
@@ -85,7 +93,25 @@ class RelationalDatasetPartManagementService(val postgresConfiguration: Postgres
 
   override fun getData(datasetPart: DatasetPart): Resource {
     logger.debug("RelationalDatasetPartManagementService#getData")
-    TODO("Not yet implemented")
+    val out = ByteArrayOutputStream()
+    val csvPrinter = CSVPrinter(out.writer(), CSVFormat.DEFAULT)
+    val connection = postgresConfiguration.readerJdbcTemplate().dataSource!!.connection
+
+    connection.createStatement().use { statement ->
+      statement.executeQuery("SELECT * FROM ${datasetPart.id};").use { rs ->
+        // Write header
+        val headers = (1..rs.metaData.columnCount).map { rs.metaData.getColumnName(it) }
+        csvPrinter.printRecord(headers)
+        // Write rows
+        while (rs.next()) {
+          val row = (1..rs.metaData.columnCount).map { rs.getString(it) }
+          csvPrinter.printRecord(row)
+        }
+      }
+    }
+
+    csvPrinter.flush()
+    return ByteArrayResource(out.toByteArray())
   }
 
   override fun delete(datasetPart: DatasetPart) {

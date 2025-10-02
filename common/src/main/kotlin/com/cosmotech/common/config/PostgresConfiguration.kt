@@ -18,7 +18,7 @@ class PostgresConfiguration(val csmPlatformProperties: CsmPlatformProperties) {
           "/${csmPlatformProperties.databases.data.schema}"
 
   @Bean
-  fun adminUserJdbcTemplate(): JdbcTemplate {
+  fun adminJdbcTemplate(): JdbcTemplate {
     val dataSource =
         DriverManagerDataSource(
             jdbcUrl,
