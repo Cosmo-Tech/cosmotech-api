@@ -5,21 +5,14 @@ logging:
       OkHttpClient: WARN
 
 spring:
-  rabbitmq:
-    host: ${csm.platform.internalResultServices.eventBus.host}
-    port: ${csm.platform.internalResultServices.eventBus.port}
-    password: ${csm.platform.internalResultServices.eventBus.listener.password}
-    username: ${csm.platform.internalResultServices.eventBus.listener.username}
-    ssl:
-      enabled: ${csm.platform.internalResultServices.eventBus.tls.enabled}
   data:
     redis:
-      host: ${csm.platform.twincache.host}
-      port: ${csm.platform.twincache.port}
+      host: ${csm.platform.databases.resources.host}
+      port: ${csm.platform.databases.resources.port}
       ssl:
-        enabled: ${csm.platform.twincache.tls.enabled}
-      password: ${csm.platform.twincache.password}
-      username: ${csm.platform.twincache.username}
+        enabled: ${csm.platform.databases.resources.tls.enabled}
+      password: ${csm.platform.databases.resources.password}
+      username: ${csm.platform.databases.resources.username}
       timeout: 60000
       client-type: jedis
   servlet:
@@ -86,23 +79,23 @@ csm:
       downSamplingDefaultEnabled: false
       downSamplingRetentionDays: 400
       downSamplingBucketDurationMs: 3600000
-    twincache:
-      host: "localhost"
-      port: "6379"
-      username: "default_user"
-      password: "default_password"
-      tls:
-        enabled: false
-        bundle: ""
-      run:
-        maxResult: 200
-      runner:
-        maxResult: 200
-    internalResultServices:
-      enabled: false
-      storage:
+    databases:
+      resources:
+        host: "localhost"
+        port: "6379"
+        username: "default_user"
+        password: "default_password"
+        tls:
+          enabled: false
+          bundle: ""
+        run:
+          defaultPageSize: 200
+        runner:
+          defaultPageSize: 200
+      data:
         host: "localhost"
         port: 5432
+        schema: "cosmotech"
         reader:
           username: "storage_reader_username"
           password: "storage_reader_password"
@@ -112,22 +105,6 @@ csm:
         admin:
           username: "storage_admin_username"
           password: "storage_admin_password"
-      eventBus:
-        enabled: true
-        tls:
-          enabled: false
-          bundle: ""
-        host: "localhost"
-        port: 5672
-        default-exchange: "csm-exchange"
-        default-queue: "csm"
-        default-routing-key: "csm"
-        listener:
-          username: "eventbus_admin_username"
-          password: "eventbus_admin_password"
-        sender:
-          username: "eventbus_sender_username"
-          password: "eventbus_sender_password"
     s3:
       endpointUrl: "http://localhost:9000"
       bucketName: "cosmotech-api"

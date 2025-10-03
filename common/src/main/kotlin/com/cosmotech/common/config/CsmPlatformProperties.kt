@@ -3,7 +3,6 @@
 package com.cosmotech.common.config
 
 import com.cosmotech.common.security.ROLE_ORGANIZATION_USER
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /** Configuration Properties for the Cosmo Tech Platform */
@@ -33,8 +32,8 @@ data class CsmPlatformProperties(
     /** Identity provider used if openapi default configuration needs to be overwritten */
     val identityProvider: CsmIdentityProvider,
 
-    /** Twin Data Layer configuration */
-    val twincache: CsmTwinCacheProperties,
+    /** Data Layer configuration */
+    val databases: CsmDatabasesProperties,
 
     /** RBAC / ACL configuration */
     val rbac: CsmRbac = CsmRbac(),
@@ -46,78 +45,8 @@ data class CsmPlatformProperties(
     val namespace: String = "phoenix",
 
     /** Persistent metrics configuration */
-    val metrics: Metrics = Metrics(),
-
-    /** Internal result data service configuration */
-    val internalResultServices: CsmServiceResult?,
+    val metrics: Metrics = Metrics()
 ) {
-  @ConditionalOnProperty(
-      prefix = "csm.platform.internalResultServices.enabled",
-      havingValue = "true",
-      matchIfMissing = false)
-  data class CsmServiceResult(
-      /** Define if current API use internal result data service or cloud one */
-      val enabled: Boolean = false,
-
-      /** Storage configuration */
-      val storage: CsmStorage,
-
-      /** Queue configuration */
-      val eventBus: CsmEventBus
-  ) {
-    data class CsmStorage(
-        /** Define if current API use internal storage for probes or not */
-        val enabled: Boolean = true,
-
-        /** Storage host */
-        val host: String,
-
-        /** Storage port */
-        val port: Int = 5432,
-
-        /** Storage reader user configuration */
-        val reader: CsmStorageUser,
-
-        /** Storage writer user configuration */
-        val writer: CsmStorageUser,
-
-        /** Storage admin user configuration */
-        val admin: CsmStorageUser
-    ) {
-      data class CsmStorageUser(val username: String, val password: String)
-    }
-
-    data class CsmEventBus(
-        /** Define if current API use event bus within internal result data service or not */
-        val enabled: Boolean = true,
-
-        /** TLS Platform bundle config */
-        val tls: TLSConfig = TLSConfig(),
-
-        /** EventBus host */
-        val host: String,
-
-        /** EventBus port */
-        val port: Int = 5672,
-
-        /** EventBus default exchange */
-        val defaultExchange: String = "csm-exchange",
-
-        /** EventBus default queue */
-        val defaultQueue: String = "csm",
-
-        /** EventBus default routing key */
-        val defaultRoutingKey: String = "csm",
-
-        /** EventBus listener user configuration */
-        val listener: CsmEventBusUser,
-
-        /** EventBus sender user configuration */
-        val sender: CsmEventBusUser
-    ) {
-      data class CsmEventBusUser(val username: String, val password: String)
-    }
-  }
 
   data class Metrics(
       /** Enable Metrics service */
@@ -340,54 +269,82 @@ data class CsmPlatformProperties(
     )
   }
 
-  data class CsmTwinCacheProperties(
-      /** Twin cache host */
-      val host: String,
-
-      /** Twin cache port */
-      val port: String = "6379",
-
-      /** Twin cache user */
-      val username: String = "default",
-
-      /** Twin cache password */
-      val password: String,
-
-      /** Twin cache query timeout. Kill a query after specified timeout (in millis) default 5000 */
-      val queryTimeout: Long = 5000,
-
-      /**
-       * After specified timeout the query bulk will be deleted from Redis (in seconds) default
-       * 86400 = 24h
-       */
-      val queryBulkTTL: Long = 86400,
-
-      /** Twin cache query page information for organization */
-      val organization: PageSizing = PageSizing(),
-
-      /** Twin cache query page information for workspace */
-      val workspace: PageSizing = PageSizing(),
-
-      /** Twin cache query page information for runner */
-      val runner: PageSizing = PageSizing(),
-
-      /** Twin cache query page information for dataset */
-      val dataset: PageSizing = PageSizing(),
-
-      /** Twin cache query page information for run */
-      val run: PageSizing = PageSizing(),
-
-      /** Twin cache query page information for solution */
-      val solution: PageSizing = PageSizing(),
-
-      /** TLS Platform bundle config */
-      val tls: TLSConfig = TLSConfig()
+  data class CsmDatabasesProperties(
+      val resources: CsmResourcesProperties,
+      val data: CsmDataIOProperties
   ) {
 
-    data class PageSizing(
-        /** Max result for a single page */
-        val defaultPageSize: Int = 50
-    )
+    data class CsmResourcesProperties(
+        /** Host */
+        val host: String,
+
+        /** Port */
+        val port: String = "6379",
+
+        /** User */
+        val username: String = "default",
+
+        /** Password */
+        val password: String,
+
+        /** Query timeout. Kill a query after specified timeout (in millis) default 5000 */
+        val queryTimeout: Long = 5000,
+
+        /**
+         * After specified timeout the query bulk will be deleted from Redis (in seconds) default
+         * 86400 = 24h
+         */
+        val queryBulkTTL: Long = 86400,
+
+        /** Organization's resource query page information */
+        val organization: PageSizing = PageSizing(),
+
+        /** Workspace's resource query page information */
+        val workspace: PageSizing = PageSizing(),
+
+        /** Runner's resource query page information */
+        val runner: PageSizing = PageSizing(),
+
+        /** Dataset's resource query page information */
+        val dataset: PageSizing = PageSizing(),
+
+        /** Run's resource query page information */
+        val run: PageSizing = PageSizing(),
+
+        /** Solution's resource query page information */
+        val solution: PageSizing = PageSizing(),
+
+        /** TLS Platform bundle config */
+        val tls: TLSConfig = TLSConfig()
+    ) {
+
+      data class PageSizing(
+          /** Max result for a single page */
+          val defaultPageSize: Int = 50
+      )
+    }
+
+    data class CsmDataIOProperties(
+        /** Storage host */
+        val host: String,
+
+        /** Storage port */
+        val port: Int = 5432,
+
+        /** Storage schema */
+        val schema: String = "cosmotech",
+
+        /** Storage reader user configuration */
+        val reader: CsmStorageUser,
+
+        /** Storage writer user configuration */
+        val writer: CsmStorageUser,
+
+        /** Storage admin user configuration */
+        val admin: CsmStorageUser
+    ) {
+      data class CsmStorageUser(val username: String, val password: String)
+    }
   }
 
   data class CsmRbac(

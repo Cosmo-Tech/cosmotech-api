@@ -150,40 +150,29 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
     }
 
     private fun initPostgresConfiguration(registry: DynamicPropertyRegistry) {
-      registry.add("csm.platform.internalResultServices.storage.host") { postgres.host }
-      registry.add("csm.platform.internalResultServices.storage.port") {
-        postgres.getMappedPort(POSTGRESQL_PORT)
-      }
-      registry.add("csm.platform.internalResultServices.storage.admin.username") {
-        ADMIN_USER_CREDENTIALS
-      }
-      registry.add("csm.platform.internalResultServices.storage.admin.password") {
-        ADMIN_USER_CREDENTIALS
-      }
-      registry.add("csm.platform.internalResultServices.storage.writer.username") {
-        WRITER_USER_CREDENTIALS
-      }
-      registry.add("csm.platform.internalResultServices.storage.writer.password") {
-        WRITER_USER_CREDENTIALS
-      }
-      registry.add("csm.platform.internalResultServices.storage.reader.username") {
-        READER_USER_CREDENTIALS
-      }
-      registry.add("csm.platform.internalResultServices.storage.reader.password") {
-        READER_USER_CREDENTIALS
-      }
+      registry.add("csm.platform.databases.data.host") { postgres.host }
+      registry.add("csm.platform.databases.data.port") { postgres.getMappedPort(POSTGRESQL_PORT) }
+      registry.add("csm.platform.databases.data.admin.username") { ADMIN_USER_CREDENTIALS }
+      registry.add("csm.platform.databases.data.admin.password") { ADMIN_USER_CREDENTIALS }
+      registry.add("csm.platform.databases.data.writer.username") { WRITER_USER_CREDENTIALS }
+      registry.add("csm.platform.databases.data.writer.password") { WRITER_USER_CREDENTIALS }
+      registry.add("csm.platform.databases.data.reader.username") { READER_USER_CREDENTIALS }
+      registry.add("csm.platform.databases.data.reader.password") { READER_USER_CREDENTIALS }
     }
   }
 
   @BeforeAll
   fun beforeAll() {
     redisStackServer.start()
+    localStackServer.start()
     postgres.start()
   }
 
   @AfterAll
   fun afterAll() {
     postgres.stop()
+    localStackServer.stop()
+    redisStackServer.stop()
   }
 
   override fun redisServers(): MutableCollection<RedisServer> {
