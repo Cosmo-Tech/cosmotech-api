@@ -106,12 +106,7 @@ csm:
         tls:
           enabled: false
           bundle: ""
-        connector:
-          default-page-size: 5
       data:
-        admin:
-          password: "password"
-          username: cosmotech_api_admin
         host: "localhost"
         port: 5432
         reader:

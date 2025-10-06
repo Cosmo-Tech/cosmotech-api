@@ -23,8 +23,6 @@ import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_NAME
 import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_NODE_LABEL
 import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_RUN_ARGS
 import com.cosmotech.api.home.run.RunConstants.RequestContent.CSM_SIMULATION_RUN
-import com.cosmotech.api.home.run.RunConstants.RequestContent.CUSTOM_DATA_QUERY
-import com.cosmotech.api.home.run.RunConstants.RequestContent.CUSTOM_DATA_TABLE_NAME
 import com.cosmotech.api.home.run.RunConstants.RequestContent.DATASET_LIST
 import com.cosmotech.api.home.run.RunConstants.RequestContent.DESCRIPTION
 import com.cosmotech.api.home.run.RunConstants.RequestContent.HOST_NODE_NAME
@@ -275,107 +273,6 @@ class RunControllerTests : ControllerTestBase() {
         .andDo(
             document(
                 "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/DELETE"))
-  }
-
-  @Test
-  @WithMockOauth2User
-  fun send_data_run() {
-
-    every { eventPublisher.publishEvent(any()) } answers
-        {
-          firstArg<UpdateRunnerStatus>().response = "Running"
-        }
-
-    val dataToSend =
-        """{
-                      "id": "my_table",
-                      "data": [
-                        {
-                          "additionalProp1": {},
-                          "additionalProp2": "test",
-                          "additionalProp3": 100
-                        },
-                        {
-                          "additionalProp1": {},
-                          "additionalProp2": "test",
-                          "additionalProp4": 1000
-                        }
-                      ]
-                    }"""
-    mvc.perform(
-            post(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/data/send")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(dataToSend)
-                .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
-        .andExpect(status().is2xxSuccessful)
-        .andExpect(jsonPath("$.database_name").value(runId))
-        .andExpect(jsonPath("$.table_name").value(CUSTOM_DATA_TABLE_NAME))
-        .andExpect(jsonPath("$.data[0].additionalProp1").value(""))
-        .andExpect(jsonPath("$.data[0].additionalProp2").value("test"))
-        .andExpect(jsonPath("$.data[0].additionalProp3").value(100))
-        .andExpect(jsonPath("$.data[1].additionalProp1").value(""))
-        .andExpect(jsonPath("$.data[1].additionalProp2").value("test"))
-        .andExpect(jsonPath("$.data[1].additionalProp4").value(1000))
-        .andDo(MockMvcResultHandlers.print())
-        .andDo(
-            document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/send/POST"))
-  }
-
-  @Test
-  @WithMockOauth2User
-  fun query_data_run() {
-
-    every { eventPublisher.publishEvent(any()) } answers
-        {
-          firstArg<UpdateRunnerStatus>().response = "Running"
-        }
-
-    val dataToSend =
-        """{
-                      "id": "my_table",
-                      "data": [
-                        {
-                          "additionalProp1": {},
-                          "additionalProp2": "test",
-                          "additionalProp3": 100
-                        },
-                        {
-                          "additionalProp1": {},
-                          "additionalProp2": "test",
-                          "additionalProp4": 1000
-                        }
-                      ]
-                    }"""
-    mvc.perform(
-            post(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/data/send")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(dataToSend)
-                .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
-        .andExpect(status().is2xxSuccessful)
-
-    mvc.perform(
-            post(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/data/query")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(CUSTOM_DATA_QUERY)
-                .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
-        .andExpect(status().is2xxSuccessful)
-        .andExpect(jsonPath("$.result[0].additionalprop1").value(""))
-        .andExpect(jsonPath("$.result[0].additionalprop2").value("test"))
-        .andExpect(jsonPath("$.result[0].additionalprop3").value(100))
-        .andExpect(jsonPath("$.result[1].additionalprop1").value(""))
-        .andExpect(jsonPath("$.result[1].additionalprop2").value("test"))
-        .andExpect(jsonPath("$.result[1].additionalprop4").value(1000))
-        .andDo(MockMvcResultHandlers.print())
-        .andDo(
-            document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/query/POST"))
   }
 
   @Test

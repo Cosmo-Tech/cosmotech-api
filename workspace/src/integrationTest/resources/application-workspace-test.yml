@@ -42,7 +42,6 @@ csm:
       password: "test"
       checkSolutionImage: false
     identityProvider:
-      code: on_premise_one
       authorizationUrl: "http://fake_url:8080/authorize"
       tokenUrl: "http://fake_url:8080/token"
       containerScopes:
@@ -125,9 +124,6 @@ csm:
           enabled: false
           bundle: ""
       data:
-        admin:
-          password: "password"
-          username: cosmotech_api_admin
         host: "localhost"
         port: 5432
         reader:

@@ -48,8 +48,6 @@ All URIs are relative to *http://localhost:8080*
 *RunApi* | [**getRunLogs**](Apis/RunApi.md#getrunlogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run |
 *RunApi* | [**getRunStatus**](Apis/RunApi.md#getrunstatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status | get the status for the Run |
 *RunApi* | [**listRuns**](Apis/RunApi.md#listruns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner |
-*RunApi* | [**queryRunData**](Apis/RunApi.md#queryrundata) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/query | query the run data |
-*RunApi* | [**sendRunData**](Apis/RunApi.md#sendrundata) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/send | Send data associated to a run |
 | *RunnerApi* | [**createRunner**](Apis/RunnerApi.md#createrunner) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners | Create a new Runner |
 *RunnerApi* | [**createRunnerAccessControl**](Apis/RunnerApi.md#createrunneraccesscontrol) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access | Add a control access to the Runner |
 *RunnerApi* | [**deleteRunner**](Apis/RunnerApi.md#deleterunner) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Delete a runner |
@@ -141,12 +139,9 @@ All URIs are relative to *http://localhost:8080*
  - [OrganizationRole](./Models/OrganizationRole.md)
  - [OrganizationSecurity](./Models/OrganizationSecurity.md)
  - [OrganizationUpdateRequest](./Models/OrganizationUpdateRequest.md)
- - [QueryResult](./Models/QueryResult.md)
  - [ResourceSizeInfo](./Models/ResourceSizeInfo.md)
  - [Run](./Models/Run.md)
  - [RunContainer](./Models/RunContainer.md)
- - [RunData](./Models/RunData.md)
- - [RunDataQuery](./Models/RunDataQuery.md)
  - [RunEditInfo](./Models/RunEditInfo.md)
  - [RunResourceRequested](./Models/RunResourceRequested.md)
  - [RunState](./Models/RunState.md)
@@ -174,7 +169,6 @@ All URIs are relative to *http://localhost:8080*
  - [RunnerSecurity](./Models/RunnerSecurity.md)
  - [RunnerUpdateRequest](./Models/RunnerUpdateRequest.md)
  - [RunnerValidationStatus](./Models/RunnerValidationStatus.md)
- - [SendRunDataRequest](./Models/SendRunDataRequest.md)
  - [Solution](./Models/Solution.md)
  - [SolutionAccessControl](./Models/SolutionAccessControl.md)
  - [SolutionCreateRequest](./Models/SolutionCreateRequest.md)

@@ -15,18 +15,7 @@ class PostgresConfiguration(val csmPlatformProperties: CsmPlatformProperties) {
   private val jdbcUrl =
       "jdbc:postgresql://${csmPlatformProperties.databases.data.host}" +
           ":${csmPlatformProperties.databases.data.port}" +
-          "/${csmPlatformProperties.databases.data.schema}"
-
-  @Bean
-  fun adminUserJdbcTemplate(): JdbcTemplate {
-    val dataSource =
-        DriverManagerDataSource(
-            jdbcUrl,
-            csmPlatformProperties.databases.data.admin.username,
-            csmPlatformProperties.databases.data.admin.password)
-    dataSource.setDriverClassName(jdbcDriverClass)
-    return JdbcTemplate(dataSource)
-  }
+          "/${csmPlatformProperties.databases.data.database}"
 
   @Bean
   fun readerJdbcTemplate(): JdbcTemplate {

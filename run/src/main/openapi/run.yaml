@@ -161,128 +161,6 @@ paths:
               examples:
                 Run:
                   $ref: '#/components/examples/BreweryRunLogs'
-  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/send:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
-      - name: run_id
-        in: path
-        description: the Run identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: sendRunData
-      tags:
-        - run
-      summary: Send data associated to a run
-      requestBody:
-        description: Custom data to register
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SendRunDataRequest'
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/SendRunDataRequest'
-      responses:
-        "201":
-          description: Data stored
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RunData'
-              examples:
-                Run:
-                  $ref: '#/components/examples/DefaultRunData'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/RunData'
-              examples:
-                Run:
-                  $ref: '#/components/examples/DefaultRunData'
-        "400":
-          description: Data sent format is malformed
-  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/query:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
-      - name: run_id
-        in: path
-        description: the Run identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: queryRunData
-      tags:
-        - run
-      summary: query the run data
-      requestBody:
-        description: the query to run
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RunDataQuery'
-            examples:
-              GetAllRunDataInTable:
-                $ref: '#/components/examples/RunDataQueryExample'
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/RunDataQuery'
-            examples:
-              GetAllRunDataInTable:
-                $ref: '#/components/examples/RunDataQueryExample'
-      responses:
-        "200":
-          description: the query response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QueryResult'
-              examples:
-                MultipleResults:
-                  $ref: '#/components/examples/QueryResultExample'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/QueryResult'
-              examples:
-                MultipleResults:
-                  $ref: '#/components/examples/QueryResultExample'
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs:
     parameters:
       - name: organization_id
@@ -353,35 +231,6 @@ components:
           tokenUrl: "https://example.com/token"
           scopes: {}
   schemas:
-    RunData:
-      type: object
-      description: Run Data stored
-      properties:
-        database_name:
-          type: string
-          description: Database name
-        table_name:
-          type: string
-          description: Table name
-        data:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
-    SendRunDataRequest:
-      type: object
-      description: Run Data to send
-      properties:
-        id:
-          type: string
-        data:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
-      required:
-        - id
-        - data
     RunStatus:
       type: object
       description: a Run status
@@ -675,25 +524,6 @@ components:
       required:
         - cpu
         - memory
-    RunDataQuery:
-      type: object
-      description: a data result query in SQL
-      properties:
-        query:
-          type: string
-          description: the query in SQL
-      required:
-        - query
-    QueryResult:
-      type: object
-      description: the result of a SQL Query
-      properties:
-        result:
-          type: array
-          description: the list of results
-          items:
-            type: object
-            additionalProperties: true
     RunEditInfo:
       type: object
       properties:
@@ -709,11 +539,6 @@ components:
         - userId
 
   examples:
-    DefaultRunData:
-      summary: Run Data exemple
-      description: Run Data exemple
-      value:
-        name: test
     BreweryRun:
       summary: Brewery Run example
       description: Brewery Run example
@@ -864,17 +689,3 @@ components:
             progress: 1/1
             startTime: "2021-05-18T16:15:53.000Z"
             endTime: "2021-05-18T16:16:03.000Z"
-    RunDataQueryExample:
-      summary: Get all runData in a table
-      description: Get all runData in a table
-      value:
-        query: "SELECT * FROM cd_mycustomdata"
-    QueryResultExample:
-      summary: Result of SQL Query
-      description: Result of SQL Query
-      value:
-        result:
-          - key1: value1
-            key2: value2
-          - key1: value3
-            key2: value4
