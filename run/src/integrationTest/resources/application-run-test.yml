@@ -122,11 +122,8 @@ csm:
         run:
           default-page-size: 5
       data:
-        admin:
-          password: "password"
-          username: cosmotech_api_admin
         host: "localhost"
-        schema: "postgres"
+        database: "postgres"
         port: 5432
         reader:
           password: "password"

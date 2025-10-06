@@ -105,9 +105,7 @@ class ContainerFactoryTests {
         CsmPlatformProperties.CsmDatabasesProperties.CsmDataIOProperties(
             host = "localhost",
             port = 5432,
-            admin =
-                CsmPlatformProperties.CsmDatabasesProperties.CsmDataIOProperties.CsmStorageUser(
-                    password = "password", username = "username"),
+            database = "cosmotech",
             reader =
                 CsmPlatformProperties.CsmDatabasesProperties.CsmDataIOProperties.CsmStorageUser(
                     username = "username", password = "password"),

@@ -31,12 +31,9 @@ Models/OrganizationEditInfo.md
 Models/OrganizationRole.md
 Models/OrganizationSecurity.md
 Models/OrganizationUpdateRequest.md
-Models/QueryResult.md
 Models/ResourceSizeInfo.md
 Models/Run.md
 Models/RunContainer.md
-Models/RunData.md
-Models/RunDataQuery.md
 Models/RunEditInfo.md
 Models/RunResourceRequested.md
 Models/RunState.md
@@ -64,7 +61,6 @@ Models/RunnerRunTemplateParameterValue.md
 Models/RunnerSecurity.md
 Models/RunnerUpdateRequest.md
 Models/RunnerValidationStatus.md
-Models/SendRunDataRequest.md
 Models/Solution.md
 Models/SolutionAccessControl.md
 Models/SolutionCreateRequest.md

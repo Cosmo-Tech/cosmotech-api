@@ -162,10 +162,6 @@ entity OrganizationUpdateRequest {
     name: String
 }
 
-entity QueryResult {
-    result: List<Map>
-}
-
 entity ResourceSizeInfo {
     * cpu: String
     * memory: String
@@ -204,16 +200,6 @@ entity RunContainer {
     solutionContainer: Boolean
     nodeLabel: String
     runSizing: ContainerResourceSizing
-}
-
-entity RunData {
-    database_name: String
-    table_name: String
-    data: List<Map>
-}
-
-entity RunDataQuery {
-    * query: String
 }
 
 entity RunEditInfo {
@@ -463,11 +449,6 @@ entity RunnerUpdateRequest {
 }
 
 entity RunnerValidationStatus {
-}
-
-entity SendRunDataRequest {
-    * id: String
-    * data: List<Map>
 }
 
 entity Solution {

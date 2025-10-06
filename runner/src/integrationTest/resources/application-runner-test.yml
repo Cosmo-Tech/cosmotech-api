@@ -112,9 +112,6 @@ csm:
         runner:
           default-page-size: 20
       data:
-        admin:
-          password: "password"
-          username: cosmotech_api_admin
         host: "localhost"
         port: 5432
         reader:

@@ -107,13 +107,8 @@ csm:
         tls:
           enabled: false
           bundle: ""
-        connector:
-          default-page-size: 5
       data:
-        schema: "postgres"
-        admin:
-          password: "password"
-          username: cosmotech_api_admin
+        database: "postgres"
         host: "localhost"
         port: 5432
         reader:

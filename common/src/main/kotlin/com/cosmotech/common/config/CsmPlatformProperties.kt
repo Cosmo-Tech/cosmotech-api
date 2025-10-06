@@ -331,17 +331,14 @@ data class CsmPlatformProperties(
         /** Storage port */
         val port: Int = 5432,
 
-        /** Storage schema */
-        val schema: String = "cosmotech",
+        /** Storage database */
+        val database: String = "cosmotech",
 
         /** Storage reader user configuration */
         val reader: CsmStorageUser,
 
         /** Storage writer user configuration */
-        val writer: CsmStorageUser,
-
-        /** Storage admin user configuration */
-        val admin: CsmStorageUser
+        val writer: CsmStorageUser
     ) {
       data class CsmStorageUser(val username: String, val password: String)
     }
