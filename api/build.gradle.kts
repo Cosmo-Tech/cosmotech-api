@@ -108,6 +108,9 @@ tasks.register<GenerateTask>("openApiTypescriptGenerate") {
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
   outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/typescript")
   generatorName.set("typescript-axios")
+  gitHost.set("github.com")
+  gitUserId.set("Cosmo-Tech")
+  gitRepoId.set("cosmotech-api-typescript-client")
   additionalProperties.set(
       mapOf(
           "npmName" to "@cosmotech/api-ts",
@@ -145,6 +148,9 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
   outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/python")
   generatorName.set("python")
+  gitHost.set("github.com")
+  gitUserId.set("Cosmo-Tech")
+  gitRepoId.set("cosmotech-api-python-client")
   additionalProperties.set(
       mapOf(
           "projectName" to "cosmotech-api",
