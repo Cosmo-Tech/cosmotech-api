@@ -5,20 +5,17 @@ package com.cosmotech.dataset.part.services
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.config.PostgresConfiguration
 import com.cosmotech.dataset.domain.DatasetPart
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.sql.SQLException
 import kotlin.use
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVParser
-import org.apache.commons.csv.CSVPrinter
-import org.apache.commons.csv.CSVRecord
+import org.postgresql.copy.CopyManager
+import org.postgresql.core.BaseConnection
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.sql.SQLException
 
 /**
  * Service implementation for managing dataset parts in a relational database.
@@ -49,38 +46,16 @@ class RelationalDatasetPartManagementService(
           "Table ${datasetPart.id} already exists and overwrite is set to false.")
     }
 
-    // read csv file from input stream
-    val csvFormat = CSVFormat.RFC4180.builder().setHeader().setSkipHeaderRecord(true).get()
-    val csvParser = CSVParser.parse(inputStream.bufferedReader(), csvFormat)
-
     val connection = postgresConfiguration.writerJdbcTemplate().dataSource!!.connection
     try {
       connection.autoCommit = false
-      // create table if not exists
-      if (!isTableExists(datasetPart.id)) {
-        connection.createStatement().use { statement ->
-          statement.execute(
-              "CREATE TABLE IF NOT EXISTS ${datasetPart.id} ( ${csvParser.headerNames.joinToString { "$it TEXT" }} );")
-        }
-      }
+      val copyManager = CopyManager(connection as BaseConnection)
       // truncate table if overwrite is true
       if (overwrite) {
-        connection.createStatement().use { it.execute("TRUNCATE TABLE ${datasetPart.id}") }
+        connection.createStatement().use { it.execute("DROP TABLE IF EXISTS ${datasetPart.id}") }
       }
-      // create sql prepared statement for insert
-      val sqlHeader = csvParser.headerNames.joinToString()
-      val valuePlaceholders = List(csvParser.headerNames.size) { "?" }.joinToString()
-      val insertSql = "INSERT INTO ${datasetPart.id}($sqlHeader) VALUES($valuePlaceholders);"
-      connection.prepareStatement(insertSql).use { preparedStatement ->
-        csvParser.forEach { record: CSVRecord ->
-          csvParser.headerMap.forEach { (header, index) ->
-            preparedStatement.setString(index + 1, record.get(header))
-          }
-          preparedStatement.addBatch()
-        }
-        preparedStatement.executeBatch()
-      }
-
+      copyManager.copyIn(
+          "COPY ${datasetPart.id} FROM STDIN WITH FORMAT CSV, HEADER TRUE", inputStream)
       connection.commit()
     } catch (ex: SQLException) {
       connection.rollback()
@@ -94,23 +69,11 @@ class RelationalDatasetPartManagementService(
   override fun getData(datasetPart: DatasetPart): Resource {
     logger.debug("RelationalDatasetPartManagementService#getData")
     val out = ByteArrayOutputStream()
-    val csvPrinter = CSVPrinter(out.writer(), CSVFormat.DEFAULT)
     val connection = postgresConfiguration.readerJdbcTemplate().dataSource!!.connection
 
-    connection.createStatement().use { statement ->
-      statement.executeQuery("SELECT * FROM ${datasetPart.id};").use { rs ->
-        // Write header
-        val headers = (1..rs.metaData.columnCount).map { rs.metaData.getColumnName(it) }
-        csvPrinter.printRecord(headers)
-        // Write rows
-        while (rs.next()) {
-          val row = (1..rs.metaData.columnCount).map { rs.getString(it) }
-          csvPrinter.printRecord(row)
-        }
-      }
-    }
-
-    csvPrinter.flush()
+    val copyManager = CopyManager(connection as BaseConnection)
+    // Use CopyManager to copy data from the table to the output stream in CSV format
+    copyManager.copyOut("COPY ${datasetPart.id} TO STDOUT WITH FORMAT CSV, HEADER TRUE", out)
     return ByteArrayResource(out.toByteArray())
   }
 
@@ -135,7 +98,7 @@ class RelationalDatasetPartManagementService(
         """
             .trimIndent()
     return postgresConfiguration
-        .adminJdbcTemplate()
+        .writerJdbcTemplate()
         .queryForObject(sql, Boolean::class.java, tableName) ?: false
   }
 }
