@@ -62,12 +62,6 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: detekt
 
-      - name: Upload SARIF reports to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: ${{ always() }}
-        with:
-          sarif_file: 'build/reports/detekt/sarif/'
-
   helm-lint:
     runs-on: ubuntu-latest
 
@@ -103,9 +97,4 @@ jobs:
           output-file: api/kubernetes/.sarif/${{ matrix.chart }}.sarif
           version: 0.2.5
 
-      - name: Upload SARIF file
-        if: ${{ always() }}
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: api/kubernetes/.sarif/${{ matrix.chart }}.sarif
 
