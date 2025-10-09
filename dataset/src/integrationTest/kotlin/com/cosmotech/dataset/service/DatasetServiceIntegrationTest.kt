@@ -68,6 +68,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.http.MediaType
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -96,6 +97,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var s3Template: S3Template
   @Autowired lateinit var resourceLoader: ResourceLoader
+  @Autowired lateinit var writerJdbcTemplate: JdbcTemplate
 
   lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
@@ -215,6 +217,81 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertEquals(datasetPartTags, createdDatasetPart.tags)
     assertEquals(CUSTOMER_SOURCE_FILE_NAME, createdDatasetPart.sourceName)
     assertEquals(DatasetPartTypeEnum.File, createdDatasetPart.type)
+  }
+
+  @Test
+  fun `test createDataset with one Relational dataset part`() {
+
+    val datasetPartName = "Customers list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = datasetPartName,
+            sourceName = "customers1000.csv",
+            description = datasetPartDescription,
+            tags = datasetPartTags,
+            type = DatasetPartTypeEnum.Relational)
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            parts = mutableListOf(datasetPartCreateRequest))
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/customers1000.csv").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "files",
+            "customers1000.csv",
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val startTime = System.currentTimeMillis()
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(mockMultipartFile))
+    val endTime = System.currentTimeMillis()
+    logger.info("Time to create dataset and upload file: ${endTime - startTime} ms")
+    val datasetPartId = createdDataset.parts[0].id
+    /*
+    writerJdbcTemplate.queryForList("SELECT * FROM inputs.${datasetPartId.replace('-', '_')}").forEach {
+      logger.error("Size : ${it.size}")
+      it.forEach { (key, value) -> logger.error("$key : $value") }
+    }
+
+
+    val datasetPartFilePath = constructFilePathForDatasetPart(createdDataset, 0)
+    assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, datasetPartFilePath))
+    val downloadFile = s3Template.download(csmPlatformProperties.s3.bucketName, datasetPartFilePath)
+
+    val expectedText = FileInputStream(resourceTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(downloadFile).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+    assertNotNull(createdDataset)
+    assertEquals(datasetName, createdDataset.name)
+    assertEquals(datasetDescription, createdDataset.description)
+    assertEquals(datasetTags, createdDataset.tags)
+    assertEquals(1, createdDataset.parts.size)
+    val createdDatasetPart = createdDataset.parts[0]
+    assertNotNull(createdDatasetPart)
+    assertEquals(datasetPartName, createdDatasetPart.name)
+    assertEquals(datasetPartDescription, createdDatasetPart.description)
+    assertEquals(datasetPartTags, createdDatasetPart.tags)
+    assertEquals(CUSTOMER_SOURCE_FILE_NAME, createdDatasetPart.sourceName)
+    assertEquals(DatasetPartTypeEnum.File, createdDatasetPart.type)*/
   }
 
   @Test

@@ -41,24 +41,48 @@ class RelationalDatasetPartManagementService(
     storeData(file.inputStream, datasetPart, overwrite)
   }
 
+  @Suppress("NestedBlockDepth")
   fun storeData(inputStream: InputStream, datasetPart: DatasetPart, overwrite: Boolean) {
-    if (writerJdbcTemplate.existTable(datasetPart.id) && !overwrite) {
+
+    val tableExists = writerJdbcTemplate.existTable(datasetPart.id)
+
+    if (tableExists && !overwrite) {
       throw IllegalArgumentException(
           "Table ${datasetPart.id} already exists and overwrite is set to false.")
     }
-    writerJdbcTemplate.dataSource!!.connection.use { connection ->
-      try {
-        connection.autoCommit = false
-        if (overwrite) {
-          connection.createStatement().use { it.execute("DROP TABLE IF EXISTS ${datasetPart.id}") }
+
+    inputStream.bufferedReader().use { reader ->
+      val values =
+          reader
+              .readLine()
+              .split(",", "\n")
+              .joinToString(
+                  separator = " TEXT, ", prefix = "(", postfix = " TEXT)", transform = String::trim)
+
+      writerJdbcTemplate.dataSource!!.connection.use { connection ->
+        try {
+          connection.autoCommit = false
+          val tableName = "inputs.${datasetPart.id.replace('-', '_')}"
+          if (overwrite) {
+            connection.createStatement().use { it.execute("DROP TABLE IF EXISTS $tableName") }
+          }
+
+          if (!tableExists) {
+            connection.createStatement().use {
+              it.execute("CREATE TABLE IF NOT EXISTS $tableName $values")
+            }
+          }
+          val insertedRows =
+              CopyManager(connection as BaseConnection)
+                  .copyIn("COPY $tableName FROM STDIN WITH CSV", reader)
+          logger.info("Inserted $insertedRows rows into table $tableName")
+
+          connection.commit()
+        } catch (ex: SQLException) {
+          connection.rollback()
+          logger.error("Transaction Failed and roll back was performed.")
+          throw ex
         }
-        CopyManager(connection as BaseConnection)
-            .copyIn("COPY ${datasetPart.id} FROM STDIN WITH FORMAT CSV, HEADER TRUE", inputStream)
-        connection.commit()
-      } catch (ex: SQLException) {
-        connection.rollback()
-        logger.error("Transaction Failed and roll back was performed.")
-        throw ex
       }
     }
   }

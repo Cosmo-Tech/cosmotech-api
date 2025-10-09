@@ -115,6 +115,7 @@ csm:
         writer:
           password: "password"
           username: cosmotech_api_writer
+        database: "test"
     rbac:
       enabled: true
     s3:
