@@ -95,16 +95,13 @@ csm:
       data:
         host: "localhost"
         port: 5432
-        schema: "cosmotech"
+        database: "cosmotech"
         reader:
           username: "storage_reader_username"
           password: "storage_reader_password"
         writer:
           username: "storage_writer_username"
           password: "storage_writer_password"
-        admin:
-          username: "storage_admin_username"
-          password: "storage_admin_password"
     s3:
       endpointUrl: "http://localhost:9000"
       bucketName: "cosmotech-api"
