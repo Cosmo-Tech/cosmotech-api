@@ -65,7 +65,7 @@ val springSecurityJwtVersion = "1.1.1.RELEASE"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
 val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
-val redisOmSpringVersion = "0.9.7"
+val redisOmSpringVersion = "1.0.4"
 val kotlinCoroutinesVersion = "1.10.2"
 val oktaSpringBootVersion = "3.0.7"
 val springDocVersion = "2.8.8"
@@ -131,7 +131,7 @@ allprojects {
     sourceCompatibility = JavaVersion.VERSION_21
     toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
   }
-  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.10") } } }
+  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:1.0.4") } } }
 
   repositories {
     maven {
