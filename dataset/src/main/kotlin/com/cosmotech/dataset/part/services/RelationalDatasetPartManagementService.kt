@@ -55,7 +55,6 @@ class RelationalDatasetPartManagementService(
 
     inputStream.bufferedReader().use { reader ->
       val headers = validateHeaders(reader)
-      val values = constructValues(headers)
 
       writerJdbcTemplate.dataSource!!.connection.use { connection ->
         try {
@@ -67,7 +66,9 @@ class RelationalDatasetPartManagementService(
           }
 
           if (!tableExists) {
-            val prepareStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS $tableName ${constructValues(headers)};")
+            val prepareStatement =
+                connection.prepareStatement(
+                    "CREATE TABLE IF NOT EXISTS $tableName ${constructSQLColumnsValues(headers)};")
             prepareStatement.execute()
           }
           val insertedRows =
@@ -100,7 +101,7 @@ class RelationalDatasetPartManagementService(
     return headers
   }
 
-  private fun constructValues(headers: List<String>): String =
+  private fun constructSQLColumnsValues(headers: List<String>): String =
       headers.joinToString(
           separator = "\" TEXT, \"", prefix = "(\"", postfix = "\" TEXT)", transform = String::trim)
 

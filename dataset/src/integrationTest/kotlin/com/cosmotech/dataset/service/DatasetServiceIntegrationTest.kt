@@ -1302,63 +1302,64 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         exception.message)
   }
 
-    @Test
-    fun `test deleteDatasetPart FILE`() {
+  @Test
+  fun `test deleteDatasetPart FILE`() {
 
-        val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
+    val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
 
-        val createDataset =
-            datasetApiService.createDataset(
-                organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+    val createDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
 
-        assertTrue(createDataset.parts.isEmpty())
+    assertTrue(createDataset.parts.isEmpty())
 
-        val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
-        val fileToSend = FileInputStream(resourceTestFile)
+    val fileToSend = FileInputStream(resourceTestFile)
 
-        val mockMultipartFile =
-            MockMultipartFile(
-                "file",
-                CUSTOMER_SOURCE_FILE_NAME,
-                MediaType.MULTIPART_FORM_DATA_VALUE,
-                IOUtils.toByteArray(fileToSend))
+    val mockMultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
 
-        val datasetPartName = "Customer list"
-        val datasetPartDescription = "List of customers"
-        val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartName = "Customer list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
 
-        val createDatasetPart =
-            datasetApiService.createDatasetPart(
-                organizationSaved.id,
-                workspaceSaved.id,
-                createDataset.id,
-                mockMultipartFile,
-                DatasetPartCreateRequest(
-                    name = datasetPartName,
-                    sourceName = CUSTOMER_SOURCE_FILE_NAME,
-                    description = datasetPartDescription,
-                    tags = datasetPartTags,
-                    type = DatasetPartTypeEnum.File))
+    val createDatasetPart =
+        datasetApiService.createDatasetPart(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            mockMultipartFile,
+            DatasetPartCreateRequest(
+                name = datasetPartName,
+                sourceName = CUSTOMER_SOURCE_FILE_NAME,
+                description = datasetPartDescription,
+                tags = datasetPartTags,
+                type = DatasetPartTypeEnum.File))
 
-        assertNotNull(createDatasetPart)
-        datasetApiService.deleteDatasetPart(
-            organizationSaved.id, workspaceSaved.id, createDataset.id, createDatasetPart.id)
+    assertNotNull(createDatasetPart)
+    datasetApiService.deleteDatasetPart(
+        organizationSaved.id, workspaceSaved.id, createDataset.id, createDatasetPart.id)
 
-        val retrievedDataset =
-            datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createDataset.id)
+    val retrievedDataset =
+        datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createDataset.id)
 
-        assertTrue(retrievedDataset.parts.isEmpty())
+    assertTrue(retrievedDataset.parts.isEmpty())
 
-        val deletedFileKeyPath =
-            retrievedDataset.organizationId +
-                    "/${retrievedDataset.workspaceId}" +
-                    "/${retrievedDataset.id}" +
-                    "/${createDatasetPart.id}" +
-                    "/${createDatasetPart.sourceName}"
+    val deletedFileKeyPath =
+        retrievedDataset.organizationId +
+            "/${retrievedDataset.workspaceId}" +
+            "/${retrievedDataset.id}" +
+            "/${createDatasetPart.id}" +
+            "/${createDatasetPart.sourceName}"
 
-        assertFalse(s3Template.objectExists(csmPlatformProperties.s3.bucketName, deletedFileKeyPath))
-    }
+    assertFalse(s3Template.objectExists(csmPlatformProperties.s3.bucketName, deletedFileKeyPath))
+  }
+
   @Test
   fun `test deleteDatasetPart DB`() {
 
