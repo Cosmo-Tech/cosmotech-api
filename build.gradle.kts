@@ -79,7 +79,7 @@ val jUnitBomVersion = "5.12.2"
 val mockkVersion = "1.14.0"
 val awaitilityKVersion = "4.2.0"
 val testContainersRedisVersion = "1.6.4"
-val testContainersPostgreSQLVersion = "1.20.6"
+val testContainersPostgreSQLVersion = "1.21.3"
 val springMockkVersion = "4.0.2"
 
 val configBuildDir = "${layout.buildDirectory.get()}/config"
