@@ -3,8 +3,10 @@
 package com.cosmotech.dataset.part.services
 
 import com.cosmotech.common.config.CsmPlatformProperties
+import com.cosmotech.common.config.DATASET_INPUTS_SCHEMA
 import com.cosmotech.common.config.existTable
 import com.cosmotech.dataset.domain.DatasetPart
+import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.sql.SQLException
@@ -17,7 +19,6 @@ import org.springframework.core.io.Resource
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.io.BufferedReader
 
 /**
  * Service implementation for managing dataset parts in a relational database.
@@ -59,18 +60,15 @@ class RelationalDatasetPartManagementService(
       writerJdbcTemplate.dataSource!!.connection.use { connection ->
         try {
           connection.autoCommit = false
-          val tableName = "inputs.${datasetPart.id.replace('-', '_')}"
+          val tableName = "${DATASET_INPUTS_SCHEMA}.${sanitizePartId(datasetPart.id)}"
           if (overwrite) {
-              val prepareStatement = connection.prepareStatement("DROP TABLE IF EXISTS ?")
-              prepareStatement.setString(1, tableName)
-              prepareStatement.execute()
+            val prepareStatement = connection.prepareStatement("DROP TABLE IF EXISTS $tableName")
+            prepareStatement.execute()
           }
 
           if (!tableExists) {
-              val prepareStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS ? ?")
-              prepareStatement.setString(1, tableName)
-              prepareStatement.setString(2, values)
-              prepareStatement.execute()
+            val prepareStatement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS $tableName ${constructValues(headers)};")
+            prepareStatement.execute()
           }
           val insertedRows =
               CopyManager(connection as BaseConnection)
@@ -87,43 +85,42 @@ class RelationalDatasetPartManagementService(
     }
   }
 
-    private fun validateHeaders(reader: BufferedReader): List<String>{
-        val headers = reader
-            .readLine()
-            .split(",", "\n")
+  private fun validateHeaders(reader: BufferedReader): List<String> {
+    val headers = reader.readLine().split(",", "\n")
 
-        require(headers.isNotEmpty())
-          { "No headers found in dataset part file" }
-        require(headers.all { it.isNotBlank() })
-          { "Empty headers found in dataset part file" }
-        require(headers.distinct().size == headers.size)
-          { "Duplicate headers found in dataset part file" }
-        require(headers.all { Regex.fromLiteral("[a-zA-Z0-9_]+").matches(it)})
-          {"Invalid header name found in dataset part file: header name must match [a-zA-Z0-9_]+"}
-
-        return headers
+    require(headers.isNotEmpty()) { "No headers found in dataset part file" }
+    require(headers.all { it.isNotBlank() }) { "Empty headers found in dataset part file" }
+    require(headers.distinct().size == headers.size) {
+      "Duplicate headers found in dataset part file"
+    }
+    require(headers.all { Regex("[a-zA-Z0-9_]+").matches(it) }) {
+      "Invalid header name found in dataset part file: header name must match [a-zA-Z0-9_]+ (found: ${headers})"
     }
 
-    private fun constructValues(headers: List<String>): String = headers
-        .joinToString(
-            separator = " TEXT, ", prefix = "(", postfix = " TEXT)", transform = String::trim
-        )
+    return headers
+  }
 
-    override fun getData(datasetPart: DatasetPart): Resource {
+  private fun constructValues(headers: List<String>): String =
+      headers.joinToString(
+          separator = "\" TEXT, \"", prefix = "(\"", postfix = "\" TEXT)", transform = String::trim)
+
+  override fun getData(datasetPart: DatasetPart): Resource {
+    val tableName = "${DATASET_INPUTS_SCHEMA}.${sanitizePartId(datasetPart.id)}"
     val out = ByteArrayOutputStream()
-    readerJdbcTemplate.dataSource!!.connection.use { connection ->
+    writerJdbcTemplate.dataSource!!.connection.use { connection ->
       CopyManager(connection as BaseConnection)
-          .copyOut("COPY ${datasetPart.id} TO STDOUT WITH FORMAT CSV, HEADER TRUE", out)
+          .copyOut("COPY $tableName TO STDOUT WITH CSV HEADER", out)
     }
     return ByteArrayResource(out.toByteArray())
   }
 
   override fun delete(datasetPart: DatasetPart) {
+    val tableName = "${DATASET_INPUTS_SCHEMA}.${sanitizePartId(datasetPart.id)}"
     writerJdbcTemplate.dataSource!!.connection.use { connection ->
       try {
         connection.autoCommit = false
         connection.createStatement().use { statement ->
-          statement.execute("DROP TABLE ${datasetPart.id};")
+          statement.execute("DROP TABLE $tableName;")
         }
         connection.commit()
       } catch (ex: SQLException) {
@@ -132,5 +129,9 @@ class RelationalDatasetPartManagementService(
         throw ex
       }
     }
+  }
+
+  private fun sanitizePartId(name: String): String {
+    return name.replace('-', '_')
   }
 }
