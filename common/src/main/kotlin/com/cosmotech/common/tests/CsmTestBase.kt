@@ -20,8 +20,6 @@ import org.testcontainers.utility.MountableFile
 open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
 
   companion object {
-    private const val READER_USER_CREDENTIALS = "readusertest"
-    private const val WRITER_USER_CREDENTIALS = "writeusertest"
     private const val DEFAULT_REDIS_PORT = 6379
     private const val LOCALSTACK_FULL_IMAGE_NAME = "localstack/localstack:3.5.0"
 
@@ -72,10 +70,6 @@ open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
     private fun initPostgresConfiguration(registry: DynamicPropertyRegistry) {
       registry.add("csm.platform.databases.data.host") { postgres.host }
       registry.add("csm.platform.databases.data.port") { postgres.getMappedPort(POSTGRESQL_PORT) }
-      registry.add("csm.platform.databases.data.writer.username") { WRITER_USER_CREDENTIALS }
-      registry.add("csm.platform.databases.data.writer.password") { WRITER_USER_CREDENTIALS }
-      registry.add("csm.platform.databases.data.reader.username") { READER_USER_CREDENTIALS }
-      registry.add("csm.platform.databases.data.reader.password") { READER_USER_CREDENTIALS }
     }
   }
 
