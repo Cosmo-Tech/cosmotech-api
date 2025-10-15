@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.sql.SQLException
 import kotlin.use
+import org.apache.commons.lang3.StringUtils
 import org.postgresql.copy.CopyManager
 import org.postgresql.core.BaseConnection
 import org.slf4j.LoggerFactory
@@ -26,7 +27,7 @@ import org.springframework.web.multipart.MultipartFile
  * This service provides methods to manage parts of a dataset stored in a relational database,
  * including saving and deleting dataset part entities.
  */
-@Service("Relational")
+@Service("DB")
 class RelationalDatasetPartManagementService(
     val writerJdbcTemplate: JdbcTemplate,
     val readerJdbcTemplate: JdbcTemplate,
@@ -59,7 +60,7 @@ class RelationalDatasetPartManagementService(
       writerJdbcTemplate.dataSource!!.connection.use { connection ->
         try {
           connection.autoCommit = false
-          val tableName = "${DATASET_INPUTS_SCHEMA}.${sanitizePartId(datasetPart.id)}"
+          val tableName = "${DATASET_INPUTS_SCHEMA}.${datasetPart.id.sanitizeDatasetPartId()}"
           if (overwrite) {
             val prepareStatement = connection.prepareStatement("DROP TABLE IF EXISTS $tableName")
             prepareStatement.execute()
@@ -87,26 +88,29 @@ class RelationalDatasetPartManagementService(
   }
 
   private fun validateHeaders(reader: BufferedReader): List<String> {
-    val headers = reader.readLine().split(",", "\n")
+    val headers = reader.readLine()?.split(",", "\n") ?: emptyList()
 
     require(headers.isNotEmpty()) { "No headers found in dataset part file" }
     require(headers.all { it.isNotBlank() }) { "Empty headers found in dataset part file" }
-    require(headers.distinct().size == headers.size) {
+    require(headers.map { it.lowercase().trim() }.distinct().size == headers.size) {
       "Duplicate headers found in dataset part file"
     }
-    require(headers.all { Regex("[a-zA-Z0-9_]+").matches(it) }) {
-      "Invalid header name found in dataset part file: header name must match [a-zA-Z0-9_]+ (found: ${headers})"
+    require(headers.all { Regex("[a-zA-Z0-9_\"\' ]+").matches(it) }) {
+      "Invalid header name found in dataset part file: header name must match [a-zA-Z0-9_\"\' ]+ (found: ${headers})"
     }
 
     return headers
   }
 
   private fun constructSQLColumnsValues(headers: List<String>): String =
-      headers.joinToString(
-          separator = "\" TEXT, \"", prefix = "(\"", postfix = "\" TEXT)", transform = String::trim)
+      headers
+          .map { it.trim() }
+          .joinToString(separator = " TEXT, ", prefix = "(", postfix = " TEXT)") {
+            StringUtils.wrapIfMissing(it, "\"")
+          }
 
   override fun getData(datasetPart: DatasetPart): Resource {
-    val tableName = "${DATASET_INPUTS_SCHEMA}.${sanitizePartId(datasetPart.id)}"
+    val tableName = "${DATASET_INPUTS_SCHEMA}.${datasetPart.id.sanitizeDatasetPartId()}"
     val out = ByteArrayOutputStream()
     writerJdbcTemplate.dataSource!!.connection.use { connection ->
       CopyManager(connection as BaseConnection)
@@ -116,7 +120,7 @@ class RelationalDatasetPartManagementService(
   }
 
   override fun delete(datasetPart: DatasetPart) {
-    val tableName = "${DATASET_INPUTS_SCHEMA}.${sanitizePartId(datasetPart.id)}"
+    val tableName = "${DATASET_INPUTS_SCHEMA}.${datasetPart.id.sanitizeDatasetPartId()}"
     writerJdbcTemplate.dataSource!!.connection.use { connection ->
       try {
         connection.autoCommit = false
@@ -132,7 +136,5 @@ class RelationalDatasetPartManagementService(
     }
   }
 
-  private fun sanitizePartId(name: String): String {
-    return name.replace('-', '_')
-  }
+  fun String.sanitizeDatasetPartId(): String = this.replace('-', '_')
 }
