@@ -922,7 +922,7 @@ components:
       description: The dataset part Type
       enum:
         - File
-        - Relational
+        - DB
       default: File
 
     DatasetPartFiles:

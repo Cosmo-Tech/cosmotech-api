@@ -83,7 +83,14 @@ import org.springframework.test.context.junit4.SpringRunner
 class DatasetServiceIntegrationTest() : CsmTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
+  val EMPTY_SOURCE_FILE_NAME = "emptyfile.csv"
   val CUSTOMER_SOURCE_FILE_NAME = "customers.csv"
+  val CUSTOMERS_WITH_QUOTES_SOURCE_FILE_NAME = "customerswithquotes.csv"
+  val CUSTOMERS_WITH_DOUBLE_QUOTES_SOURCE_FILE_NAME = "customerswithdoublequotes.csv"
+  val CUSTOMERS_1000_SOURCE_FILE_NAME = "customers1000.csv"
+  val CUSTOMERS_10000_SOURCE_FILE_NAME = "customers10000.csv"
+  val UNALLOWED_CHAR_HEADERS_FILE_NAME = "filewithunallowedcharinheaders.csv"
+  val SAME_HEADERS_FILE_NAME = "filewithsameheaders.csv"
   val UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME = "wrong_mimetype.yaml"
   val INVENTORY_SOURCE_FILE_NAME = "product_inventory.csv"
   val WRONG_ORIGINAL_FILE_NAME = "../../wrong_name_pattern.csv"
@@ -218,81 +225,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertEquals(datasetPartTags, createdDatasetPart.tags)
     assertEquals(CUSTOMER_SOURCE_FILE_NAME, createdDatasetPart.sourceName)
     assertEquals(DatasetPartTypeEnum.File, createdDatasetPart.type)
-  }
-
-  @Test
-  fun `test createDataset with one Relational dataset part`() {
-
-    val datasetPartName = "Customers list"
-    val datasetPartDescription = "List of customers"
-    val datasetPartTags = mutableListOf("part", "public", "customers")
-    val datasetPartCreateRequest =
-        DatasetPartCreateRequest(
-            name = datasetPartName,
-            sourceName = "customers1000.csv",
-            description = datasetPartDescription,
-            tags = datasetPartTags,
-            type = DatasetPartTypeEnum.Relational)
-
-    val datasetName = "Customer Dataset"
-    val datasetDescription = "Dataset for customers"
-    val datasetTags = mutableListOf("dataset", "public", "customers")
-    val datasetCreateRequest =
-        DatasetCreateRequest(
-            name = datasetName,
-            description = datasetDescription,
-            tags = datasetTags,
-            parts = mutableListOf(datasetPartCreateRequest))
-
-    val resourceTestFile = resourceLoader.getResource("classpath:/customers1000.csv").file
-
-    val fileToSend = FileInputStream(resourceTestFile)
-
-    val mockMultipartFile =
-        MockMultipartFile(
-            "files",
-            "customers1000.csv",
-            MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
-
-    val startTime = System.currentTimeMillis()
-    val createdDataset =
-        datasetApiService.createDataset(
-            organizationSaved.id,
-            workspaceSaved.id,
-            datasetCreateRequest,
-            arrayOf(mockMultipartFile))
-    val endTime = System.currentTimeMillis()
-    logger.info("Time to create dataset and upload file: ${endTime - startTime} ms")
-    val datasetPartId = createdDataset.parts[0].id
-    /*
-    writerJdbcTemplate.queryForList("SELECT * FROM inputs.${datasetPartId.replace('-', '_')}").forEach {
-      logger.error("Size : ${it.size}")
-      it.forEach { (key, value) -> logger.error("$key : $value") }
-    }
-
-
-    val datasetPartFilePath = constructFilePathForDatasetPart(createdDataset, 0)
-    assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, datasetPartFilePath))
-    val downloadFile = s3Template.download(csmPlatformProperties.s3.bucketName, datasetPartFilePath)
-
-    val expectedText = FileInputStream(resourceTestFile).bufferedReader().use { it.readText() }
-    val retrievedText =
-        InputStreamResource(downloadFile).inputStream.bufferedReader().use { it.readText() }
-
-    assertEquals(expectedText, retrievedText)
-    assertNotNull(createdDataset)
-    assertEquals(datasetName, createdDataset.name)
-    assertEquals(datasetDescription, createdDataset.description)
-    assertEquals(datasetTags, createdDataset.tags)
-    assertEquals(1, createdDataset.parts.size)
-    val createdDatasetPart = createdDataset.parts[0]
-    assertNotNull(createdDatasetPart)
-    assertEquals(datasetPartName, createdDatasetPart.name)
-    assertEquals(datasetPartDescription, createdDatasetPart.description)
-    assertEquals(datasetPartTags, createdDatasetPart.tags)
-    assertEquals(CUSTOMER_SOURCE_FILE_NAME, createdDatasetPart.sourceName)
-    assertEquals(DatasetPartTypeEnum.File, createdDatasetPart.type)*/
   }
 
   @Test
@@ -1088,70 +1020,327 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
   @Test
   fun `test createDatasetPart type DB`() {
+    testCreateDatasetPartWithSimpleFile(CUSTOMER_SOURCE_FILE_NAME, CUSTOMER_SOURCE_FILE_NAME)
+    testCreateDatasetPartWithSimpleFile(
+        CUSTOMERS_1000_SOURCE_FILE_NAME, CUSTOMERS_1000_SOURCE_FILE_NAME)
+    testCreateDatasetPartWithSimpleFile(
+        CUSTOMERS_10000_SOURCE_FILE_NAME, CUSTOMERS_10000_SOURCE_FILE_NAME)
+    testCreateDatasetPartWithSimpleFile(
+        CUSTOMERS_WITH_QUOTES_SOURCE_FILE_NAME, CUSTOMERS_WITH_QUOTES_SOURCE_FILE_NAME)
+    testCreateDatasetPartWithSimpleFile(
+        CUSTOMERS_WITH_DOUBLE_QUOTES_SOURCE_FILE_NAME, CUSTOMER_SOURCE_FILE_NAME)
+  }
 
-    val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
+  @Test
+  fun `test create Dataset with File and DB parts`() {
 
-    val createDataset =
-        datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+    val customers1000File =
+        resourceLoader.getResource("classpath:/$CUSTOMERS_1000_SOURCE_FILE_NAME").file
 
-    assertTrue(createDataset.parts.isEmpty())
+    val customers1000FileToSend = FileInputStream(customers1000File)
 
-    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
-
-    val fileToSend = FileInputStream(resourceTestFile)
-
-    val mockMultipartFile =
+    val customers1000MultipartFile =
         MockMultipartFile(
             "file",
-            CUSTOMER_SOURCE_FILE_NAME,
+            CUSTOMERS_1000_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(customers1000FileToSend))
 
-    val datasetPartName = "Customer list"
-    val datasetPartDescription = "List of customers"
-    val datasetPartTags = mutableListOf("part", "public", "customers")
+    val customers10000File =
+        resourceLoader.getResource("classpath:/$CUSTOMERS_10000_SOURCE_FILE_NAME").file
 
-    val createDatasetPart =
-        datasetApiService.createDatasetPart(
+    val customers10000FileToSend = FileInputStream(customers10000File)
+
+    val customers10000MultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMERS_10000_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(customers10000FileToSend))
+
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = "Dataset Test with File and DB",
+            parts =
+                mutableListOf(
+                    DatasetPartCreateRequest(
+                        name = "File part",
+                        sourceName = CUSTOMERS_1000_SOURCE_FILE_NAME,
+                        type = DatasetPartTypeEnum.File),
+                    DatasetPartCreateRequest(
+                        name = "DB part",
+                        sourceName = CUSTOMERS_10000_SOURCE_FILE_NAME,
+                        type = DatasetPartTypeEnum.DB)))
+
+    val createdDataset =
+        datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
-            createDataset.id,
-            mockMultipartFile,
-            DatasetPartCreateRequest(
-                name = datasetPartName,
-                sourceName = CUSTOMER_SOURCE_FILE_NAME,
-                description = datasetPartDescription,
-                tags = datasetPartTags,
-                type = DatasetPartTypeEnum.Relational))
+            datasetCreateRequest,
+            arrayOf(customers1000MultipartFile, customers10000MultipartFile))
 
-    assertNotNull(createDatasetPart)
-    assertEquals(datasetPartName, createDatasetPart.name)
-    assertEquals(datasetPartDescription, createDatasetPart.description)
-    assertEquals(datasetPartTags, createDatasetPart.tags)
-    assertEquals(CUSTOMER_SOURCE_FILE_NAME, createDatasetPart.sourceName)
+    val fileDatasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.File }.id
+    val dBDatasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
 
-    val retrievedDataset =
-        datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createDataset.id)
+    assertTrue(writerJdbcTemplate.existTable(dBDatasetPartId.replace('-', '_')))
 
-    assertTrue(retrievedDataset.parts.isNotEmpty())
-    assertTrue(retrievedDataset.parts.size == 1)
-    assertEquals(createDatasetPart, retrievedDataset.parts[0])
+    val fileKeyPath =
+        "${createdDataset.organizationId}/${createdDataset.workspaceId}/${createdDataset.id}/$fileDatasetPartId"
 
-    val fileKeyPath = constructFilePathForDatasetPart(retrievedDataset, 0)
-
-    writerJdbcTemplate.queryForList("select * from pg_tables where schemaname='inputs'").forEach {
-      logger.error("Size : ${it.size}")
-      it.forEach { (key, value) -> logger.error("$key : $value") }
-    }
-    assertTrue(writerJdbcTemplate.existTable(createDatasetPart.id.replace('-', '_')))
+    assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, fileKeyPath))
 
     val datasetPartFile =
         datasetApiService.downloadDatasetPart(
-            organizationSaved.id, workspaceSaved.id, createDataset.id, createDatasetPart.id)
-    val expectedText = FileInputStream(resourceTestFile).bufferedReader().use { it.readText() }
-    val retrievedText = datasetPartFile.inputStream.bufferedReader().use { it.readText() }
+            organizationSaved.id, workspaceSaved.id, createdDataset.id, fileDatasetPartId)
+    var expectedText = FileInputStream(customers1000File).bufferedReader().use { it.readText() }
+    var retrievedText = datasetPartFile.inputStream.bufferedReader().use { it.readText() }
     assertEquals(expectedText, retrievedText)
+
+    val datasetPartDB =
+        datasetApiService.downloadDatasetPart(
+            organizationSaved.id, workspaceSaved.id, createdDataset.id, dBDatasetPartId)
+    expectedText = FileInputStream(customers10000File).bufferedReader().use { it.readText() }
+    retrievedText = datasetPartDB.inputStream.bufferedReader().use { it.readText() }
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test delete Dataset part DB`() {
+
+    val customers10000File =
+        resourceLoader.getResource("classpath:/$CUSTOMERS_10000_SOURCE_FILE_NAME").file
+
+    val customers10000FileToSend = FileInputStream(customers10000File)
+
+    val customers10000MultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMERS_10000_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(customers10000FileToSend))
+
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = "Dataset Test with File and DB",
+            parts =
+                mutableListOf(
+                    DatasetPartCreateRequest(
+                        name = "DB part",
+                        sourceName = CUSTOMERS_10000_SOURCE_FILE_NAME,
+                        type = DatasetPartTypeEnum.DB)))
+
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(customers10000MultipartFile))
+
+    val dBDatasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    assertTrue(writerJdbcTemplate.existTable(dBDatasetPartId.replace('-', '_')))
+
+    datasetApiService.deleteDatasetPart(
+        organizationSaved.id, workspaceSaved.id, createdDataset.id, dBDatasetPartId)
+
+    assertFalse(writerJdbcTemplate.existTable(dBDatasetPartId.replace('-', '_')))
+  }
+
+  @Test
+  fun `test update Dataset part DB`() {
+
+    val customers10000File =
+        resourceLoader.getResource("classpath:/$CUSTOMERS_10000_SOURCE_FILE_NAME").file
+
+    val customers10000FileToSend = FileInputStream(customers10000File)
+
+    val customers10000MultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMERS_10000_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(customers10000FileToSend))
+
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = "Dataset Test with DB part",
+            parts =
+                mutableListOf(
+                    DatasetPartCreateRequest(
+                        name = "DB part",
+                        sourceName = CUSTOMERS_10000_SOURCE_FILE_NAME,
+                        type = DatasetPartTypeEnum.DB)))
+
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(customers10000MultipartFile))
+
+    val firstDBDatasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    assertTrue(writerJdbcTemplate.existTable(firstDBDatasetPartId.replace('-', '_')))
+
+    var datasetPartDB =
+        datasetApiService.downloadDatasetPart(
+            organizationSaved.id, workspaceSaved.id, createdDataset.id, firstDBDatasetPartId)
+    var expectedText = FileInputStream(customers10000File).bufferedReader().use { it.readText() }
+    var retrievedText = datasetPartDB.inputStream.bufferedReader().use { it.readText() }
+    assertEquals(expectedText, retrievedText)
+
+    val customers1000File =
+        resourceLoader.getResource("classpath:/$CUSTOMERS_1000_SOURCE_FILE_NAME").file
+
+    val customers1000FileToSend = FileInputStream(customers1000File)
+
+    val customers1000MultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMERS_1000_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(customers1000FileToSend))
+
+    val updatedDataset =
+        datasetApiService.updateDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            DatasetUpdateRequest(
+                parts =
+                    mutableListOf(
+                        DatasetPartCreateRequest(
+                            name = "New part DB",
+                            sourceName = CUSTOMERS_1000_SOURCE_FILE_NAME,
+                            type = DatasetPartTypeEnum.DB))),
+            arrayOf(customers1000MultipartFile))
+
+    assertFalse(writerJdbcTemplate.existTable(firstDBDatasetPartId.replace('-', '_')))
+
+    val updatedDBDatasetPartId = updatedDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    assertTrue(writerJdbcTemplate.existTable(updatedDBDatasetPartId.replace('-', '_')))
+
+    datasetPartDB =
+        datasetApiService.downloadDatasetPart(
+            organizationSaved.id, workspaceSaved.id, createdDataset.id, updatedDBDatasetPartId)
+    expectedText = FileInputStream(customers1000File).bufferedReader().use { it.readText() }
+    retrievedText = datasetPartDB.inputStream.bufferedReader().use { it.readText() }
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test create Dataset part DB with unallowed char in headers`() {
+
+    val unallowedCharInHeaderFile =
+        resourceLoader.getResource("classpath:/$UNALLOWED_CHAR_HEADERS_FILE_NAME").file
+
+    val unallowedCharInHeaderFileToSend = FileInputStream(unallowedCharInHeaderFile)
+
+    val unallowedCharInHeaderMultipartFile =
+        MockMultipartFile(
+            "file",
+            UNALLOWED_CHAR_HEADERS_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(unallowedCharInHeaderFileToSend))
+
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = "Dataset Test with DB part",
+            parts =
+                mutableListOf(
+                    DatasetPartCreateRequest(
+                        name = "DB part",
+                        sourceName = UNALLOWED_CHAR_HEADERS_FILE_NAME,
+                        type = DatasetPartTypeEnum.DB)))
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          datasetApiService.createDataset(
+              organizationSaved.id,
+              workspaceSaved.id,
+              datasetCreateRequest,
+              arrayOf(unallowedCharInHeaderMultipartFile))
+        }
+
+    assertEquals(
+        "Invalid header name found in dataset part file: " +
+            "header name must match [a-zA-Z0-9_\"' ]+ (found: [\"%1325 \\ sr\", \"-#()char'\\`\\\"\"])",
+        exception.message)
+  }
+
+  @Test
+  fun `test create Dataset part DB with empty headers`() {
+
+    val unallowedCharInHeaderFile =
+        resourceLoader.getResource("classpath:/$EMPTY_SOURCE_FILE_NAME").file
+
+    val unallowedCharInHeaderFileToSend = FileInputStream(unallowedCharInHeaderFile)
+
+    val unallowedCharInHeaderMultipartFile =
+        MockMultipartFile(
+            "file",
+            EMPTY_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(unallowedCharInHeaderFileToSend))
+
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = "Dataset Test with DB part",
+            parts =
+                mutableListOf(
+                    DatasetPartCreateRequest(
+                        name = "DB part",
+                        sourceName = EMPTY_SOURCE_FILE_NAME,
+                        type = DatasetPartTypeEnum.DB)))
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          datasetApiService.createDataset(
+              organizationSaved.id,
+              workspaceSaved.id,
+              datasetCreateRequest,
+              arrayOf(unallowedCharInHeaderMultipartFile))
+        }
+
+    assertEquals("No headers found in dataset part file", exception.message)
+  }
+
+  @Test
+  fun `test create Dataset part DB with multiple same header names`() {
+
+    val unallowedCharInHeaderFile =
+        resourceLoader.getResource("classpath:/$SAME_HEADERS_FILE_NAME").file
+
+    val unallowedCharInHeaderFileToSend = FileInputStream(unallowedCharInHeaderFile)
+
+    val unallowedCharInHeaderMultipartFile =
+        MockMultipartFile(
+            "file",
+            SAME_HEADERS_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(unallowedCharInHeaderFileToSend))
+
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = "Dataset Test with DB part",
+            parts =
+                mutableListOf(
+                    DatasetPartCreateRequest(
+                        name = "DB part",
+                        sourceName = SAME_HEADERS_FILE_NAME,
+                        type = DatasetPartTypeEnum.DB)))
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          datasetApiService.createDataset(
+              organizationSaved.id,
+              workspaceSaved.id,
+              datasetCreateRequest,
+              arrayOf(unallowedCharInHeaderMultipartFile))
+        }
+
+    assertEquals("Duplicate headers found in dataset part file", exception.message)
   }
 
   @Test
@@ -1397,7 +1586,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 sourceName = CUSTOMER_SOURCE_FILE_NAME,
                 description = datasetPartDescription,
                 tags = datasetPartTags,
-                type = DatasetPartTypeEnum.Relational))
+                type = DatasetPartTypeEnum.DB))
 
     assertNotNull(createDatasetPart)
     datasetApiService.deleteDatasetPart(
@@ -2446,6 +2635,65 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   @Test
   fun `test queryData`() {
     TODO("Not yet implemented")
+  }
+
+  private fun testCreateDatasetPartWithSimpleFile(fileName: String, expectedFileName: String) {
+    val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test $fileName")
+
+    val createDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+
+    assertTrue(createDataset.parts.isEmpty())
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "file", fileName, MediaType.MULTIPART_FORM_DATA_VALUE, IOUtils.toByteArray(fileToSend))
+
+    val datasetPartName = "Customer list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+
+    val createDatasetPart =
+        datasetApiService.createDatasetPart(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            mockMultipartFile,
+            DatasetPartCreateRequest(
+                name = datasetPartName,
+                sourceName = fileName,
+                description = datasetPartDescription,
+                tags = datasetPartTags,
+                type = DatasetPartTypeEnum.DB))
+
+    assertNotNull(createDatasetPart)
+    assertEquals(datasetPartName, createDatasetPart.name)
+    assertEquals(datasetPartDescription, createDatasetPart.description)
+    assertEquals(datasetPartTags, createDatasetPart.tags)
+    assertEquals(fileName, createDatasetPart.sourceName)
+
+    val retrievedDataset =
+        datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createDataset.id)
+
+    assertTrue(retrievedDataset.parts.isNotEmpty())
+    assertEquals(retrievedDataset.parts.size, 1)
+    assertEquals(createDatasetPart, retrievedDataset.parts[0])
+
+    assertTrue(writerJdbcTemplate.existTable(createDatasetPart.id.replace('-', '_')))
+
+    val datasetPartFile =
+        datasetApiService.downloadDatasetPart(
+            organizationSaved.id, workspaceSaved.id, createDataset.id, createDatasetPart.id)
+
+    val expectedTestFile = resourceLoader.getResource("classpath:/$expectedFileName").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText = datasetPartFile.inputStream.bufferedReader().use { it.readText() }
+    assertEquals(expectedText, retrievedText)
   }
 
   private fun constructFilePathForDatasetPart(createdDataset: Dataset, partIndex: Int): String =
