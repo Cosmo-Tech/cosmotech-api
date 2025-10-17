@@ -525,14 +525,14 @@ paths:
       - $ref: '#/components/parameters/datasetId'
       - $ref: '#/components/parameters/datasetPartId'
       - in: query
-        name: filters
+        name: selects
         schema:
           type: array
           items:
             type: string
         description: |
-          Property names that should be part of the response data.
-          You can specify a property name like:
+          Column names that should be part of the response data.
+          You can specify a column name like:
            - id
            - stock
            - quantity
@@ -543,14 +543,42 @@ paths:
           type: array
           items:
             type: string
-        description: Property names to sum by
+        description: Column names to sum by
+      - in: query
+        name: avgs
+        schema:
+          type: array
+          items:
+            type: string
+        description: Column names to average by
+      - in: query
+        name: distincts
+        schema:
+          type: array
+          items:
+            type: string
+        description: Column names to distinct by
       - in: query
         name: counts
         schema:
           type: array
           items:
             type: string
-        description: Property names to count by
+        description: Column names to count by
+      - in: query
+        name: mins
+        schema:
+          type: array
+          items:
+            type: string
+        description: Column names to min by
+      - in: query
+        name: maxs
+        schema:
+          type: array
+          items:
+            type: string
+        description: Column names to max by
       - in: query
         name: offset
         schema:
@@ -561,6 +589,20 @@ paths:
         schema:
           type: integer
         description: The query limit
+      - in: query
+        name: groupBys
+        schema:
+          type: array
+          items:
+            type: string
+        description: Column names to group by
+      - in: query
+        name: orderBys
+        schema:
+          type: array
+          items:
+            type: string
+        description: Column names to order by
     get:
       operationId: queryData
       tags:
@@ -570,12 +612,10 @@ paths:
         "200":
           description: Data related to provided information
           content:
-            application/json:
+            application/octet-stream:
               schema:
-                $ref: "#/components/schemas/DatasetQueryResult"
-            application/yaml:
-              schema:
-                $ref: "#/components/schemas/DatasetQueryResult"
+                type: string
+                format: binary
         "400":
           description: Bad request - Data cannot be retrieved from provided information
         "403":

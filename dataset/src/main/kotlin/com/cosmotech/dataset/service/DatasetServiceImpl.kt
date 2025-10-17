@@ -3,6 +3,7 @@
 package com.cosmotech.dataset.service
 
 import com.cosmotech.common.CsmPhoenixService
+import com.cosmotech.common.config.DATASET_INPUTS_SCHEMA
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
@@ -19,6 +20,7 @@ import com.cosmotech.common.utils.ResourceScanner
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.utils.sanitizeDatasetPartId
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.CreateInfo
 import com.cosmotech.dataset.domain.Dataset
@@ -37,8 +39,16 @@ import com.cosmotech.dataset.repositories.DatasetPartRepository
 import com.cosmotech.dataset.repositories.DatasetRepository
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.service.toGenericSecurity
+import java.io.ByteArrayOutputStream
 import java.time.Instant
+import kotlin.String
+import kotlin.use
+import org.apache.commons.lang3.StringUtils
+import org.postgresql.copy.CopyManager
+import org.postgresql.core.BaseConnection
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
@@ -50,7 +60,8 @@ class DatasetServiceImpl(
     private val datasetPartRepository: DatasetPartRepository,
     private val csmRbac: CsmRbac,
     private val datasetPartManagementFactory: DatasetPartManagementFactory,
-    private val resourceScanner: ResourceScanner
+    private val resourceScanner: ResourceScanner,
+    private val writerJdbcTemplate: JdbcTemplate
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   override fun getVerifiedDataset(
@@ -561,18 +572,125 @@ class DatasetServiceImpl(
       workspaceId: String,
       datasetId: String,
       datasetPartId: String,
-      filters: List<String>?,
+      selects: List<String>?,
       sums: List<String>?,
+      avgs: List<String>?,
+      distincts: List<String>?,
       counts: List<String>?,
+      mins: List<String>?,
+      maxs: List<String>?,
       offset: Int?,
-      limit: Int?
-  ): List<Any> {
+      limit: Int?,
+      groupBys: List<String>?,
+      orderBys: List<String>?
+  ): Resource {
     val datasetPart = getDatasetPart(organizationId, workspaceId, datasetId, datasetPartId)
     if (datasetPart.type == DatasetPartTypeEnum.File) {
       throw IllegalArgumentException("Cannot query data on a File Dataset Part")
     }
-    // TODO handle DatasetPartTypeEnum == Relational
-    return emptyList()
+    val query =
+        constructParametrizedQuery(
+            datasetPartId,
+            selects,
+            sums,
+            avgs,
+            distincts,
+            counts,
+            mins,
+            maxs,
+            offset,
+            limit,
+            groupBys,
+            orderBys)
+
+    val out = ByteArrayOutputStream()
+    writerJdbcTemplate.dataSource!!.connection.use { connection ->
+      CopyManager(connection as BaseConnection)
+          .copyOut("COPY ($query) TO STDOUT WITH CSV HEADER", out)
+    }
+
+    return ByteArrayResource(out.toByteArray())
+  }
+
+  @Suppress("LongParameterList", "ComplexCondition", "CyclomaticComplexMethod")
+  private fun constructParametrizedQuery(
+      datasetPartId: String,
+      selects: List<String>?,
+      sums: List<String>?,
+      avgs: List<String>?,
+      distincts: List<String>?,
+      counts: List<String>?,
+      mins: List<String>?,
+      maxs: List<String>?,
+      offset: Int?,
+      limit: Int?,
+      groupBys: List<String>?,
+      orderBys: List<String>?
+  ): String {
+    val tableName = "${DATASET_INPUTS_SCHEMA}.${datasetPartId.sanitizeDatasetPartId()}"
+    if (selects.isNullOrEmpty() &&
+        sums.isNullOrEmpty() &&
+        avgs.isNullOrEmpty() &&
+        distincts.isNullOrEmpty() &&
+        counts.isNullOrEmpty() &&
+        mins.isNullOrEmpty() &&
+        maxs.isNullOrEmpty() &&
+        offset == null &&
+        limit == null &&
+        groupBys.isNullOrEmpty() &&
+        orderBys.isNullOrEmpty()) {
+      return "SELECT * FROM $tableName"
+    }
+    // validate data regarding header regex
+    val selectClauses =
+        selects?.joinToString(separator = ",") { StringUtils.wrapIfMissing(it, "\"") } ?: ""
+
+    val distinctClauses =
+        distincts?.joinToString(separator = ",") {
+          "DISTINCT ${StringUtils.wrapIfMissing(it, "\"")}"
+        } ?: ""
+    val sumClauses =
+        sums?.joinToString(separator = ",") {
+          "sum(${StringUtils.wrapIfMissing(it, "\"")}::float8) as \"sum($it)\""
+        } ?: ""
+    val avgClauses =
+        avgs?.joinToString(separator = ",") {
+          "avg(${StringUtils.wrapIfMissing(it, "\"")}::float8) as \"avg($it)\""
+        } ?: ""
+    val countClauses =
+        counts?.joinToString(separator = ",") {
+          "count(${StringUtils.wrapIfMissing(it, "\"")}) as \"count($it)\""
+        } ?: ""
+    val minClauses =
+        mins?.joinToString(separator = ",") {
+          "min(${StringUtils.wrapIfMissing(it, "\"")}::float8) as \"min($it)\""
+        } ?: ""
+    val maxClauses =
+        maxs?.joinToString(separator = ",") {
+          "max(${StringUtils.wrapIfMissing(it, "\"")}::float8) as \"max($it)\""
+        } ?: ""
+
+    val allSelectClauses =
+        mutableListOf(
+                selectClauses,
+                sumClauses,
+                avgClauses,
+                distinctClauses,
+                countClauses,
+                minClauses,
+                maxClauses)
+            .filter { it.isNotBlank() }
+            .joinToString(separator = ",")
+    val query = StringBuffer("SELECT $allSelectClauses FROM $tableName")
+
+    val groupByClauses =
+        groupBys?.joinToString(separator = ",") { StringUtils.wrapIfMissing(it, "\"") } ?: ""
+    if (groupByClauses.isNotBlank()) {
+      query.append(" GROUP BY $groupByClauses")
+    }
+
+    logger.error(query.toString())
+    return query.toString()
   }
 
   override fun updateDatasetPart(

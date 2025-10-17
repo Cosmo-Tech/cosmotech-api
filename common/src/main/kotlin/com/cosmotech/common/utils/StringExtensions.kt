@@ -30,6 +30,8 @@ fun String.sanitizeForKubernetes(maxLength: Int = KUBERNETES_RESOURCE_NAME_MAX_L
 fun String.sanitizeForRedis() =
     this.replace("@", "\\\\@").replace(".", "\\\\.").replace("-", "\\\\-")
 
+fun String.sanitizeDatasetPartId(): String = this.replace('-', '_')
+
 fun String.toSecurityConstraintQuery() =
     "((-@security_default:{none})|(@security_accessControlList_id:{${this.sanitizeForRedis()}}" +
         " -@security_accessControlList_role:{none}))"

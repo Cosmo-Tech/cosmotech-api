@@ -49,10 +49,10 @@ import io.awspring.cloud.s3.S3Template
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.util.UUID
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -2631,10 +2631,403 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         exception.message)
   }
 
-  @Ignore("This method is not ready yet")
   @Test
-  fun `test queryData`() {
-    TODO("Not yet implemented")
+  fun `test queryData without parameters`() {
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val createdDataset = createDatasetWithCustomersDatasetPart(resourceTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        )
+
+    val expectedText = FileInputStream(resourceTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test queryData with only selects ok`() {
+
+    val customersTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val createdDataset = createDatasetWithCustomersDatasetPart(customersTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            mutableListOf("customerID"),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        )
+
+    val expectedTestFile =
+        resourceLoader.getResource("classpath:/query/customers_customerID_only.csv").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test queryData with only sum ok`() {
+
+    val customersTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val createdDataset = createDatasetWithCustomersDatasetPart(customersTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            null,
+            mutableListOf("age"),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        )
+
+    val expectedTestFile = resourceLoader.getResource("classpath:/query/customers_sum_age.csv").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test queryData with only avg ok`() {
+
+    val customersTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val createdDataset = createDatasetWithCustomersDatasetPart(customersTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            null,
+            null,
+            mutableListOf("age"),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        )
+
+    val expectedTestFile = resourceLoader.getResource("classpath:/query/customers_avg_age.csv").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test queryData with distincts ok`() {
+
+    val customersTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val createdDataset = createDatasetWithCustomersDatasetPart(customersTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            null,
+            null,
+            null,
+            mutableListOf("customerID"),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        )
+
+    val expectedTestFile =
+        resourceLoader.getResource("classpath:/query/customers_distinct_customerID_only.csv").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test queryData with counts ok`() {
+
+    val customersTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val createdDataset = createDatasetWithCustomersDatasetPart(customersTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            null,
+            null,
+            null,
+            null,
+            mutableListOf("customerID"),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        )
+
+    val expectedTestFile =
+        resourceLoader.getResource("classpath:/query/customers_count_customerID.csv").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test queryData with only mins ok`() {
+
+    val customersTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val createdDataset = createDatasetWithCustomersDatasetPart(customersTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            mutableListOf("age"),
+            null,
+            null,
+            null,
+            null,
+            null,
+        )
+
+    val expectedTestFile = resourceLoader.getResource("classpath:/query/customers_min_age.csv").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test queryData with only maxs ok`() {
+
+    val customersTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val createdDataset = createDatasetWithCustomersDatasetPart(customersTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            mutableListOf("age"),
+            null,
+            null,
+            null,
+            null,
+        )
+
+    val expectedTestFile = resourceLoader.getResource("classpath:/query/customers_max_age.csv").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test queryData with selects, sum and groupby ok`() {
+
+    val customersTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val createdDataset = createDatasetWithCustomersDatasetPart(customersTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            mutableListOf("customerID"),
+            mutableListOf("age"),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            mutableListOf("customerID"),
+            null,
+        )
+
+    val expectedTestFile =
+        resourceLoader.getResource("classpath:/query/customers_customerID_sum_age.csv").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test queryData with selects, avg and groupby ok`() {
+
+    val customersTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val createdDataset = createDatasetWithCustomersDatasetPart(customersTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            mutableListOf("customerID"),
+            null,
+            mutableListOf("age"),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            mutableListOf("customerID"),
+            null,
+        )
+
+    val expectedTestFile =
+        resourceLoader.getResource("classpath:/query/customers_customerID_avg_age.csv").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+  }
+
+  private fun createDatasetWithCustomersDatasetPart(resourceTestFile: File): Dataset {
+    val datasetPartName = "Customers list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = datasetPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = datasetPartDescription,
+            tags = datasetPartTags,
+            type = DatasetPartTypeEnum.DB)
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            parts = mutableListOf(datasetPartCreateRequest))
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    return datasetApiService.createDataset(
+        organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf(mockMultipartFile))
   }
 
   private fun testCreateDatasetPartWithSimpleFile(fileName: String, expectedFileName: String) {
