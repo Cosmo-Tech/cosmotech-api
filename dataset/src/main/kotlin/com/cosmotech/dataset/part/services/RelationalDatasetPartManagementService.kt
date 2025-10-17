@@ -5,6 +5,7 @@ package com.cosmotech.dataset.part.services
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.config.DATASET_INPUTS_SCHEMA
 import com.cosmotech.common.config.existTable
+import com.cosmotech.common.utils.sanitizeDatasetPartId
 import com.cosmotech.dataset.domain.DatasetPart
 import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
@@ -135,6 +136,4 @@ class RelationalDatasetPartManagementService(
       }
     }
   }
-
-  fun String.sanitizeDatasetPartId(): String = this.replace('-', '_')
 }

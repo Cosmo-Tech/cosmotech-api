@@ -400,7 +400,7 @@ Retrieve a list of defined Dataset
 
 <a name="queryData"></a>
 # **queryData**
-> List queryData(organization\_id, workspace\_id, dataset\_id, dataset\_part\_id, filters, sums, counts, offset, limit)
+> File queryData(organization\_id, workspace\_id, dataset\_id, dataset\_part\_id, selects, sums, avgs, distincts, counts, mins, maxs, offset, limit, groupBys, orderBys)
 
 Get data of a Dataset
 
@@ -412,15 +412,21 @@ Get data of a Dataset
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **dataset\_id** | **String**| the Dataset identifier | [default to null] |
 | **dataset\_part\_id** | **String**| the Dataset part identifier | [default to null] |
-| **filters** | [**List**](../Models/String.md)| Property names that should be part of the response data. You can specify a property name like:  - id  - stock  - quantity  - ...  | [optional] [default to null] |
-| **sums** | [**List**](../Models/String.md)| Property names to sum by | [optional] [default to null] |
-| **counts** | [**List**](../Models/String.md)| Property names to count by | [optional] [default to null] |
+| **selects** | [**List**](../Models/String.md)| Column names that should be part of the response data. You can specify a column name like:  - id  - stock  - quantity  - ...  | [optional] [default to null] |
+| **sums** | [**List**](../Models/String.md)| Column names to sum by | [optional] [default to null] |
+| **avgs** | [**List**](../Models/String.md)| Column names to average by | [optional] [default to null] |
+| **distincts** | [**List**](../Models/String.md)| Column names to distinct by | [optional] [default to null] |
+| **counts** | [**List**](../Models/String.md)| Column names to count by | [optional] [default to null] |
+| **mins** | [**List**](../Models/String.md)| Column names to min by | [optional] [default to null] |
+| **maxs** | [**List**](../Models/String.md)| Column names to max by | [optional] [default to null] |
 | **offset** | **Integer**| The query offset | [optional] [default to null] |
 | **limit** | **Integer**| The query limit | [optional] [default to null] |
+| **groupBys** | [**List**](../Models/String.md)| Column names to group by | [optional] [default to null] |
+| **orderBys** | [**List**](../Models/String.md)| Column names to order by | [optional] [default to null] |
 
 ### Return type
 
-**List**
+**File**
 
 ### Authorization
 
@@ -429,7 +435,7 @@ Get data of a Dataset
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json, application/yaml
+- **Accept**: application/octet-stream
 
 <a name="replaceDatasetPart"></a>
 # **replaceDatasetPart**
