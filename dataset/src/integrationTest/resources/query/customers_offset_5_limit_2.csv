@@ -1,0 +1,3 @@
+customerID,companyName,contactName,contactTitle,address,city,region,postalCode,country,phone,age
+CUST006,FastFix Auto,Isabelle Dubois,Service Manager,42 Garage Loop,Montréal,QC,H3Z 2Y7,Canada,514-601-3300,60
+CUST007,Garden Glow Ltd,Ellie Tan,Product Specialist,180 Daisy St,Burnside,NSW,2135,Australia,02-8000-1122,27
