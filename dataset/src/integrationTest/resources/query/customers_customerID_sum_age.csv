@@ -1,4 +1,4 @@
-customerID,sum(age)
+customerID,sum_age
 CUST007,27
 CUST005,48
 CUST001,10

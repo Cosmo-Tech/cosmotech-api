@@ -588,6 +588,17 @@ class DatasetServiceImpl(
     if (datasetPart.type == DatasetPartTypeEnum.File) {
       throw IllegalArgumentException("Cannot query data on a File Dataset Part")
     }
+    validateParameters(
+        mapOf(
+            "selects" to selects,
+            "sums" to sums,
+            "avgs" to avgs,
+            "distincts" to distincts,
+            "counts" to counts,
+            "mins" to mins,
+            "maxs" to maxs,
+            "groupBys" to groupBys,
+            "orderBys" to orderBys))
     val query =
         constructParametrizedQuery(
             datasetPartId,
@@ -612,7 +623,19 @@ class DatasetServiceImpl(
     return ByteArrayResource(out.toByteArray())
   }
 
-  @Suppress("LongParameterList", "ComplexCondition", "CyclomaticComplexMethod")
+  private fun validateParameters(parametersToValidate: Map<String, List<String>?>) {
+
+    parametersToValidate.forEach { (parameterName, parameterValues) ->
+      if (parameterValues != null) {
+        require(parameterValues.all { Regex("[a-zA-Z0-9_*!\' ]+").matches(it) }) {
+          "Invalid parameter value found in '$parameterName': " +
+              "parameter name must match [a-zA-Z0-9_*!\' ]+ (found: ${parameterValues})"
+        }
+      }
+    }
+  }
+
+  @Suppress("LongParameterList")
   private fun constructParametrizedQuery(
       datasetPartId: String,
       selects: List<String>?,
@@ -628,47 +651,18 @@ class DatasetServiceImpl(
       orderBys: List<String>?
   ): String {
     val tableName = "${DATASET_INPUTS_SCHEMA}.${datasetPartId.sanitizeDatasetPartId()}"
-    if (selects.isNullOrEmpty() &&
-        sums.isNullOrEmpty() &&
-        avgs.isNullOrEmpty() &&
-        distincts.isNullOrEmpty() &&
-        counts.isNullOrEmpty() &&
-        mins.isNullOrEmpty() &&
-        maxs.isNullOrEmpty() &&
-        offset == null &&
-        limit == null &&
-        groupBys.isNullOrEmpty() &&
-        orderBys.isNullOrEmpty()) {
-      return "SELECT * FROM $tableName"
-    }
-    // validate data regarding header regex
-    val selectClauses =
-        selects?.joinToString(separator = ",") { StringUtils.wrapIfMissing(it, "\"") } ?: ""
 
     val distinctClauses =
         distincts?.joinToString(separator = ",") {
           "DISTINCT ${StringUtils.wrapIfMissing(it, "\"")}"
         } ?: ""
-    val sumClauses =
-        sums?.joinToString(separator = ",") {
-          "sum(${StringUtils.wrapIfMissing(it, "\"")}::float8) as \"sum($it)\""
-        } ?: ""
-    val avgClauses =
-        avgs?.joinToString(separator = ",") {
-          "avg(${StringUtils.wrapIfMissing(it, "\"")}::float8) as \"avg($it)\""
-        } ?: ""
-    val countClauses =
-        counts?.joinToString(separator = ",") {
-          "count(${StringUtils.wrapIfMissing(it, "\"")}) as \"count($it)\""
-        } ?: ""
-    val minClauses =
-        mins?.joinToString(separator = ",") {
-          "min(${StringUtils.wrapIfMissing(it, "\"")}::float8) as \"min($it)\""
-        } ?: ""
-    val maxClauses =
-        maxs?.joinToString(separator = ",") {
-          "max(${StringUtils.wrapIfMissing(it, "\"")}::float8) as \"max($it)\""
-        } ?: ""
+
+    val selectClauses = constructQueryPart(selects, null, null)
+    val sumClauses = constructQueryPart(sums, AggregationType.Sum, "float8")
+    val avgClauses = constructQueryPart(avgs, AggregationType.Avg, "float8")
+    val countClauses = constructQueryPart(counts, AggregationType.Count, null)
+    val minClauses = constructQueryPart(mins, AggregationType.Min, "float8")
+    val maxClauses = constructQueryPart(maxs, AggregationType.Max, "float8")
 
     val allSelectClauses =
         mutableListOf(
@@ -681,16 +675,80 @@ class DatasetServiceImpl(
                 maxClauses)
             .filter { it.isNotBlank() }
             .joinToString(separator = ",")
-    val query = StringBuffer("SELECT $allSelectClauses FROM $tableName")
 
-    val groupByClauses =
-        groupBys?.joinToString(separator = ",") { StringUtils.wrapIfMissing(it, "\"") } ?: ""
-    if (groupByClauses.isNotBlank()) {
-      query.append(" GROUP BY $groupByClauses")
+    val query = StringBuffer("")
+    if (allSelectClauses.isNotBlank()) {
+      query.append("SELECT $allSelectClauses FROM $tableName ")
+    } else {
+      query.append("SELECT * FROM $tableName ")
     }
 
-    logger.error(query.toString())
+    val groupByClauses = constructQueryPart(groupBys, null, null)
+    if (groupByClauses.isNotBlank()) {
+      query.append("GROUP BY $groupByClauses ")
+    }
+
+    val orderByClauses = constructQueryPart(orderBys, null, null, true)
+    if (orderByClauses.isNotBlank()) {
+      query.append("ORDER BY $orderByClauses ")
+    }
+
+    addLimitOffset(limit, offset, query)
+
+    logger.debug(query.toString())
     return query.toString()
+  }
+
+  private fun addLimitOffset(limit: Int?, offset: Int?, query: StringBuffer) {
+    if (limit != null) {
+      query.append("LIMIT $limit")
+      if (offset != null) {
+        query.append(" OFFSET $offset")
+      }
+    } else if (offset != null) {
+      query.append("OFFSET $offset")
+    }
+  }
+
+  private fun constructQueryPart(
+      columnNames: List<String>?,
+      aggregationFunction: AggregationType?,
+      castType: String?,
+      orderable: Boolean = false
+  ): String {
+    return columnNames?.joinToString(separator = ",") { columnName ->
+      if (aggregationFunction != null) {
+        val aggFunction = aggregationFunction.name.lowercase()
+        val queryPart = StringBuilder("$aggFunction(")
+        if (columnName.endsWith("*")) {
+          queryPart.append("distinct ")
+          val columnNameWithoutStar = columnName.substringBeforeLast("*")
+          queryPart.append("${StringUtils.wrapIfMissing(columnNameWithoutStar, "\"")}")
+          if (castType != null) {
+            queryPart.append("::$castType")
+          }
+          queryPart.append(") as \"${aggFunction}_distinct_$columnNameWithoutStar\"")
+          queryPart.toString()
+        } else {
+          queryPart.append("${StringUtils.wrapIfMissing(columnName, "\"")}")
+          if (castType != null) {
+            queryPart.append("::$castType")
+          }
+          queryPart.append(") as \"${aggFunction}_$columnName\"")
+          queryPart.toString()
+        }
+      } else {
+        if (orderable) {
+          if (columnName.startsWith("!")) {
+            "${StringUtils.wrapIfMissing(columnName.substring(1), "\"")} DESC"
+          } else {
+            "${StringUtils.wrapIfMissing(columnName, "\"")} ASC"
+          }
+        } else {
+          StringUtils.wrapIfMissing(columnName, "\"")
+        }
+      }
+    } ?: ""
   }
 
   override fun updateDatasetPart(
@@ -919,6 +977,14 @@ class DatasetServiceImpl(
 
     files.forEach { file -> validateFile(file) }
   }
+}
+
+enum class AggregationType {
+  Sum,
+  Avg,
+  Count,
+  Min,
+  Max
 }
 
 fun DatasetSecurity?.toGenericSecurity(id: String) =

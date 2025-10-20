@@ -1,0 +1,6 @@
+customerID,companyName,contactName,contactTitle,address,city,region,postalCode,country,phone,age
+CUST001,Blueberry Tech,Alex Greenwood,CTO,1412 Pine St,Oakridge,CA,93561,USA,555-123-4560,10
+CUST002,Riverbend Logistics,Taylor Morris,Operations Lead,89 North Ave,Greendale,NY,11105,USA,555-987-6521,25
+CUST003,Sunrise Foods,Jordan Liu,Procurement Manager,220 Cherry Road,Springdale,TX,75010,USA,555-210-7895,34
+CUST004,Skyline Textiles,Maria Petrova,Sales Director,501 Textile Lane,Newpark,FL,33012,USA,555-313-9240,59
+CUST005,Crimson Solutions,Samuel Evans,CEO,77 Baker Blvd,Woodport,GA,30310,USA,555-825-2555,48
