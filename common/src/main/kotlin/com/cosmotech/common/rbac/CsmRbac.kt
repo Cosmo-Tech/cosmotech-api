@@ -8,6 +8,7 @@ import com.cosmotech.common.exceptions.CsmClientException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -71,7 +72,9 @@ open class CsmRbac(
     var userIsAdminOrHasPermission = this.isAdmin(rbacSecurity, rolesDefinition)
     if (!userIsAdminOrHasPermission) {
       val user = getCurrentAccountIdentifier(this.csmPlatformProperties)
-      userIsAdminOrHasPermission = this.verifyRbac(rbacSecurity, permission, rolesDefinition, user)
+      val groups = getCurrentAccountGroups(this.csmPlatformProperties)
+      userIsAdminOrHasPermission =
+          this.verifyRbac(rbacSecurity, permission, rolesDefinition, user, groups)
     }
     return userIsAdminOrHasPermission
   }
@@ -173,19 +176,31 @@ open class CsmRbac(
     var isAdmin = this.isAdminToken(rbacSecurity)
     if (!isAdmin) {
       val user = getCurrentAccountIdentifier(this.csmPlatformProperties)
-      isAdmin = this.verifyAdminRole(rbacSecurity, user, rolesDefinition)
+      val groups = getCurrentAccountGroups(this.csmPlatformProperties)
+      isAdmin = this.verifyAdminRole(rbacSecurity, user, groups, rolesDefinition)
     }
     return isAdmin
   }
 
   internal fun verifyAdminRole(
       rbacSecurity: RbacSecurity,
-      user: String,
+      user: String?,
+      groups: List<String>?,
       rolesDefinition: RolesDefinition
   ): Boolean {
     logger.debug("RBAC ${rbacSecurity.id} - Verifying if $user has default admin rbac role")
-    val isAdmin = this.getUserRole(rbacSecurity, user) == this.getAdminRole(rolesDefinition)
-    logger.debug("RBAC ${rbacSecurity.id} - $user has default admin rbac role: $isAdmin")
+    var isAdmin = false
+    groups?.forEach {
+      if (this.getUserRole(rbacSecurity, it) == this.getAdminRole(rolesDefinition)) {
+        isAdmin = true
+      }
+    }
+    if (user != null) {
+      if (this.getUserRole(rbacSecurity, user) == this.getAdminRole(rolesDefinition)) {
+        isAdmin = true
+      }
+    }
+    logger.debug("RBAC ${rbacSecurity.id} - $user have default admin rbac role: $isAdmin")
     return isAdmin
   }
 
@@ -193,11 +208,22 @@ open class CsmRbac(
       rbacSecurity: RbacSecurity,
       permission: String,
       rolesDefinition: RolesDefinition,
-      user: String
+      user: String?,
+      groups: List<String>?
   ): Boolean {
     logger.debug("RBAC ${rbacSecurity.id} - Verifying $user has permission in ACL: $permission")
-    val isAuthorized =
-        this.verifyPermissionFromRole(permission, getUserRole(rbacSecurity, user), rolesDefinition)
+    var isAuthorized = false
+    groups?.forEach {
+      if (this.verifyPermissionFromRole(
+          permission, getUserRole(rbacSecurity, it), rolesDefinition)) {
+        isAuthorized = true
+      }
+    }
+    if (user != null) {
+      if (this.verifyPermissionFromRole(
+          permission, getUserRole(rbacSecurity, user), rolesDefinition))
+          isAuthorized = true
+    }
     logger.debug("RBAC ${rbacSecurity.id} - $user has permission $permission in ACL: $isAuthorized")
     return isAuthorized
   }
@@ -219,10 +245,11 @@ open class CsmRbac(
       rbacSecurity: RbacSecurity,
       permission: String,
       rolesDefinition: RolesDefinition,
-      user: String
+      user: String?,
+      groups: List<String>?
   ): Boolean {
     return (this.verifyDefault(rbacSecurity, permission, rolesDefinition) ||
-        this.verifyUser(rbacSecurity, permission, rolesDefinition, user))
+        this.verifyUser(rbacSecurity, permission, rolesDefinition, user, groups))
   }
 
   internal fun verifyPermissionFromRole(
