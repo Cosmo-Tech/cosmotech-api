@@ -31,7 +31,7 @@ class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformPro
   // the Authorization header to the redirect query:
   // - the /v2/{repo}/blobs/{digest} endpoint is implemented by ACR with a 307 Temporary Redirect to
   //   a blob storage
-  // - the 'Location' header in the respons contains the necessary authentication string
+  // - the 'Location' header in the response contains the necessary authentication string
   // - BUT the http client, by default, also forwards the initial ACR 'Authorization' header, which
   //   the Azure Blob Storage rejects (rightfully) because this is an ACR auth
   // So for this specific query we use client with redirection disabled and make the follow up query
@@ -63,11 +63,11 @@ class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformPro
 
       val tags: JSONArray = JSONObject(images).get("tags") as JSONArray
       if (!tags.contains(tag)) {
-        throw CsmResourceNotFoundException("$repository:$tag")
+        throw CsmResourceNotFoundException("Solution docker image $repository:$tag not found")
       }
     } catch (e: RestClientException) {
       throw CsmClientException(
-          "The repository $repository:$tag check has thrown error : " + e.message, e)
+          "Solution docker image $repository:$tag check error: ${e.message}", e)
     }
   }
 
