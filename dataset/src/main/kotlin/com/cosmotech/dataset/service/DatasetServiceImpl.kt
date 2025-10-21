@@ -46,6 +46,7 @@ import kotlin.use
 import org.apache.commons.lang3.StringUtils
 import org.postgresql.copy.CopyManager
 import org.postgresql.core.BaseConnection
+import org.postgresql.util.PSQLException
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.jdbc.core.JdbcTemplate
@@ -61,7 +62,7 @@ class DatasetServiceImpl(
     private val csmRbac: CsmRbac,
     private val datasetPartManagementFactory: DatasetPartManagementFactory,
     private val resourceScanner: ResourceScanner,
-    private val writerJdbcTemplate: JdbcTemplate
+    private val readerJdbcTemplate: JdbcTemplate
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   override fun getVerifiedDataset(
@@ -615,9 +616,14 @@ class DatasetServiceImpl(
             orderBys)
 
     val out = ByteArrayOutputStream()
-    writerJdbcTemplate.dataSource!!.connection.use { connection ->
-      CopyManager(connection as BaseConnection)
-          .copyOut("COPY ($query) TO STDOUT WITH CSV HEADER", out)
+    try {
+      readerJdbcTemplate.dataSource!!.connection.use { connection ->
+        CopyManager(connection as BaseConnection)
+            .copyOut("COPY ($query) TO STDOUT WITH CSV HEADER", out)
+      }
+    } catch (e: PSQLException) {
+      throw IllegalArgumentException(
+          "Error while querying Dataset Part $datasetPartId: ($query)", e)
     }
 
     return ByteArrayResource(out.toByteArray())
@@ -630,6 +636,10 @@ class DatasetServiceImpl(
         require(parameterValues.all { Regex("[a-zA-Z0-9_*!\' ]+").matches(it) }) {
           "Invalid parameter value found in '$parameterName': " +
               "parameter name must match [a-zA-Z0-9_*!\' ]+ (found: ${parameterValues})"
+        }
+        require(parameterValues.all { it.trim() != "*" && it.trim() != "!" }) {
+          "Invalid parameter value found in '$parameterName': " +
+              "parameter name must not be \"*\" or \"!\" (found: ${parameterValues})"
         }
       }
     }

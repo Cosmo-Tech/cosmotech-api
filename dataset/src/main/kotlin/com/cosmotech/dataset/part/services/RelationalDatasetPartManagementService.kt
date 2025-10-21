@@ -57,7 +57,7 @@ class RelationalDatasetPartManagementService(
 
     inputStream.bufferedReader().use { reader ->
       val headers = validateHeaders(reader)
-
+      val readerUserName = csmPlatformProperties.databases.data.reader.username
       writerJdbcTemplate.dataSource!!.connection.use { connection ->
         try {
           connection.autoCommit = false
@@ -70,7 +70,8 @@ class RelationalDatasetPartManagementService(
           if (!tableExists) {
             val prepareStatement =
                 connection.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS $tableName ${constructSQLColumnsValues(headers)};")
+                    "CREATE TABLE IF NOT EXISTS $tableName ${constructSQLColumnsValues(headers)};" +
+                        "GRANT SELECT ON $tableName to \"$readerUserName\";")
             prepareStatement.execute()
           }
           val insertedRows =
@@ -113,7 +114,7 @@ class RelationalDatasetPartManagementService(
   override fun getData(datasetPart: DatasetPart): Resource {
     val tableName = "${DATASET_INPUTS_SCHEMA}.${datasetPart.id.sanitizeDatasetPartId()}"
     val out = ByteArrayOutputStream()
-    writerJdbcTemplate.dataSource!!.connection.use { connection ->
+    readerJdbcTemplate.dataSource!!.connection.use { connection ->
       CopyManager(connection as BaseConnection)
           .copyOut("COPY $tableName TO STDOUT WITH CSV HEADER", out)
     }
