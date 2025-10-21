@@ -980,11 +980,6 @@ components:
       description: Data file to upload
       format: binary
 
-    DatasetQueryResult:
-      type: array
-      items:
-        type: object
-
     DatasetSecurity:
       type: object
       description: the dataset security information
