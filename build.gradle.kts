@@ -128,6 +128,8 @@ allprojects {
         force("com.redis.om:redis-om-spring:0.9.10")
         force("com.google.code.gson:gson:2.13.1")
         force("io.netty:netty-handler:4.2.4.Final")
+        force("ch.qos.logback:logback-core:1.5.20")
+        force("org.springframework.security:spring-security-core:6.5.5")
       }
     }
   }
@@ -278,14 +280,18 @@ subprojects {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     implementation(
-        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
+        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)) {
+          constraints { implementation("org.springframework:spring-core:6.2.12") }
+        }
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-undertow")
+    implementation("org.springframework.boot:spring-boot-starter-undertow") {
+      constraints { implementation("io.undertow:undertow-core:2.3.20.Final") }
+    }
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
