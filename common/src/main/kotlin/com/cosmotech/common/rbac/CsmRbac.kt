@@ -208,18 +208,18 @@ open class CsmRbac(
       rbacSecurity: RbacSecurity,
       permission: String,
       rolesDefinition: RolesDefinition,
-      user: String?,
-      groups: List<String>?
+      user: String,
+      groups: List<String>
   ): Boolean {
     logger.debug("RBAC ${rbacSecurity.id} - Verifying $user has permission in ACL: $permission")
     var isAuthorized = false
-    groups?.forEach {
+    groups.forEach {
       if (this.verifyPermissionFromRole(
           permission, getUserRole(rbacSecurity, it), rolesDefinition)) {
         isAuthorized = true
       }
     }
-    if (user != null) {
+    if (user.isNotEmpty()) {
       if (this.verifyPermissionFromRole(
           permission, getUserRole(rbacSecurity, user), rolesDefinition))
           isAuthorized = true
@@ -245,8 +245,8 @@ open class CsmRbac(
       rbacSecurity: RbacSecurity,
       permission: String,
       rolesDefinition: RolesDefinition,
-      user: String?,
-      groups: List<String>?
+      user: String,
+      groups: List<String>
   ): Boolean {
     return (this.verifyDefault(rbacSecurity, permission, rolesDefinition) ||
         this.verifyUser(rbacSecurity, permission, rolesDefinition, user, groups))
