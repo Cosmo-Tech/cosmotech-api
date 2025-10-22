@@ -55,12 +55,12 @@ fun getCurrentAccountIdentifier(configuration: CsmPlatformProperties): String {
   }
 }
 
-fun getCurrentAccountGroups(configuration: CsmPlatformProperties): List<String>? {
+fun getCurrentAccountGroups(configuration: CsmPlatformProperties): List<String> {
   val authentication = getCurrentAuthentication()
   val jwt = (authentication as JwtAuthenticationToken).token.tokenValue
   val jwtClaimsSet = JWTParser.parse(jwt).jwtClaimsSet
   return jwtClaimsSet.getListClaim(configuration.authorization.groupJwtClaim).toList()
-      as List<String>?
+      as List<String>
 }
 
 fun getCurrentAuthenticatedRoles(configuration: CsmPlatformProperties): List<String> {
