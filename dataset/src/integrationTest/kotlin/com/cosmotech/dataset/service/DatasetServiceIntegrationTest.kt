@@ -85,6 +85,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
   val EMPTY_SOURCE_FILE_NAME = "emptyfile.csv"
   val CUSTOMER_SOURCE_FILE_NAME = "customers.csv"
+  val CUSTOMER_50K_SOURCE_FILE_NAME = "customers_50K.csv"
   val CUSTOMERS_WITH_QUOTES_SOURCE_FILE_NAME = "customerswithquotes.csv"
   val CUSTOMERS_WITH_DOUBLE_QUOTES_SOURCE_FILE_NAME = "customerswithdoublequotes.csv"
   val CUSTOMERS_1000_SOURCE_FILE_NAME = "customers1000.csv"
@@ -2737,6 +2738,45 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val retrievedText =
         InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
 
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test queryData with only selects with 50K lines ok`() {
+    val customersTestFile =
+        resourceLoader.getResource("classpath:/$CUSTOMER_50K_SOURCE_FILE_NAME").file
+
+    val startTime = System.currentTimeMillis()
+    val createdDataset = createDatasetWithCustomersDatasetPart(customersTestFile)
+
+    val datasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
+
+    val queryResult =
+        datasetApiService.queryData(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            datasetPartId,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        )
+
+    val expectedTestFile =
+        resourceLoader.getResource("classpath:/$CUSTOMER_50K_SOURCE_FILE_NAME").file
+    val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(queryResult).inputStream.bufferedReader().use { it.readText() }
+    val endTime = System.currentTimeMillis()
+    logger.error("${endTime - startTime}")
     assertEquals(expectedText, retrievedText)
   }
 
