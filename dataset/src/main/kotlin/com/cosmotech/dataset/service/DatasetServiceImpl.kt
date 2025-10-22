@@ -53,6 +53,10 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
+const val DISTINCT_COLUMN_CHAR = "*"
+const val ORDER_DESC_COLUMN_CHAR = "!"
+const val COLUMN_DISTINCT_KEYWORD = "distinct"
+
 @Service
 @Suppress("TooManyFunctions", "LargeClass")
 class DatasetServiceImpl(
@@ -586,8 +590,8 @@ class DatasetServiceImpl(
       orderBys: List<String>?
   ): Resource {
     val datasetPart = getDatasetPart(organizationId, workspaceId, datasetId, datasetPartId)
-    if (datasetPart.type == DatasetPartTypeEnum.File) {
-      throw IllegalArgumentException("Cannot query data on a File Dataset Part")
+    require(datasetPart.type != DatasetPartTypeEnum.File) {
+      "Cannot query data on a File Dataset Part"
     }
     validateParameters(
         mapOf(
@@ -601,7 +605,7 @@ class DatasetServiceImpl(
             "groupBys" to groupBys,
             "orderBys" to orderBys))
     val query =
-        constructParametrizedQuery(
+        constructQuery(
             datasetPartId,
             selects,
             sums,
@@ -615,18 +619,18 @@ class DatasetServiceImpl(
             groupBys,
             orderBys)
 
-    val out = ByteArrayOutputStream()
+    val outputStream = ByteArrayOutputStream()
     try {
       readerJdbcTemplate.dataSource!!.connection.use { connection ->
         CopyManager(connection as BaseConnection)
-            .copyOut("COPY ($query) TO STDOUT WITH CSV HEADER", out)
+            .copyOut("COPY ($query) TO STDOUT WITH CSV HEADER", outputStream)
       }
     } catch (e: PSQLException) {
       throw IllegalArgumentException(
           "Error while querying Dataset Part $datasetPartId: ($query)", e)
     }
 
-    return ByteArrayResource(out.toByteArray())
+    return ByteArrayResource(outputStream.toByteArray())
   }
 
   private fun validateParameters(parametersToValidate: Map<String, List<String>?>) {
@@ -646,7 +650,7 @@ class DatasetServiceImpl(
   }
 
   @Suppress("LongParameterList")
-  private fun constructParametrizedQuery(
+  private fun constructQuery(
       datasetPartId: String,
       selects: List<String>?,
       sums: List<String>?,
@@ -664,15 +668,15 @@ class DatasetServiceImpl(
 
     val distinctClauses =
         distincts?.joinToString(separator = ",") {
-          "DISTINCT ${StringUtils.wrapIfMissing(it, "\"")}"
+          "%s %s".format(COLUMN_DISTINCT_KEYWORD, StringUtils.wrapIfMissing(it, "\""))
         } ?: ""
 
-    val selectClauses = constructQueryPart(selects, null, null)
-    val sumClauses = constructQueryPart(sums, AggregationType.Sum, "float8")
-    val avgClauses = constructQueryPart(avgs, AggregationType.Avg, "float8")
-    val countClauses = constructQueryPart(counts, AggregationType.Count, null)
-    val minClauses = constructQueryPart(mins, AggregationType.Min, "float8")
-    val maxClauses = constructQueryPart(maxs, AggregationType.Max, "float8")
+    val selectClauses = constructClause(selects, null, null)
+    val sumClauses = constructClause(sums, AggregationType.Sum, "float8")
+    val avgClauses = constructClause(avgs, AggregationType.Avg, "float8")
+    val countClauses = constructClause(counts, AggregationType.Count, null)
+    val minClauses = constructClause(mins, AggregationType.Min, "float8")
+    val maxClauses = constructClause(maxs, AggregationType.Max, "float8")
 
     val allSelectClauses =
         mutableListOf(
@@ -686,19 +690,15 @@ class DatasetServiceImpl(
             .filter { it.isNotBlank() }
             .joinToString(separator = ",")
 
-    val query = StringBuffer("")
-    if (allSelectClauses.isNotBlank()) {
-      query.append("SELECT $allSelectClauses FROM $tableName ")
-    } else {
-      query.append("SELECT * FROM $tableName ")
-    }
+    val query =
+        StringBuilder("SELECT %s FROM %s ".format(allSelectClauses.ifBlank { "*" }, tableName))
 
-    val groupByClauses = constructQueryPart(groupBys, null, null)
+    val groupByClauses = constructClause(groupBys, null, null)
     if (groupByClauses.isNotBlank()) {
       query.append("GROUP BY $groupByClauses ")
     }
 
-    val orderByClauses = constructQueryPart(orderBys, null, null, true)
+    val orderByClauses = constructClause(orderBys, null, null, true)
     if (orderByClauses.isNotBlank()) {
       query.append("ORDER BY $orderByClauses ")
     }
@@ -709,18 +709,16 @@ class DatasetServiceImpl(
     return query.toString()
   }
 
-  private fun addLimitOffset(limit: Int?, offset: Int?, query: StringBuffer) {
+  private fun addLimitOffset(limit: Int?, offset: Int?, query: StringBuilder) {
     if (limit != null) {
-      query.append("LIMIT $limit")
-      if (offset != null) {
-        query.append(" OFFSET $offset")
-      }
-    } else if (offset != null) {
-      query.append("OFFSET $offset")
+      query.append(" LIMIT $limit")
+    }
+    if (offset != null) {
+      query.append(" OFFSET $offset")
     }
   }
 
-  private fun constructQueryPart(
+  private fun constructClause(
       columnNames: List<String>?,
       aggregationFunction: AggregationType?,
       castType: String?,
@@ -728,37 +726,67 @@ class DatasetServiceImpl(
   ): String {
     return columnNames?.joinToString(separator = ",") { columnName ->
       if (aggregationFunction != null) {
-        val aggFunction = aggregationFunction.name.lowercase()
-        val queryPart = StringBuilder("$aggFunction(")
-        if (columnName.endsWith("*")) {
-          queryPart.append("distinct ")
-          val columnNameWithoutStar = columnName.substringBeforeLast("*")
-          queryPart.append("${StringUtils.wrapIfMissing(columnNameWithoutStar, "\"")}")
-          if (castType != null) {
-            queryPart.append("::$castType")
-          }
-          queryPart.append(") as \"${aggFunction}_distinct_$columnNameWithoutStar\"")
-          queryPart.toString()
-        } else {
-          queryPart.append("${StringUtils.wrapIfMissing(columnName, "\"")}")
-          if (castType != null) {
-            queryPart.append("::$castType")
-          }
-          queryPart.append(") as \"${aggFunction}_$columnName\"")
-          queryPart.toString()
-        }
+        createAggregationClause(aggregationFunction.name.lowercase(), columnName, castType)
       } else {
         if (orderable) {
-          if (columnName.startsWith("!")) {
-            "${StringUtils.wrapIfMissing(columnName.substring(1), "\"")} DESC"
-          } else {
-            "${StringUtils.wrapIfMissing(columnName, "\"")} ASC"
-          }
+          createOrderClause(columnName)
         } else {
           StringUtils.wrapIfMissing(columnName, "\"")
         }
       }
     } ?: ""
+  }
+
+  private fun createOrderClause(columnName: String): String {
+    val isMarkedAsDesc = columnName.startsWith(ORDER_DESC_COLUMN_CHAR)
+    return if (isMarkedAsDesc) {
+      val columnNameWrapped = StringUtils.wrapIfMissing(columnName.substring(1), "\"")
+      "$columnNameWrapped DESC"
+    } else {
+      val columnNameWrapped = StringUtils.wrapIfMissing(columnName, "\"")
+      "$columnNameWrapped ASC"
+    }
+  }
+
+  private fun createAggregationClause(
+      aggFunction: String,
+      columnName: String,
+      castType: String?
+  ): String {
+    val queryPart = StringBuilder(aggFunction)
+    val isMarkedASDistinct = columnName.endsWith(DISTINCT_COLUMN_CHAR)
+    val columnName = columnName.substringBeforeLast(DISTINCT_COLUMN_CHAR)
+    return queryPart
+        .addAggregatedColumn(isMarkedASDistinct, columnName)
+        .addCastIfAny(castType)
+        .addRenameClause(isMarkedASDistinct, columnName, aggFunction)
+        .toString()
+  }
+
+  private fun StringBuilder.addAggregatedColumn(
+      isDistinct: Boolean,
+      columnName: String
+  ): StringBuilder = apply {
+    this.append(
+        "(%s %s"
+            .format(
+                if (isDistinct) COLUMN_DISTINCT_KEYWORD else "",
+                StringUtils.wrapIfMissing(columnName, "\"")))
+  }
+
+  private fun StringBuilder.addCastIfAny(castType: String?): StringBuilder = apply {
+    this.append(if (!castType.isNullOrEmpty()) "::$castType) " else ") ")
+  }
+
+  private fun StringBuilder.addRenameClause(
+      isDistinct: Boolean,
+      columnName: String,
+      aggFunction: String
+  ): StringBuilder = apply {
+    this.append(
+        "as \"%s%s%s\""
+            .format(
+                aggFunction, if (isDistinct) "_${COLUMN_DISTINCT_KEYWORD}_" else "_", columnName))
   }
 
   override fun updateDatasetPart(
