@@ -580,7 +580,6 @@ class DatasetServiceImpl(
       selects: List<String>?,
       sums: List<String>?,
       avgs: List<String>?,
-      distincts: List<String>?,
       counts: List<String>?,
       mins: List<String>?,
       maxs: List<String>?,
@@ -598,7 +597,6 @@ class DatasetServiceImpl(
             "selects" to selects,
             "sums" to sums,
             "avgs" to avgs,
-            "distincts" to distincts,
             "counts" to counts,
             "mins" to mins,
             "maxs" to maxs,
@@ -610,7 +608,6 @@ class DatasetServiceImpl(
             selects,
             sums,
             avgs,
-            distincts,
             counts,
             mins,
             maxs,
@@ -655,7 +652,6 @@ class DatasetServiceImpl(
       selects: List<String>?,
       sums: List<String>?,
       avgs: List<String>?,
-      distincts: List<String>?,
       counts: List<String>?,
       mins: List<String>?,
       maxs: List<String>?,
@@ -666,11 +662,6 @@ class DatasetServiceImpl(
   ): String {
     val tableName = "${DATASET_INPUTS_SCHEMA}.${datasetPartId.sanitizeDatasetPartId()}"
 
-    val distinctClauses =
-        distincts?.joinToString(separator = ",") {
-          "%s %s".format(COLUMN_DISTINCT_KEYWORD, StringUtils.wrapIfMissing(it, "\""))
-        } ?: ""
-
     val selectClauses = constructClause(selects, null, null)
     val sumClauses = constructClause(sums, AggregationType.Sum, "float8")
     val avgClauses = constructClause(avgs, AggregationType.Avg, "float8")
@@ -679,14 +670,7 @@ class DatasetServiceImpl(
     val maxClauses = constructClause(maxs, AggregationType.Max, "float8")
 
     val allSelectClauses =
-        mutableListOf(
-                selectClauses,
-                sumClauses,
-                avgClauses,
-                distinctClauses,
-                countClauses,
-                minClauses,
-                maxClauses)
+        mutableListOf(selectClauses, sumClauses, avgClauses, countClauses, minClauses, maxClauses)
             .filter { it.isNotBlank() }
             .joinToString(separator = ",")
 
@@ -731,7 +715,8 @@ class DatasetServiceImpl(
         if (orderable) {
           createOrderClause(columnName)
         } else {
-          StringUtils.wrapIfMissing(columnName, "\"")
+          val (isMarkedAsDistinct, actualColumnName) = getDistinctData(columnName)
+          createDistinctClause(isMarkedAsDistinct, actualColumnName)
         }
       }
     } ?: ""
@@ -748,18 +733,29 @@ class DatasetServiceImpl(
     }
   }
 
+  private fun getDistinctData(columnSpec: String) =
+      Pair(
+          columnSpec.endsWith(DISTINCT_COLUMN_CHAR),
+          columnSpec.substringBeforeLast(DISTINCT_COLUMN_CHAR))
+
+  private fun createDistinctClause(isDistinct: Boolean, columnName: String): String {
+    return "%s %s"
+        .format(
+            if (isDistinct) COLUMN_DISTINCT_KEYWORD.uppercase() else "",
+            StringUtils.wrapIfMissing(columnName, "\""))
+  }
+
   private fun createAggregationClause(
       aggFunction: String,
       columnName: String,
       castType: String?
   ): String {
     val queryPart = StringBuilder(aggFunction)
-    val isMarkedASDistinct = columnName.endsWith(DISTINCT_COLUMN_CHAR)
-    val columnName = columnName.substringBeforeLast(DISTINCT_COLUMN_CHAR)
+    val (isMarkedAsDistinct, actualColumnName) = getDistinctData(columnName)
     return queryPart
-        .addAggregatedColumn(isMarkedASDistinct, columnName)
+        .addAggregatedColumn(isMarkedAsDistinct, actualColumnName)
         .addCastIfAny(castType)
-        .addRenameClause(isMarkedASDistinct, columnName, aggFunction)
+        .addRenameClause(isMarkedAsDistinct, actualColumnName, aggFunction)
         .toString()
   }
 
@@ -767,11 +763,7 @@ class DatasetServiceImpl(
       isDistinct: Boolean,
       columnName: String
   ): StringBuilder = apply {
-    this.append(
-        "(%s %s"
-            .format(
-                if (isDistinct) COLUMN_DISTINCT_KEYWORD else "",
-                StringUtils.wrapIfMissing(columnName, "\"")))
+    this.append("(%s".format(createDistinctClause(isDistinct, columnName)))
   }
 
   private fun StringBuilder.addCastIfAny(castType: String?): StringBuilder = apply {

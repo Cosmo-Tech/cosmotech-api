@@ -552,13 +552,6 @@ paths:
             type: string
         description: Column names to average by
       - in: query
-        name: distincts
-        schema:
-          type: array
-          items:
-            type: string
-        description: Column names to distinct by
-      - in: query
         name: counts
         schema:
           type: array
