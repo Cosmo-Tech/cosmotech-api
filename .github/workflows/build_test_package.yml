@@ -46,8 +46,8 @@ jobs:
             detekt
             -x test
             -x integrationTest
-            --no-build-cache 
-            --rerun-tasks 
+            --no-build-cache
+            --rerun-tasks
             --refresh-dependencies
 
   controller_tests:
@@ -70,6 +70,8 @@ jobs:
             packageName: .workspace
           - testPrefix: Solution
             packageName: .solution
+          - testPrefix: Dataset
+            packageName: .dataset
           - testPrefix: Runner
             packageName: .runner
           - testPrefix: Run
