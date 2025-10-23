@@ -2657,7 +2657,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             null,
             null,
             null,
-            null,
         )
 
     val expectedText = FileInputStream(resourceTestFile).bufferedReader().use { it.readText() }
@@ -2682,7 +2681,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetPartId,
-            null,
             null,
             null,
             null,
@@ -2729,7 +2727,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             null,
             null,
             null,
-            null,
         )
 
     val expectedTestFile =
@@ -2757,7 +2754,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetPartId,
-            null,
             null,
             null,
             null,
@@ -2805,7 +2801,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             null,
             null,
             null,
-            null,
         )
 
     val expectedTestFile = resourceLoader.getResource("classpath:/query/customers_sum_age.csv").file
@@ -2841,7 +2836,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             null,
             null,
             null,
-            null,
         )
 
     val expectedTestFile = resourceLoader.getResource("classpath:/query/customers_avg_age.csv").file
@@ -2867,10 +2861,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetPartId,
+            mutableListOf("customerID*"),
             null,
             null,
-            null,
-            mutableListOf("customerID"),
             null,
             null,
             null,
@@ -2904,7 +2897,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetPartId,
-            null,
             null,
             null,
             null,
@@ -2945,7 +2937,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             null,
             null,
             null,
-            null,
             mutableListOf("age"),
             null,
             null,
@@ -2977,7 +2968,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetPartId,
-            null,
             null,
             null,
             null,
@@ -3021,7 +3011,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             null,
             null,
             null,
-            null,
             mutableListOf("customerID"),
             null,
         )
@@ -3051,7 +3040,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             createdDataset.id,
             datasetPartId,
             mutableListOf("country"),
-            null,
             null,
             null,
             null,
@@ -3096,7 +3084,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             null,
             null,
             null,
-            null,
             mutableListOf("age"))
 
     val expectedTestFile =
@@ -3123,7 +3110,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetPartId,
-            null,
             null,
             null,
             null,
@@ -3159,7 +3145,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetPartId,
-            null,
             null,
             null,
             null,
@@ -3202,7 +3187,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             null,
             null,
             null,
-            null,
             5,
             2,
             null,
@@ -3233,7 +3217,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetPartId,
-            null,
             null,
             null,
             null,
@@ -3270,10 +3253,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetPartId,
+            mutableListOf("country*"),
             null,
             null,
-            null,
-            mutableListOf("country"),
             mutableListOf("country"),
             null,
             null,
@@ -3312,7 +3294,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             mutableListOf("customerID"),
             null,
             mutableListOf("age"),
-            null,
             null,
             null,
             null,

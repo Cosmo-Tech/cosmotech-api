@@ -400,7 +400,7 @@ Retrieve a list of defined Dataset
 
 <a name="queryData"></a>
 # **queryData**
-> File queryData(organization\_id, workspace\_id, dataset\_id, dataset\_part\_id, selects, sums, avgs, distincts, counts, mins, maxs, offset, limit, groupBys, orderBys)
+> File queryData(organization\_id, workspace\_id, dataset\_id, dataset\_part\_id, selects, sums, avgs, counts, mins, maxs, offset, limit, groupBys, orderBys)
 
 Get data of a Dataset
 
@@ -415,7 +415,6 @@ Get data of a Dataset
 | **selects** | [**List**](../Models/String.md)| Column names that should be part of the response data. You can specify a column name like:  - id  - stock  - quantity  - ...  | [optional] [default to null] |
 | **sums** | [**List**](../Models/String.md)| Column names to sum by | [optional] [default to null] |
 | **avgs** | [**List**](../Models/String.md)| Column names to average by | [optional] [default to null] |
-| **distincts** | [**List**](../Models/String.md)| Column names to distinct by | [optional] [default to null] |
 | **counts** | [**List**](../Models/String.md)| Column names to count by | [optional] [default to null] |
 | **mins** | [**List**](../Models/String.md)| Column names to min by | [optional] [default to null] |
 | **maxs** | [**List**](../Models/String.md)| Column names to max by | [optional] [default to null] |
