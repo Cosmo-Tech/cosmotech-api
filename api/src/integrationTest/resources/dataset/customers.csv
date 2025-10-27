@@ -1,0 +1,10 @@
+customerID,companyName,contactName,contactTitle,address,city,region,postalCode,country,phone
+CUST000001,Company 1,Contact 1,Title 1,Address 1,City 1,CA,1,USA,555-000-0001
+CUST000002,Company 2,Contact 2,Title 2,Address 2,City 2,NY,2,USA,555-000-0002
+CUST000003,Company 3,Contact 3,Title 3,Address 3,City 3,TX,3,USA,555-000-0003
+CUST000004,Company 4,Contact 4,Title 4,Address 4,City 4,FL,4,USA,555-000-0004
+CUST000005,Company 5,Contact 5,Title 5,Address 5,City 5,GA,5,USA,555-000-0005
+CUST000006,Company 6,Contact 6,Title 6,Address 6,City 6,QC,6,Canada,555-000-0006
+CUST000007,Company 7,Contact 7,Title 7,Address 7,City 7,NSW,7,Australia,555-000-0007
+CUST000008,Company 8,Contact 8,Title 8,Address 8,City 8,BC,8,Canada,555-000-0008
+CUST000009,Company 9,Contact 9,Title 9,Address 9,City 9,WA,9,USA,555-000-0009

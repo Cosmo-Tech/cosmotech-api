@@ -537,41 +537,52 @@ paths:
            - stock
            - quantity
            - ...
+          If you want to select only distinct columns, add a '*' at the end of the column name (e.g. stock*).
       - in: query
         name: sums
         schema:
           type: array
           items:
             type: string
-        description: Column names to sum by
+        description: |
+          Column names to sum by.
+          If you want to sum only distinct columns, add a '*' at the end of the column name (e.g. stock*).
       - in: query
         name: avgs
         schema:
           type: array
           items:
             type: string
-        description: Column names to average by
+        description: |
+          Column names to average by.
+          If you want to apply 'average' only on distinct columns, add a '*' at the end of the column name (e.g. stock*).
       - in: query
         name: counts
         schema:
           type: array
           items:
             type: string
-        description: Column names to count by
+        description: |
+          Column names to count by.
+          If you want to count only distinct columns, add a '*' at the end of the column name (e.g. stock*).
       - in: query
         name: mins
         schema:
           type: array
           items:
             type: string
-        description: Column names to min by
+        description: |
+          Column names to min by.
+          If you want to apply 'min' only on distinct columns, add a '*' at the end of the column name (e.g. stock*).
       - in: query
         name: maxs
         schema:
           type: array
           items:
             type: string
-        description: Column names to max by
+        description: |
+          Column names to max by.
+          If you want to apply 'max' only on distinct columns, add a '*' at the end of the column name (e.g. stock*).
       - in: query
         name: offset
         schema:
@@ -595,12 +606,17 @@ paths:
           type: array
           items:
             type: string
-        description: Column names to order by
+        description: |
+          Column names to order by.
+          Default order is ascending.
+          If you want to specify 'descending' order, add a '!' at the beginning of the column name (e.g. !stock).
     get:
       operationId: queryData
       tags:
         - dataset
-      summary: Get data of a Dataset
+      summary: |
+        Query data of a Dataset part.
+        This endpoint is only available for dataset parts that support queries (type == DB).
       responses:
         "200":
           description: Data related to provided information

@@ -441,7 +441,9 @@ class ControllerTestUtils {
     fun constructDatasetCreateRequest(
         name: String = DATASET_NAME,
         datasetPartName: String = DATASET_PART_NAME,
-        security: DatasetSecurity? = null
+        security: DatasetSecurity? = null,
+        type: DatasetPartTypeEnum = DatasetPartTypeEnum.File,
+        sourceName: String = TEST_FILE_NAME,
     ): DatasetCreateRequest {
       return DatasetCreateRequest(
           name = name,
@@ -454,8 +456,8 @@ class ControllerTestUtils {
                       name = datasetPartName,
                       description = DATASET_PART_DESCRIPTION,
                       tags = mutableListOf("tag_part1", "tag_part2"),
-                      type = DatasetPartTypeEnum.File,
-                      sourceName = TEST_FILE_NAME)),
+                      type = type,
+                      sourceName = sourceName)),
           security = security)
     }
 
