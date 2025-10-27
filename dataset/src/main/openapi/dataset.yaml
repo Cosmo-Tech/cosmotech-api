@@ -524,93 +524,94 @@ paths:
       - $ref: '#/components/parameters/workspaceId'
       - $ref: '#/components/parameters/datasetId'
       - $ref: '#/components/parameters/datasetPartId'
-      - in: query
-        name: selects
-        schema:
-          type: array
-          items:
-            type: string
-        description: |
-          Column names that should be part of the response data.
-          You can specify a column name like:
-           - id
-           - stock
-           - quantity
-           - ...
-          If you want to select only distinct columns, add a '*' at the end of the column name (e.g. stock*).
-      - in: query
-        name: sums
-        schema:
-          type: array
-          items:
-            type: string
-        description: |
-          Column names to sum by.
-          If you want to sum only distinct columns, add a '*' at the end of the column name (e.g. stock*).
-      - in: query
-        name: avgs
-        schema:
-          type: array
-          items:
-            type: string
-        description: |
-          Column names to average by.
-          If you want to apply 'average' only on distinct columns, add a '*' at the end of the column name (e.g. stock*).
-      - in: query
-        name: counts
-        schema:
-          type: array
-          items:
-            type: string
-        description: |
-          Column names to count by.
-          If you want to count only distinct columns, add a '*' at the end of the column name (e.g. stock*).
-      - in: query
-        name: mins
-        schema:
-          type: array
-          items:
-            type: string
-        description: |
-          Column names to min by.
-          If you want to apply 'min' only on distinct columns, add a '*' at the end of the column name (e.g. stock*).
-      - in: query
-        name: maxs
-        schema:
-          type: array
-          items:
-            type: string
-        description: |
-          Column names to max by.
-          If you want to apply 'max' only on distinct columns, add a '*' at the end of the column name (e.g. stock*).
-      - in: query
-        name: offset
-        schema:
-          type: integer
-        description: The query offset
-      - in: query
-        name: limit
-        schema:
-          type: integer
-        description: The query limit
-      - in: query
-        name: groupBys
-        schema:
-          type: array
-          items:
-            type: string
-        description: Column names to group by
-      - in: query
-        name: orderBys
-        schema:
-          type: array
-          items:
-            type: string
-        description: |
-          Column names to order by.
-          Default order is ascending.
-          If you want to specify 'descending' order, add a '!' at the beginning of the column name (e.g. !stock).
     get:
+      parameters:
+        - in: query
+          name: selects
+          schema:
+            type: array
+            items:
+              type: string
+          description: |
+            Column names that should be part of the response data.
+            You can specify a column name like:
+             - id
+             - stock
+             - quantity
+             - ...
+            If you want to select only distinct columns, add a '*' at the end of the column name (e.g. stock*).
+        - in: query
+          name: sums
+          schema:
+            type: array
+            items:
+              type: string
+          description: |
+            Column names to sum by.
+            If you want to sum only distinct columns, add a '*' at the end of the column name (e.g. stock*).
+        - in: query
+          name: avgs
+          schema:
+            type: array
+            items:
+              type: string
+          description: |
+            Column names to average by.
+            If you want to apply 'average' only on distinct columns, add a '*' at the end of the column name (e.g. stock*).
+        - in: query
+          name: counts
+          schema:
+            type: array
+            items:
+              type: string
+          description: |
+            Column names to count by.
+            If you want to count only distinct columns, add a '*' at the end of the column name (e.g. stock*).
+        - in: query
+          name: mins
+          schema:
+            type: array
+            items:
+              type: string
+          description: |
+            Column names to min by.
+            If you want to apply 'min' only on distinct columns, add a '*' at the end of the column name (e.g. stock*).
+        - in: query
+          name: maxs
+          schema:
+            type: array
+            items:
+              type: string
+          description: |
+            Column names to max by.
+            If you want to apply 'max' only on distinct columns, add a '*' at the end of the column name (e.g. stock*).
+        - in: query
+          name: offset
+          schema:
+            type: integer
+          description: The query offset
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: The query limit
+        - in: query
+          name: groupBys
+          schema:
+            type: array
+            items:
+              type: string
+          description: Column names to group by
+        - in: query
+          name: orderBys
+          schema:
+            type: array
+            items:
+              type: string
+          description: |
+            Column names to order by.
+            Default order is ascending.
+            If you want to specify 'descending' order, add a '!' at the beginning of the column name (e.g. !stock).
       operationId: queryData
       tags:
         - dataset
