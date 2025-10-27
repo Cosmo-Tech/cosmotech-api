@@ -281,7 +281,7 @@ entity RunTemplateParameter {
     minValue: String
     maxValue: String
     regexValidation: String
-    options: Map
+    additionalData: Map
 }
 
 entity RunTemplateParameterCreateRequest {
@@ -293,7 +293,7 @@ entity RunTemplateParameterCreateRequest {
     minValue: String
     maxValue: String
     regexValidation: String
-    options: Map
+    additionalData: Map
 }
 
 entity RunTemplateParameterGroup {
@@ -301,7 +301,7 @@ entity RunTemplateParameterGroup {
     description: String
     labels: Map
     * isTable: Boolean
-    options: Map
+    additionalData: Map
     parentId: String
     * parameters: List<String>
 }
@@ -311,7 +311,7 @@ entity RunTemplateParameterGroupCreateRequest {
     description: String
     labels: Map
     isTable: Boolean
-    options: Map
+    additionalData: Map
     parentId: String
     parameters: List<String>
 }
@@ -320,7 +320,7 @@ entity RunTemplateParameterGroupUpdateRequest {
     description: String
     labels: Map
     isTable: Boolean
-    options: Map
+    additionalData: Map
     parentId: String
     parameters: List<String>
 }
@@ -333,7 +333,7 @@ entity RunTemplateParameterUpdateRequest {
     minValue: String
     maxValue: String
     regexValidation: String
-    options: Map
+    additionalData: Map
 }
 
 entity RunTemplateParameterValue {

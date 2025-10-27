@@ -125,7 +125,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
     val parameterRegexValidation = "this_is_a_regex_to_validate_value"
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -140,7 +140,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterMinValue,
                 parameterMaxValue,
                 parameterRegexValidation,
-                options))
+                additionalData))
     val parameterGroupId = "parameterGroup1"
     val parameterGroupParentId = "this_is_a_parent_id"
     val parameterGroups =
@@ -150,7 +150,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterGroupDescription,
                 parameterLabels,
                 false,
-                options,
+                additionalData,
                 parameterGroupParentId,
                 mutableListOf(parameterId)))
     val runTemplateId = "runtemplate1"
@@ -262,7 +262,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
     val parameterRegexValidation = "this_is_a_regex_to_validate_value"
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -277,7 +277,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterMinValue,
                 parameterMaxValue,
                 parameterRegexValidation,
-                options))
+                additionalData))
     val parameterGroupId = "parameterGroup1"
     val parameterGroupParentId = "this_is_a_parent_id"
     val parameterGroupDescription = "this_is_a_description"
@@ -288,7 +288,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterGroupDescription,
                 parameterLabels,
                 false,
-                options,
+                additionalData,
                 parameterGroupParentId,
                 mutableListOf(parameterId)))
     val runTemplateId = "runtemplate1"
@@ -357,18 +357,21 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.parameters[0].maxValue").value(parameterMaxValue))
         .andExpect(jsonPath("$.parameters[0].regexValidation").value(parameterRegexValidation))
         .andExpect(
-            jsonPath("$.parameters[0].options[\"you_can_put\"]").value("whatever_you_want_here"))
-        .andExpect(jsonPath("$.parameters[0].options[\"even\"][\"object\"]").value("if_you_want"))
+            jsonPath("$.parameters[0].additionalData[\"you_can_put\"]")
+                .value("whatever_you_want_here"))
+        .andExpect(
+            jsonPath("$.parameters[0].additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andExpect(jsonPath("$.parameterGroups[0].id").value(parameterGroupId))
         .andExpect(jsonPath("$.parameterGroups[0].labels").value(parameterLabels))
         .andExpect(jsonPath("$.parameterGroups[0].isTable").value(false))
         .andExpect(jsonPath("$.parameterGroups[0].parentId").value(parameterGroupParentId))
         .andExpect(jsonPath("$.parameterGroups[0].parameters").value(mutableListOf(parameterId)))
         .andExpect(
-            jsonPath("$.parameterGroups[0].options[\"you_can_put\"]")
+            jsonPath("$.parameterGroups[0].additionalData[\"you_can_put\"]")
                 .value("whatever_you_want_here"))
         .andExpect(
-            jsonPath("$.parameterGroups[0].options[\"even\"][\"object\"]").value("if_you_want"))
+            jsonPath("$.parameterGroups[0].additionalData[\"even\"][\"object\"]")
+                .value("if_you_want"))
         .andExpect(jsonPath("$.runTemplates[0].id").value(runTemplateId))
         .andExpect(jsonPath("$.runTemplates[0].name").value(runTemplateName))
         .andExpect(jsonPath("$.runTemplates[0].labels").value(parameterLabels))
@@ -469,7 +472,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
     val parameterRegexValidation = "this_is_a_regex_to_validate_value"
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -483,7 +486,7 @@ class SolutionControllerTests : ControllerTestBase() {
             parameterMinValue,
             parameterMaxValue,
             parameterRegexValidation,
-            options)
+            additionalData)
 
     val solutionId =
         createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
@@ -502,8 +505,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.minValue").value(parameterMinValue))
         .andExpect(jsonPath("$.maxValue").value(parameterMaxValue))
         .andExpect(jsonPath("$.regexValidation").value(parameterRegexValidation))
-        .andExpect(jsonPath("$.options[\"you_can_put\"]").value("whatever_you_want_here"))
-        .andExpect(jsonPath("$.options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$.additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andDo(MockMvcResultHandlers.print())
         .andDo(document("organizations/{organization_id}/solutions/{solution_id}/parameters/POST"))
   }
@@ -520,7 +523,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
     val parameterRegexValidation = "this_is_a_regex_to_validate_value"
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -534,7 +537,7 @@ class SolutionControllerTests : ControllerTestBase() {
             parameterMinValue,
             parameterMaxValue,
             parameterRegexValidation,
-            options)
+            additionalData)
 
     val solutionId =
         createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
@@ -558,8 +561,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.minValue").value(parameterMinValue))
         .andExpect(jsonPath("$.maxValue").value(parameterMaxValue))
         .andExpect(jsonPath("$.regexValidation").value(parameterRegexValidation))
-        .andExpect(jsonPath("$.options[\"you_can_put\"]").value("whatever_you_want_here"))
-        .andExpect(jsonPath("$.options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$.additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
@@ -578,7 +581,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val newParameterMinValue = "this_is_a_new_minimal_value"
     val newParameterMaxValue = "this_is_a_new_maximal_value"
     val newParameterRegexValidation = "this_is_a_new_regex_to_validate_value"
-    val newParameterOptions =
+    val newParameterAdditionalData =
         mutableMapOf(
             "new_you_can_put" to "new_whatever_you_want_here",
             "new_even" to JSONObject(mapOf("new_object" to "new_if_you_want")))
@@ -592,7 +595,7 @@ class SolutionControllerTests : ControllerTestBase() {
             newParameterMinValue,
             newParameterMaxValue,
             newParameterRegexValidation,
-            newParameterOptions)
+            newParameterAdditionalData)
 
     val solutionId =
         createSolutionAndReturnId(
@@ -628,8 +631,10 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.minValue").value(newParameterMinValue))
         .andExpect(jsonPath("$.maxValue").value(newParameterMaxValue))
         .andExpect(jsonPath("$.regexValidation").value(newParameterRegexValidation))
-        .andExpect(jsonPath("$.options[\"new_you_can_put\"]").value("new_whatever_you_want_here"))
-        .andExpect(jsonPath("$.options[\"new_even\"][\"new_object\"]").value("new_if_you_want"))
+        .andExpect(
+            jsonPath("$.additionalData[\"new_you_can_put\"]").value("new_whatever_you_want_here"))
+        .andExpect(
+            jsonPath("$.additionalData[\"new_even\"][\"new_object\"]").value("new_if_you_want"))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
@@ -648,7 +653,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
     val parameterRegexValidation = "this_is_a_regex_to_validate_value"
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -663,7 +668,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterMinValue,
                 parameterMaxValue,
                 parameterRegexValidation,
-                options))
+                additionalData))
     val solutionId =
         createSolutionAndReturnId(
             mvc, organizationId, constructSolutionCreateRequest(parameters = parameters))
@@ -680,8 +685,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].minValue").value(parameterMinValue))
         .andExpect(jsonPath("$[0].maxValue").value(parameterMaxValue))
         .andExpect(jsonPath("$[0].regexValidation").value(parameterRegexValidation))
-        .andExpect(jsonPath("$[0].options[\"you_can_put\"]").value("whatever_you_want_here"))
-        .andExpect(jsonPath("$[0].options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$[0].additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$[0].additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andDo(document("organizations/{organization_id}/solutions/{solution_id}/parameters/GET"))
   }
 
@@ -697,7 +702,7 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
     val parameterRegexValidation = "this_is_a_regex_to_validate_value"
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -712,7 +717,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterMinValue,
                 parameterMaxValue,
                 parameterRegexValidation,
-                options))
+                additionalData))
     val solutionId =
         createSolutionAndReturnId(
             mvc, organizationId, constructSolutionCreateRequest(parameters = parameters))
@@ -736,7 +741,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -749,7 +754,7 @@ class SolutionControllerTests : ControllerTestBase() {
             parameterGroupDescription,
             parameterLabels,
             false,
-            options,
+            additionalData,
             parameterGroupParentId,
             mutableListOf(parameterId))
 
@@ -764,8 +769,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.labels").value(parameterLabels))
         .andExpect(jsonPath("$.isTable").value(false))
         .andExpect(jsonPath("$.parentId").value(parameterGroupParentId))
-        .andExpect(jsonPath("$.options[\"you_can_put\"]").value("whatever_you_want_here"))
-        .andExpect(jsonPath("$.options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$.additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andExpect(jsonPath("$.parameters").value(mutableListOf(parameterId)))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
@@ -778,7 +783,7 @@ class SolutionControllerTests : ControllerTestBase() {
   fun get_solution_parameter_group() {
     val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -791,7 +796,7 @@ class SolutionControllerTests : ControllerTestBase() {
             parameterGroupDescription,
             parameterLabels,
             false,
-            options,
+            additionalData,
             parameterGroupParentId,
             mutableListOf(parameterId))
 
@@ -811,8 +816,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.labels").value(parameterLabels))
         .andExpect(jsonPath("$.isTable").value(false))
         .andExpect(jsonPath("$.parentId").value(parameterGroupParentId))
-        .andExpect(jsonPath("$.options[\"you_can_put\"]").value("whatever_you_want_here"))
-        .andExpect(jsonPath("$.options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$.additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andExpect(jsonPath("$.parameters").value(mutableListOf(parameterId)))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
@@ -825,7 +830,7 @@ class SolutionControllerTests : ControllerTestBase() {
   fun update_solution_parameter_group() {
     val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -838,7 +843,7 @@ class SolutionControllerTests : ControllerTestBase() {
             parameterGroupDescription,
             parameterLabels,
             false,
-            options,
+            additionalData,
             parameterGroupParentId,
             mutableListOf(parameterId))
 
@@ -849,7 +854,7 @@ class SolutionControllerTests : ControllerTestBase() {
             constructSolutionCreateRequest(parameterGroups = mutableListOf(parameterGroup)))
 
     val newParameterLabels = mutableMapOf("fr" to "this_is_a_new_label")
-    val newOptions =
+    val newadditionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_new_here",
             "even" to JSONObject(mapOf("new_object" to "if_you_want")))
@@ -861,7 +866,7 @@ class SolutionControllerTests : ControllerTestBase() {
             newParameterGroupDescription,
             newParameterLabels,
             true,
-            newOptions,
+            newadditionalData,
             newParameterGroupParentId,
             mutableListOf(newParameterId))
 
@@ -877,8 +882,9 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.labels").value(newParameterLabels))
         .andExpect(jsonPath("$.isTable").value(true))
         .andExpect(jsonPath("$.parentId").value(newParameterGroupParentId))
-        .andExpect(jsonPath("$.options[\"you_can_put\"]").value("whatever_you_want_new_here"))
-        .andExpect(jsonPath("$.options[\"even\"][\"new_object\"]").value("if_you_want"))
+        .andExpect(
+            jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_new_here"))
+        .andExpect(jsonPath("$.additionalData[\"even\"][\"new_object\"]").value("if_you_want"))
         .andExpect(jsonPath("$.parameters").value(mutableListOf(newParameterId)))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
@@ -892,7 +898,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -905,7 +911,7 @@ class SolutionControllerTests : ControllerTestBase() {
             parameterGroupDescription,
             parameterLabels,
             false,
-            options,
+            additionalData,
             parameterGroupParentId,
             mutableListOf(parameterId))
 
@@ -925,8 +931,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].labels").value(parameterLabels))
         .andExpect(jsonPath("$[0].isTable").value(false))
         .andExpect(jsonPath("$[0].parentId").value(parameterGroupParentId))
-        .andExpect(jsonPath("$[0].options[\"you_can_put\"]").value("whatever_you_want_here"))
-        .andExpect(jsonPath("$[0].options[\"even\"][\"object\"]").value("if_you_want"))
+        .andExpect(jsonPath("$[0].additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
+        .andExpect(jsonPath("$[0].additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andExpect(jsonPath("$[0].parameters").value(mutableListOf(parameterId)))
         .andDo(
             document("organizations/{organization_id}/solutions/{solution_id}/parameterGroups/GET"))
@@ -937,7 +943,7 @@ class SolutionControllerTests : ControllerTestBase() {
   fun delete_solution_parameter_group() {
     val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
-    val options =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
@@ -950,7 +956,7 @@ class SolutionControllerTests : ControllerTestBase() {
             parameterGroupDescription,
             parameterLabels,
             false,
-            options,
+            additionalData,
             parameterGroupParentId,
             mutableListOf(parameterId))
 
