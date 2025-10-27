@@ -17,7 +17,7 @@ All URIs are relative to *http://localhost:8080*
 | [**listDatasetParts**](DatasetApi.md#listDatasetParts) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts | Retrieve all dataset parts of a Dataset |
 | [**listDatasetSecurityUsers**](DatasetApi.md#listDatasetSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/users | Get the Dataset security users list |
 | [**listDatasets**](DatasetApi.md#listDatasets) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets | Retrieve a list of defined Dataset |
-| [**queryData**](DatasetApi.md#queryData) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/query | Get data of a Dataset |
+| [**queryData**](DatasetApi.md#queryData) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/query | Query data of a Dataset part. This endpoint is only available for dataset parts that support queries (type &#x3D;&#x3D; DB).  |
 | [**replaceDatasetPart**](DatasetApi.md#replaceDatasetPart) | **PUT** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id} | Replace existing dataset parts of a Dataset |
 | [**searchDatasetParts**](DatasetApi.md#searchDatasetParts) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/search | Search Dataset parts by tags |
 | [**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/search | Search Datasets by tags |
@@ -402,7 +402,7 @@ Retrieve a list of defined Dataset
 # **queryData**
 > File queryData(organization\_id, workspace\_id, dataset\_id, dataset\_part\_id, selects, sums, avgs, counts, mins, maxs, offset, limit, groupBys, orderBys)
 
-Get data of a Dataset
+Query data of a Dataset part. This endpoint is only available for dataset parts that support queries (type &#x3D;&#x3D; DB). 
 
 ### Parameters
 
@@ -412,16 +412,16 @@ Get data of a Dataset
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **dataset\_id** | **String**| the Dataset identifier | [default to null] |
 | **dataset\_part\_id** | **String**| the Dataset part identifier | [default to null] |
-| **selects** | [**List**](../Models/String.md)| Column names that should be part of the response data. You can specify a column name like:  - id  - stock  - quantity  - ...  | [optional] [default to null] |
-| **sums** | [**List**](../Models/String.md)| Column names to sum by | [optional] [default to null] |
-| **avgs** | [**List**](../Models/String.md)| Column names to average by | [optional] [default to null] |
-| **counts** | [**List**](../Models/String.md)| Column names to count by | [optional] [default to null] |
-| **mins** | [**List**](../Models/String.md)| Column names to min by | [optional] [default to null] |
-| **maxs** | [**List**](../Models/String.md)| Column names to max by | [optional] [default to null] |
+| **selects** | [**List**](../Models/String.md)| Column names that should be part of the response data. You can specify a column name like:  - id  - stock  - quantity  - ... If you want to select only distinct columns, add a &#39;*&#39; at the end of the column name (e.g. stock*).  | [optional] [default to null] |
+| **sums** | [**List**](../Models/String.md)| Column names to sum by. If you want to sum only distinct columns, add a &#39;*&#39; at the end of the column name (e.g. stock*).  | [optional] [default to null] |
+| **avgs** | [**List**](../Models/String.md)| Column names to average by. If you want to apply &#39;average&#39; only on distinct columns, add a &#39;*&#39; at the end of the column name (e.g. stock*).  | [optional] [default to null] |
+| **counts** | [**List**](../Models/String.md)| Column names to count by. If you want to count only distinct columns, add a &#39;*&#39; at the end of the column name (e.g. stock*).  | [optional] [default to null] |
+| **mins** | [**List**](../Models/String.md)| Column names to min by. If you want to apply &#39;min&#39; only on distinct columns, add a &#39;*&#39; at the end of the column name (e.g. stock*).  | [optional] [default to null] |
+| **maxs** | [**List**](../Models/String.md)| Column names to max by. If you want to apply &#39;max&#39; only on distinct columns, add a &#39;*&#39; at the end of the column name (e.g. stock*).  | [optional] [default to null] |
 | **offset** | **Integer**| The query offset | [optional] [default to null] |
 | **limit** | **Integer**| The query limit | [optional] [default to null] |
 | **groupBys** | [**List**](../Models/String.md)| Column names to group by | [optional] [default to null] |
-| **orderBys** | [**List**](../Models/String.md)| Column names to order by | [optional] [default to null] |
+| **orderBys** | [**List**](../Models/String.md)| Column names to order by. Default order is ascending. If you want to specify &#39;descending&#39; order, add a &#39;!&#39; at the beginning of the column name (e.g. !stock).  | [optional] [default to null] |
 
 ### Return type
 

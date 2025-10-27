@@ -108,14 +108,14 @@ csm:
           enabled: false
           bundle: ""
       data:
-        database: "postgres"
+        database: "test"
         host: "localhost"
         port: 5432
         reader:
-          password: "password"
+          password: "cosmotech_api_reader_pass"
           username: cosmotech_api_reader
         writer:
-          password: "password"
+          password: "cosmotech_api_writer_pass"
           username: cosmotech_api_writer
     rbac:
       enabled: true

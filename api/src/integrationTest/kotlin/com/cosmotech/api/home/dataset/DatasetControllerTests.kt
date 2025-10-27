@@ -16,6 +16,7 @@ import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.createSolutionAn
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.createWorkspaceAndReturnId
 import com.cosmotech.api.home.annotations.WithMockOauth2User
+import com.cosmotech.api.home.dataset.DatasetConstants.CUSTOMERS_FILE_NAME
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_DESCRIPTION
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_NAME
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_PART_DESCRIPTION
@@ -44,7 +45,7 @@ import com.cosmotech.dataset.domain.DatasetUpdateRequest
 import com.cosmotech.solution.domain.RunTemplateCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import java.io.InputStream
-import kotlin.test.Ignore
+import kotlin.test.assertEquals
 import org.apache.commons.io.IOUtils
 import org.hamcrest.Matchers.empty
 import org.hamcrest.Matchers.greaterThan
@@ -53,7 +54,9 @@ import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.io.ResourceLoader
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
@@ -67,6 +70,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @ActiveProfiles(profiles = ["test"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class DatasetControllerTests : ControllerTestBase() {
+
+  @Autowired private lateinit var resourceLoader: ResourceLoader
 
   private lateinit var organizationId: String
   private lateinit var solutionId: String
@@ -752,11 +757,69 @@ class DatasetControllerTests : ControllerTestBase() {
                 "organizations/{organization_id}/workspaces/{workspace_id}/datasets/search/POST"))
   }
 
-  @Ignore("This method is not ready yet")
   @Test
   @WithMockOauth2User
   fun query_data() {
-    TODO("Not yet implemented")
+    val datasetCreateRequest =
+        MockMultipartFile(
+            "datasetCreateRequest",
+            null,
+            MediaType.APPLICATION_JSON_VALUE,
+            JSONObject(
+                    constructDatasetCreateRequest(
+                        type = DatasetPartTypeEnum.DB, sourceName = CUSTOMERS_FILE_NAME))
+                .toString()
+                .byteInputStream())
+
+    val fileToUpload =
+        this::class.java.getResourceAsStream("/dataset/$CUSTOMERS_FILE_NAME")
+            ?: throw IllegalStateException(
+                "$CUSTOMERS_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST endpoint documentation should exist")
+
+    val files =
+        MockMultipartFile(
+            "files",
+            CUSTOMERS_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToUpload))
+
+    val datasetCreated =
+        JSONObject(
+            mvc.perform(
+                    multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
+                        .file(datasetCreateRequest)
+                        .file(files)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
+                .andExpect(status().is2xxSuccessful)
+                .andReturn()
+                .response
+                .contentAsString)
+
+    val datasetPartId = datasetCreated.getJSONArray("parts").getJSONObject(0).get("id")
+
+    val datasetId = datasetCreated.get("id")
+
+    val valueRetrieved =
+        mvc.perform(
+                get(
+                        "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId/query")
+                    .accept(MediaType.APPLICATION_OCTET_STREAM))
+            .andExpect(status().is2xxSuccessful)
+            .andDo(MockMvcResultHandlers.print())
+            .andDo(
+                document(
+                    "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/query/GET"))
+            .andReturn()
+            .response
+            .contentAsString
+
+    val customersTestFile =
+        resourceLoader
+            .getResource("classpath:/dataset/$CUSTOMERS_FILE_NAME")
+            .getContentAsString(Charsets.UTF_8)
+
+    assertEquals(customersTestFile, valueRetrieved)
   }
 
   @Test
