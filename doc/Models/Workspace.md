@@ -13,7 +13,7 @@
 | **createInfo** | [**WorkspaceEditInfo**](WorkspaceEditInfo.md) | The details of the Workspace creation | [default to null] |
 | **updateInfo** | [**WorkspaceEditInfo**](WorkspaceEditInfo.md) | The details of the Workspace last update | [default to null] |
 | **solution** | [**WorkspaceSolution**](WorkspaceSolution.md) |  | [default to null] |
-| **webApp** | [**WorkspaceWebApp**](WorkspaceWebApp.md) |  | [optional] [default to null] |
+| **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
 | **datasetCopy** | **Boolean** | Activate the copy of dataset on scenario creation, meaning that each scenario created in this workspace will make this copy. when false, scenario use directly the dataset specified. | [optional] [default to true] |
 | **security** | [**WorkspaceSecurity**](WorkspaceSecurity.md) |  | [default to null] |
 

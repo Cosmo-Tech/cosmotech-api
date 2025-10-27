@@ -279,9 +279,7 @@ class ControllerTestUtils {
         defaultRunTemplateDataset: MutableMap<String, Any> = mutableMapOf(),
         datasetCopy: Boolean? = null,
         security: WorkspaceSecurity? = null,
-        url: String = "",
-        iframes: MutableMap<String, Any> = mutableMapOf(),
-        options: MutableMap<String, Any> = mutableMapOf(),
+        additionalData: MutableMap<String, Any> = mutableMapOf(),
         tags: MutableList<String> = mutableListOf()
     ): WorkspaceCreateRequest {
       return WorkspaceCreateRequest(
@@ -299,7 +297,7 @@ class ControllerTestUtils {
           datasetCopy = datasetCopy,
           security = security,
           tags = tags,
-          webApp = WorkspaceWebApp(url = url, iframes = iframes, options = options))
+          additionalData = additionalData)
     }
 
     @JvmStatic
@@ -313,9 +311,7 @@ class ControllerTestUtils {
         runTemplateFilter: MutableList<String> = mutableListOf(),
         defaultRunTemplateDataset: MutableMap<String, Any> = mutableMapOf(),
         datasetCopy: Boolean? = null,
-        url: String = "",
-        iframes: MutableMap<String, Any> = mutableMapOf(),
-        options: MutableMap<String, Any> = mutableMapOf(),
+        additionalData: MutableMap<String, Any> = mutableMapOf(),
         tags: MutableList<String> = mutableListOf()
     ): WorkspaceUpdateRequest {
 
@@ -332,7 +328,7 @@ class ControllerTestUtils {
           description = description,
           datasetCopy = datasetCopy,
           tags = tags,
-          webApp = WorkspaceWebApp(url = url, iframes = iframes, options = options))
+          additionalData = additionalData)
     }
   }
 

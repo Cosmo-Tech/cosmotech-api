@@ -530,7 +530,7 @@ entity Workspace {
     * createInfo: WorkspaceEditInfo
     * updateInfo: WorkspaceEditInfo
     * solution: WorkspaceSolution
-    webApp: WorkspaceWebApp
+    additionalData: Map
     datasetCopy: Boolean
     * security: WorkspaceSecurity
 }
@@ -547,7 +547,7 @@ entity WorkspaceCreateRequest {
     version: String
     tags: List<String>
     * solution: WorkspaceSolution
-    webApp: WorkspaceWebApp
+    additionalData: Map
     datasetCopy: Boolean
     security: WorkspaceSecurity
 }
@@ -584,14 +584,8 @@ entity WorkspaceUpdateRequest {
     description: String
     tags: List<String>
     solution: WorkspaceSolution
-    webApp: WorkspaceWebApp
+    additionalData: Map
     datasetCopy: Boolean
-}
-
-entity WorkspaceWebApp {
-    * url: String
-    iframes: Map
-    options: Map
 }
 
 
@@ -610,7 +604,6 @@ ContainerResourceSizing -- ContainerResourceSizeInfo : limits
 SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 WorkspaceCreateRequest -- WorkspaceSolution : solution
-WorkspaceCreateRequest -- WorkspaceWebApp : webApp
 WorkspaceCreateRequest -- WorkspaceSecurity : security
 AboutInfo -- AboutInfoVersion : version
 RunTemplateUpdateRequest -- RunTemplateResourceSizing : runSizing
@@ -642,7 +635,6 @@ RunTemplateCreateRequest -- RunTemplateResourceSizing : runSizing
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
 RunStatusNode -- RunResourceRequested : resourcesDuration
 WorkspaceUpdateRequest -- WorkspaceSolution : solution
-WorkspaceUpdateRequest -- WorkspaceWebApp : webApp
 DatasetPart -- EditInfo : createInfo
 DatasetPart -- EditInfo : updateInfo
 Solution -- SolutionEditInfo : createInfo
@@ -664,7 +656,6 @@ RunnerResourceSizing -- ResourceSizeInfo : limits
 Workspace -- WorkspaceEditInfo : createInfo
 Workspace -- WorkspaceEditInfo : updateInfo
 Workspace -- WorkspaceSolution : solution
-Workspace -- WorkspaceWebApp : webApp
 Workspace -- WorkspaceSecurity : security
 
 @enduml

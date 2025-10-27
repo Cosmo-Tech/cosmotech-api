@@ -9,7 +9,7 @@
 | **version** | **String** | The Workspace version MAJOR.MINOR.PATCH. | [optional] [default to null] |
 | **tags** | **List** | The list of tags | [optional] [default to null] |
 | **solution** | [**WorkspaceSolution**](WorkspaceSolution.md) |  | [default to null] |
-| **webApp** | [**WorkspaceWebApp**](WorkspaceWebApp.md) |  | [optional] [default to null] |
+| **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
 | **datasetCopy** | **Boolean** | Activate the copy of dataset on scenario creation | [optional] [default to true] |
 | **security** | [**WorkspaceSecurity**](WorkspaceSecurity.md) |  | [optional] [default to null] |
 

@@ -57,7 +57,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   fun create_workspace() {
 
     val description = "here_is_workspace_description"
-    val url = "https://portal.cosmotech.com/"
     val version = "1.0.0"
     val datasetCopy = false
     val runTemplateFilter = mutableListOf("runtemplateId1,runtemplateId2")
@@ -65,14 +64,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val defaultRunTemplateDataset =
         mutableMapOf<String, Any>(
             "runtemplateId1" to "datasetId1", "runtemplateId2" to "datasetId2")
-    val iframes =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
-            "even" to JSONObject(mapOf("object" to "if_you_want")))
-    val options =
-        mutableMapOf(
-            "you_can_put" to "whatever_you_want_here",
-            "even" to JSONObject(mapOf("object" to "if_you_want")))
+            "even" to mapOf("object" to "if_you_want"))
     val workspaceSecurity =
         WorkspaceSecurity(
             default = ROLE_NONE,
@@ -101,9 +96,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                 defaultRunTemplateDataset,
                                 datasetCopy,
                                 workspaceSecurity,
-                                url,
-                                iframes,
-                                options,
+                                additionalData,
                                 tags))
                         .toString())
                 .accept(MediaType.APPLICATION_JSON)
@@ -127,7 +120,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 .value("solution_parameter2_defaultValue"))
         .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
-        .andExpect(jsonPath("$.webApp.url").value(url))
+        .andExpect(jsonPath("$.additionalData").value(additionalData))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.solution.solutionId").value(solutionId))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
@@ -147,21 +140,16 @@ class WorkspaceControllerTests : ControllerTestBase() {
         createWorkspaceAndReturnId(mvc, organizationId, WORKSPACE_KEY, WORKSPACE_NAME, solutionId)
 
     val description = "here_is_workspace_description"
-    val url = "https://portal.cosmotech.com/"
     val datasetCopy = false
     val runTemplateFilter = mutableListOf("runtemplateId1,runtemplateId2")
     val tags = mutableListOf("tag1,tag2")
     val defaultRunTemplateDataset =
         mutableMapOf<String, Any>(
             "runtemplateId1" to "datasetId1", "runtemplateId2" to "datasetId2")
-    val iframes =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
-            "even" to JSONObject(mapOf("object" to "if_you_want")))
-    val options =
-        mutableMapOf(
-            "you_can_put" to "whatever_you_want_here",
-            "even" to JSONObject(mapOf("object" to "if_you_want")))
+            "even" to mapOf("object" to "if_you_want"))
 
     val workspaceDatasetId = "d-12345678910"
     mvc.perform(
@@ -181,9 +169,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                 runTemplateFilter,
                                 defaultRunTemplateDataset,
                                 datasetCopy,
-                                url,
-                                iframes,
-                                options,
+                                additionalData,
                                 tags))
                         .toString())
                 .accept(MediaType.APPLICATION_JSON)
@@ -206,7 +192,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 .value("solution_parameter2_defaultValue"))
         .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
-        .andExpect(jsonPath("$.webApp.url").value(url))
+        .andExpect(jsonPath("$.additionalData").value(additionalData))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.solution.solutionId").value(solutionId))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
@@ -280,7 +266,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   fun get_workspace() {
 
     val description = "here_is_workspace_description"
-    val url = "https://portal.cosmotech.com/"
     val version = "1.0.0"
     val datasetCopy = false
     val runTemplateFilter = mutableListOf("runtemplateId1,runtemplateId2")
@@ -288,14 +273,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val defaultRunTemplateDataset =
         mutableMapOf<String, Any>(
             "runtemplateId1" to "datasetId1", "runtemplateId2" to "datasetId2")
-    val iframes =
+    val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
-            "even" to JSONObject(mapOf("object" to "if_you_want")))
-    val options =
-        mutableMapOf(
-            "you_can_put" to "whatever_you_want_here",
-            "even" to JSONObject(mapOf("object" to "if_you_want")))
+            "even" to mapOf("object" to "if_you_want"))
 
     val workspaceDatasetId = "d-12345678910"
     val workspaceSecurity =
@@ -323,9 +304,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 defaultRunTemplateDataset,
                 datasetCopy,
                 workspaceSecurity,
-                url,
-                iframes,
-                options,
+                additionalData,
                 tags))
 
     mvc.perform(
@@ -343,7 +322,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
             jsonPath("$.solution.defaultRunTemplateDataset").value(defaultRunTemplateDataset))
         .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
-        .andExpect(jsonPath("$.webApp.url").value(url))
+        .andExpect(jsonPath("$.additionalData").value(additionalData))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.solution.solutionId").value(solutionId))
         .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
