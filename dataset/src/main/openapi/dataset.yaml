@@ -120,6 +120,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Dataset'
+        "403":
+          description: Insufficient permissions on organization, workspace or dataset
+        "404":
+          description: Organization, workspace or dataset specified is not found
 
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}:
     parameters:
@@ -413,8 +417,6 @@ paths:
           description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Dataset specified is not found
-        "422":
-          description: Targeted dataset do not support requests
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}:
     parameters:
       - $ref: '#/components/parameters/organizationId'
@@ -468,12 +470,12 @@ paths:
             application/yaml:
               schema:
                 $ref: "#/components/schemas/DatasetPart"
+        "400":
+          description: Bad request
         "403":
           description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Dataset part specified is not found
-        "422":
-          description: Targeted dataset do not support requests
     patch:
       operationId: updateDatasetPart
       tags:
@@ -499,12 +501,12 @@ paths:
             application/yaml:
               schema:
                 $ref: "#/components/schemas/DatasetPart"
+        "400":
+          description: Bad request
         "403":
           description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Dataset part specified is not found
-        "422":
-          description: Targeted dataset do not support requests
     delete:
       operationId: deleteDatasetPart
       tags:
@@ -698,6 +700,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DatasetPart'
+        "400":
+          description: Bad request
+        "403":
+          description: Insufficient permissions on organization, workspace or dataset
+        "404":
+          description: Dataset specified is not found or you don't have access to it
 
 
 components:
