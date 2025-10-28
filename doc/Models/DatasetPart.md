@@ -13,8 +13,8 @@
 | **organizationId** | **String** | the associated Organization Id | [default to null] |
 | **workspaceId** | **String** | the associated Workspace Id | [default to null] |
 | **datasetId** | **String** | the associated Dataset Id | [default to null] |
-| **createInfo** | [**EditInfo**](EditInfo.md) | The details of the Dataset creation | [default to null] |
-| **updateInfo** | [**EditInfo**](EditInfo.md) | The details of the Dataset last update | [default to null] |
+| **createInfo** | [**DatasetEditInfo**](DatasetEditInfo.md) | The details of the Dataset creation | [default to null] |
+| **updateInfo** | [**DatasetEditInfo**](DatasetEditInfo.md) | The details of the Dataset last update | [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
