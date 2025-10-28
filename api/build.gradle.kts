@@ -57,7 +57,7 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
             logger.debug("Found project dependency: $it")
             it.name.matches("^cosmotech-[a-zA-Z]+-api$".toRegex())
           }
-          .map { it.dependencyProject.projectDir }
+          .map { project.project(it.path).projectDir }
           .map { file("${it}/src/main/openapi/${it.relativeTo(rootDir)}.yaml") }
           .filter { it.exists() }
           .map { it.absolutePath }
