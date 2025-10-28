@@ -169,22 +169,28 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val datasetPartName = "Customers list"
     val datasetPartDescription = "List of customers"
     val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartAdditionalData =
+        mutableMapOf("part" to "data", "complex" to mutableMapOf("nested" to "data"))
     val datasetPartCreateRequest =
         DatasetPartCreateRequest(
             name = datasetPartName,
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = datasetPartDescription,
             tags = datasetPartTags,
+            additionalData = datasetPartAdditionalData,
             type = DatasetPartTypeEnum.File)
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
     val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetAdditionalData =
+        mutableMapOf("dataset" to "data", "complex" to mutableMapOf("nested" to "data"))
     val datasetCreateRequest =
         DatasetCreateRequest(
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
+            additionalData = datasetAdditionalData,
             parts = mutableListOf(datasetPartCreateRequest))
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
@@ -218,12 +224,14 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertEquals(datasetName, createdDataset.name)
     assertEquals(datasetDescription, createdDataset.description)
     assertEquals(datasetTags, createdDataset.tags)
+    assertEquals(datasetAdditionalData, createdDataset.additionalData)
     assertEquals(1, createdDataset.parts.size)
     val createdDatasetPart = createdDataset.parts[0]
     assertNotNull(createdDatasetPart)
     assertEquals(datasetPartName, createdDatasetPart.name)
     assertEquals(datasetPartDescription, createdDatasetPart.description)
     assertEquals(datasetPartTags, createdDatasetPart.tags)
+    assertEquals(datasetPartAdditionalData, createdDatasetPart.additionalData)
     assertEquals(CUSTOMER_SOURCE_FILE_NAME, createdDatasetPart.sourceName)
     assertEquals(DatasetPartTypeEnum.File, createdDatasetPart.type)
   }
@@ -980,6 +988,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val datasetPartName = "Customer list"
     val datasetPartDescription = "List of customers"
     val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartAdditionalData =
+        mutableMapOf("part" to "data", "complex" to mutableMapOf("nested" to "data"))
 
     val createDatasetPart =
         datasetApiService.createDatasetPart(
@@ -992,12 +1002,14 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 sourceName = CUSTOMER_SOURCE_FILE_NAME,
                 description = datasetPartDescription,
                 tags = datasetPartTags,
+                additionalData = datasetPartAdditionalData,
                 type = DatasetPartTypeEnum.File))
 
     assertNotNull(createDatasetPart)
     assertEquals(datasetPartName, createDatasetPart.name)
     assertEquals(datasetPartDescription, createDatasetPart.description)
     assertEquals(datasetPartTags, createDatasetPart.tags)
+    assertEquals(datasetPartAdditionalData, createDatasetPart.additionalData)
     assertEquals(CUSTOMER_SOURCE_FILE_NAME, createDatasetPart.sourceName)
 
     val retrievedDataset =
@@ -1882,22 +1894,28 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val datasetPartName = "Customers list"
     val datasetPartDescription = "List of customers"
     val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartAdditionalData =
+        mutableMapOf("part" to "data", "complex" to mutableMapOf("nested" to "data"))
     val datasetPartCreateRequest =
         DatasetPartCreateRequest(
             name = datasetPartName,
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = datasetPartDescription,
             tags = datasetPartTags,
+            additionalData = datasetPartAdditionalData,
             type = DatasetPartTypeEnum.File)
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
     val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetAdditionalData =
+        mutableMapOf("dataset" to "data", "complex" to mutableMapOf("nested" to "data"))
     val datasetCreateRequest =
         DatasetCreateRequest(
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
+            additionalData = datasetAdditionalData,
             parts = mutableListOf(datasetPartCreateRequest))
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
@@ -1922,17 +1940,20 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val newDatasetPartName = "Product list"
     val newDatasetPartDescription = "List of Product"
     val newDatasetPartTags = mutableListOf("part", "public", "product")
+    val newDatasetPartAdditionalData = mutableMapOf<String, Any>("part" to "new data")
     val newDatasetPartCreateRequest =
         DatasetPartCreateRequest(
             name = newDatasetPartName,
             sourceName = INVENTORY_SOURCE_FILE_NAME,
             description = newDatasetPartDescription,
             tags = newDatasetPartTags,
+            additionalData = newDatasetPartAdditionalData,
             type = DatasetPartTypeEnum.File)
 
     val newDatasetName = "Shop Dataset"
     val newDatasetDescription = "Dataset for shop"
     val newDatasetTags = mutableListOf("dataset", "public", "shop")
+    val newDatasetAdditionalData = mutableMapOf<String, Any>("dataset" to "new data")
     val newDatasetSecurity =
         DatasetSecurity(
             default = ROLE_NONE,
@@ -1945,6 +1966,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = newDatasetName,
             description = newDatasetDescription,
             tags = newDatasetTags,
+            additionalData = newDatasetAdditionalData,
             parts = mutableListOf(newDatasetPartCreateRequest),
             security = newDatasetSecurity)
 
@@ -2256,12 +2278,15 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val customerPartName = "Customers list"
     val customerPartDescription = "List of customers"
     val customerPartTags = mutableListOf("part", "public", "customers")
+    val customerPartAdditionalData =
+        mutableMapOf("part" to "data", "complex" to mutableMapOf("nested" to "data"))
     val customerPartCreateRequest =
         DatasetPartCreateRequest(
             name = customerPartName,
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = customerPartDescription,
             tags = customerPartTags,
+            additionalData = customerPartAdditionalData,
             type = DatasetPartTypeEnum.File)
 
     val datasetName = "Shop Dataset"
@@ -2315,6 +2340,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertEquals(customerPartName, datasetPartToReplace.name)
     assertEquals(customerPartDescription, datasetPartToReplace.description)
     assertEquals(customerPartTags, datasetPartToReplace.tags)
+    assertEquals(customerPartAdditionalData, datasetPartToReplace.additionalData)
     assertEquals(CUSTOMER_SOURCE_FILE_NAME, datasetPartToReplace.sourceName)
     assertEquals(DatasetPartTypeEnum.File, datasetPartToReplace.type)
 
@@ -2322,11 +2348,13 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val newDatasetSourceName = "updatedResourceFile.csv"
     val newDatasetPartDescription = "New Data for customer list"
     val newDatasetPartTags = mutableListOf("part", "public", "new", "customer")
+    val newDatasetPartAdditionalData = mutableMapOf<String, Any>("part" to "new data")
     val datasetPartUpdateRequest =
         DatasetPartUpdateRequest(
             sourceName = newDatasetSourceName,
             description = newDatasetPartDescription,
             tags = newDatasetPartTags,
+            additionalData = newDatasetPartAdditionalData,
         )
 
     val replacedDatasetPart =
@@ -2347,6 +2375,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertEquals(newDatasetSourceName, replacedDatasetPart.sourceName)
     assertEquals(newDatasetPartDescription, replacedDatasetPart.description)
     assertEquals(newDatasetPartTags, replacedDatasetPart.tags)
+    assertEquals(newDatasetPartAdditionalData, replacedDatasetPart.additionalData)
     assertEquals(newDatasetSourceName, replacedDatasetPart.sourceName)
     assertEquals(DatasetPartTypeEnum.File, replacedDatasetPart.type)
 

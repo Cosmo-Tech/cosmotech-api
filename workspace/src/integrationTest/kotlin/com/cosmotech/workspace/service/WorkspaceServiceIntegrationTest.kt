@@ -523,7 +523,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             description = "description",
             version = "1.0.0",
             tags = mutableListOf("tag1", "tag2"),
-            webApp = WorkspaceWebApp(url = "url"),
+            additionalData = mutableMapOf("url" to "http://url"),
             datasetCopy = true,
             security =
                 WorkspaceSecurity(
@@ -538,7 +538,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             description = workspaceToCreate.description,
             version = workspaceToCreate.version,
             tags = workspaceToCreate.tags,
-            webApp = workspaceToCreate.webApp,
+            additionalData = workspaceToCreate.additionalData,
             datasetCopy = workspaceToCreate.datasetCopy,
             security = workspaceToCreate.security)
 
@@ -565,7 +565,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             description = "description",
             version = "1.0.0",
             tags = mutableListOf("tag1", "tag2"),
-            webApp = WorkspaceWebApp(url = "url"),
+            additionalData = mutableMapOf("url" to "http://url"),
             datasetCopy = true,
             security =
                 WorkspaceSecurity(
@@ -580,7 +580,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             description = workspaceToCreate.description,
             version = workspaceToCreate.version,
             tags = workspaceToCreate.tags,
-            webApp = workspaceToCreate.webApp,
+            additionalData = workspaceToCreate.additionalData,
             datasetCopy = workspaceToCreate.datasetCopy,
             security = workspaceToCreate.security)
     workspaceSaved =
@@ -593,7 +593,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             solution = WorkspaceSolution(solutionSaved.id),
             description = "new description",
             tags = mutableListOf("newTag1", "newTag2"),
-            webApp = WorkspaceWebApp(url = "new url"),
+            additionalData = mutableMapOf("url" to "http://new/url", "moreData" to "best data"),
             datasetCopy = false,
         )
     workspaceToCreate =
@@ -604,7 +604,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             solution = workspaceUpdateRequest.solution!!,
             description = workspaceUpdateRequest.description,
             tags = workspaceUpdateRequest.tags,
-            webApp = workspaceUpdateRequest.webApp,
+            additionalData = workspaceUpdateRequest.additionalData,
             datasetCopy = workspaceUpdateRequest.datasetCopy)
 
     workspaceSaved =
@@ -643,7 +643,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
     assertEquals("Minimal Workspace", createdWorkspace.name)
     assertEquals(solutionSaved.id, createdWorkspace.solution.solutionId)
     assertNull(createdWorkspace.description)
-    assertNull(createdWorkspace.webApp)
+    assertNull(createdWorkspace.additionalData)
 
     logger.info("should update workspace with only required parameters")
     val updatedWorkspace =
@@ -655,7 +655,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
     assertEquals("Updated Workspace", updatedWorkspace.name)
     assertEquals(createdWorkspace.solution, updatedWorkspace.solution)
     assertEquals(createdWorkspace.description, updatedWorkspace.description)
-    assertEquals(createdWorkspace.webApp, updatedWorkspace.webApp)
+    assertEquals(createdWorkspace.additionalData, updatedWorkspace.additionalData)
   }
 
   @Test

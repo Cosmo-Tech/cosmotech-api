@@ -427,7 +427,8 @@ class SolutionServiceImpl(
           description = runTemplateParameterGroupUpdateRequest.description ?: this.description
           labels = runTemplateParameterGroupUpdateRequest.labels ?: this.labels
           isTable = runTemplateParameterGroupUpdateRequest.isTable ?: this.isTable
-          options = runTemplateParameterGroupUpdateRequest.options ?: this.options
+          additionalData =
+              runTemplateParameterGroupUpdateRequest.additionalData ?: this.additionalData
           parentId = runTemplateParameterGroupUpdateRequest.parentId ?: this.parentId
           parameters = runTemplateParameterGroupUpdateRequest.parameters ?: this.parameters
         }
@@ -508,7 +509,7 @@ class SolutionServiceImpl(
           maxValue = runTemplateParameterUpdateRequest.maxValue ?: this.maxValue
           regexValidation =
               runTemplateParameterUpdateRequest.regexValidation ?: this.regexValidation
-          options = runTemplateParameterUpdateRequest.options ?: this.options
+          additionalData = runTemplateParameterUpdateRequest.additionalData ?: this.additionalData
         }
         ?: throw CsmResourceNotFoundException(
             "Solution parameter with id $parameterId does not exist")
@@ -639,7 +640,7 @@ class SolutionServiceImpl(
         minValue = runTemplateParameterCreateRequest.minValue,
         maxValue = runTemplateParameterCreateRequest.maxValue,
         regexValidation = runTemplateParameterCreateRequest.regexValidation,
-        options = runTemplateParameterCreateRequest.options)
+        additionalData = runTemplateParameterCreateRequest.additionalData)
   }
 
   fun convertToRunTemplateParameterGroup(
@@ -650,7 +651,7 @@ class SolutionServiceImpl(
         description = runTemplateParameterGroupCreateRequest.description,
         labels = runTemplateParameterGroupCreateRequest.labels,
         isTable = runTemplateParameterGroupCreateRequest.isTable!!,
-        options = runTemplateParameterGroupCreateRequest.options,
+        additionalData = runTemplateParameterGroupCreateRequest.additionalData,
         parentId = runTemplateParameterGroupCreateRequest.parentId,
         parameters = runTemplateParameterGroupCreateRequest.parameters!!)
   }

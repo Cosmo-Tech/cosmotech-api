@@ -738,8 +738,10 @@ components:
             - $ref: '#/components/schemas/WorkspaceEditInfo'
         solution:
           $ref: '#/components/schemas/WorkspaceSolution'
-        webApp:
-          $ref: '#/components/schemas/WorkspaceWebApp'
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         datasetCopy:
           type: boolean
           default: true
@@ -789,8 +791,10 @@ components:
             type: string
         solution:
           $ref: '#/components/schemas/WorkspaceSolution'
-        webApp:
-          $ref: '#/components/schemas/WorkspaceWebApp'
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         datasetCopy:
           type: boolean
           default: true
@@ -826,8 +830,10 @@ components:
             type: string
         solution:
           $ref: '#/components/schemas/WorkspaceSolution'
-        webApp:
-          $ref: '#/components/schemas/WorkspaceWebApp'
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         datasetCopy:
           type: boolean
           description: Activate the copy of dataset on scenario creation
@@ -904,23 +910,6 @@ components:
           description: The Workspace File name
       required:
         - fileName
-    WorkspaceWebApp:
-      type: object
-      description: A Workspace Web Application
-      properties:
-        url:
-          type: string
-          description: The Workspace Web Application URL
-        iframes:
-          type: object
-          description: A map of iframeKey/iframeURL
-          additionalProperties: true
-        options:
-          type: object
-          description: free form options for Web Application
-          additionalProperties: true
-      required:
-        - url
     WorkspaceSolution:
       type: object
       description: The Workspace Solution configuration

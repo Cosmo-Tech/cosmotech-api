@@ -1256,9 +1256,9 @@ components:
         isTable:
           type: boolean
           description: Does the group define a table
-        options:
+        additionalData:
           type: object
-          description: Freeform options
+          description: Free form additional data
           additionalProperties: true
         parentId:
           type: string
@@ -1292,9 +1292,9 @@ components:
           type: boolean
           default: false
           description: Does the group define a table
-        options:
+        additionalData:
           type: object
-          description: Freeform options
+          description: Free form additional data
           additionalProperties: true
         parentId:
           type: string
@@ -1321,9 +1321,9 @@ components:
         isTable:
           type: boolean
           description: Does the group define a table
-        options:
+        additionalData:
           type: object
-          description: Freeform options
+          description: Free form additional data
           additionalProperties: true
         parentId:
           type: string
@@ -1366,9 +1366,9 @@ components:
         regexValidation:
           type: string
           description: A regex to validate the value
-        options:
+        additionalData:
           type: object
-          description: Freeform options
+          description: Free form additional data
           additionalProperties: true
       required:
         - id
@@ -1404,9 +1404,9 @@ components:
         regexValidation:
           type: string
           description: A regex to validate the value
-        options:
+        additionalData:
           type: object
-          description: Freeform options
+          description: Free form additional data
           additionalProperties: true
       required:
         - id
@@ -1437,9 +1437,9 @@ components:
         regexValidation:
           type: string
           description: A regex to validate the value
-        options:
+        additionalData:
           type: object
-          description: Freeform options
+          description: Free form additional data
           additionalProperties: true
 
     TranslatedLabels:

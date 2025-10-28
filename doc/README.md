@@ -185,7 +185,6 @@ All URIs are relative to *http://localhost:8080*
  - [WorkspaceSecurity](./Models/WorkspaceSecurity.md)
  - [WorkspaceSolution](./Models/WorkspaceSolution.md)
  - [WorkspaceUpdateRequest](./Models/WorkspaceUpdateRequest.md)
- - [WorkspaceWebApp](./Models/WorkspaceWebApp.md)
 
 
 <a name="documentation-for-authorization"></a>

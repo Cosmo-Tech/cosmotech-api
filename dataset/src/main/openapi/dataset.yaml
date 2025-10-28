@@ -796,6 +796,10 @@ components:
           description: the list of tags
           items:
             type: string
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         parts:
           type: array
           items:
@@ -838,6 +842,10 @@ components:
           items:
             type: string
           default: []
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         parts:
           type: array
           items:
@@ -865,6 +873,10 @@ components:
           type: array
           items:
             type: string
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         parts:
           type: array
           items:
@@ -898,6 +910,10 @@ components:
           type: array
           items:
             type: string
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         type:
           $ref: '#/components/schemas/DatasetPartTypeEnum'
         organizationId:
@@ -954,6 +970,10 @@ components:
           items:
             type: string
           default: []
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         type:
           $ref: '#/components/schemas/DatasetPartTypeEnum'
       required:
@@ -974,6 +994,10 @@ components:
           type: array
           items:
             type: string
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
 
     DatasetPartTypeEnum:
       type: string

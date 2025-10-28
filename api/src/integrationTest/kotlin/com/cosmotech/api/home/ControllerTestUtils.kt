@@ -25,6 +25,7 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.domain.*
 import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.domain.*
+import kotlin.collections.mutableListOf
 import org.apache.commons.io.IOUtils
 import org.json.JSONObject
 import org.springframework.http.MediaType
@@ -279,9 +280,7 @@ class ControllerTestUtils {
         defaultRunTemplateDataset: MutableMap<String, Any> = mutableMapOf(),
         datasetCopy: Boolean? = null,
         security: WorkspaceSecurity? = null,
-        url: String = "",
-        iframes: MutableMap<String, Any> = mutableMapOf(),
-        options: MutableMap<String, Any> = mutableMapOf(),
+        additionalData: MutableMap<String, Any> = mutableMapOf(),
         tags: MutableList<String> = mutableListOf()
     ): WorkspaceCreateRequest {
       return WorkspaceCreateRequest(
@@ -299,7 +298,7 @@ class ControllerTestUtils {
           datasetCopy = datasetCopy,
           security = security,
           tags = tags,
-          webApp = WorkspaceWebApp(url = url, iframes = iframes, options = options))
+          additionalData = additionalData)
     }
 
     @JvmStatic
@@ -313,9 +312,7 @@ class ControllerTestUtils {
         runTemplateFilter: MutableList<String> = mutableListOf(),
         defaultRunTemplateDataset: MutableMap<String, Any> = mutableMapOf(),
         datasetCopy: Boolean? = null,
-        url: String = "",
-        iframes: MutableMap<String, Any> = mutableMapOf(),
-        options: MutableMap<String, Any> = mutableMapOf(),
+        additionalData: MutableMap<String, Any> = mutableMapOf(),
         tags: MutableList<String> = mutableListOf()
     ): WorkspaceUpdateRequest {
 
@@ -332,7 +329,7 @@ class ControllerTestUtils {
           description = description,
           datasetCopy = datasetCopy,
           tags = tags,
-          webApp = WorkspaceWebApp(url = url, iframes = iframes, options = options))
+          additionalData = additionalData)
     }
   }
 
@@ -449,6 +446,7 @@ class ControllerTestUtils {
           name = name,
           description = DATASET_DESCRIPTION,
           tags = mutableListOf("tag1", "tag2"),
+          additionalData = mutableMapOf("customClient" to "customDatasetData"),
           runnerId = "r-12345678910",
           parts =
               mutableListOf(
@@ -456,6 +454,7 @@ class ControllerTestUtils {
                       name = datasetPartName,
                       description = DATASET_PART_DESCRIPTION,
                       tags = mutableListOf("tag_part1", "tag_part2"),
+                      additionalData = mutableMapOf("customClient" to "customDatasetPartData"),
                       type = type,
                       sourceName = sourceName)),
           security = security)
@@ -469,6 +468,7 @@ class ControllerTestUtils {
           name = name,
           description = DATASET_PART_DESCRIPTION,
           tags = mutableListOf("tag_part1", "tag_part3"),
+          additionalData = mutableMapOf("customClient" to "customDatasetPartData"),
           type = type,
           sourceName = TEST_FILE_NAME)
     }

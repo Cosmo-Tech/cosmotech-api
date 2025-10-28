@@ -146,7 +146,7 @@ internal class WorkspaceServiceImpl(
             version = workspaceCreateRequest.version,
             tags = workspaceCreateRequest.tags,
             description = workspaceCreateRequest.description,
-            webApp = workspaceCreateRequest.webApp,
+            additionalData = workspaceCreateRequest.additionalData,
             datasetCopy = workspaceCreateRequest.datasetCopy,
         )
 
@@ -178,7 +178,8 @@ internal class WorkspaceServiceImpl(
             tags = workspaceUpdateRequest.tags ?: existingWorkspace.tags,
             createInfo = existingWorkspace.createInfo,
             updateInfo = existingWorkspace.updateInfo,
-            webApp = workspaceUpdateRequest.webApp ?: existingWorkspace.webApp,
+            additionalData =
+                workspaceUpdateRequest.additionalData ?: existingWorkspace.additionalData,
             datasetCopy = workspaceUpdateRequest.datasetCopy ?: existingWorkspace.datasetCopy,
             security = existingWorkspace.security)
 

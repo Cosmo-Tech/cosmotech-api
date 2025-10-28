@@ -6,6 +6,7 @@
 | **name** | **String** |  | [default to null] |
 | **description** | **String** |  | [optional] [default to null] |
 | **tags** | **List** |  | [optional] [default to []] |
+| **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
 | **parts** | [**List**](DatasetPartCreateRequest.md) |  | [optional] [default to []] |
 | **security** | [**DatasetSecurity**](DatasetSecurity.md) |  | [optional] [default to null] |
 | **runnerId** | **String** |  | [optional] [default to null] |

@@ -48,6 +48,7 @@ entity Dataset {
     * organizationId: String
     * workspaceId: String
     * tags: List<String>
+    additionalData: Map
     * parts: List<DatasetPart>
     * createInfo: CreateInfo
     * updateInfo: EditInfo
@@ -63,6 +64,7 @@ entity DatasetCreateRequest {
     * name: String
     description: String
     tags: List<String>
+    additionalData: Map
     parts: List<DatasetPartCreateRequest>
     security: DatasetSecurity
     runnerId: String
@@ -74,6 +76,7 @@ entity DatasetPart {
     * sourceName: String
     description: String
     * tags: List<String>
+    additionalData: Map
     * type: DatasetPartTypeEnum
     * organizationId: String
     * workspaceId: String
@@ -87,6 +90,7 @@ entity DatasetPartCreateRequest {
     * sourceName: String
     description: String
     tags: List<String>
+    additionalData: Map
     type: DatasetPartTypeEnum
 }
 
@@ -97,6 +101,7 @@ entity DatasetPartUpdateRequest {
     sourceName: String
     description: String
     tags: List<String>
+    additionalData: Map
 }
 
 entity DatasetRole {
@@ -112,6 +117,7 @@ entity DatasetUpdateRequest {
     name: String
     description: String
     tags: List<String>
+    additionalData: Map
     parts: List<DatasetPartCreateRequest>
     security: DatasetSecurity
 }
@@ -281,7 +287,7 @@ entity RunTemplateParameter {
     minValue: String
     maxValue: String
     regexValidation: String
-    options: Map
+    additionalData: Map
 }
 
 entity RunTemplateParameterCreateRequest {
@@ -293,7 +299,7 @@ entity RunTemplateParameterCreateRequest {
     minValue: String
     maxValue: String
     regexValidation: String
-    options: Map
+    additionalData: Map
 }
 
 entity RunTemplateParameterGroup {
@@ -301,7 +307,7 @@ entity RunTemplateParameterGroup {
     description: String
     labels: Map
     * isTable: Boolean
-    options: Map
+    additionalData: Map
     parentId: String
     * parameters: List<String>
 }
@@ -311,7 +317,7 @@ entity RunTemplateParameterGroupCreateRequest {
     description: String
     labels: Map
     isTable: Boolean
-    options: Map
+    additionalData: Map
     parentId: String
     parameters: List<String>
 }
@@ -320,7 +326,7 @@ entity RunTemplateParameterGroupUpdateRequest {
     description: String
     labels: Map
     isTable: Boolean
-    options: Map
+    additionalData: Map
     parentId: String
     parameters: List<String>
 }
@@ -333,7 +339,7 @@ entity RunTemplateParameterUpdateRequest {
     minValue: String
     maxValue: String
     regexValidation: String
-    options: Map
+    additionalData: Map
 }
 
 entity RunTemplateParameterValue {
@@ -530,7 +536,7 @@ entity Workspace {
     * createInfo: WorkspaceEditInfo
     * updateInfo: WorkspaceEditInfo
     * solution: WorkspaceSolution
-    webApp: WorkspaceWebApp
+    additionalData: Map
     datasetCopy: Boolean
     * security: WorkspaceSecurity
 }
@@ -547,7 +553,7 @@ entity WorkspaceCreateRequest {
     version: String
     tags: List<String>
     * solution: WorkspaceSolution
-    webApp: WorkspaceWebApp
+    additionalData: Map
     datasetCopy: Boolean
     security: WorkspaceSecurity
 }
@@ -584,14 +590,8 @@ entity WorkspaceUpdateRequest {
     description: String
     tags: List<String>
     solution: WorkspaceSolution
-    webApp: WorkspaceWebApp
+    additionalData: Map
     datasetCopy: Boolean
-}
-
-entity WorkspaceWebApp {
-    * url: String
-    iframes: Map
-    options: Map
 }
 
 
@@ -610,7 +610,6 @@ ContainerResourceSizing -- ContainerResourceSizeInfo : limits
 SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 WorkspaceCreateRequest -- WorkspaceSolution : solution
-WorkspaceCreateRequest -- WorkspaceWebApp : webApp
 WorkspaceCreateRequest -- WorkspaceSecurity : security
 AboutInfo -- AboutInfoVersion : version
 RunTemplateUpdateRequest -- RunTemplateResourceSizing : runSizing
@@ -642,7 +641,6 @@ RunTemplateCreateRequest -- RunTemplateResourceSizing : runSizing
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
 RunStatusNode -- RunResourceRequested : resourcesDuration
 WorkspaceUpdateRequest -- WorkspaceSolution : solution
-WorkspaceUpdateRequest -- WorkspaceWebApp : webApp
 DatasetPart -- EditInfo : createInfo
 DatasetPart -- EditInfo : updateInfo
 Solution -- SolutionEditInfo : createInfo
@@ -664,7 +662,6 @@ RunnerResourceSizing -- ResourceSizeInfo : limits
 Workspace -- WorkspaceEditInfo : createInfo
 Workspace -- WorkspaceEditInfo : updateInfo
 Workspace -- WorkspaceSolution : solution
-Workspace -- WorkspaceWebApp : webApp
 Workspace -- WorkspaceSecurity : security
 
 @enduml
