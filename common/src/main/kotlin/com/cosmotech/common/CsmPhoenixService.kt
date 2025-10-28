@@ -4,7 +4,6 @@ package com.cosmotech.common
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.events.CsmEventPublisher
-import com.cosmotech.common.id.CsmIdGenerator
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,8 +14,6 @@ abstract class CsmPhoenixService {
   protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
   @Autowired protected lateinit var csmPlatformProperties: CsmPlatformProperties
-
-  @Autowired protected lateinit var idGenerator: CsmIdGenerator
 
   @Autowired protected lateinit var eventPublisher: CsmEventPublisher
 }

@@ -6,7 +6,6 @@ import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.events.CsmEventPublisher
 import com.cosmotech.common.exceptions.CsmAccessForbiddenException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
-import com.cosmotech.common.id.CsmIdGenerator
 import com.cosmotech.common.rbac.CsmAdmin
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
@@ -90,7 +89,6 @@ class WorkspaceServiceImplTests {
   @RelaxedMockK private lateinit var workspaceFile: MultipartFile
 
   @Suppress("unused") @MockK private var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
-  @Suppress("unused") @MockK private var idGenerator: CsmIdGenerator = mockk(relaxed = true)
 
   @Suppress("unused")
   @MockK

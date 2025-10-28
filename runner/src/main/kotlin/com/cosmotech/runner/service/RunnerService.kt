@@ -10,6 +10,7 @@ import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.common.exceptions.CsmClientException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
+import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_READ
 import com.cosmotech.common.rbac.PERMISSION_READ_SECURITY
@@ -256,7 +257,7 @@ class RunnerService(
       val now = Instant.now().toEpochMilli()
       this.runner =
           Runner(
-              id = idGenerator.generate("runner"),
+              id = generateId("runner"),
               name = "init",
               createInfo =
                   RunnerEditInfo(

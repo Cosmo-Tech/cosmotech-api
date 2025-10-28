@@ -58,8 +58,6 @@ csm:
       base-path: /
       base-url: "http://fake_url:8080"
       version: latest
-    id-generator:
-      type: hashid
     event-publisher:
       type: in_process
     upload:
