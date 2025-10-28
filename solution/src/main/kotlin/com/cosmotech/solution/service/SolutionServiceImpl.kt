@@ -506,8 +506,6 @@ class SolutionServiceImpl(
           defaultValue = runTemplateParameterUpdateRequest.defaultValue ?: this.defaultValue
           minValue = runTemplateParameterUpdateRequest.minValue ?: this.minValue
           maxValue = runTemplateParameterUpdateRequest.maxValue ?: this.maxValue
-          regexValidation =
-              runTemplateParameterUpdateRequest.regexValidation ?: this.regexValidation
           additionalData = runTemplateParameterUpdateRequest.additionalData ?: this.additionalData
         }
         ?: throw CsmResourceNotFoundException(
@@ -638,7 +636,6 @@ class SolutionServiceImpl(
         defaultValue = runTemplateParameterCreateRequest.defaultValue,
         minValue = runTemplateParameterCreateRequest.minValue,
         maxValue = runTemplateParameterCreateRequest.maxValue,
-        regexValidation = runTemplateParameterCreateRequest.regexValidation,
         additionalData = runTemplateParameterCreateRequest.additionalData)
   }
 

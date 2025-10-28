@@ -124,7 +124,6 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterGroupDescription = "this_is_a_description"
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
-    val parameterRegexValidation = "this_is_a_regex_to_validate_value"
     val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
@@ -139,7 +138,6 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterDefaultValue,
                 parameterMinValue,
                 parameterMaxValue,
-                parameterRegexValidation,
                 additionalData))
     val parameterGroupId = "parameterGroup1"
     val parameterGroups =
@@ -213,7 +211,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.parameters[0].defaultValue").value(parameterDefaultValue))
         .andExpect(jsonPath("$.parameters[0].minValue").value(parameterMinValue))
         .andExpect(jsonPath("$.parameters[0].maxValue").value(parameterMaxValue))
-        .andExpect(jsonPath("$.parameters[0].regexValidation").value(parameterRegexValidation))
         .andExpect(jsonPath("$.parameterGroups[0].id").value(parameterGroupId))
         .andExpect(jsonPath("$.parameterGroups[0].labels").value(parameterLabels))
         .andExpect(jsonPath("$.parameterGroups[0].parameters").value(mutableListOf(parameterId)))
@@ -256,7 +253,6 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterDefaultValue = "this_is_a_default_value"
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
-    val parameterRegexValidation = "this_is_a_regex_to_validate_value"
     val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
@@ -271,7 +267,6 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterDefaultValue,
                 parameterMinValue,
                 parameterMaxValue,
-                parameterRegexValidation,
                 additionalData))
     val parameterGroupId = "parameterGroup1"
     val parameterGroupDescription = "this_is_a_description"
@@ -347,7 +342,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.parameters[0].defaultValue").value(parameterDefaultValue))
         .andExpect(jsonPath("$.parameters[0].minValue").value(parameterMinValue))
         .andExpect(jsonPath("$.parameters[0].maxValue").value(parameterMaxValue))
-        .andExpect(jsonPath("$.parameters[0].regexValidation").value(parameterRegexValidation))
         .andExpect(
             jsonPath("$.parameters[0].additionalData[\"you_can_put\"]")
                 .value("whatever_you_want_here"))
@@ -461,7 +455,6 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterDefaultValue = "this_is_a_default_value"
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
-    val parameterRegexValidation = "this_is_a_regex_to_validate_value"
     val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
@@ -475,7 +468,6 @@ class SolutionControllerTests : ControllerTestBase() {
             parameterDefaultValue,
             parameterMinValue,
             parameterMaxValue,
-            parameterRegexValidation,
             additionalData)
 
     val solutionId =
@@ -494,7 +486,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.defaultValue").value(parameterDefaultValue))
         .andExpect(jsonPath("$.minValue").value(parameterMinValue))
         .andExpect(jsonPath("$.maxValue").value(parameterMaxValue))
-        .andExpect(jsonPath("$.regexValidation").value(parameterRegexValidation))
         .andExpect(jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
         .andExpect(jsonPath("$.additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andDo(MockMvcResultHandlers.print())
@@ -512,7 +503,6 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterDefaultValue = "this_is_a_default_value"
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
-    val parameterRegexValidation = "this_is_a_regex_to_validate_value"
     val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
@@ -526,7 +516,6 @@ class SolutionControllerTests : ControllerTestBase() {
             parameterDefaultValue,
             parameterMinValue,
             parameterMaxValue,
-            parameterRegexValidation,
             additionalData)
 
     val solutionId =
@@ -550,7 +539,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.defaultValue").value(parameterDefaultValue))
         .andExpect(jsonPath("$.minValue").value(parameterMinValue))
         .andExpect(jsonPath("$.maxValue").value(parameterMaxValue))
-        .andExpect(jsonPath("$.regexValidation").value(parameterRegexValidation))
         .andExpect(jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
         .andExpect(jsonPath("$.additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andDo(MockMvcResultHandlers.print())
@@ -570,7 +558,6 @@ class SolutionControllerTests : ControllerTestBase() {
     val newParameterDefaultValue = "this_is_a_new_default_value"
     val newParameterMinValue = "this_is_a_new_minimal_value"
     val newParameterMaxValue = "this_is_a_new_maximal_value"
-    val newParameterRegexValidation = "this_is_a_new_regex_to_validate_value"
     val newParameterAdditionalData =
         mutableMapOf(
             "new_you_can_put" to "new_whatever_you_want_here",
@@ -584,7 +571,6 @@ class SolutionControllerTests : ControllerTestBase() {
             newParameterDefaultValue,
             newParameterMinValue,
             newParameterMaxValue,
-            newParameterRegexValidation,
             newParameterAdditionalData)
 
     val solutionId =
@@ -602,7 +588,6 @@ class SolutionControllerTests : ControllerTestBase() {
                             "this_is_a_default_value",
                             "this_is_a_minimal_value",
                             "this_is_a_maximal_value",
-                            "this_is_a_regex_to_validate_value",
                             mutableMapOf(
                                 "you_can_put" to "whatever_you_want_here",
                                 "even" to JSONObject(mapOf("object" to "if_you_want")))))))
@@ -620,7 +605,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.defaultValue").value(newParameterDefaultValue))
         .andExpect(jsonPath("$.minValue").value(newParameterMinValue))
         .andExpect(jsonPath("$.maxValue").value(newParameterMaxValue))
-        .andExpect(jsonPath("$.regexValidation").value(newParameterRegexValidation))
         .andExpect(
             jsonPath("$.additionalData[\"new_you_can_put\"]").value("new_whatever_you_want_here"))
         .andExpect(
@@ -642,7 +626,6 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterDefaultValue = "this_is_a_default_value"
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
-    val parameterRegexValidation = "this_is_a_regex_to_validate_value"
     val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
@@ -657,7 +640,6 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterDefaultValue,
                 parameterMinValue,
                 parameterMaxValue,
-                parameterRegexValidation,
                 additionalData))
     val solutionId =
         createSolutionAndReturnId(
@@ -674,7 +656,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].defaultValue").value(parameterDefaultValue))
         .andExpect(jsonPath("$[0].minValue").value(parameterMinValue))
         .andExpect(jsonPath("$[0].maxValue").value(parameterMaxValue))
-        .andExpect(jsonPath("$[0].regexValidation").value(parameterRegexValidation))
         .andExpect(jsonPath("$[0].additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
         .andExpect(jsonPath("$[0].additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andDo(document("organizations/{organization_id}/solutions/{solution_id}/parameters/GET"))
@@ -691,7 +672,6 @@ class SolutionControllerTests : ControllerTestBase() {
     val parameterDefaultValue = "this_is_a_default_value"
     val parameterMinValue = "this_is_a_minimal_value"
     val parameterMaxValue = "this_is_a_maximal_value"
-    val parameterRegexValidation = "this_is_a_regex_to_validate_value"
     val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here",
@@ -706,7 +686,6 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterDefaultValue,
                 parameterMinValue,
                 parameterMaxValue,
-                parameterRegexValidation,
                 additionalData))
     val solutionId =
         createSolutionAndReturnId(

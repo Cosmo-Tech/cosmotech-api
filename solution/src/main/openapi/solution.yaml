@@ -1343,9 +1343,6 @@ components:
         maxValue:
           type: string
           description: The maximum value for this parameter
-        regexValidation:
-          type: string
-          description: A regex to validate the value
         additionalData:
           type: object
           description: Free form additional data
@@ -1381,9 +1378,6 @@ components:
         maxValue:
           type: string
           description: The maximum value for this parameter
-        regexValidation:
-          type: string
-          description: A regex to validate the value
         additionalData:
           type: object
           description: Free form additional data
@@ -1414,9 +1408,6 @@ components:
         maxValue:
           type: string
           description: The maximum value for this parameter
-        regexValidation:
-          type: string
-          description: A regex to validate the value
         additionalData:
           type: object
           description: Free form additional data

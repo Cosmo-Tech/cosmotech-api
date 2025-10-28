@@ -286,7 +286,6 @@ entity RunTemplateParameter {
     defaultValue: String
     minValue: String
     maxValue: String
-    regexValidation: String
     additionalData: Map
 }
 
@@ -298,7 +297,6 @@ entity RunTemplateParameterCreateRequest {
     defaultValue: String
     minValue: String
     maxValue: String
-    regexValidation: String
     additionalData: Map
 }
 
@@ -332,7 +330,6 @@ entity RunTemplateParameterUpdateRequest {
     defaultValue: String
     minValue: String
     maxValue: String
-    regexValidation: String
     additionalData: Map
 }
 

@@ -337,7 +337,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         defaultValue = "0",
                         minValue = "0",
                         maxValue = "100",
-                        regexValidation = "\\d",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0)),
@@ -347,7 +346,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         defaultValue = "5",
                         minValue = "0",
                         maxValue = "1000",
-                        regexValidation = "\\d",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))))
@@ -364,7 +362,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("0", firstParam.defaultValue)
     assertEquals("0", firstParam.minValue)
     assertEquals("100", firstParam.maxValue)
-    assertEquals("\\d", firstParam.regexValidation)
     assertEquals("this_is_a_description", firstParam.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label"), firstParam.labels)
     assertEquals(2, firstParam.additionalData?.size)
@@ -376,7 +373,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("5", secondParam.defaultValue)
     assertEquals("0", secondParam.minValue)
     assertEquals("1000", secondParam.maxValue)
-    assertEquals("\\d", secondParam.regexValidation)
     assertEquals("this_is_a_description2", secondParam.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label2"), secondParam.labels)
     assertEquals(2, secondParam.additionalData?.size)
@@ -397,7 +393,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         defaultValue = "0",
                         minValue = "0",
                         maxValue = "100",
-                        regexValidation = "\\d",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0)),
@@ -407,7 +402,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         defaultValue = "5",
                         minValue = "0",
                         maxValue = "1000",
-                        regexValidation = "\\d",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))))
@@ -425,7 +419,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("0", solutionParameter.defaultValue)
     assertEquals("0", solutionParameter.minValue)
     assertEquals("100", solutionParameter.maxValue)
-    assertEquals("\\d", solutionParameter.regexValidation)
     assertEquals("this_is_a_description", solutionParameter.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label"), solutionParameter.labels)
     assertEquals(2, solutionParameter.additionalData?.size)
@@ -458,7 +451,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         defaultValue = "0",
                         minValue = "0",
                         maxValue = "100",
-                        regexValidation = "\\d",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0)),
@@ -468,7 +460,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         defaultValue = "5",
                         minValue = "0",
                         maxValue = "1000",
-                        regexValidation = "\\d",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))))
@@ -487,7 +478,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                 defaultValue = "",
                 minValue = "",
                 maxValue = "",
-                regexValidation = "\\w",
                 description = "new_this_is_a_description2",
                 labels = mutableMapOf("en" to "new_this_is_a_label2"),
                 additionalData = mutableMapOf("option1" to "newValue1")))
@@ -497,7 +487,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("", solutionParameter.defaultValue)
     assertEquals("", solutionParameter.minValue)
     assertEquals("", solutionParameter.maxValue)
-    assertEquals("\\w", solutionParameter.regexValidation)
     assertEquals("new_this_is_a_description2", solutionParameter.description)
     assertEquals(mutableMapOf("en" to "new_this_is_a_label2"), solutionParameter.labels)
     assertEquals(1, solutionParameter.additionalData?.size)
@@ -533,7 +522,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         defaultValue = "0",
                         minValue = "0",
                         maxValue = "100",
-                        regexValidation = "\\d",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0)),
@@ -543,7 +531,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         defaultValue = "5",
                         minValue = "0",
                         maxValue = "1000",
-                        regexValidation = "\\d",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))))
@@ -610,7 +597,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             defaultValue = "5",
             minValue = "0",
             maxValue = "1000",
-            regexValidation = "\\d",
             description = "this_is_a_description2",
             labels = mutableMapOf("fr" to "this_is_a_label2"),
             additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))
@@ -629,7 +615,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("5", newParam.defaultValue)
     assertEquals("0", newParam.minValue)
     assertEquals("1000", newParam.maxValue)
-    assertEquals("\\d", newParam.regexValidation)
     assertEquals("this_is_a_description2", newParam.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label2"), newParam.labels)
     assertEquals("value1", newParam.additionalData?.get("option1"))
@@ -645,7 +630,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             defaultValue = "5",
             minValue = "0",
             maxValue = "1000",
-            regexValidation = "\\d",
             description = "this_is_a_description2",
             labels = mutableMapOf("fr" to "this_is_a_label2"),
             additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))
@@ -679,7 +663,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                 defaultValue = "5",
                 minValue = "0",
                 maxValue = "1000",
-                regexValidation = "\\d",
                 description = "this_is_a_description2",
                 labels = mutableMapOf("fr" to "this_is_a_label2"),
                 additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8)),
@@ -689,7 +672,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                 defaultValue = "5",
                 minValue = "0",
                 maxValue = "1000",
-                regexValidation = "\\d",
                 description = "this_is_a_description2",
                 labels = mutableMapOf("fr" to "this_is_a_label2"),
                 additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8)))
