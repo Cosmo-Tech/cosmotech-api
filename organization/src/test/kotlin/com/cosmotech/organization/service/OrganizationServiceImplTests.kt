@@ -16,6 +16,7 @@ import com.cosmotech.common.rbac.ROLE_VALIDATOR
 import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
@@ -50,6 +51,8 @@ const val USER_ID = "bob@mycompany.com"
 @ExtendWith(MockKExtension::class)
 class OrganizationServiceImplTests {
 
+  val defaultGroup = listOf("myTestGroup")
+
   @Suppress("unused") @MockK private var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
 
   @Suppress("unused")
@@ -67,6 +70,7 @@ class OrganizationServiceImplTests {
 
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns USER_ID
+    every { getCurrentAccountGroups(any()) } returns defaultGroup
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
@@ -85,8 +89,8 @@ class OrganizationServiceImplTests {
     val rbacAccessControl = RbacAccessControl(USER_ID, ROLE_ADMIN)
     every { organizationRepository.findByIdOrNull(any()) } returns organization
     every { csmRbac.verify(any(), any()) } returns Unit
-    every { csmRbac.checkUserExists(any(), any(), any()) } returns rbacAccessControl
-    every { csmRbac.setUserRole(any(), any(), any()) } returns rbacSecurity
+    every { csmRbac.checkEntityExists(any(), any(), any()) } returns rbacAccessControl
+    every { csmRbac.setEntityRole(any(), any(), any()) } returns rbacSecurity
 
     assertEquals(organization.security.default, rbacSecurity.default)
     assertEquals(
@@ -108,7 +112,7 @@ class OrganizationServiceImplTests {
     val organization = getMockOrganization()
     every { organizationRepository.findByIdOrNull(any()) } returns organization
     every { csmRbac.verify(any(), any()) } returns Unit
-    every { csmRbac.checkUserExists(any(), any(), any()) } throws
+    every { csmRbac.checkEntityExists(any(), any(), any()) } throws
         mockk<CsmResourceNotFoundException>()
     val organizationRole = OrganizationRole(role = ROLE_VIEWER)
     assertThrows<CsmResourceNotFoundException> {

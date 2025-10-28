@@ -357,7 +357,7 @@ class SolutionServiceImpl(
     }
 
     val rbacSecurity =
-        csmRbac.addUserRole(
+        csmRbac.addEntityRole(
             organization.security.toGenericSecurity(organizationId),
             solution.security.toGenericSecurity(solutionId),
             solutionAccessControl.id,
@@ -551,12 +551,12 @@ class SolutionServiceImpl(
       solutionRole: SolutionRole
   ): SolutionAccessControl {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
-    csmRbac.checkUserExists(
+    csmRbac.checkEntityExists(
         solution.security.toGenericSecurity(solutionId),
         identityId,
         "User '$identityId' not found in solution $solutionId")
     val rbacSecurity =
-        csmRbac.setUserRole(
+        csmRbac.setEntityRole(
             solution.security.toGenericSecurity(solutionId), identityId, solutionRole.role)
     solution.security = rbacSecurity.toResourceSecurity()
     save(solution)
@@ -572,14 +572,14 @@ class SolutionServiceImpl(
   ) {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
-        csmRbac.removeUser(solution.security.toGenericSecurity(solutionId), identityId)
+        csmRbac.removeEntity(solution.security.toGenericSecurity(solutionId), identityId)
     solution.security = rbacSecurity.toResourceSecurity()
     save(solution)
   }
 
   override fun listSolutionSecurityUsers(organizationId: String, solutionId: String): List<String> {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ_SECURITY)
-    return csmRbac.getUsers(solution.security.toGenericSecurity(solutionId))
+    return csmRbac.getEntities(solution.security.toGenericSecurity(solutionId))
   }
 
   override fun getVerifiedSolution(

@@ -681,7 +681,7 @@ class RunnerService(
       // create a rbacSecurity object from runner Rbac by adding user with id and role in
       // runnerAccessControl
       val rbacSecurity =
-          csmRbac.setUserRole(
+          csmRbac.setEntityRole(
               this.runner.getRbac(),
               runnerAccessControl.id,
               runnerAccessControl.role,
@@ -709,14 +709,14 @@ class RunnerService(
 
     fun deleteAccessControlFor(userId: String) {
       // create a rbacSecurity object from runner Rbac by removing user
-      val rbacSecurity = csmRbac.removeUser(this.getRbacSecurity(), userId, this.roleDefinition)
+      val rbacSecurity = csmRbac.removeEntity(this.getRbacSecurity(), userId, this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
 
       this.removeAccessControlToDatasetParameter(userId)
     }
 
     fun checkUserExists(userId: String) {
-      csmRbac.checkUserExists(
+      csmRbac.checkEntityExists(
           runner.getRbac(), userId, "User '$userId' not found in runner ${runner.id}")
     }
 
@@ -862,7 +862,7 @@ class RunnerService(
     }
 
     fun getUsers(): List<String> {
-      return csmRbac.getUsers(this.getRbacSecurity())
+      return csmRbac.getEntities(this.getRbacSecurity())
     }
 
     fun setDefaultSecurity(role: String) {

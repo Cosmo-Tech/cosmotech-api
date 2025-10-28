@@ -17,6 +17,7 @@ import com.cosmotech.common.rbac.ROLE_USER
 import com.cosmotech.common.rbac.ROLE_VALIDATOR
 import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.common.utils.ResourceScanner
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
@@ -80,6 +81,8 @@ const val S3_BUCKET_NAME = "test-bucket"
 @Suppress("LargeClass")
 class WorkspaceServiceImplTests {
 
+  val defaultGroup = listOf("myTestGroup")
+
   @MockK private lateinit var solutionService: SolutionApiServiceInterface
   @RelaxedMockK private lateinit var organizationService: OrganizationApiServiceInterface
 
@@ -112,6 +115,7 @@ class WorkspaceServiceImplTests {
   fun beforeEach() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+    every { getCurrentAccountGroups(any()) } returns defaultGroup
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 

@@ -433,12 +433,12 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceAccessControl {
     val organization = organizationService.getVerifiedOrganization(organizationId)
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
-    val users = csmRbac.getUsers(workspace.security.toGenericSecurity(workspaceId))
+    val users = csmRbac.getEntities(workspace.security.toGenericSecurity(workspaceId))
     require(!users.contains(workspaceAccessControl.id)) {
       "User is already in this Workspace security"
     }
     val rbacSecurity =
-        csmRbac.addUserRole(
+        csmRbac.addEntityRole(
             organization.security.toGenericSecurity(organizationId),
             workspace.security.toGenericSecurity(workspaceId),
             workspaceAccessControl.id,
@@ -458,12 +458,12 @@ internal class WorkspaceServiceImpl(
       workspaceRole: WorkspaceRole
   ): WorkspaceAccessControl {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
-    csmRbac.checkUserExists(
+    csmRbac.checkEntityExists(
         workspace.security.toGenericSecurity(workspaceId),
         identityId,
         "User '$identityId' not found in workspace $workspaceId")
     val rbacSecurity =
-        csmRbac.setUserRole(
+        csmRbac.setEntityRole(
             workspace.security.toGenericSecurity(workspaceId), identityId, workspaceRole.role)
     workspace.security = rbacSecurity.toResourceSecurity()
     save(workspace)
@@ -479,7 +479,7 @@ internal class WorkspaceServiceImpl(
   ) {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
-        csmRbac.removeUser(workspace.security.toGenericSecurity(workspaceId), identityId)
+        csmRbac.removeEntity(workspace.security.toGenericSecurity(workspaceId), identityId)
     workspace.security = rbacSecurity.toResourceSecurity()
     save(workspace)
   }
@@ -489,7 +489,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String
   ): List<String> {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
-    return csmRbac.getUsers(workspace.security.toGenericSecurity(workspaceId))
+    return csmRbac.getEntities(workspace.security.toGenericSecurity(workspaceId))
   }
 
   fun updateSecurityVisibility(workspace: Workspace): Workspace {

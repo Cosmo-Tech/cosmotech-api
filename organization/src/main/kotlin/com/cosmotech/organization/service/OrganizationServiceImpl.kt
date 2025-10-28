@@ -184,7 +184,7 @@ class OrganizationServiceImpl(
     }
 
     val rbacSecurity =
-        csmRbac.setUserRole(
+        csmRbac.setEntityRole(
             organization.security.toGenericSecurity(organizationId),
             organizationAccessControl.id,
             organizationAccessControl.role)
@@ -202,12 +202,12 @@ class OrganizationServiceImpl(
       organizationRole: OrganizationRole
   ): OrganizationAccessControl {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_WRITE_SECURITY)
-    csmRbac.checkUserExists(
+    csmRbac.checkEntityExists(
         organization.security.toGenericSecurity(organizationId),
         identityId,
         "User '$identityId' not found in organization $organizationId")
     val rbacSecurity =
-        csmRbac.setUserRole(
+        csmRbac.setEntityRole(
             organization.security.toGenericSecurity(organizationId),
             identityId,
             organizationRole.role)
@@ -222,14 +222,14 @@ class OrganizationServiceImpl(
   override fun deleteOrganizationAccessControl(organizationId: String, identityId: String) {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
-        csmRbac.removeUser(organization.security.toGenericSecurity(organizationId), identityId)
+        csmRbac.removeEntity(organization.security.toGenericSecurity(organizationId), identityId)
     organization.security = rbacSecurity.toResourceSecurity()
     save(organization)
   }
 
   override fun listOrganizationSecurityUsers(organizationId: String): List<String> {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_READ_SECURITY)
-    return csmRbac.getUsers(organization.security.toGenericSecurity(organizationId))
+    return csmRbac.getEntities(organization.security.toGenericSecurity(organizationId))
   }
 
   override fun getVerifiedOrganization(
