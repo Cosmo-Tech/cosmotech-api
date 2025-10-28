@@ -235,8 +235,7 @@ class ContainerFactoryTests {
         parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
         parameterGroups =
             mutableListOf(
-                RunTemplateParameterGroup(
-                    id = "parameter", isTable = false, parameters = mutableListOf())),
+                RunTemplateParameterGroup(id = "parameter", parameters = mutableListOf())),
         organizationId = "Organizationid",
         security = SolutionSecurity(ROLE_ADMIN, mutableListOf()),
     )

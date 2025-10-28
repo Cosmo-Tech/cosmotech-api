@@ -635,9 +635,7 @@ class WorkspaceServiceImplTests {
         repository = "repository",
         parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
         parameterGroups =
-            mutableListOf(
-                RunTemplateParameterGroup(
-                    id = "group", isTable = false, parameters = mutableListOf())),
+            mutableListOf(RunTemplateParameterGroup(id = "group", parameters = mutableListOf())),
         runTemplates =
             mutableListOf(RunTemplate(id = "template", parameterGroups = mutableListOf())),
         security =

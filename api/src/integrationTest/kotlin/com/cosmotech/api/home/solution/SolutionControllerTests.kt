@@ -142,16 +142,13 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterRegexValidation,
                 additionalData))
     val parameterGroupId = "parameterGroup1"
-    val parameterGroupParentId = "this_is_a_parent_id"
     val parameterGroups =
         mutableListOf(
             RunTemplateParameterGroupCreateRequest(
                 parameterGroupId,
                 parameterGroupDescription,
                 parameterLabels,
-                false,
                 additionalData,
-                parameterGroupParentId,
                 mutableListOf(parameterId)))
     val runTemplateId = "runtemplate1"
     val runTemplateName = "this_is_a_name"
@@ -219,8 +216,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.parameters[0].regexValidation").value(parameterRegexValidation))
         .andExpect(jsonPath("$.parameterGroups[0].id").value(parameterGroupId))
         .andExpect(jsonPath("$.parameterGroups[0].labels").value(parameterLabels))
-        .andExpect(jsonPath("$.parameterGroups[0].isTable").value(false))
-        .andExpect(jsonPath("$.parameterGroups[0].parentId").value(parameterGroupParentId))
         .andExpect(jsonPath("$.parameterGroups[0].parameters").value(mutableListOf(parameterId)))
         .andExpect(jsonPath("$.runTemplates[0].id").value(runTemplateId))
         .andExpect(jsonPath("$.runTemplates[0].name").value(runTemplateName))
@@ -279,7 +274,6 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterRegexValidation,
                 additionalData))
     val parameterGroupId = "parameterGroup1"
-    val parameterGroupParentId = "this_is_a_parent_id"
     val parameterGroupDescription = "this_is_a_description"
     val parameterGroups =
         mutableListOf(
@@ -287,9 +281,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterGroupId,
                 parameterGroupDescription,
                 parameterLabels,
-                false,
                 additionalData,
-                parameterGroupParentId,
                 mutableListOf(parameterId)))
     val runTemplateId = "runtemplate1"
     val runTemplateName = "this_is_a_name"
@@ -363,8 +355,6 @@ class SolutionControllerTests : ControllerTestBase() {
             jsonPath("$.parameters[0].additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andExpect(jsonPath("$.parameterGroups[0].id").value(parameterGroupId))
         .andExpect(jsonPath("$.parameterGroups[0].labels").value(parameterLabels))
-        .andExpect(jsonPath("$.parameterGroups[0].isTable").value(false))
-        .andExpect(jsonPath("$.parameterGroups[0].parentId").value(parameterGroupParentId))
         .andExpect(jsonPath("$.parameterGroups[0].parameters").value(mutableListOf(parameterId)))
         .andExpect(
             jsonPath("$.parameterGroups[0].additionalData[\"you_can_put\"]")
@@ -746,16 +736,13 @@ class SolutionControllerTests : ControllerTestBase() {
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
     val parameterGroupId = "parameterGroup1"
-    val parameterGroupParentId = "this_is_a_parent_id"
     val parameterGroupDescription = "this_is_a_description"
     val parameterGroup =
         RunTemplateParameterGroupCreateRequest(
             parameterGroupId,
             parameterGroupDescription,
             parameterLabels,
-            false,
             additionalData,
-            parameterGroupParentId,
             mutableListOf(parameterId))
 
     mvc.perform(
@@ -767,8 +754,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.id").value(parameterGroupId))
         .andExpect(jsonPath("$.description").value(parameterGroupDescription))
         .andExpect(jsonPath("$.labels").value(parameterLabels))
-        .andExpect(jsonPath("$.isTable").value(false))
-        .andExpect(jsonPath("$.parentId").value(parameterGroupParentId))
         .andExpect(jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
         .andExpect(jsonPath("$.additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andExpect(jsonPath("$.parameters").value(mutableListOf(parameterId)))
@@ -788,16 +773,13 @@ class SolutionControllerTests : ControllerTestBase() {
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
     val parameterGroupId = "parameterGroup1"
-    val parameterGroupParentId = "this_is_a_parent_id"
     val parameterGroupDescription = "this_is_a_description"
     val parameterGroup =
         RunTemplateParameterGroupCreateRequest(
             parameterGroupId,
             parameterGroupDescription,
             parameterLabels,
-            false,
             additionalData,
-            parameterGroupParentId,
             mutableListOf(parameterId))
 
     val solutionId =
@@ -814,8 +796,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.id").value(parameterGroupId))
         .andExpect(jsonPath("$.description").value(parameterGroupDescription))
         .andExpect(jsonPath("$.labels").value(parameterLabels))
-        .andExpect(jsonPath("$.isTable").value(false))
-        .andExpect(jsonPath("$.parentId").value(parameterGroupParentId))
         .andExpect(jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
         .andExpect(jsonPath("$.additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andExpect(jsonPath("$.parameters").value(mutableListOf(parameterId)))
@@ -835,16 +815,13 @@ class SolutionControllerTests : ControllerTestBase() {
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
     val parameterGroupId = "parameterGroup1"
-    val parameterGroupParentId = "this_is_a_parent_id"
     val parameterGroupDescription = "this_is_a_description"
     val parameterGroup =
         RunTemplateParameterGroupCreateRequest(
             parameterGroupId,
             parameterGroupDescription,
             parameterLabels,
-            false,
             additionalData,
-            parameterGroupParentId,
             mutableListOf(parameterId))
 
     val solutionId =
@@ -858,16 +835,13 @@ class SolutionControllerTests : ControllerTestBase() {
         mutableMapOf(
             "you_can_put" to "whatever_you_want_new_here",
             "even" to JSONObject(mapOf("new_object" to "if_you_want")))
-    val newParameterGroupParentId = "this_is_a_new_parent_id"
     val newParameterGroupDescription = "this_is_a_new_description"
     val newParameterId = "parameter2"
     val newParameterGroup =
         RunTemplateParameterGroupUpdateRequest(
             newParameterGroupDescription,
             newParameterLabels,
-            true,
             newadditionalData,
-            newParameterGroupParentId,
             mutableListOf(newParameterId))
 
     mvc.perform(
@@ -880,8 +854,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.id").value(parameterGroupId))
         .andExpect(jsonPath("$.description").value(newParameterGroupDescription))
         .andExpect(jsonPath("$.labels").value(newParameterLabels))
-        .andExpect(jsonPath("$.isTable").value(true))
-        .andExpect(jsonPath("$.parentId").value(newParameterGroupParentId))
         .andExpect(
             jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_new_here"))
         .andExpect(jsonPath("$.additionalData[\"even\"][\"new_object\"]").value("if_you_want"))
@@ -903,16 +875,13 @@ class SolutionControllerTests : ControllerTestBase() {
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
     val parameterGroupId = "parameterGroup1"
-    val parameterGroupParentId = "this_is_a_parent_id"
     val parameterGroupDescription = "this_is_a_description"
     val parameterGroup =
         RunTemplateParameterGroupCreateRequest(
             parameterGroupId,
             parameterGroupDescription,
             parameterLabels,
-            false,
             additionalData,
-            parameterGroupParentId,
             mutableListOf(parameterId))
 
     val solutionId =
@@ -929,8 +898,6 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].id").value(parameterGroupId))
         .andExpect(jsonPath("$[0].description").value(parameterGroupDescription))
         .andExpect(jsonPath("$[0].labels").value(parameterLabels))
-        .andExpect(jsonPath("$[0].isTable").value(false))
-        .andExpect(jsonPath("$[0].parentId").value(parameterGroupParentId))
         .andExpect(jsonPath("$[0].additionalData[\"you_can_put\"]").value("whatever_you_want_here"))
         .andExpect(jsonPath("$[0].additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andExpect(jsonPath("$[0].parameters").value(mutableListOf(parameterId)))
@@ -948,16 +915,13 @@ class SolutionControllerTests : ControllerTestBase() {
             "you_can_put" to "whatever_you_want_here",
             "even" to JSONObject(mapOf("object" to "if_you_want")))
     val parameterGroupId = "parameterGroup1"
-    val parameterGroupParentId = "this_is_a_parent_id"
     val parameterGroupDescription = "this_is_a_description"
     val parameterGroup =
         RunTemplateParameterGroupCreateRequest(
             parameterGroupId,
             parameterGroupDescription,
             parameterLabels,
-            false,
             additionalData,
-            parameterGroupParentId,
             mutableListOf(parameterId))
 
     val solutionId =

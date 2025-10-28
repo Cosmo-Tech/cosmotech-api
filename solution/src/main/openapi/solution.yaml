@@ -1253,16 +1253,10 @@ components:
           description: A description of the parameter group
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
-        isTable:
-          type: boolean
-          description: Does the group define a table
         additionalData:
           type: object
           description: Free form additional data
           additionalProperties: true
-        parentId:
-          type: string
-          description: The Run Template Group parent Id
         parameters:
           type: array
           description: An ordered list of Run Template Parameters
@@ -1271,7 +1265,6 @@ components:
             description: A Run Template Parameter id
       required:
         - id
-        - isTable
         - parameters
 
     RunTemplateParameterGroupCreateRequest:
@@ -1288,17 +1281,10 @@ components:
           description: A description of the parameter group
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
-        isTable:
-          type: boolean
-          default: false
-          description: Does the group define a table
         additionalData:
           type: object
           description: Free form additional data
           additionalProperties: true
-        parentId:
-          type: string
-          description: The Run Template Group parent Id
         parameters:
           type: array
           description: An ordered list of Run Template Parameters
@@ -1318,16 +1304,10 @@ components:
           description: A description of the parameter group
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
-        isTable:
-          type: boolean
-          description: Does the group define a table
         additionalData:
           type: object
           description: Free form additional data
           additionalProperties: true
-        parentId:
-          type: string
-          description: The Run Template Group parent Id
         parameters:
           type: array
           description: An ordered list of Run Template Parameters

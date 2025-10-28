@@ -306,9 +306,7 @@ entity RunTemplateParameterGroup {
     * id: String
     description: String
     labels: Map
-    * isTable: Boolean
     additionalData: Map
-    parentId: String
     * parameters: List<String>
 }
 
@@ -316,18 +314,14 @@ entity RunTemplateParameterGroupCreateRequest {
     * id: String
     description: String
     labels: Map
-    isTable: Boolean
     additionalData: Map
-    parentId: String
     parameters: List<String>
 }
 
 entity RunTemplateParameterGroupUpdateRequest {
     description: String
     labels: Map
-    isTable: Boolean
     additionalData: Map
-    parentId: String
     parameters: List<String>
 }
 
