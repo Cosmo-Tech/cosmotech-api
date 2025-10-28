@@ -48,6 +48,7 @@ entity Dataset {
     * organizationId: String
     * workspaceId: String
     * tags: List<String>
+    additionalData: Map
     * parts: List<DatasetPart>
     * createInfo: CreateInfo
     * updateInfo: EditInfo
@@ -63,6 +64,7 @@ entity DatasetCreateRequest {
     * name: String
     description: String
     tags: List<String>
+    additionalData: Map
     parts: List<DatasetPartCreateRequest>
     security: DatasetSecurity
     runnerId: String
@@ -74,6 +76,7 @@ entity DatasetPart {
     * sourceName: String
     description: String
     * tags: List<String>
+    additionalData: Map
     * type: DatasetPartTypeEnum
     * organizationId: String
     * workspaceId: String
@@ -87,6 +90,7 @@ entity DatasetPartCreateRequest {
     * sourceName: String
     description: String
     tags: List<String>
+    additionalData: Map
     type: DatasetPartTypeEnum
 }
 
@@ -97,6 +101,7 @@ entity DatasetPartUpdateRequest {
     sourceName: String
     description: String
     tags: List<String>
+    additionalData: Map
 }
 
 entity DatasetRole {
@@ -112,6 +117,7 @@ entity DatasetUpdateRequest {
     name: String
     description: String
     tags: List<String>
+    additionalData: Map
     parts: List<DatasetPartCreateRequest>
     security: DatasetSecurity
 }

@@ -179,6 +179,7 @@ class DatasetServiceImpl(
             organizationId = organizationId,
             workspaceId = workspaceId,
             tags = datasetCreateRequest.tags ?: mutableListOf(),
+            additionalData = datasetCreateRequest.additionalData ?: mutableMapOf(),
             parts = datasetParts ?: mutableListOf(),
             createInfo = createInfo,
             updateInfo = editInfo,
@@ -336,6 +337,7 @@ class DatasetServiceImpl(
             organizationId = organizationId,
             workspaceId = workspaceId,
             tags = datasetUpdateRequest.tags ?: previousDataset.tags,
+            additionalData = datasetUpdateRequest.additionalData ?: previousDataset.additionalData,
             parts = newDatasetParts ?: previousDataset.parts,
             createInfo = previousDataset.createInfo,
             updateInfo =
@@ -462,6 +464,7 @@ class DatasetServiceImpl(
             name = datasetPartCreateRequest.name,
             description = datasetPartCreateRequest.description,
             tags = datasetPartCreateRequest.tags ?: mutableListOf(),
+            additionalData = datasetPartCreateRequest.additionalData ?: mutableMapOf(),
             type = datasetPartCreateRequest.type ?: DatasetPartTypeEnum.File,
             organizationId = organizationId,
             workspaceId = workspaceId,
@@ -807,6 +810,7 @@ class DatasetServiceImpl(
           it.sourceName = datasetPartUpdateRequest.sourceName ?: it.sourceName
           it.description = datasetPartUpdateRequest.description ?: it.description
           it.tags = datasetPartUpdateRequest.tags ?: it.tags
+          it.additionalData = datasetPartUpdateRequest.additionalData ?: it.additionalData
           it.updateInfo = editInfo
         }
 
@@ -814,6 +818,8 @@ class DatasetServiceImpl(
     datasetPartUpdater.sourceName = datasetPartUpdateRequest.sourceName ?: datasetPart.sourceName
     datasetPartUpdater.description = datasetPartUpdateRequest.description ?: datasetPart.description
     datasetPartUpdater.tags = datasetPartUpdateRequest.tags ?: datasetPart.tags
+    datasetPartUpdater.additionalData =
+        datasetPartUpdateRequest.additionalData ?: datasetPart.additionalData
     datasetPartUpdater.updateInfo = editInfo
 
     datasetRepository.update(dataset)
@@ -849,6 +855,7 @@ class DatasetServiceImpl(
           it.sourceName = datasetPartUpdateRequest?.sourceName ?: it.sourceName
           it.description = datasetPartUpdateRequest?.description ?: it.description
           it.tags = datasetPartUpdateRequest?.tags ?: it.tags
+          it.additionalData = datasetPartUpdateRequest?.additionalData ?: it.additionalData
           it.updateInfo = editInfo
         }
 

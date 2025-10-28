@@ -8,6 +8,7 @@
 | **sourceName** | **String** | the source data name (e.g. filename associated to the dataset part) | [default to null] |
 | **description** | **String** |  | [optional] [default to null] |
 | **tags** | **List** |  | [default to null] |
+| **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
 | **type** | [**DatasetPartTypeEnum**](DatasetPartTypeEnum.md) |  | [default to null] |
 | **organizationId** | **String** | the associated Organization Id | [default to null] |
 | **workspaceId** | **String** | the associated Workspace Id | [default to null] |

@@ -66,8 +66,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
             "runtemplateId1" to "datasetId1", "runtemplateId2" to "datasetId2")
     val additionalData =
         mutableMapOf(
-            "you_can_put" to "whatever_you_want_here",
-            "even" to mapOf("object" to "if_you_want"))
+            "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
     val workspaceSecurity =
         WorkspaceSecurity(
             default = ROLE_NONE,
@@ -148,8 +147,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
             "runtemplateId1" to "datasetId1", "runtemplateId2" to "datasetId2")
     val additionalData =
         mutableMapOf(
-            "you_can_put" to "whatever_you_want_here",
-            "even" to mapOf("object" to "if_you_want"))
+            "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
 
     val workspaceDatasetId = "d-12345678910"
     mvc.perform(
@@ -275,8 +273,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
             "runtemplateId1" to "datasetId1", "runtemplateId2" to "datasetId2")
     val additionalData =
         mutableMapOf(
-            "you_can_put" to "whatever_you_want_here",
-            "even" to mapOf("object" to "if_you_want"))
+            "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
 
     val workspaceDatasetId = "d-12345678910"
     val workspaceSecurity =
