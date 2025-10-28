@@ -427,10 +427,8 @@ class SolutionServiceImpl(
         ?.apply {
           description = runTemplateParameterGroupUpdateRequest.description ?: this.description
           labels = runTemplateParameterGroupUpdateRequest.labels ?: this.labels
-          isTable = runTemplateParameterGroupUpdateRequest.isTable ?: this.isTable
           additionalData =
               runTemplateParameterGroupUpdateRequest.additionalData ?: this.additionalData
-          parentId = runTemplateParameterGroupUpdateRequest.parentId ?: this.parentId
           parameters = runTemplateParameterGroupUpdateRequest.parameters ?: this.parameters
         }
         ?: throw CsmResourceNotFoundException(
@@ -651,9 +649,7 @@ class SolutionServiceImpl(
         id = runTemplateParameterGroupCreateRequest.id,
         description = runTemplateParameterGroupCreateRequest.description,
         labels = runTemplateParameterGroupCreateRequest.labels,
-        isTable = runTemplateParameterGroupCreateRequest.isTable!!,
         additionalData = runTemplateParameterGroupCreateRequest.additionalData,
-        parentId = runTemplateParameterGroupCreateRequest.parentId,
         parameters = runTemplateParameterGroupCreateRequest.parameters!!)
   }
 

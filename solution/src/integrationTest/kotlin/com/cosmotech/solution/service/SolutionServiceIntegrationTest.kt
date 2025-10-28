@@ -1339,17 +1339,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         id = "parameterGroupId",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
-                        isTable = false,
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-                        parentId = "this_is_a_parent_id",
                         parameters = mutableListOf("parameterId1", "parameterId2")),
                     RunTemplateParameterGroupCreateRequest(
                         id = "parameterGroupId2",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
-                        isTable = true,
                         additionalData = mutableMapOf("option2" to "value2", "option3" to 20.0),
-                        parentId = "this_is_a_parent_id2",
                         parameters = mutableListOf("parameterId3", "parameterId4"))))
 
     val newSolution =
@@ -1362,19 +1358,15 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("parameterGroupId", firstParamGroup.id)
     assertEquals("this_is_a_description", firstParamGroup.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label"), firstParamGroup.labels)
-    assertFalse(firstParamGroup.isTable)
     assertEquals("value1", firstParamGroup.additionalData?.get("option1"))
     assertEquals(10.0, firstParamGroup.additionalData?.get("option2"))
-    assertEquals("this_is_a_parent_id", firstParamGroup.parentId)
     assertEquals(mutableListOf("parameterId1", "parameterId2"), firstParamGroup.parameters)
     val secondParamGroup = parameterGroupList[1]
     assertEquals("parameterGroupId2", secondParamGroup.id)
     assertEquals("this_is_a_description2", secondParamGroup.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label2"), secondParamGroup.labels)
-    assertTrue(secondParamGroup.isTable)
     assertEquals("value2", secondParamGroup.additionalData?.get("option2"))
     assertEquals(20.0, secondParamGroup.additionalData?.get("option3"))
-    assertEquals("this_is_a_parent_id2", secondParamGroup.parentId)
     assertEquals(mutableListOf("parameterId3", "parameterId4"), secondParamGroup.parameters)
   }
 
@@ -1389,17 +1381,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         id = "parameterGroupId",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
-                        isTable = false,
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-                        parentId = "this_is_a_parent_id",
                         parameters = mutableListOf("parameterId1", "parameterId2")),
                     RunTemplateParameterGroupCreateRequest(
                         id = "parameterGroupId2",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
-                        isTable = true,
                         additionalData = mutableMapOf("option2" to "value2", "option3" to 20.0),
-                        parentId = "this_is_a_parent_id2",
                         parameters = mutableListOf("parameterId3", "parameterId4"))))
 
     val newSolution =
@@ -1413,11 +1401,9 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("parameterGroupId", solutionParameterGroup.id)
     assertEquals("this_is_a_description", solutionParameterGroup.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label"), solutionParameterGroup.labels)
-    assertFalse(solutionParameterGroup.isTable)
     assertEquals(2, solutionParameterGroup.additionalData?.size)
     assertEquals("value1", solutionParameterGroup.additionalData?.get("option1"))
     assertEquals(10.0, solutionParameterGroup.additionalData?.get("option2"))
-    assertEquals("this_is_a_parent_id", solutionParameterGroup.parentId)
     assertEquals(mutableListOf("parameterId1", "parameterId2"), solutionParameterGroup.parameters)
   }
 
@@ -1444,17 +1430,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         id = "parameterGroupId",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
-                        isTable = false,
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-                        parentId = "this_is_a_parent_id",
                         parameters = mutableListOf("parameterId1", "parameterId2")),
                     RunTemplateParameterGroupCreateRequest(
                         id = "parameterGroupId2",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
-                        isTable = true,
                         additionalData = mutableMapOf("option2" to "value2", "option3" to 20.0),
-                        parentId = "this_is_a_parent_id2",
                         parameters = mutableListOf("parameterId3", "parameterId4"))))
 
     val newSolution =
@@ -1469,18 +1451,14 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             RunTemplateParameterGroupUpdateRequest(
                 description = "this_is_a_description3",
                 labels = mutableMapOf("fr" to "this_is_a_label3"),
-                isTable = true,
                 additionalData = mutableMapOf("option3" to "value1"),
-                parentId = "this_is_a_parent_id3",
                 parameters = mutableListOf("parameterId13", "parameterId23")))
     assertNotNull(solutionParameterGroup)
     assertEquals(parameterGroupId, solutionParameterGroup.id)
     assertEquals("this_is_a_description3", solutionParameterGroup.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label3"), solutionParameterGroup.labels)
-    assertTrue(solutionParameterGroup.isTable)
     assertEquals(1, solutionParameterGroup.additionalData?.size)
     assertEquals("value1", solutionParameterGroup.additionalData?.get("option3"))
-    assertEquals("this_is_a_parent_id3", solutionParameterGroup.parentId)
     assertEquals(mutableListOf("parameterId13", "parameterId23"), solutionParameterGroup.parameters)
   }
 
@@ -1511,17 +1489,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         id = "parameterGroupId",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
-                        isTable = false,
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-                        parentId = "this_is_a_parent_id",
                         parameters = mutableListOf("parameterId1", "parameterId2")),
                     RunTemplateParameterGroupCreateRequest(
                         id = "parameterGroupId2",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
-                        isTable = true,
                         additionalData = mutableMapOf("option2" to "value2", "option3" to 20.0),
-                        parentId = "this_is_a_parent_id2",
                         parameters = mutableListOf("parameterId3", "parameterId4"))))
 
     val newSolution =
@@ -1583,9 +1557,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             id = "parameterGroupId",
             description = "this_is_a_description",
             labels = mutableMapOf("fr" to "this_is_a_label"),
-            isTable = false,
             additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-            parentId = "this_is_a_parent_id",
             parameters = mutableListOf("parameterId1", "parameterId2"))
 
     solutionApiService.createSolutionParameterGroup(
@@ -1600,11 +1572,9 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("parameterGroupId", newParamGroup.id)
     assertEquals("this_is_a_description", newParamGroup.description)
     assertEquals(mutableMapOf("fr" to "this_is_a_label"), newParamGroup.labels)
-    assertFalse(newParamGroup.isTable)
     assertEquals(2, newParamGroup.additionalData?.size)
     assertEquals("value1", newParamGroup.additionalData?.get("option1"))
     assertEquals(10.0, newParamGroup.additionalData?.get("option2"))
-    assertEquals("this_is_a_parent_id", newParamGroup.parentId)
     assertEquals(mutableListOf("parameterId1", "parameterId2"), newParamGroup.parameters)
   }
 
@@ -1615,9 +1585,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             id = "parameterGroupId",
             description = "this_is_a_description",
             labels = mutableMapOf("fr" to "this_is_a_label"),
-            isTable = false,
             additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-            parentId = "this_is_a_parent_id",
             parameters = mutableListOf("parameterId1", "parameterId2"))
 
     val newSolutionWithParameterGroup =
@@ -1648,17 +1616,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         id = "PaRamEtErGrOuPId",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
-                        isTable = false,
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-                        parentId = "this_is_a_parent_id",
                         parameters = mutableListOf("parameterId1", "parameterId2")),
                     RunTemplateParameterGroupCreateRequest(
                         id = "pArAmEtErGrOuPId",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
-                        isTable = true,
                         additionalData = mutableMapOf("option2" to "value2", "option3" to 20.0),
-                        parentId = "this_is_a_parent_id2",
                         parameters = mutableListOf("parameterId3", "parameterId4"))))
 
     val exception =
