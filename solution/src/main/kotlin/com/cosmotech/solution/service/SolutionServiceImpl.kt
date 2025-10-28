@@ -6,6 +6,7 @@ import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.containerregistry.ContainerRegistryService
 import com.cosmotech.common.events.OrganizationUnregistered
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
+import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmAdmin
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
@@ -114,7 +115,7 @@ class SolutionServiceImpl(
   ): Solution {
     organizationApiService.getVerifiedOrganization(organizationId, PERMISSION_CREATE_CHILDREN)
 
-    val solutionId = idGenerator.generate("solution", prependPrefix = "sol-")
+    val solutionId = generateId("solution", prependPrefix = "sol-")
     val now = Instant.now().toEpochMilli()
     val security =
         csmRbac

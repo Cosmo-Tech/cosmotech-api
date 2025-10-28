@@ -2,21 +2,26 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.id
 
-interface CsmIdGenerator {
+import java.util.UUID
+import kotlin.math.min
+import org.hashids.Hashids
+import org.hashids.Hashids.MAX_NUMBER
 
-  fun generate(scope: String, prependPrefix: String? = null): String
-}
+private const val MIN_HASH_LENGTH = 0
+private const val ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
 
-internal abstract class AbstractCsmIdGenerator : CsmIdGenerator {
-
-  final override fun generate(scope: String, prependPrefix: String?): String {
-    if (scope.isBlank()) {
-      throw IllegalArgumentException("scope must not be blank")
-    }
-
-    val id = this.buildId(scope)
-    return "${prependPrefix ?: "${scope[0].lowercaseChar()}-"}$id"
+fun generateId(scope: String, prependPrefix: String? = null): String {
+  if (scope.isBlank()) {
+    throw IllegalArgumentException("scope must not be blank")
   }
 
-  protected abstract fun buildId(scope: String): String
+  // We do not intend to decode generated IDs afterwards => we can safely generate a unique salt.
+  // This will give us different ids even with equal numbers to encode
+  val id =
+      Hashids("$scope-${UUID.randomUUID()}", MIN_HASH_LENGTH, ALPHABET)
+          .encode(
+              // PROD-8703: encodedElement might be higher than the maximum number supported
+              min(System.nanoTime(), MAX_NUMBER))
+
+  return "${prependPrefix ?: "${scope[0].lowercaseChar()}-"}$id"
 }

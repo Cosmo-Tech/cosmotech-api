@@ -49,8 +49,6 @@ csm:
       base-path: /
       base-url: "[fill-this-value]" # e.g for running it locally http://localhost:8080
       version: latest
-    id-generator:
-      type: hashid
     event-publisher:
       type: in_process
       allowedTenants:

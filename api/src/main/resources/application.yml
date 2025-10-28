@@ -69,8 +69,6 @@ csm:
       base-path: /
       base-url: "http://cosmotech-api-${csm.platform.api.version}:8080"
       version: latest
-    id-generator:
-      type: hashid
     event-publisher:
       type: in_process
     metrics:

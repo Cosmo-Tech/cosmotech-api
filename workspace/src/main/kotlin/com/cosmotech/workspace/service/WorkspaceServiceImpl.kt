@@ -7,6 +7,7 @@ import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.events.OrganizationUnregistered
 import com.cosmotech.common.events.WorkspaceDeleted
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
+import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.common.rbac.PERMISSION_DELETE
@@ -123,7 +124,7 @@ internal class WorkspaceServiceImpl(
       solutionService.getSolution(organizationId, it)
     }
 
-    val workspaceId = idGenerator.generate("workspace")
+    val workspaceId = generateId("workspace")
     val now = Instant.now().toEpochMilli()
     val security =
         csmRbac

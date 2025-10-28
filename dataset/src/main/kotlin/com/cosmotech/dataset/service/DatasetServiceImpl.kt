@@ -5,6 +5,7 @@ package com.cosmotech.dataset.service
 import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.config.DATASET_INPUTS_SCHEMA
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
+import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.common.rbac.PERMISSION_DELETE
@@ -144,7 +145,7 @@ class DatasetServiceImpl(
     logger.debug("Registering Dataset: {}", datasetCreateRequest)
     validDatasetCreateRequest(datasetCreateRequest, filesUploaded)
 
-    val datasetId = idGenerator.generate("dataset")
+    val datasetId = generateId("dataset")
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
     val editInfo = EditInfo(timestamp = now, userId = userId)
@@ -459,7 +460,7 @@ class DatasetServiceImpl(
 
     val createdDatasetPart =
         DatasetPart(
-            id = idGenerator.generate("datasetpart", prependPrefix = "dp-"),
+            id = generateId("datasetpart", prependPrefix = "dp-"),
             datasetId = datasetId,
             name = datasetPartCreateRequest.name,
             description = datasetPartCreateRequest.description,

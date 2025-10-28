@@ -5,6 +5,7 @@ package com.cosmotech.organization.service
 import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.events.OrganizationUnregistered
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
+import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmAdmin
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_DELETE
@@ -86,7 +87,7 @@ class OrganizationServiceImpl(
       "Organization name must not be null or blank"
     }
 
-    val organizationId = idGenerator.generate("organization")
+    val organizationId = generateId("organization")
     val now = Instant.now().toEpochMilli()
     val security =
         csmRbac
