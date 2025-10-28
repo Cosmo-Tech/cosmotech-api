@@ -23,10 +23,11 @@ import com.cosmotech.common.utils.findAllPaginated
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.sanitizeDatasetPartId
 import com.cosmotech.dataset.DatasetApiServiceInterface
-import com.cosmotech.dataset.domain.CreateInfo
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
+import com.cosmotech.dataset.domain.DatasetCreateInfo
 import com.cosmotech.dataset.domain.DatasetCreateRequest
+import com.cosmotech.dataset.domain.DatasetEditInfo
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.domain.DatasetPartCreateRequest
 import com.cosmotech.dataset.domain.DatasetPartTypeEnum
@@ -34,7 +35,6 @@ import com.cosmotech.dataset.domain.DatasetPartUpdateRequest
 import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetUpdateRequest
-import com.cosmotech.dataset.domain.EditInfo
 import com.cosmotech.dataset.part.factories.DatasetPartManagementFactory
 import com.cosmotech.dataset.repositories.DatasetPartRepository
 import com.cosmotech.dataset.repositories.DatasetRepository
@@ -148,9 +148,10 @@ class DatasetServiceImpl(
     val datasetId = generateId("dataset")
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
-    val editInfo = EditInfo(timestamp = now, userId = userId)
+    val editInfo = DatasetEditInfo(timestamp = now, userId = userId)
     val createInfo =
-        CreateInfo(timestamp = now, userId = userId, runnerId = datasetCreateRequest.runnerId)
+        DatasetCreateInfo(
+            timestamp = now, userId = userId, runnerId = datasetCreateRequest.runnerId)
     val security =
         csmRbac
             .initSecurity(datasetCreateRequest.security.toGenericSecurity(datasetId))
@@ -342,7 +343,7 @@ class DatasetServiceImpl(
             parts = newDatasetParts ?: previousDataset.parts,
             createInfo = previousDataset.createInfo,
             updateInfo =
-                EditInfo(
+                DatasetEditInfo(
                     timestamp = Instant.now().toEpochMilli(),
                     userId = getCurrentAccountIdentifier(csmPlatformProperties)),
             security = datasetUpdateRequest.security ?: previousDataset.security)
@@ -409,7 +410,7 @@ class DatasetServiceImpl(
 
   fun save(dataset: Dataset): Dataset {
     dataset.updateInfo =
-        EditInfo(
+        DatasetEditInfo(
             timestamp = Instant.now().toEpochMilli(),
             userId = getCurrentAccountIdentifier(csmPlatformProperties))
     return datasetRepository.save(dataset)
@@ -456,7 +457,7 @@ class DatasetServiceImpl(
     logger.debug("Registering DatasetPart: {}", datasetPartCreateRequest)
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
-    val editInfo = EditInfo(timestamp = now, userId = userId)
+    val editInfo = DatasetEditInfo(timestamp = now, userId = userId)
 
     val createdDatasetPart =
         DatasetPart(
@@ -803,7 +804,7 @@ class DatasetServiceImpl(
             }
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
-    val editInfo = EditInfo(timestamp = now, userId = userId)
+    val editInfo = DatasetEditInfo(timestamp = now, userId = userId)
 
     dataset.parts
         .find { it.id == datasetPartId }
@@ -848,7 +849,7 @@ class DatasetServiceImpl(
 
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
-    val editInfo = EditInfo(timestamp = now, userId = userId)
+    val editInfo = DatasetEditInfo(timestamp = now, userId = userId)
     val datasetPartUpdater = datasetPart.copy()
     dataset.parts
         .find { it.id == datasetPartId }

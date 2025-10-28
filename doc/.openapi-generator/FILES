@@ -10,11 +10,12 @@ Models/AboutInfoVersion.md
 Models/ComponentRolePermissions.md
 Models/ContainerResourceSizeInfo.md
 Models/ContainerResourceSizing.md
-Models/CreateInfo.md
 Models/CreatedRun.md
 Models/Dataset.md
 Models/DatasetAccessControl.md
+Models/DatasetCreateInfo.md
 Models/DatasetCreateRequest.md
+Models/DatasetEditInfo.md
 Models/DatasetPart.md
 Models/DatasetPartCreateRequest.md
 Models/DatasetPartTypeEnum.md
@@ -22,7 +23,6 @@ Models/DatasetPartUpdateRequest.md
 Models/DatasetRole.md
 Models/DatasetSecurity.md
 Models/DatasetUpdateRequest.md
-Models/EditInfo.md
 Models/LastRunInfo.md
 Models/Organization.md
 Models/OrganizationAccessControl.md

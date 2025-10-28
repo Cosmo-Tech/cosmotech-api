@@ -1,4 +1,4 @@
-# EditInfo
+# DatasetEditInfo
 ## Properties
 
 | Name | Type | Description | Notes |

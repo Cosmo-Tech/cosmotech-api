@@ -31,12 +31,6 @@ entity ContainerResourceSizing {
     * limits: ContainerResourceSizeInfo
 }
 
-entity CreateInfo {
-    * timestamp: Long
-    * userId: String
-    runnerId: String
-}
-
 entity CreatedRun {
     * id: String
 }
@@ -50,14 +44,20 @@ entity Dataset {
     * tags: List<String>
     additionalData: Map
     * parts: List<DatasetPart>
-    * createInfo: CreateInfo
-    * updateInfo: EditInfo
+    * createInfo: DatasetCreateInfo
+    * updateInfo: DatasetEditInfo
     * security: DatasetSecurity
 }
 
 entity DatasetAccessControl {
     * id: String
     * role: String
+}
+
+entity DatasetCreateInfo {
+    * timestamp: Long
+    * userId: String
+    runnerId: String
 }
 
 entity DatasetCreateRequest {
@@ -68,6 +68,11 @@ entity DatasetCreateRequest {
     parts: List<DatasetPartCreateRequest>
     security: DatasetSecurity
     runnerId: String
+}
+
+entity DatasetEditInfo {
+    * timestamp: Long
+    * userId: String
 }
 
 entity DatasetPart {
@@ -81,8 +86,8 @@ entity DatasetPart {
     * organizationId: String
     * workspaceId: String
     * datasetId: String
-    * createInfo: EditInfo
-    * updateInfo: EditInfo
+    * createInfo: DatasetEditInfo
+    * updateInfo: DatasetEditInfo
 }
 
 entity DatasetPartCreateRequest {
@@ -120,11 +125,6 @@ entity DatasetUpdateRequest {
     additionalData: Map
     parts: List<DatasetPartCreateRequest>
     security: DatasetSecurity
-}
-
-entity EditInfo {
-    * timestamp: Long
-    * userId: String
 }
 
 entity LastRunInfo {
@@ -639,8 +639,8 @@ RunTemplateCreateRequest -- RunTemplateResourceSizing : runSizing
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
 RunStatusNode -- RunResourceRequested : resourcesDuration
 WorkspaceUpdateRequest -- WorkspaceSolution : solution
-DatasetPart -- EditInfo : createInfo
-DatasetPart -- EditInfo : updateInfo
+DatasetPart -- DatasetEditInfo : createInfo
+DatasetPart -- DatasetEditInfo : updateInfo
 Solution -- SolutionEditInfo : createInfo
 Solution -- SolutionEditInfo : updateInfo
 Solution -- "0..*" RunTemplateParameter : parameters
@@ -648,8 +648,8 @@ Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates
 Solution -- SolutionSecurity : security
 Dataset -- "0..*" DatasetPart : parts
-Dataset -- CreateInfo : createInfo
-Dataset -- EditInfo : updateInfo
+Dataset -- DatasetCreateInfo : createInfo
+Dataset -- DatasetEditInfo : updateInfo
 Dataset -- DatasetSecurity : security
 Run -- RunEditInfo : createInfo
 Run -- "0..*" RunTemplateParameterValue : parametersValues

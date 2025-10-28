@@ -1,4 +1,4 @@
-# CreateInfo
+# DatasetCreateInfo
 ## Properties
 
 | Name | Type | Description | Notes |

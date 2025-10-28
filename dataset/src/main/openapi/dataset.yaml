@@ -807,11 +807,11 @@ components:
         createInfo:
           description: The details of the Dataset creation
           allOf:
-            - $ref: '#/components/schemas/CreateInfo'
+            - $ref: '#/components/schemas/DatasetCreateInfo'
         updateInfo:
           description: The details of the Dataset last update
           allOf:
-            - $ref: '#/components/schemas/EditInfo'
+            - $ref: '#/components/schemas/DatasetEditInfo'
         security:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
@@ -934,11 +934,11 @@ components:
         createInfo:
           description: The details of the Dataset creation
           allOf:
-            - $ref: '#/components/schemas/EditInfo'
+            - $ref: '#/components/schemas/DatasetEditInfo'
         updateInfo:
           description: The details of the Dataset last update
           allOf:
-            - $ref: '#/components/schemas/EditInfo'
+            - $ref: '#/components/schemas/DatasetEditInfo'
       required:
         - id
         - name
@@ -1065,7 +1065,7 @@ components:
       required:
         - role
 
-    EditInfo:
+    DatasetEditInfo:
       type: object
       properties:
         timestamp:
@@ -1079,7 +1079,7 @@ components:
         - timestamp
         - userId
 
-    CreateInfo:
+    DatasetCreateInfo:
       type: object
       properties:
         timestamp:
