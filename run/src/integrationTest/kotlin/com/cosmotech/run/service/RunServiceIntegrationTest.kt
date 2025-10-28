@@ -8,6 +8,7 @@ import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.rbac.ROLE_ADMIN
 import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.tests.CsmTestBase
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
@@ -81,6 +82,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
 
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_READER_USER = "test.user@cosmotech.com"
+  val defaultGroup = listOf("myTestGroup")
   private val logger = LoggerFactory.getLogger(RunServiceIntegrationTest::class.java)
 
   @MockK(relaxed = true) private lateinit var containerFactory: RunContainerFactory
@@ -113,6 +115,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
   fun setUp() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAccountGroups(any()) } returns defaultGroup
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 

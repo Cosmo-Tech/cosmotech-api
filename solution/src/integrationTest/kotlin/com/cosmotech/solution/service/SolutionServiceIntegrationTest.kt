@@ -13,6 +13,7 @@ import com.cosmotech.common.rbac.ROLE_USER
 import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.common.tests.CsmTestBase
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
@@ -64,6 +65,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
   private val logger = LoggerFactory.getLogger(SolutionServiceIntegrationTest::class.java)
 
   val fileName = "test_solution_file.txt"
+  val defaultGroup = listOf("myTestGroup")
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
@@ -87,6 +89,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
         solutionApiService, "containerRegistryService", containerRegistryService)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAccountGroups(any()) } returns defaultGroup
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 
