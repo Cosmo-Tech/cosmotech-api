@@ -124,7 +124,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                       solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -161,7 +161,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                       solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -197,7 +197,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                       solutionApiService.listSolutions(organizationSaved.id, null, null)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -233,7 +233,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                     }
 
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_CREATE_CHILDREN",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_CREATE_CHILDREN",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -269,7 +269,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                       solutionApiService.deleteSolution(organizationSaved.id, solutionSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -307,7 +307,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                     }
 
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_DELETE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_DELETE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -348,7 +348,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -391,7 +391,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                     }
 
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -431,7 +431,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           SolutionAccessControl("user", ROLE_USER))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -474,7 +474,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                     }
 
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -514,7 +514,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -553,7 +553,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                     }
 
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -591,7 +591,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -630,7 +630,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                     }
 
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -668,7 +668,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -707,7 +707,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                     }
 
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -748,7 +748,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           SolutionRole(ROLE_USER))
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -792,7 +792,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           SolutionRole(ROLE_USER))
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -833,7 +833,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "runTemplate")
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -872,7 +872,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "runTemplate")
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -912,7 +912,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "runTemplate", runTemplate)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -953,7 +953,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "runTemplate", runTemplate)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -991,7 +991,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                       solutionApiService.getSolutionSecurity(organizationSaved.id, solutionSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1029,7 +1029,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                     }
 
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1068,7 +1068,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                               organizationSaved.id, solutionSaved.id, SolutionRole(ROLE_VIEWER))
                         }
                     assertEquals(
-                        "RBAC ${organizationSaved.id} - Entity does not have permission $PERMISSION_READ",
+                        "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
                         exception.message)
                   } else {
                     assertDoesNotThrow {
@@ -1108,7 +1108,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                     }
 
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1147,7 +1147,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1185,7 +1185,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "parameter")
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1227,7 +1227,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, parameterToCreate)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1268,7 +1268,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "parameter", parameterToUpdate)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1307,7 +1307,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "parameter")
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1346,7 +1346,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1385,7 +1385,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "group")
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1426,7 +1426,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, parameterGroupToCreate)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1468,7 +1468,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "group", parameterGroupToUpdate)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1507,7 +1507,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "group")
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1545,7 +1545,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                       solutionApiService.listRunTemplates(organizationSaved.id, solutionSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1583,7 +1583,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "runTemplate")
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1624,7 +1624,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, runTemplateToCreate)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1668,7 +1668,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           runTemplateToUpdate)
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1707,7 +1707,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, solutionSaved.id, "runTemplate")
                     }
                 assertEquals(
-                    "RBAC ${solutionSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {

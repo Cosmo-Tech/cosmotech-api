@@ -120,7 +120,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                       organizationApiService.getOrganization(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow { organizationApiService.getOrganization(organization.id) }
@@ -150,7 +150,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                       organizationApiService.deleteOrganization(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_DELETE",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_DELETE",
                     exception.message)
               } else {
                 assertDoesNotThrow { organizationApiService.deleteOrganization(organization.id) }
@@ -181,7 +181,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                           organization.id, OrganizationUpdateRequest("name"))
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -214,7 +214,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                       organizationApiService.getOrganizationPermissions(organization.id, role)
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else
                   assertDoesNotThrow {
@@ -245,7 +245,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                       organizationApiService.getOrganizationSecurity(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -278,7 +278,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                           organization.id, OrganizationRole(role))
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -312,7 +312,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                           organization.id, OrganizationAccessControl("id", role))
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -346,7 +346,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                           organization.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -380,7 +380,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                           organization.id, TEST_USER_MAIL)
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -414,7 +414,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                           organization.id, TEST_USER_MAIL, OrganizationRole(role))
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -447,7 +447,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
                       organizationApiService.listOrganizationSecurityUsers(organization.id)
                     }
                 assertEquals(
-                    "RBAC ${organization.id} - Entity does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${organization.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {

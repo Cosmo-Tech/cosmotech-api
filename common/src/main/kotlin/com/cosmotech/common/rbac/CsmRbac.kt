@@ -38,12 +38,12 @@ open class CsmRbac(
 
     // Make sure we have at least one admin
     if (!objectSecurity.accessControlList.any { it.role == ROLE_ADMIN }) {
-      val currentEntityId = getCurrentAccountIdentifier(csmPlatformProperties)
-      val currentEntityACL = objectSecurity.accessControlList.find { it.id == currentEntityId }
-      if (currentEntityACL != null) {
-        currentEntityACL.role = ROLE_ADMIN
+      val currentUserId = getCurrentAccountIdentifier(csmPlatformProperties)
+      val currentUserACL = objectSecurity.accessControlList.find { it.id == currentUserId }
+      if (currentUserACL != null) {
+        currentUserACL.role = ROLE_ADMIN
       } else {
-        objectSecurity.accessControlList.add(RbacAccessControl(currentEntityId, ROLE_ADMIN))
+        objectSecurity.accessControlList.add(RbacAccessControl(currentUserId, ROLE_ADMIN))
       }
     }
 
@@ -57,7 +57,7 @@ open class CsmRbac(
   ) {
     if (!this.check(rbacSecurity, permission, rolesDefinition))
         throw CsmAccessForbiddenException(
-            "RBAC ${rbacSecurity.id} - Entity does not have permission $permission")
+            "RBAC ${rbacSecurity.id} - User does not have permission $permission")
   }
 
   fun check(
@@ -206,15 +206,14 @@ open class CsmRbac(
     return isAdmin
   }
 
-  internal fun verifyEntity(
+  internal fun verifyUser(
       rbacSecurity: RbacSecurity,
       permission: String,
       rolesDefinition: RolesDefinition,
       user: String,
       groups: List<String>
   ): Boolean {
-    logger.debug(
-        "RBAC ${rbacSecurity.id} - Verifying $user or one of $groups has permission in ACL: $permission")
+    logger.debug("RBAC ${rbacSecurity.id} - Verifying $user has permission in ACL: $permission")
     val isAuthorized =
         if (rbacSecurity.accessControlList.any() { it.id == user }) {
           verifyPermissionFromRole(permission, getEntityRole(rbacSecurity, user), rolesDefinition)
@@ -225,8 +224,7 @@ open class CsmRbac(
               verifyPermissionFromRole(
                   permission, getEntityRole(rbacSecurity, rbacSecurity.default), rolesDefinition)
         }
-    logger.debug(
-        "RBAC ${rbacSecurity.id} - $user or one of $groups has permission $permission in ACL: $isAuthorized")
+    logger.debug("RBAC ${rbacSecurity.id} - $user has permission $permission in ACL: $isAuthorized")
     return isAuthorized
   }
 
@@ -251,7 +249,7 @@ open class CsmRbac(
       groups: List<String>
   ): Boolean {
     return (this.verifyDefault(rbacSecurity, permission, rolesDefinition) ||
-        this.verifyEntity(rbacSecurity, permission, rolesDefinition, user, groups))
+        this.verifyUser(rbacSecurity, permission, rolesDefinition, user, groups))
   }
 
   internal fun verifyPermissionFromRole(
