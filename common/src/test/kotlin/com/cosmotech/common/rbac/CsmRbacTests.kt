@@ -274,19 +274,18 @@ class CsmRbacTests {
 
   @Test
   fun `verify permission read for user writer OK`() {
-    assertTrue(
-        rbac.verifyEntity(rbacSecurity, PERM_READ, rolesDefinition, USER_READER, emptyList()))
+    assertTrue(rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_READER, emptyList()))
   }
 
   @Test
   fun `verify permission write for user writer KO`() {
     assertFalse(
-        rbac.verifyEntity(rbacSecurity, PERM_WRITE, rolesDefinition, USER_READER, emptyList()))
+        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_READER, emptyList()))
   }
 
   @Test
   fun `verify permission read for user none KO`() {
-    assertFalse(rbac.verifyEntity(rbacSecurity, PERM_READ, rolesDefinition, USER_NONE, emptyList()))
+    assertFalse(rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NONE, emptyList()))
   }
 
   @Test
@@ -303,14 +302,14 @@ class CsmRbacTests {
   fun `add new reader user and verify read permission OK`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, USER_READER_ROLE, rolesDefinition)
     assertTrue(
-        rbac.verifyEntity(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()))
+        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()))
   }
 
   @Test
   fun `add new reader user and verify write permission KO`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, USER_READER_ROLE, rolesDefinition)
     assertFalse(
-        rbac.verifyEntity(rbacSecurity, PERM_WRITE, rolesDefinition, USER_NEW_READER, emptyList()))
+        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_NEW_READER, emptyList()))
   }
 
   @Test
@@ -340,7 +339,7 @@ class CsmRbacTests {
         rbac.addEntityRole(
             parentRbacSecurity, rbacSecurity, USER_IN_PARENT, USER_READER_ROLE, rolesDefinition)
     assertTrue(
-        rbac.verifyEntity(rbacSecurity, PERM_READ, rolesDefinition, USER_IN_PARENT, emptyList()))
+        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_IN_PARENT, emptyList()))
   }
 
   @Test
@@ -350,7 +349,7 @@ class CsmRbacTests {
     val rbacSecurity =
         rbac.addEntityRole(
             parentRbacSecurity, rbacSecurity, USER_NOTIN, USER_READER_ROLE, rolesDefinition)
-    assertTrue(rbac.verifyEntity(rbacSecurity, PERM_READ, rolesDefinition, USER_NOTIN, emptyList()))
+    assertTrue(rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NOTIN, emptyList()))
   }
 
   @Test
@@ -360,7 +359,7 @@ class CsmRbacTests {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, USER_READER_ROLE, rolesDefinition)
     rbac.removeEntity(rbacSecurity, USER_NEW_READER, rolesDefinition)
     assertFalse(
-        rbac.verifyEntity(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()))
+        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()))
   }
 
   @Test
@@ -370,7 +369,7 @@ class CsmRbacTests {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, USER_READER_ROLE, rolesDefinition)
     rbac.removeEntity(rbacSecurity, USER_NEW_READER, rolesDefinition)
     assertTrue(
-        rbac.verifyEntity(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()))
+        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()))
   }
 
   @Test
@@ -380,21 +379,21 @@ class CsmRbacTests {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, USER_READER_ROLE, rolesDefinition)
     rbac.removeEntity(rbacSecurity, USER_NEW_READER, rolesDefinition)
     assertTrue(
-        rbac.verifyEntity(rbacSecurity, PERM_ADMIN, rolesDefinition, USER_NEW_READER, emptyList()))
+        rbac.verifyUser(rbacSecurity, PERM_ADMIN, rolesDefinition, USER_NEW_READER, emptyList()))
   }
 
   @Test
   fun `update existing new user and verify write permission OK`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, USER_WRITER_ROLE, rolesDefinition)
     assertTrue(
-        rbac.verifyEntity(rbacSecurity, PERM_WRITE, rolesDefinition, USER_NEW_READER, emptyList()))
+        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_NEW_READER, emptyList()))
   }
 
   @Test
   fun `update existing new user and verify read permission OK`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, USER_READER_ROLE, rolesDefinition)
     assertTrue(
-        rbac.verifyEntity(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()))
+        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()))
   }
 
   @Test
