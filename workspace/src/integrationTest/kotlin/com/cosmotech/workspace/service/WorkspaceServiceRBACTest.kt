@@ -18,6 +18,7 @@ import com.cosmotech.common.rbac.ROLE_USER
 import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.common.tests.CsmTestBase
 import com.cosmotech.common.utils.ResourceScanner
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
@@ -72,6 +73,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
 
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
+  val defaultGroup = listOf("myTestGroup")
 
   @RelaxedMockK private lateinit var resource: MultipartFile
 
@@ -96,6 +98,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
     ReflectionTestUtils.setField(workspaceApiService, "s3Template", s3Template)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAccountGroups(any()) } returns defaultGroup
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 

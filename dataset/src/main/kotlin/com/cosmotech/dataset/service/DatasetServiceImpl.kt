@@ -120,7 +120,7 @@ class DatasetServiceImpl(
     require(!users.contains(datasetAccessControl.id)) { "User is already in this Dataset security" }
 
     val rbacSecurity =
-        csmRbac.setUserRole(
+        csmRbac.setEntityRole(
             dataset.security.toGenericSecurity(datasetId),
             datasetAccessControl.id,
             datasetAccessControl.role)
@@ -225,7 +225,7 @@ class DatasetServiceImpl(
     val dataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ_SECURITY)
 
-    return csmRbac.getUsers(dataset.security.toGenericSecurity(datasetId))
+    return csmRbac.getEntities(dataset.security.toGenericSecurity(datasetId))
   }
 
   override fun listDatasets(
@@ -283,7 +283,8 @@ class DatasetServiceImpl(
 
     val dataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.removeUser(dataset.security.toGenericSecurity(datasetId), identityId)
+    val rbacSecurity =
+        csmRbac.removeEntity(dataset.security.toGenericSecurity(datasetId), identityId)
     dataset.security = rbacSecurity.toResourceSecurity()
     save(dataset)
   }
@@ -371,12 +372,12 @@ class DatasetServiceImpl(
 
     val dataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE_SECURITY)
-    csmRbac.checkUserExists(
+    csmRbac.checkEntityExists(
         dataset.security.toGenericSecurity(datasetId),
         identityId,
         "User '$identityId' not found in dataset $datasetId")
     val rbacSecurity =
-        csmRbac.setUserRole(
+        csmRbac.setEntityRole(
             dataset.security.toGenericSecurity(datasetId), identityId, datasetRole.role)
     dataset.security = rbacSecurity.toResourceSecurity()
     save(dataset)

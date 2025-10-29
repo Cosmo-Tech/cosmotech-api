@@ -23,6 +23,7 @@ import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.common.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.common.tests.CsmTestBase
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
@@ -84,6 +85,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
   var startTime: Long = 0
 
   val defaultName = "my.account-tester@cosmotech.com"
+  val defaultGroup = listOf("myTestGroup")
 
   @BeforeAll
   fun globalSetup() {
@@ -94,6 +96,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
   fun setUp() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns defaultName
+    every { getCurrentAccountGroups(any()) } returns defaultGroup
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Organization::class.java)
@@ -2229,6 +2232,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
     mockkStatic(::getCurrentAuthentication)
     every { getCurrentAuthentication() } returns mockk<BearerTokenAuthentication>()
     every { getCurrentAccountIdentifier(any()) } returns TEST_USER_ID
+    every { getCurrentAccountGroups(any()) } returns defaultGroup
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
   }
@@ -2238,6 +2242,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
     mockkStatic(::getCurrentAuthentication)
     every { getCurrentAuthentication() } returns mockk<BearerTokenAuthentication>()
     every { getCurrentAccountIdentifier(any()) } returns TEST_ADMIN_USER_ID
+    every { getCurrentAccountGroups(any()) } returns defaultGroup
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
   }
@@ -2245,6 +2250,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
   /** Run a test with different Organization.User */
   private fun runAsDifferentOrganizationUser() {
     every { getCurrentAccountIdentifier(any()) } returns OTHER_TEST_USER_ID
+    every { getCurrentAccountGroups(any()) } returns defaultGroup
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
   }

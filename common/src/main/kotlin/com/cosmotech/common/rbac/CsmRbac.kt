@@ -8,6 +8,7 @@ import com.cosmotech.common.exceptions.CsmClientException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,7 +30,8 @@ open class CsmRbac(
     val accessControls = mutableListOf<String>()
     objectSecurity.accessControlList.forEach {
       if (accessControls.contains(it.id)) {
-        throw IllegalArgumentException("User ${it.id} is referenced multiple times in the security")
+        throw IllegalArgumentException(
+            "Entity ${it.id} is referenced multiple times in the security")
       }
       accessControls.add(it.id)
     }
@@ -63,17 +65,19 @@ open class CsmRbac(
       permission: String,
       rolesDefinition: RolesDefinition = getCommonRolesDefinition()
   ): Boolean {
-    logger.info("RBAC ${rbacSecurity.id} - Verifying permission $permission for user")
+    logger.info("RBAC ${rbacSecurity.id} - Verifying permission $permission for entity")
     if (!this.csmPlatformProperties.rbac.enabled) {
       logger.debug("RBAC ${rbacSecurity.id} - RBAC check not enabled")
       return true
     }
-    var userIsAdminOrHasPermission = this.isAdmin(rbacSecurity, rolesDefinition)
-    if (!userIsAdminOrHasPermission) {
-      val user = getCurrentAccountIdentifier(this.csmPlatformProperties)
-      userIsAdminOrHasPermission = this.verifyRbac(rbacSecurity, permission, rolesDefinition, user)
+    var entityIsAdminOrHasPermission = this.isAdmin(rbacSecurity, rolesDefinition)
+    if (!entityIsAdminOrHasPermission) {
+      val entity = getCurrentAccountIdentifier(this.csmPlatformProperties)
+      val groups = getCurrentAccountGroups(this.csmPlatformProperties)
+      entityIsAdminOrHasPermission =
+          this.verifyRbac(rbacSecurity, permission, rolesDefinition, entity, groups)
     }
-    return userIsAdminOrHasPermission
+    return entityIsAdminOrHasPermission
   }
 
   fun setDefault(
@@ -89,33 +93,35 @@ open class CsmRbac(
     return rbacSecurity
   }
 
-  fun addUserRole(
+  fun addEntityRole(
       parentRbacSecurity: RbacSecurity,
       rbacSecurity: RbacSecurity,
-      userId: String,
+      entityId: String,
       role: String,
       rolesDefinition: RolesDefinition = getCommonRolesDefinition()
   ): RbacSecurity {
 
     if (!isAdmin(rbacSecurity, rolesDefinition)) {
-      this.checkUserExists(
+      this.checkEntityExists(
           parentRbacSecurity,
-          userId,
-          "User $userId not found in parent ${parentRbacSecurity.id} component")
+          entityId,
+          "Entity $entityId not found in parent ${parentRbacSecurity.id} component")
     }
-    return setUserRole(rbacSecurity, userId, role, rolesDefinition)
+    return setEntityRole(rbacSecurity, entityId, role, rolesDefinition)
   }
 
-  fun setUserRole(
+  fun setEntityRole(
       rbacSecurity: RbacSecurity,
-      userId: String,
+      entityId: String,
       role: String,
       rolesDefinition: RolesDefinition = getCommonRolesDefinition()
   ): RbacSecurity {
-    logger.info("RBAC ${rbacSecurity.id} - Setting user $userId roles")
+    logger.info("RBAC ${rbacSecurity.id} - Setting entity $entityId roles")
     this.verifyRoleOrThrow(rbacSecurity, role, rolesDefinition)
     val currentACLRole =
-        rbacSecurity.accessControlList.firstOrNull { it.id.lowercase() == userId.lowercase() }?.role
+        rbacSecurity.accessControlList
+            .firstOrNull { it.id.lowercase() == entityId.lowercase() }
+            ?.role
     val adminRole = this.getAdminRole(rolesDefinition)
     if (currentACLRole == adminRole &&
         role != adminRole &&
@@ -124,48 +130,48 @@ open class CsmRbac(
           "RBAC ${rbacSecurity.id} - It is forbidden to unset the last administrator")
     }
     val accessList = rbacSecurity.accessControlList
-    val userAccess = accessList.find { it.id == userId }
-    if (userAccess == null) {
-      accessList.add(RbacAccessControl(userId, role))
+    val entityAccess = accessList.find { it.id == entityId }
+    if (entityAccess == null) {
+      accessList.add(RbacAccessControl(entityId, role))
     } else {
-      userAccess.role = role
+      entityAccess.role = role
     }
     return rbacSecurity
   }
 
-  fun getUsers(rbacSecurity: RbacSecurity): List<String> {
+  fun getEntities(rbacSecurity: RbacSecurity): List<String> {
     return (rbacSecurity.accessControlList.map { it.id })
   }
 
-  fun getAccessControl(rbacSecurity: RbacSecurity, userId: String): RbacAccessControl {
-    return rbacSecurity.accessControlList.find { it.id == userId }
+  fun getAccessControl(rbacSecurity: RbacSecurity, entityId: String): RbacAccessControl {
+    return rbacSecurity.accessControlList.find { it.id == entityId }
         ?: throw CsmResourceNotFoundException(
-            "User $userId not found in ${rbacSecurity.id} component")
+            "Entity $entityId not found in ${rbacSecurity.id} component")
   }
 
-  fun checkUserExists(
+  fun checkEntityExists(
       rbacSecurity: RbacSecurity,
-      userId: String,
-      exceptionUserNotFoundMessage: String
+      entityId: String,
+      exceptionEntityNotFoundMessage: String
   ): RbacAccessControl {
-    return rbacSecurity.accessControlList.find { it.id == userId }
-        ?: throw CsmResourceNotFoundException(exceptionUserNotFoundMessage)
+    return rbacSecurity.accessControlList.find { it.id == entityId }
+        ?: throw CsmResourceNotFoundException(exceptionEntityNotFoundMessage)
   }
 
-  fun removeUser(
+  fun removeEntity(
       rbacSecurity: RbacSecurity,
-      userId: String,
+      entityId: String,
       rolesDefinition: RolesDefinition = getCommonRolesDefinition()
   ): RbacSecurity {
-    logger.info("RBAC ${rbacSecurity.id} - Removing user $userId from security")
-    checkUserExists(rbacSecurity, userId, "User $userId not found")
-    val role = this.getUserRole(rbacSecurity, userId)
+    logger.info("RBAC ${rbacSecurity.id} - Removing entity $entityId from security")
+    checkEntityExists(rbacSecurity, entityId, "Entity $entityId not found")
+    val role = this.getEntityRole(rbacSecurity, entityId)
     if (role == (this.getAdminRole(rolesDefinition)) &&
         this.getAdminCount(rbacSecurity, rolesDefinition) == 1) {
       throw CsmAccessForbiddenException(
           "RBAC ${rbacSecurity.id} - It is forbidden to remove the last administrator")
     }
-    rbacSecurity.accessControlList.removeIf { it.id == userId }
+    rbacSecurity.accessControlList.removeIf { it.id == entityId }
     return rbacSecurity
   }
 
@@ -173,7 +179,8 @@ open class CsmRbac(
     var isAdmin = this.isAdminToken(rbacSecurity)
     if (!isAdmin) {
       val user = getCurrentAccountIdentifier(this.csmPlatformProperties)
-      isAdmin = this.verifyAdminRole(rbacSecurity, user, rolesDefinition)
+      val groups = getCurrentAccountGroups(this.csmPlatformProperties)
+      isAdmin = this.verifyAdminRole(rbacSecurity, user, groups, rolesDefinition)
     }
     return isAdmin
   }
@@ -181,10 +188,20 @@ open class CsmRbac(
   internal fun verifyAdminRole(
       rbacSecurity: RbacSecurity,
       user: String,
+      groups: List<String>,
       rolesDefinition: RolesDefinition
   ): Boolean {
     logger.debug("RBAC ${rbacSecurity.id} - Verifying if $user has default admin rbac role")
-    val isAdmin = this.getUserRole(rbacSecurity, user) == this.getAdminRole(rolesDefinition)
+    val isAdmin =
+        if (rbacSecurity.accessControlList.any() { it.id == user }) {
+          this.getEntityRole(rbacSecurity, user) == this.getAdminRole(rolesDefinition)
+        } else {
+          groups.any {
+            this.getEntityRole(rbacSecurity, it) == this.getAdminRole(rolesDefinition)
+          } ||
+              this.getEntityRole(rbacSecurity, rbacSecurity.default) ==
+                  this.getAdminRole(rolesDefinition)
+        }
     logger.debug("RBAC ${rbacSecurity.id} - $user has default admin rbac role: $isAdmin")
     return isAdmin
   }
@@ -193,11 +210,20 @@ open class CsmRbac(
       rbacSecurity: RbacSecurity,
       permission: String,
       rolesDefinition: RolesDefinition,
-      user: String
+      user: String,
+      groups: List<String>
   ): Boolean {
     logger.debug("RBAC ${rbacSecurity.id} - Verifying $user has permission in ACL: $permission")
     val isAuthorized =
-        this.verifyPermissionFromRole(permission, getUserRole(rbacSecurity, user), rolesDefinition)
+        if (rbacSecurity.accessControlList.any() { it.id == user }) {
+          verifyPermissionFromRole(permission, getEntityRole(rbacSecurity, user), rolesDefinition)
+        } else {
+          groups.any {
+            verifyPermissionFromRole(permission, getEntityRole(rbacSecurity, it), rolesDefinition)
+          } ||
+              verifyPermissionFromRole(
+                  permission, getEntityRole(rbacSecurity, rbacSecurity.default), rolesDefinition)
+        }
     logger.debug("RBAC ${rbacSecurity.id} - $user has permission $permission in ACL: $isAuthorized")
     return isAuthorized
   }
@@ -219,10 +245,11 @@ open class CsmRbac(
       rbacSecurity: RbacSecurity,
       permission: String,
       rolesDefinition: RolesDefinition,
-      user: String
+      user: String,
+      groups: List<String>
   ): Boolean {
     return (this.verifyDefault(rbacSecurity, permission, rolesDefinition) ||
-        this.verifyUser(rbacSecurity, permission, rolesDefinition, user))
+        this.verifyUser(rbacSecurity, permission, rolesDefinition, user, groups))
   }
 
   internal fun verifyPermissionFromRole(
@@ -241,9 +268,9 @@ open class CsmRbac(
     return rolesDefinition[role] ?: listOf()
   }
 
-  internal fun getUserRole(rbacSecurity: RbacSecurity, user: String): String {
+  internal fun getEntityRole(rbacSecurity: RbacSecurity, entity: String): String {
     return rbacSecurity.accessControlList
-        .firstOrNull { it.id.lowercase() == user.lowercase() }
+        .firstOrNull { it.id.lowercase() == entity.lowercase() }
         ?.role ?: rbacSecurity.default
   }
 
@@ -263,8 +290,8 @@ open class CsmRbac(
         throw CsmClientException("RBAC ${rbacSecurity.id} - Role $role does not exist")
   }
 
-  internal fun verifyPermission(permission: String, userPermissions: List<String>): Boolean {
-    return userPermissions.contains(permission)
+  internal fun verifyPermission(permission: String, entityPermissions: List<String>): Boolean {
+    return entityPermissions.contains(permission)
   }
 
   internal fun verifyPermissionFromRoles(
@@ -276,9 +303,9 @@ open class CsmRbac(
   }
 
   internal fun isAdminToken(rbacSecurity: RbacSecurity): Boolean {
-    logger.debug("RBAC ${rbacSecurity.id} - Verifying if user has platform admin role in token")
+    logger.debug("RBAC ${rbacSecurity.id} - Verifying if entity has platform admin role in token")
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
-    logger.debug("RBAC ${rbacSecurity.id} - user has platform admin role in token: $isAdmin")
+    logger.debug("RBAC ${rbacSecurity.id} - entity has platform admin role in token: $isAdmin")
     return isAdmin
   }
 

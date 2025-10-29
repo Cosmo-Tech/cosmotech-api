@@ -11,6 +11,7 @@ import com.cosmotech.common.rbac.ROLE_EDITOR
 import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.rbac.ROLE_USER
 import com.cosmotech.common.tests.CsmTestBase
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
@@ -95,6 +96,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   val UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME = "wrong_mimetype.yaml"
   val INVENTORY_SOURCE_FILE_NAME = "product_inventory.csv"
   val WRONG_ORIGINAL_FILE_NAME = "../../wrong_name_pattern.csv"
+  val defaultGroup = listOf("myTestGroup")
 
   private val logger = LoggerFactory.getLogger(DatasetServiceIntegrationTest::class.java)
 
@@ -119,6 +121,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   fun setUp() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAccountGroups(any()) } returns defaultGroup
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 
