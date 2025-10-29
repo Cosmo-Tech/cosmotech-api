@@ -183,7 +183,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, workspaceSaved.id, datasetCreated.id)
                     }
                 assertEquals(
-                    "RBAC ${datasetCreated.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetCreated.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -231,7 +231,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           DatasetAccessControl("NewUser", role))
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -275,7 +275,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, workspaceSaved.id, listOf(), null, null)
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -320,7 +320,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, workspaceSaved.id, datasetSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_DELETE",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_DELETE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -368,7 +368,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           CONNECTED_DEFAULT_USER)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -427,7 +427,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                               organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id} - Entity does not have permission $PERMISSION_CREATE_CHILDREN",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_CREATE_CHILDREN",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -476,7 +476,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           CONNECTED_DEFAULT_USER)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -524,7 +524,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, workspaceSaved.id, datasetSaved.id)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_READ_SECURITY",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -568,7 +568,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, workspaceSaved.id, null, null)
                     }
                 assertEquals(
-                    "RBAC ${workspaceSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -634,7 +634,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           arrayOf())
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -688,7 +688,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           null)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -742,7 +742,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           DatasetRole(role))
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -794,7 +794,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           DatasetRole(role))
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_WRITE_SECURITY",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -858,7 +858,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           makeDatasetPartCreateRequest())
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -925,7 +925,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           datasetSaved.parts[0].id)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -991,7 +991,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           datasetSaved.parts[0].id)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1057,7 +1057,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           datasetSaved.parts[0].id)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1120,7 +1120,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id, workspaceSaved.id, datasetSaved.id, null, null)
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_READ",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1185,7 +1185,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           makeDatasetPartUpdateRequest())
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
@@ -1254,7 +1254,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           makeDatasetPartUpdateRequest())
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id} - Entity does not have permission $PERMISSION_WRITE",
+                    "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
                     exception.message)
               } else {
                 assertDoesNotThrow {
