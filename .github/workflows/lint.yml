@@ -32,6 +32,7 @@ jobs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
       with:
+        gradle-version: '8.12'
         cache-disabled: true
 
     - name: Check with Spotless
@@ -59,6 +60,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
+          gradle-version: '8.12'
           cache-disabled: true
 
       - name: Check with Detekt
