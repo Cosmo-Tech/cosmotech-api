@@ -56,7 +56,7 @@ class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformPro
       val images =
           restClient
               .get()
-              .uri("/v2/$repository/tags/list")
+              .uri("/v2/$repository/tags/list?n=500")
               .header(HttpHeaders.AUTHORIZATION, getHeaderAuthorization())
               .retrieve()
               .body(String::class.java)!!
