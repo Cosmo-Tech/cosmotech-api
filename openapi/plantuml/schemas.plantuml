@@ -580,8 +580,6 @@ entity WorkspaceSolution {
     * solutionId: String
     datasetId: String
     defaultParameterValues: Map
-    runTemplateFilter: List<String>
-    defaultRunTemplateDataset: Map
 }
 
 entity WorkspaceUpdateRequest {
