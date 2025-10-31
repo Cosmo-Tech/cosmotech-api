@@ -28,6 +28,7 @@ import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.domain.DatasetPartCreateRequest
 import com.cosmotech.dataset.domain.DatasetPartTypeEnum
+import com.cosmotech.dataset.domain.DatasetPartUpdateRequest
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -89,6 +90,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   val CONNECTED_READER_USER = "test.reader@cosmotech.com"
   val TEST_USER_MAIL = "fake@mail.fr"
   val CUSTOMERS_FILE_NAME = "customers.csv"
+  val CUSTOMERS_5_LINES_FILE_NAME = "customers_5_lines.csv"
 
   private val logger = LoggerFactory.getLogger(RunnerServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"
@@ -1007,7 +1009,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
-  fun `test empty inherited parameters values`() {
+  fun `test empty inherited parameters values from parent`() {
     val parentRunnerWithEmptyParams = makeRunnerCreateRequest(name = "parent")
     val parentRunnerSaved =
         runnerApiService.createRunner(
@@ -1038,6 +1040,210 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(1, childRunnerWithEmptyParamsSaved.parametersValues.size)
     assertEquals(
         mutableListOf(runTemplateParameterValue1), childRunnerWithEmptyParamsSaved.parametersValues)
+  }
+
+  @Test
+  fun `test create runner with inherited DB dataset parameter from workspace solution`() {
+
+    solutionSaved =
+        solutionApiService.createSolution(
+            organizationSaved.id,
+            SolutionCreateRequest(
+                key = UUID.randomUUID().toString(),
+                name = "Solution with 1 default datasetPart parameter",
+                parameterGroups =
+                    mutableListOf(
+                        RunTemplateParameterGroupCreateRequest(
+                            id = "defaultDatasetPartParameterGroup",
+                            parameters = mutableListOf("datasetPartParam"))),
+                parameters =
+                    mutableListOf(
+                        RunTemplateParameterCreateRequest(
+                            id = "datasetPartParam",
+                            defaultValue = "this_value_is_ignored",
+                            varType = DATASET_PART_VARTYPE_DB)),
+                runTemplates =
+                    mutableListOf(
+                        RunTemplateCreateRequest(
+                            id = "runTemplateWithOneDatasetPartByDefault",
+                            parameterGroups = mutableListOf("defaultDatasetPartParameterGroup"))),
+                repository = "repository",
+                version = "1.0.0"))
+    workspace =
+        WorkspaceCreateRequest(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id),
+            datasetCopy = false)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+    val customersFile = resourceLoader.getResource("classpath:/$CUSTOMERS_FILE_NAME").file
+    val customersInputStream = FileInputStream(customersFile)
+    val customersMultipartFile =
+        MockMultipartFile(
+            "file", CUSTOMERS_FILE_NAME, "text/csv", IOUtils.toByteArray(customersInputStream))
+    val workspaceDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            DatasetCreateRequest(
+                name = "runnerDataset",
+                parts =
+                    mutableListOf(
+                        DatasetPartCreateRequest(
+                            name = "datasetPart1",
+                            sourceName = CUSTOMERS_FILE_NAME,
+                            type = DatasetPartTypeEnum.DB))),
+            arrayOf(customersMultipartFile))
+    workspaceSaved =
+        workspaceApiService.updateWorkspace(
+            organizationSaved.id,
+            workspaceSaved.id,
+            WorkspaceUpdateRequest(
+                solution =
+                    WorkspaceSolution(
+                        solutionId = solutionSaved.id,
+                        datasetId = workspaceDataset.id,
+                        defaultParameterValues =
+                            mutableMapOf("datasetPartParam" to workspaceDataset.parts[0].id))))
+
+    val runner =
+        runnerApiService.createRunner(
+            organizationSaved.id,
+            workspaceSaved.id,
+            makeRunnerCreateRequest(runTemplateId = "runTemplateWithOneDatasetPartByDefault"))
+
+    val runnerDatasetId = runner.datasets.parameter
+    val runnerDataset =
+        datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, runnerDatasetId)
+    val inheritedRunnerDatasetPartContent =
+        datasetApiService.downloadDatasetPart(
+            organizationSaved.id, workspaceSaved.id, runnerDataset.id, runnerDataset.parts[0].id)
+    val expectedText = FileInputStream(customersFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(inheritedRunnerDatasetPartContent).inputStream.bufferedReader().use {
+          it.readText()
+        }
+    assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test create runner with inherited DB dataset parameter from parent`() {
+
+    solutionSaved =
+        solutionApiService.createSolution(
+            organizationSaved.id,
+            SolutionCreateRequest(
+                key = UUID.randomUUID().toString(),
+                name = "Solution with 1 default datasetPart parameter",
+                parameterGroups =
+                    mutableListOf(
+                        RunTemplateParameterGroupCreateRequest(
+                            id = "defaultDatasetPartParameterGroup",
+                            parameters = mutableListOf("datasetPartParam"))),
+                parameters =
+                    mutableListOf(
+                        RunTemplateParameterCreateRequest(
+                            id = "datasetPartParam",
+                            defaultValue = "this_value_is_ignored",
+                            varType = DATASET_PART_VARTYPE_DB)),
+                runTemplates =
+                    mutableListOf(
+                        RunTemplateCreateRequest(
+                            id = "runTemplateWithOneDatasetPartByDefault",
+                            parameterGroups = mutableListOf("defaultDatasetPartParameterGroup"))),
+                repository = "repository",
+                version = "1.0.0"))
+    workspace =
+        WorkspaceCreateRequest(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id),
+            datasetCopy = false)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+    val customersFile = resourceLoader.getResource("classpath:/$CUSTOMERS_FILE_NAME").file
+    val customersInputStream = FileInputStream(customersFile)
+    val customersMultipartFile =
+        MockMultipartFile(
+            "file", CUSTOMERS_FILE_NAME, "text/csv", IOUtils.toByteArray(customersInputStream))
+    val workspaceDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            DatasetCreateRequest(
+                name = "runnerDataset",
+                parts =
+                    mutableListOf(
+                        DatasetPartCreateRequest(
+                            name = "datasetPart1",
+                            sourceName = CUSTOMERS_FILE_NAME,
+                            type = DatasetPartTypeEnum.DB))),
+            arrayOf(customersMultipartFile))
+    workspaceSaved =
+        workspaceApiService.updateWorkspace(
+            organizationSaved.id,
+            workspaceSaved.id,
+            WorkspaceUpdateRequest(
+                solution =
+                    WorkspaceSolution(
+                        solutionId = solutionSaved.id,
+                        datasetId = workspaceDataset.id,
+                        defaultParameterValues =
+                            mutableMapOf("datasetPartParam" to workspaceDataset.parts[0].id))))
+
+    val runner =
+        runnerApiService.createRunner(
+            organizationSaved.id,
+            workspaceSaved.id,
+            makeRunnerCreateRequest(runTemplateId = "runTemplateWithOneDatasetPartByDefault"))
+
+    val runnerDatasetId = runner.datasets.parameter
+    val runnerDataset =
+        datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, runnerDatasetId)
+
+    val customers5File = resourceLoader.getResource("classpath:/$CUSTOMERS_5_LINES_FILE_NAME").file
+    val customers5InputStream = FileInputStream(customers5File)
+    val customers5MultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMERS_5_LINES_FILE_NAME,
+            "text/csv",
+            IOUtils.toByteArray(customers5InputStream))
+
+    val runnerDatasetPartId = runnerDataset.parts[0].id
+
+    datasetApiService.replaceDatasetPart(
+        organizationSaved.id,
+        workspaceSaved.id,
+        runnerDataset.id,
+        runnerDatasetPartId,
+        customers5MultipartFile,
+        DatasetPartUpdateRequest(sourceName = CUSTOMERS_5_LINES_FILE_NAME))
+
+    val childRunner =
+        runnerApiService.createRunner(
+            organizationSaved.id,
+            workspaceSaved.id,
+            makeRunnerCreateRequest(
+                runTemplateId = "runTemplateWithOneDatasetPartByDefault", parentId = runner.id))
+
+    val childRunnerDatasetId = childRunner.datasets.parameter
+    val childRunnerDataset =
+        datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, childRunnerDatasetId)
+
+    val childRunnerDatasetPartContent =
+        datasetApiService.downloadDatasetPart(
+            organizationSaved.id,
+            workspaceSaved.id,
+            childRunnerDataset.id,
+            childRunnerDataset.parts[0].id)
+    val expectedText = FileInputStream(customers5File).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(childRunnerDatasetPartContent).inputStream.bufferedReader().use {
+          it.readText()
+        }
+    assertEquals(expectedText, retrievedText)
   }
 
   @Test
