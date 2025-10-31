@@ -714,7 +714,7 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: Workspace name. This name is display in the sample webApp
           minLength: 1
-          maxLength: 50
+          maxLength: 150
           example: "FranceOffice"
         description:
           type: string
@@ -776,7 +776,7 @@ components:
           description: Workspace name. This name is displayed in the sample webApp
           example: "FranceOffice"
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         description:
           type: string
           description: The Workspace description
@@ -819,7 +819,7 @@ components:
           type: string
           description: Workspace name
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         description:
           type: string
           description: The Workspace description

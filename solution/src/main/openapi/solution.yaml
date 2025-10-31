@@ -838,7 +838,7 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: The Solution name
           minLength: 1
-          maxLength: 50
+          maxLength: 150
           example: "Brewery Solution"
         description:
           type: string
@@ -929,7 +929,7 @@ components:
           type: string
           description: Solution name. This name is displayed in the sample webApp
           minLength: 1
-          maxLength: 50
+          maxLength: 150
           example: "Brewery Solution"
         description:
           type: string
@@ -999,7 +999,7 @@ components:
           type: string
           description: The Solution name
           minLength: 1
-          maxLength: 50
+          maxLength: 150
           example: "Brewery Solution"
         description:
           type: string
@@ -1107,7 +1107,7 @@ components:
           type: string
           description: The Run Template name
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         description:
@@ -1150,7 +1150,7 @@ components:
           type: string
           description: The Run Template name
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         description:
@@ -1187,7 +1187,7 @@ components:
           type: string
           description: The Run Template name
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         description:
