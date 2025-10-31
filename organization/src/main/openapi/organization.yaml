@@ -548,7 +548,7 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: The Organization name
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         security:
           $ref: '#/components/schemas/OrganizationSecurity'
       required:
@@ -562,7 +562,7 @@ components:
           type: string
           description: The Organization name
           minLength: 1
-          maxLength: 50
+          maxLength: 150
 
     # Security Operation Schemas
     OrganizationSecurity:

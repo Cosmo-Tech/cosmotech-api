@@ -777,7 +777,7 @@ components:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         description:
           type: string
         organizationId:
@@ -834,7 +834,7 @@ components:
         name:
           type: string
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         description:
           type: string
         tags:
@@ -866,7 +866,7 @@ components:
         name:
           type: string
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         description:
           type: string
         tags:
@@ -898,7 +898,7 @@ components:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         sourceName:
           type: string
           description: the source data name (e.g. filename associated to the dataset part)
@@ -958,7 +958,7 @@ components:
         name:
           type: string
           minLength: 1
-          maxLength: 50
+          maxLength: 150
         sourceName:
           description: the source data name (e.g. filename associated to the dataset part)
           type: string
