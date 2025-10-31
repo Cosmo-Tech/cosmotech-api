@@ -929,15 +929,6 @@ components:
           description: A map of parameterId/value to set default values for Solution parameters with simple varType (int, string, ...)
           additionalProperties:
             type: string
-        runTemplateFilter:
-          type: array
-          description: The list of Solution Run Template Id to filter
-          items:
-            type: string
-        defaultRunTemplateDataset:
-          type: object
-          description: A map of RunTemplateId/DatasetId to set a default dataset for a Run Template
-          additionalProperties: true
       required:
       - solutionId
 
@@ -988,10 +979,6 @@ components:
           - Brewery
         solution:
           solutionId: "sol-feo16eua48o"
-          runTemplateFilter:
-            - "run1"
-          defaultRunTemplateDataset:
-            run1: "data1"
         datasetCopy: true
         createInfo:
           timestamp: 123456789
@@ -1016,10 +1003,6 @@ components:
           - Brewery
         solution:
           solutionId: "sol-feo16eua48o"
-          runTemplateFilter:
-            - "run1"
-          defaultRunTemplateDataset:
-            run1: "data1"
         security:
           default: "viewer"
           accessControlList:
@@ -1037,10 +1020,6 @@ components:
             - Brewery
           solution:
             solutionId: "sol-feo16eua48o"
-            runTemplateFilter:
-              - "run1"
-            defaultRunTemplateDataset:
-              run1: "data1"
           datasetCopy: true
           createInfo:
             timestamp: 123456789
@@ -1061,10 +1040,6 @@ components:
             - Brewery
           solution:
             solutionId: "sol-ojd96oz14pz"
-            runTemplateFilter:
-              - "runA"
-            defaultRunTemplateDataset:
-              runA: "data1"
           datasetCopy: true
           createInfo:
             timestamp: 123456789
@@ -1094,10 +1069,6 @@ components:
           - Brewery
         solution:
           solutionId: "sol-feo16eua48o"
-          runTemplateFilter:
-            - "run1"
-          defaultRunTemplateDataset:
-            run1: "data1"
         datasetCopy: true
         createInfo:
           timestamp: 123456789

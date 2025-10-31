@@ -59,11 +59,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val description = "here_is_workspace_description"
     val version = "1.0.0"
     val datasetCopy = false
-    val runTemplateFilter = mutableListOf("runtemplateId1,runtemplateId2")
     val tags = mutableListOf("tag1,tag2")
-    val defaultRunTemplateDataset =
-        mutableMapOf<String, Any>(
-            "runtemplateId1" to "datasetId1", "runtemplateId2" to "datasetId2")
     val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
@@ -91,8 +87,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                     "solution_parameter2" to "solution_parameter2_defaultValue"),
                                 description,
                                 version,
-                                runTemplateFilter,
-                                defaultRunTemplateDataset,
                                 datasetCopy,
                                 workspaceSecurity,
                                 additionalData,
@@ -107,9 +101,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.description").value(description))
         .andExpect(jsonPath("$.version").value(version))
-        .andExpect(jsonPath("$.solution.runTemplateFilter").value(runTemplateFilter))
-        .andExpect(
-            jsonPath("$.solution.defaultRunTemplateDataset").value(defaultRunTemplateDataset))
         .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter1")
@@ -140,11 +131,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val description = "here_is_workspace_description"
     val datasetCopy = false
-    val runTemplateFilter = mutableListOf("runtemplateId1,runtemplateId2")
     val tags = mutableListOf("tag1,tag2")
-    val defaultRunTemplateDataset =
-        mutableMapOf<String, Any>(
-            "runtemplateId1" to "datasetId1", "runtemplateId2" to "datasetId2")
     val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
@@ -164,8 +151,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                     "solution_parameter1" to "solution_parameter1_defaultValue",
                                     "solution_parameter2" to "solution_parameter2_defaultValue"),
                                 description,
-                                runTemplateFilter,
-                                defaultRunTemplateDataset,
                                 datasetCopy,
                                 additionalData,
                                 tags))
@@ -178,9 +163,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.description").value(description))
-        .andExpect(jsonPath("$.solution.runTemplateFilter").value(runTemplateFilter))
-        .andExpect(
-            jsonPath("$.solution.defaultRunTemplateDataset").value(defaultRunTemplateDataset))
         .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter1")
@@ -266,11 +248,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val description = "here_is_workspace_description"
     val version = "1.0.0"
     val datasetCopy = false
-    val runTemplateFilter = mutableListOf("runtemplateId1,runtemplateId2")
     val tags = mutableListOf("tag1,tag2")
-    val defaultRunTemplateDataset =
-        mutableMapOf<String, Any>(
-            "runtemplateId1" to "datasetId1", "runtemplateId2" to "datasetId2")
     val additionalData =
         mutableMapOf(
             "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
@@ -297,8 +275,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
                     "solution_parameter2" to "solution_parameter2_defaultValue"),
                 description,
                 version,
-                runTemplateFilter,
-                defaultRunTemplateDataset,
                 datasetCopy,
                 workspaceSecurity,
                 additionalData,
@@ -314,9 +290,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.version").value(version))
         .andExpect(jsonPath("$.description").value(description))
-        .andExpect(jsonPath("$.solution.runTemplateFilter").value(runTemplateFilter))
-        .andExpect(
-            jsonPath("$.solution.defaultRunTemplateDataset").value(defaultRunTemplateDataset))
         .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.additionalData").value(additionalData))

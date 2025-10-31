@@ -276,8 +276,6 @@ class ControllerTestUtils {
         defaultParameterValues: MutableMap<String, String>? = null,
         description: String = "",
         version: String = "",
-        runTemplateFilter: MutableList<String> = mutableListOf(),
-        defaultRunTemplateDataset: MutableMap<String, Any> = mutableMapOf(),
         datasetCopy: Boolean? = null,
         security: WorkspaceSecurity? = null,
         additionalData: MutableMap<String, Any> = mutableMapOf(),
@@ -289,8 +287,6 @@ class ControllerTestUtils {
           solution =
               WorkspaceSolution(
                   solutionId = solutionId,
-                  runTemplateFilter = runTemplateFilter,
-                  defaultRunTemplateDataset = defaultRunTemplateDataset,
                   datasetId = datasetId,
                   defaultParameterValues = defaultParameterValues),
           description = description,
@@ -309,8 +305,6 @@ class ControllerTestUtils {
         datasetId: String? = null,
         defaultParameterValues: MutableMap<String, String>? = null,
         description: String = "",
-        runTemplateFilter: MutableList<String> = mutableListOf(),
-        defaultRunTemplateDataset: MutableMap<String, Any> = mutableMapOf(),
         datasetCopy: Boolean? = null,
         additionalData: MutableMap<String, Any> = mutableMapOf(),
         tags: MutableList<String> = mutableListOf()
@@ -322,8 +316,6 @@ class ControllerTestUtils {
           solution =
               WorkspaceSolution(
                   solutionId = solutionId,
-                  runTemplateFilter = runTemplateFilter,
-                  defaultRunTemplateDataset = defaultRunTemplateDataset,
                   datasetId = datasetId,
                   defaultParameterValues = defaultParameterValues),
           description = description,
