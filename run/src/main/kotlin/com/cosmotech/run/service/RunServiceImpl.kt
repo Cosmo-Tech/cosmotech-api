@@ -8,6 +8,7 @@ import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.RunStop
 import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.events.UpdateRunnerStatus
+import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_DELETE
 import com.cosmotech.common.rbac.PERMISSION_READ
@@ -221,7 +222,7 @@ class RunServiceImpl(
   @EventListener(RunStart::class)
   fun onRunStart(runStartRequest: RunStart) {
     val runner = runStartRequest.runnerData as Runner
-    val runId = idGenerator.generate("run", prependPrefix = "run-")
+    val runId = generateId("run", prependPrefix = "run-")
 
     val startInfo =
         containerFactory.getStartInfo(

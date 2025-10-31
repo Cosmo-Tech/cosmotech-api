@@ -6,6 +6,7 @@ import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.containerregistry.ContainerRegistryService
 import com.cosmotech.common.events.OrganizationUnregistered
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
+import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmAdmin
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
@@ -114,7 +115,7 @@ class SolutionServiceImpl(
   ): Solution {
     organizationApiService.getVerifiedOrganization(organizationId, PERMISSION_CREATE_CHILDREN)
 
-    val solutionId = idGenerator.generate("solution", prependPrefix = "sol-")
+    val solutionId = generateId("solution", prependPrefix = "sol-")
     val now = Instant.now().toEpochMilli()
     val security =
         csmRbac
@@ -426,10 +427,8 @@ class SolutionServiceImpl(
         ?.apply {
           description = runTemplateParameterGroupUpdateRequest.description ?: this.description
           labels = runTemplateParameterGroupUpdateRequest.labels ?: this.labels
-          isTable = runTemplateParameterGroupUpdateRequest.isTable ?: this.isTable
           additionalData =
               runTemplateParameterGroupUpdateRequest.additionalData ?: this.additionalData
-          parentId = runTemplateParameterGroupUpdateRequest.parentId ?: this.parentId
           parameters = runTemplateParameterGroupUpdateRequest.parameters ?: this.parameters
         }
         ?: throw CsmResourceNotFoundException(
@@ -507,8 +506,6 @@ class SolutionServiceImpl(
           defaultValue = runTemplateParameterUpdateRequest.defaultValue ?: this.defaultValue
           minValue = runTemplateParameterUpdateRequest.minValue ?: this.minValue
           maxValue = runTemplateParameterUpdateRequest.maxValue ?: this.maxValue
-          regexValidation =
-              runTemplateParameterUpdateRequest.regexValidation ?: this.regexValidation
           additionalData = runTemplateParameterUpdateRequest.additionalData ?: this.additionalData
         }
         ?: throw CsmResourceNotFoundException(
@@ -639,7 +636,6 @@ class SolutionServiceImpl(
         defaultValue = runTemplateParameterCreateRequest.defaultValue,
         minValue = runTemplateParameterCreateRequest.minValue,
         maxValue = runTemplateParameterCreateRequest.maxValue,
-        regexValidation = runTemplateParameterCreateRequest.regexValidation,
         additionalData = runTemplateParameterCreateRequest.additionalData)
   }
 
@@ -650,9 +646,7 @@ class SolutionServiceImpl(
         id = runTemplateParameterGroupCreateRequest.id,
         description = runTemplateParameterGroupCreateRequest.description,
         labels = runTemplateParameterGroupCreateRequest.labels,
-        isTable = runTemplateParameterGroupCreateRequest.isTable!!,
         additionalData = runTemplateParameterGroupCreateRequest.additionalData,
-        parentId = runTemplateParameterGroupCreateRequest.parentId,
         parameters = runTemplateParameterGroupCreateRequest.parameters!!)
   }
 

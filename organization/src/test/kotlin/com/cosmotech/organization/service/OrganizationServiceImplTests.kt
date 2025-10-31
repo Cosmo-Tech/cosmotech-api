@@ -6,7 +6,6 @@ import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.events.CsmEventPublisher
 import com.cosmotech.common.exceptions.CsmAccessForbiddenException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
-import com.cosmotech.common.id.CsmIdGenerator
 import com.cosmotech.common.rbac.CsmAdmin
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.ROLE_ADMIN
@@ -52,7 +51,6 @@ const val USER_ID = "bob@mycompany.com"
 class OrganizationServiceImplTests {
 
   @Suppress("unused") @MockK private var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
-  @Suppress("unused") @MockK private var idGenerator: CsmIdGenerator = mockk(relaxed = true)
 
   @Suppress("unused")
   @MockK

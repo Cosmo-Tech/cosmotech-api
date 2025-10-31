@@ -11,9 +11,6 @@ data class CsmPlatformProperties(
     /** API Configuration */
     val api: Api,
 
-    /** Id Generator */
-    val idGenerator: IdGenerator,
-
     /** Event Publisher */
     val eventPublisher: EventPublisher,
 
@@ -183,16 +180,6 @@ data class CsmPlatformProperties(
        */
       val basePath: String,
   )
-
-  data class IdGenerator(val type: Type) {
-    enum class Type {
-      /** short unique UIDs */
-      HASHID,
-
-      /** UUIDs */
-      UUID
-    }
-  }
 
   data class EventPublisher(val type: Type) {
     enum class Type {

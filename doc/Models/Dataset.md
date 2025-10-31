@@ -11,8 +11,8 @@
 | **tags** | **List** | the list of tags | [default to null] |
 | **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
 | **parts** | [**List**](DatasetPart.md) |  | [default to null] |
-| **createInfo** | [**CreateInfo**](CreateInfo.md) | The details of the Dataset creation | [default to null] |
-| **updateInfo** | [**EditInfo**](EditInfo.md) | The details of the Dataset last update | [default to null] |
+| **createInfo** | [**DatasetCreateInfo**](DatasetCreateInfo.md) | The details of the Dataset creation | [default to null] |
+| **updateInfo** | [**DatasetEditInfo**](DatasetEditInfo.md) | The details of the Dataset last update | [default to null] |
 | **security** | [**DatasetSecurity**](DatasetSecurity.md) |  | [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
