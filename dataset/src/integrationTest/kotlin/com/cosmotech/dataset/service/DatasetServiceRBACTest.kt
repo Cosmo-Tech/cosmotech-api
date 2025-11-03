@@ -86,7 +86,6 @@ class DatasetServiceRBACTest : CsmTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
   val CUSTOMER_SOURCE_FILE_NAME = "customers.csv"
-  val defaultGroup = listOf("myTestGroup")
 
   private val logger = LoggerFactory.getLogger(DatasetServiceIntegrationTest::class.java)
 
@@ -112,7 +111,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
   fun setUp() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAccountGroups(any()) } returns defaultGroup
+    every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 

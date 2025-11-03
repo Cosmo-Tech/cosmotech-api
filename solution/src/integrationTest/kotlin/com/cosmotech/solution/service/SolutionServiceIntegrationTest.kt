@@ -65,7 +65,6 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
   private val logger = LoggerFactory.getLogger(SolutionServiceIntegrationTest::class.java)
 
   val fileName = "test_solution_file.txt"
-  val defaultGroup = listOf("myTestGroup")
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
@@ -89,7 +88,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
         solutionApiService, "containerRegistryService", containerRegistryService)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAccountGroups(any()) } returns defaultGroup
+    every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 

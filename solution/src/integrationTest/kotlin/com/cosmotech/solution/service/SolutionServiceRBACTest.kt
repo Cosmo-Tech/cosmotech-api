@@ -61,7 +61,6 @@ import org.springframework.test.util.ReflectionTestUtils
 class SolutionServiceRBACTest : CsmTestBase() {
 
   val TEST_USER_MAIL = "testuser@mail.fr"
-  val defaultGroup = listOf("myTestGroup")
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
 
@@ -90,7 +89,8 @@ class SolutionServiceRBACTest : CsmTestBase() {
         solutionApiService, "containerRegistryService", containerRegistryService)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAccountGroups(any()) } returns defaultGroup
+    every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
+
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 

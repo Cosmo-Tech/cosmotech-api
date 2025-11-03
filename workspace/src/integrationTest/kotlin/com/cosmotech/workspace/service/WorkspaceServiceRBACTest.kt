@@ -73,7 +73,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
 
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-  val defaultGroup = listOf("myTestGroup")
 
   @RelaxedMockK private lateinit var resource: MultipartFile
 
@@ -98,7 +97,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
     ReflectionTestUtils.setField(workspaceApiService, "s3Template", s3Template)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAccountGroups(any()) } returns defaultGroup
+    every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 

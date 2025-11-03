@@ -92,7 +92,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   val TEST_USER_MAIL = "fake@mail.fr"
   val CUSTOMERS_FILE_NAME = "customers.csv"
   val CUSTOMERS_5_LINES_FILE_NAME = "customers_5_lines.csv"
-  val defaultGroup = listOf("myTestGroup")
 
   private val logger = LoggerFactory.getLogger(RunnerServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"
@@ -144,7 +143,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAccountGroups(any()) } returns defaultGroup
+    every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
 

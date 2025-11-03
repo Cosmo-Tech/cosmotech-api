@@ -81,8 +81,6 @@ const val S3_BUCKET_NAME = "test-bucket"
 @Suppress("LargeClass")
 class WorkspaceServiceImplTests {
 
-  val defaultGroup = listOf("myTestGroup")
-
   @MockK private lateinit var solutionService: SolutionApiServiceInterface
   @RelaxedMockK private lateinit var organizationService: OrganizationApiServiceInterface
 
@@ -115,7 +113,7 @@ class WorkspaceServiceImplTests {
   fun beforeEach() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
-    every { getCurrentAccountGroups(any()) } returns defaultGroup
+    every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
