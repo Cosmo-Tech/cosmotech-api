@@ -22,7 +22,7 @@ jobs:
     if: github.event_name != 'pull_request_target'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -82,7 +82,7 @@ jobs:
     name: controller_tests - ${{ matrix.service.testPrefix }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -110,7 +110,7 @@ jobs:
     if: github.event_name != 'pull_request_target'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -156,7 +156,7 @@ jobs:
     name: integration_tests - ${{ matrix.service.testPrefix }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -193,7 +193,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # Fetch all tags since Gradle project version is built upon SCM
           fetch-depth: 0
