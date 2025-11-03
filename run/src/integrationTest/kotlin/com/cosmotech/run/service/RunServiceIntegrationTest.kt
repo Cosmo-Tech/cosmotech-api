@@ -217,7 +217,6 @@ class RunServiceIntegrationTest : CsmTestBase() {
           solutionId = solutionId,
           runTemplateId = runTemplateId,
           datasetList = datasetList,
-          ownerName = "owner",
           security =
               RunnerSecurity(
                   ROLE_NONE, mutableListOf(RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
@@ -243,7 +242,6 @@ class RunServiceIntegrationTest : CsmTestBase() {
                 RunnerEditInfo(
                     timestamp = Instant.now().toEpochMilli(),
                     userId = getCurrentAccountIdentifier(csmPlatformProperties)),
-            ownerName = "owner",
             datasets = RunnerDatasets(bases = mutableListOf(), parameter = ""),
             workspaceId = workspaceId,
             validationStatus = RunnerValidationStatus.Draft,

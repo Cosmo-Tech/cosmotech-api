@@ -606,10 +606,6 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the associated Workspace Id
-        ownerName:
-          type: string
-          readOnly: true
-          description: the name of the owner
         solutionName:
           type: string
           readOnly: true
@@ -618,6 +614,10 @@ components:
           type: string
           readOnly: true
           description: the Solution Run Template name associated with this Runner
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         datasets:
           description: definition of datasets used by the runner
           $ref: "#/components/schemas/RunnerDatasets"
@@ -649,7 +649,6 @@ components:
         - runTemplateId
         - organizationId
         - workspaceId
-        - ownerName
         - datasets
         - parametersValues
         - lastRunInfo
@@ -702,10 +701,10 @@ components:
           items:
             $ref: '#/components/schemas/RunnerRunTemplateParameterValue'
           default: []
-        ownerName:
-          type: string
-          description: the name of the owner
-          minLength: 1
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         solutionName:
           type: string
           description: the Solution name
@@ -720,7 +719,6 @@ components:
         - name
         - solutionId
         - runTemplateId
-        - ownerName
 
     RunnerUpdateRequest:
       type: object
@@ -755,10 +753,10 @@ components:
           description: the list of Solution Run Template parameters values
           items:
             $ref: '#/components/schemas/RunnerRunTemplateParameterValue'
-        ownerName:
-          type: string
-          description: the name of the owner
-          minLength: 1
+        additionalData:
+          type: object
+          description: Free form additional data
+          additionalProperties: true
         solutionName:
           type: string
           description: the Solution name
@@ -967,7 +965,6 @@ components:
         solutionName: Brewery Solution
         runTemplateId: "hundred"
         runTemplateName: Full simulation 100 steps
-        ownerName: Bob
         createInfo:
           timestamp: 123456789
           userId: admin
@@ -1001,7 +998,6 @@ components:
           solutionName: Brewery Solution
           runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
-          ownerName: Bob
           createInfo:
             timestamp: 123456789
             userId: admin
@@ -1031,7 +1027,6 @@ components:
           solutionName: Brewery Solution
           runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
-          ownerName: Bob
           createInfo:
             timestamp: 123456789
             userId: admin
@@ -1061,7 +1056,6 @@ components:
           solutionName: Brewery Solution
           runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
-          ownerName: Alice
           createInfo:
             timestamp: 123456789
             userId: admin
@@ -1101,7 +1095,6 @@ components:
         solutionName: Brewery Solution
         runTemplateId: "hundred"
         runTemplateName: Full simulation 100 steps
-        ownerName: Bob
         createInfo:
           timestamp: 123456789
           userId: admin
@@ -1148,7 +1141,6 @@ components:
           updateInfo:
             timestamp: 123456789
             userId: admin
-          ownerName: Alice
           runTemplateName: Full simulation 100 steps
           solutionName: Brewery Solution
           datasetList:
@@ -1177,7 +1169,6 @@ components:
           updateInfo:
             timestamp: 123456789
             userId: admin
-          ownerName: Alice
           runTemplateName: Full simulation 100 steps
           solutionName: Brewery Solution
           datasetList:
@@ -1206,7 +1197,6 @@ components:
           updateInfo:
             timestamp: 123456789
             userId: admin
-          ownerName: Alice
           runTemplateName: Full simulation 100 steps
           solutionName: Brewery Solution
           datasetList:

@@ -9,7 +9,6 @@ import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_PART_NAME
 import com.cosmotech.api.home.dataset.DatasetConstants.TEST_FILE_NAME
 import com.cosmotech.api.home.organization.OrganizationConstants.ORGANIZATION_NAME
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_NAME
-import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_OWNER_NAME
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_KEY
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_NAME
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_REPOSITORY
@@ -170,7 +169,7 @@ class ControllerTestUtils {
         runTemplateName: String? = null,
         security: RunnerSecurity? = null,
         runSizing: RunnerResourceSizing? = null,
-        ownerName: String = RUNNER_OWNER_NAME,
+        additionalData: MutableMap<String, Any>? = null,
         description: String = "",
         tags: MutableList<String> = mutableListOf(),
         datasetList: MutableList<String>? = mutableListOf(),
@@ -181,7 +180,7 @@ class ControllerTestUtils {
           name = name,
           solutionId = solutionId,
           runTemplateId = runTemplateId,
-          ownerName = ownerName,
+          additionalData = additionalData,
           description = description,
           tags = tags,
           datasetList = datasetList,
@@ -200,7 +199,7 @@ class ControllerTestUtils {
         solutionName: String? = null,
         runTemplateName: String? = null,
         runSizing: RunnerResourceSizing? = null,
-        ownerName: String = RUNNER_OWNER_NAME,
+        additionalData: MutableMap<String, Any>? = null,
         description: String = "",
         tags: MutableList<String> = mutableListOf(),
         datasetList: MutableList<String>? = mutableListOf(),
@@ -215,7 +214,7 @@ class ControllerTestUtils {
           datasetList = datasetList,
           runSizing = runSizing,
           parametersValues = parametersValues,
-          ownerName = ownerName,
+          additionalData = additionalData,
           solutionName = solutionName,
           runTemplateName = runTemplateName)
     }

@@ -203,7 +203,6 @@ class ContainerFactoryTests {
         workspaceId = "workspace",
         createInfo = RunnerEditInfo(timestamp = Instant.now().toEpochMilli(), userId = "user"),
         updateInfo = RunnerEditInfo(timestamp = Instant.now().toEpochMilli(), userId = "user"),
-        ownerName = "owner",
         parametersValues =
             mutableListOf(
                 RunnerRunTemplateParameterValue(parameterId = "param1", value = "value1"),

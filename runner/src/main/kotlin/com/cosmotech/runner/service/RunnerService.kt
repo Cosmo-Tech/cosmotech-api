@@ -269,7 +269,7 @@ class RunnerService(
               runTemplateId = "init",
               organizationId = organization!!.id,
               workspaceId = workspace!!.id,
-              ownerName = "init",
+              additionalData = mutableMapOf(),
               datasets = RunnerDatasets(bases = mutableListOf(), parameter = "init"),
               parametersValues = mutableListOf(),
               lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
@@ -370,7 +370,7 @@ class RunnerService(
               solutionName = runnerCreateRequest.solutionName,
               solutionId = runnerCreateRequest.solutionId,
               validationStatus = this.runner.validationStatus,
-              ownerName = runnerCreateRequest.ownerName,
+              additionalData = runnerCreateRequest.additionalData,
               runTemplateName = runnerCreateRequest.runTemplateName,
               security = this.runner.security,
               id = this.runner.id,
@@ -412,7 +412,7 @@ class RunnerService(
               solutionName = runnerUpdateRequest.solutionName ?: this.runner.solutionName,
               solutionId = this.runner.solutionId,
               rootId = this.runner.rootId,
-              ownerName = runnerUpdateRequest.ownerName ?: this.runner.ownerName,
+              additionalData = runnerUpdateRequest.additionalData ?: this.runner.additionalData,
               createInfo = this.runner.createInfo,
               updateInfo =
                   RunnerEditInfo(

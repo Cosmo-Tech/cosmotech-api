@@ -15,9 +15,9 @@
 | **runTemplateId** | **String** | the Solution Run Template Id associated with this Runner | [default to null] |
 | **organizationId** | **String** | the associated Organization Id | [default to null] |
 | **workspaceId** | **String** | the associated Workspace Id | [default to null] |
-| **ownerName** | **String** | the name of the owner | [default to null] |
 | **solutionName** | **String** | the Solution name | [optional] [default to null] |
 | **runTemplateName** | **String** | the Solution Run Template name associated with this Runner | [optional] [default to null] |
+| **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
 | **datasets** | [**RunnerDatasets**](RunnerDatasets.md) |  | [default to null] |
 | **runSizing** | [**RunnerResourceSizing**](RunnerResourceSizing.md) |  | [optional] [default to null] |
 | **parametersValues** | [**List**](RunnerRunTemplateParameterValue.md) | the list of Solution Run Template parameters values | [default to null] |
