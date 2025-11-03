@@ -82,7 +82,6 @@ class RunServiceIntegrationTest : CsmTestBase() {
 
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_READER_USER = "test.user@cosmotech.com"
-  val defaultGroup = listOf("myTestGroup")
   private val logger = LoggerFactory.getLogger(RunServiceIntegrationTest::class.java)
 
   @MockK(relaxed = true) private lateinit var containerFactory: RunContainerFactory
@@ -115,7 +114,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
   fun setUp() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAccountGroups(any()) } returns defaultGroup
+    every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 

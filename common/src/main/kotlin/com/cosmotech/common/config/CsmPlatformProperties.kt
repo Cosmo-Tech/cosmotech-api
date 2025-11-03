@@ -74,7 +74,7 @@ data class CsmPlatformProperties(
       val mailJwtClaim: String = "preferred_username",
 
       /** The JWT Claim where the groups information are stored */
-      val groupJwtClaim: String = "user_groups",
+      val groupJwtClaim: String = "groups",
 
       /** The JWT Claim where the roles information is stored */
       val rolesJwtClaim: String = "roles",

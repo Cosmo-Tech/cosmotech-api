@@ -51,8 +51,6 @@ const val USER_ID = "bob@mycompany.com"
 @ExtendWith(MockKExtension::class)
 class OrganizationServiceImplTests {
 
-  val defaultGroup = listOf("myTestGroup")
-
   @Suppress("unused") @MockK private var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
 
   @Suppress("unused")
@@ -70,7 +68,7 @@ class OrganizationServiceImplTests {
 
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns USER_ID
-    every { getCurrentAccountGroups(any()) } returns defaultGroup
+    every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 

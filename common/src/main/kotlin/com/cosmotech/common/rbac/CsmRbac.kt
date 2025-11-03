@@ -198,9 +198,7 @@ open class CsmRbac(
         } else {
           groups.any {
             this.getEntityRole(rbacSecurity, it) == this.getAdminRole(rolesDefinition)
-          } ||
-              this.getEntityRole(rbacSecurity, rbacSecurity.default) ==
-                  this.getAdminRole(rolesDefinition)
+          } || rbacSecurity.default == this.getAdminRole(rolesDefinition)
         }
     logger.debug("RBAC ${rbacSecurity.id} - $user has default admin rbac role: $isAdmin")
     return isAdmin
@@ -220,9 +218,7 @@ open class CsmRbac(
         } else {
           groups.any {
             verifyPermissionFromRole(permission, getEntityRole(rbacSecurity, it), rolesDefinition)
-          } ||
-              verifyPermissionFromRole(
-                  permission, getEntityRole(rbacSecurity, rbacSecurity.default), rolesDefinition)
+          } || verifyPermissionFromRole(permission, rbacSecurity.default, rolesDefinition)
         }
     logger.debug("RBAC ${rbacSecurity.id} - $user has permission $permission in ACL: $isAuthorized")
     return isAuthorized

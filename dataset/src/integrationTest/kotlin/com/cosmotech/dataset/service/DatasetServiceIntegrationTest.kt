@@ -96,7 +96,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   val UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME = "wrong_mimetype.yaml"
   val INVENTORY_SOURCE_FILE_NAME = "product_inventory.csv"
   val WRONG_ORIGINAL_FILE_NAME = "../../wrong_name_pattern.csv"
-  val defaultGroup = listOf("myTestGroup")
 
   private val logger = LoggerFactory.getLogger(DatasetServiceIntegrationTest::class.java)
 
@@ -121,7 +120,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   fun setUp() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAccountGroups(any()) } returns defaultGroup
+    every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 
