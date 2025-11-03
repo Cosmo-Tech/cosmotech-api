@@ -798,7 +798,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             runTemplateId = "runTemplate",
             solutionId = solutionSaved.id,
             datasetList = mutableListOf(),
-            ownerName = "owner",
             security =
                 RunnerSecurity(
                     default = ROLE_NONE,
@@ -942,13 +941,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     logger.info("should create a new Runner")
     val name = "new_runner"
     val runTemplateId = "runTemplateId"
-    val ownerName = "owner"
     val newRunner =
         RunnerCreateRequest(
-            name = name,
-            solutionId = solutionSaved.id,
-            runTemplateId = runTemplateId,
-            ownerName = ownerName)
+            name = name, solutionId = solutionSaved.id, runTemplateId = runTemplateId)
 
     val newRunnerCreated =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
@@ -956,7 +951,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertNotNull(newRunnerCreated)
     assertEquals(name, newRunnerCreated.name)
     assertEquals(runTemplateId, newRunnerCreated.runTemplateId)
-    assertEquals(ownerName, newRunnerCreated.ownerName)
     assertEquals(ROLE_NONE, newRunnerCreated.security.default)
     assertEquals(userId, newRunnerCreated.security.accessControlList[0].id)
     assertEquals(ROLE_ADMIN, newRunnerCreated.security.accessControlList[0].role)
@@ -1612,8 +1606,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerCreateRequest(
             name = "Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId",
-            ownerName = "Test user")
+            runTemplateId = "runTemplateId")
 
     val createdRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runnerCreateRequest)
@@ -1687,8 +1680,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerCreateRequest(
             name = "Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId",
-            ownerName = "Test user")
+            runTemplateId = "runTemplateId")
 
     val createdRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runnerCreateRequest)
@@ -1763,8 +1755,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerCreateRequest(
             name = "Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId",
-            ownerName = "Test user")
+            runTemplateId = "runTemplateId")
 
     val createdRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runnerCreateRequest)
@@ -1863,8 +1854,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerCreateRequest(
             name = "Parent Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId",
-            ownerName = "Test user")
+            runTemplateId = "runTemplateId")
 
     val parentCreatedRunner =
         runnerApiService.createRunner(
@@ -1888,7 +1878,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "Child Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
             runTemplateId = "runTemplateId",
-            ownerName = "Test user",
             parentId = parentCreatedRunner.id)
 
     val childCreatedRunner =
@@ -2027,8 +2016,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerCreateRequest(
             name = "Parent Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId",
-            ownerName = "Test user")
+            runTemplateId = "runTemplateId")
 
     val parentCreatedRunner =
         runnerApiService.createRunner(
@@ -2062,7 +2050,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "Child Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
             runTemplateId = "runTemplateId",
-            ownerName = "Test user",
             parentId = parentCreatedRunner.id)
 
     val childCreatedRunner =
@@ -2121,8 +2108,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerCreateRequest(
             name = "Parent Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId",
-            ownerName = "Test user")
+            runTemplateId = "runTemplateId")
 
     val parentCreatedRunner =
         runnerApiService.createRunner(
@@ -2148,7 +2134,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "Child Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
             runTemplateId = "runTemplateId",
-            ownerName = "Test user",
             parentId = parentCreatedRunner.id)
 
     val childCreatedRunner =
@@ -2257,7 +2242,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
           parentId = parentId,
           parametersValues = parametersValues,
           solutionId = solutionSaved.id,
-          ownerName = "owner",
+          additionalData =
+              mutableMapOf(
+                  "you_can_put" to "whatever_you_want_here",
+                  "even" to mapOf("object" to "if_you_want")),
           security =
               RunnerSecurity(
                   ROLE_NONE,

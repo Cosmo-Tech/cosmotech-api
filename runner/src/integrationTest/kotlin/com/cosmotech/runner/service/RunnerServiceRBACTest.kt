@@ -3911,7 +3911,6 @@ class RunnerServiceRBACTest : CsmTestBase() {
           runTemplateId = "runTemplateId",
           datasetList = datasetList,
           parentId = null,
-          ownerName = "owner",
           security =
               RunnerSecurity(
                   ROLE_NONE,

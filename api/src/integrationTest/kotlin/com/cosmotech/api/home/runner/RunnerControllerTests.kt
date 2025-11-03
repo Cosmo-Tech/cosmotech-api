@@ -22,7 +22,6 @@ import com.cosmotech.api.home.organization.OrganizationConstants
 import com.cosmotech.api.home.runner.RunnerConstants.NEW_USER_ID
 import com.cosmotech.api.home.runner.RunnerConstants.NEW_USER_ROLE
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_NAME
-import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_OWNER_NAME
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
 import com.cosmotech.common.events.CsmEventPublisher
 import com.cosmotech.common.events.RunStart
@@ -170,6 +169,9 @@ class RunnerControllerTests : ControllerTestBase() {
     val tags = mutableListOf("tags1", "tags2")
     val datasetList = mutableListOf(datasetId)
     val runnerParameterValue = "parameter_value"
+    val additionalData =
+        mutableMapOf(
+            "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
 
     val parentId =
         createRunnerAndReturnId(
@@ -203,7 +205,7 @@ class RunnerControllerTests : ControllerTestBase() {
                             cpu = "cpu_limits",
                             memory = "memory_limits",
                         )),
-            ownerName = RUNNER_OWNER_NAME,
+            additionalData = additionalData,
             description = description,
             tags = tags,
             datasetList = datasetList,
@@ -225,7 +227,7 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.name").value(RUNNER_NAME))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$.ownerName").value(RUNNER_OWNER_NAME))
+        .andExpect(jsonPath("$.additionalData").value(additionalData))
         .andExpect(jsonPath("$.description").value(description))
         .andExpect(jsonPath("$.parentId").value(parentId))
         .andExpect(jsonPath("$.solutionName").value(solutionName))
@@ -259,6 +261,10 @@ class RunnerControllerTests : ControllerTestBase() {
     val runnerParameterId = "parameterId1"
     val runnerParameterValue = "parameter_value"
     val runnerParameterVarType = "this_is_a_vartype"
+
+    val additionalData =
+        mutableMapOf(
+            "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
 
     val parentId =
         createRunnerAndReturnId(
@@ -297,7 +303,7 @@ class RunnerControllerTests : ControllerTestBase() {
                                 cpu = "cpu_limits",
                                 memory = "memory_limits",
                             )),
-                ownerName = RUNNER_OWNER_NAME,
+                additionalData = additionalData,
                 description = description,
                 tags = tags,
                 datasetList = datasetList,
@@ -318,7 +324,7 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.name").value(RUNNER_NAME))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$.ownerName").value(RUNNER_OWNER_NAME))
+        .andExpect(jsonPath("$.additionalData").value(additionalData))
         .andExpect(jsonPath("$.description").value(description))
         .andExpect(jsonPath("$.parentId").value(parentId))
         .andExpect(jsonPath("$.solutionName").value(solutionName))
@@ -357,6 +363,11 @@ class RunnerControllerTests : ControllerTestBase() {
     val runnerParameterValue = "parameter_value"
     val runnerParameterVarType = "this_is_a_vartype"
 
+    val additionalData =
+        mutableMapOf(
+            "you_can_put_also" to "whatever_you_want_here",
+            "even" to mapOf("object" to "if_you_want_too"))
+
     val baseRunnerId =
         createRunnerAndReturnId(
             mvc,
@@ -382,7 +393,7 @@ class RunnerControllerTests : ControllerTestBase() {
                             cpu = "cpu_limits",
                             memory = "memory_limits",
                         )),
-            ownerName = RUNNER_OWNER_NAME,
+            additionalData = additionalData,
             description = description,
             tags = tags,
             datasetList = datasetList,
@@ -405,7 +416,7 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.name").value(RUNNER_NAME))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$.ownerName").value(RUNNER_OWNER_NAME))
+        .andExpect(jsonPath("$.additionalData").value(additionalData))
         .andExpect(jsonPath("$.description").value(description))
         .andExpect(jsonPath("$.parentId").value(null))
         .andExpect(jsonPath("$.solutionName").value(solutionName))
@@ -434,7 +445,6 @@ class RunnerControllerTests : ControllerTestBase() {
   fun list_runners() {
 
     val firstRunnerName = "my_first_runner"
-    val firstOwnerName = "firstRunnerOwner"
     val firstRunnerId =
         createRunnerAndReturnId(
             mvc,
@@ -443,11 +453,9 @@ class RunnerControllerTests : ControllerTestBase() {
             constructRunnerObject(
                 name = firstRunnerName,
                 solutionId = solutionId,
-                runTemplateId = RUNNER_RUN_TEMPLATE,
-                ownerName = firstOwnerName))
+                runTemplateId = RUNNER_RUN_TEMPLATE))
 
     val secondRunnerName = "my_second_runner"
-    val secondOwnerName = "secondRunnerOwner"
     val secondRunnerId =
         createRunnerAndReturnId(
             mvc,
@@ -456,8 +464,7 @@ class RunnerControllerTests : ControllerTestBase() {
             constructRunnerObject(
                 name = secondRunnerName,
                 solutionId = solutionId,
-                runTemplateId = RUNNER_RUN_TEMPLATE,
-                ownerName = secondOwnerName))
+                runTemplateId = RUNNER_RUN_TEMPLATE))
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/runners")
@@ -468,7 +475,6 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].name").value(firstRunnerName))
         .andExpect(jsonPath("$[0].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[0].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$[0].ownerName").value(firstOwnerName))
         .andExpect(jsonPath("$[0].parentId").value(null))
         .andExpect(jsonPath("$[0].security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
@@ -477,7 +483,6 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[1].name").value(secondRunnerName))
         .andExpect(jsonPath("$[1].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[1].updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$[1].ownerName").value(secondOwnerName))
         .andExpect(jsonPath("$[1].parentId").value(null))
         .andExpect(jsonPath("$[1].security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$[1].security.accessControlList[0].role").value(ROLE_ADMIN))

@@ -377,9 +377,9 @@ entity Runner {
     * runTemplateId: String
     * organizationId: String
     * workspaceId: String
-    * ownerName: String
     solutionName: String
     runTemplateName: String
+    additionalData: Map
     * datasets: RunnerDatasets
     runSizing: RunnerResourceSizing
     * parametersValues: List<RunnerRunTemplateParameterValue>
@@ -403,7 +403,7 @@ entity RunnerCreateRequest {
     datasetList: List<String>
     runSizing: RunnerResourceSizing
     parametersValues: List<RunnerRunTemplateParameterValue>
-    * ownerName: String
+    additionalData: Map
     solutionName: String
     runTemplateName: String
     security: RunnerSecurity
@@ -449,7 +449,7 @@ entity RunnerUpdateRequest {
     datasetList: List<String>
     runSizing: RunnerResourceSizing
     parametersValues: List<RunnerRunTemplateParameterValue>
-    ownerName: String
+    additionalData: Map
     solutionName: String
     runTemplateName: String
 }
