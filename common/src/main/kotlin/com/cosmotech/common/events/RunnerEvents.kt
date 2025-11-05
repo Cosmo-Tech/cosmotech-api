@@ -9,13 +9,6 @@ class TriggerRunnerEvent(
     val runnerId: String
 ) : CsmRequestResponseEvent<String>(publisher)
 
-class AskRunnerStatusEvent(
-    publisher: Any,
-    val organizationId: String,
-    val workspaceId: String,
-    val runnerId: String
-) : CsmRequestResponseEvent<String>(publisher)
-
 class RunnerDeleted(
     publisher: Any,
     val organizationId: String,
@@ -29,4 +22,11 @@ class UpdateRunnerStatus(
     val workspaceId: String,
     val runnerId: String,
     val lastRunId: String,
+) : CsmRequestResponseEvent<String>(publisher)
+
+class GetAttachedRunnerToDataset(
+    publisher: Any,
+    val organizationId: String,
+    val workspaceId: String,
+    val datasetId: String
 ) : CsmRequestResponseEvent<String>(publisher)

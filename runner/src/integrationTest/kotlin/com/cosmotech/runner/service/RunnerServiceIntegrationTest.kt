@@ -5,6 +5,7 @@ package com.cosmotech.runner.service
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.containerregistry.ContainerRegistryService
 import com.cosmotech.common.events.CsmEventPublisher
+import com.cosmotech.common.events.GetAttachedRunnerToDataset
 import com.cosmotech.common.events.HasRunningRuns
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.UpdateRunnerStatus
@@ -2157,6 +2158,34 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     assertEquals(0, retrievedChildRunner.datasets.parameters!!.size)
     assertEquals(0, datasetParameterFromChildRunner.parts.size)
+  }
+
+  @Test
+  fun `test onGetAttachedRunnerToDataset behaviour`() {
+
+    logger.info(
+        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared")
+    val newRunner =
+        makeRunnerCreateRequest(
+            name = "NewRunner",
+            datasetList = mutableListOf(datasetSaved.id),
+            parametersValues =
+                mutableListOf(
+                    RunnerRunTemplateParameterValue(
+                        parameterId = "param1", value = "7", varType = "ignored_var_type")))
+    val newRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
+
+    assertNotNull(newRunnerSaved)
+    assertNotNull(newRunnerSaved.datasets)
+    val datasetParameterId = newRunnerSaved.datasets.parameter
+
+    val getAttachedRunnerToDataset =
+        GetAttachedRunnerToDataset(
+            this, organizationSaved.id, workspaceSaved.id, datasetParameterId)
+    eventPublisher.publishEvent(getAttachedRunnerToDataset)
+
+    assertEquals(newRunnerSaved.id, getAttachedRunnerToDataset.response)
   }
 
   fun makeDataset(

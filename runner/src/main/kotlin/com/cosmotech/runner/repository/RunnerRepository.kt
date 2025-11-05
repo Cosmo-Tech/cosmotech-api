@@ -23,47 +23,11 @@ interface RunnerRepository : RedisDocumentRepository<Runner, String> {
       @Sanitize @Param("runnerId") runnerId: String
   ): Optional<Runner>
 
-  @Query(
-      "(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId}) @validationStatus:\$validationStatus")
-  fun findByValidationStatus(
-      @Sanitize @Param("organizationId") organizationId: String,
-      @Sanitize @Param("workspaceId") workspaceId: String,
-      @Sanitize @Param("validationStatus") validationStatus: String,
-      pageable: Pageable
-  ): Page<Runner>
-
-  @Query(
-      "(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId}) " +
-          "@validationStatus:\$validationStatus \$securityConstraint")
-  fun findByValidationStatusAndSecurity(
-      @Sanitize @Param("organizationId") organizationId: String,
-      @Sanitize @Param("workspaceId") workspaceId: String,
-      @Sanitize @Param("validationStatus") validationStatus: String,
-      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
-      pageable: Pageable
-  ): Page<Runner>
-
   @Query("(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @parentId:{\$parentId})")
   fun findByParentId(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Sanitize @Param("parentId") parentId: String,
-      pageable: Pageable
-  ): Page<Runner>
-
-  @Query("(@organizationId:{\$organizationId})")
-  fun findByOrganizationId(
-      @Sanitize @Param("organizationId") organizationId: String,
-      pageable: Pageable
-  ): Page<Runner>
-
-  @Query(
-      "(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @parentId:{\$parentId}) \$securityConstraint")
-  fun findByParentIdAndSecurity(
-      @Sanitize @Param("organizationId") organizationId: String,
-      @Sanitize @Param("workspaceId") workspaceId: String,
-      @Sanitize @Param("parentId") parentId: String,
-      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
       pageable: Pageable
   ): Page<Runner>
 
@@ -81,4 +45,12 @@ interface RunnerRepository : RedisDocumentRepository<Runner, String> {
       @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
       pageable: Pageable
   ): Page<Runner>
+
+  @Query(
+      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @datasets_parameter:{\$datasetId}")
+  fun findByOrganizationIdAndWorkspaceIdAndDatasetsParameterValue(
+      @Sanitize @Param("organizationId") organizationId: String,
+      @Sanitize @Param("workspaceId") workspaceId: String,
+      @Sanitize @Param("datasetId") datasetId: String
+  ): Optional<Runner>
 }

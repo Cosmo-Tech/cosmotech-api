@@ -4,6 +4,7 @@ package com.cosmotech.dataset.service
 
 import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.config.DATASET_INPUTS_SCHEMA
+import com.cosmotech.common.events.GetAttachedRunnerToDataset
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmRbac
@@ -193,6 +194,17 @@ class DatasetServiceImpl(
 
   override fun deleteDataset(organizationId: String, workspaceId: String, datasetId: String) {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_DELETE)
+
+    val getAttachedRunnerToDatasetEvent =
+        GetAttachedRunnerToDataset(this, organizationId, workspaceId, datasetId)
+
+    eventPublisher.publishEvent(getAttachedRunnerToDatasetEvent)
+
+    val datasetAttachedToRunnerId = getAttachedRunnerToDatasetEvent.response
+    require(datasetAttachedToRunnerId == null || datasetAttachedToRunnerId.isEmpty()) {
+      "Dataset $datasetId is defined as a runner dataset ($datasetAttachedToRunnerId). It cannot be deleted"
+    }
+
     datasetRepository.delete(dataset)
     dataset.parts.forEach {
       datasetPartRepository.delete(it)

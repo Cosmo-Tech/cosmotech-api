@@ -619,8 +619,10 @@ components:
           description: Free form additional data
           additionalProperties: true
         datasets:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: definition of datasets used by the runner
-          $ref: "#/components/schemas/RunnerDatasets"
+          allOf:
+           - $ref: "#/components/schemas/RunnerDatasets"
         runSizing:
           description: definition of resources needed for the runner run
           $ref: "#/components/schemas/RunnerResourceSizing"
@@ -907,6 +909,7 @@ components:
           items:
             type: string
         parameter:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: The dataset id used for dataset parameters on current Runner
           type: string
         parameters:
