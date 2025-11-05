@@ -18,7 +18,7 @@
 | **solutionName** | **String** | the Solution name | [optional] [default to null] |
 | **runTemplateName** | **String** | the Solution Run Template name associated with this Runner | [optional] [default to null] |
 | **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
-| **datasets** | [**RunnerDatasets**](RunnerDatasets.md) |  | [default to null] |
+| **datasets** | [**RunnerDatasets**](RunnerDatasets.md) | definition of datasets used by the runner | [default to null] |
 | **runSizing** | [**RunnerResourceSizing**](RunnerResourceSizing.md) |  | [optional] [default to null] |
 | **parametersValues** | [**List**](RunnerRunTemplateParameterValue.md) | the list of Solution Run Template parameters values | [default to null] |
 | **lastRunInfo** | [**LastRunInfo**](LastRunInfo.md) |  | [default to null] |

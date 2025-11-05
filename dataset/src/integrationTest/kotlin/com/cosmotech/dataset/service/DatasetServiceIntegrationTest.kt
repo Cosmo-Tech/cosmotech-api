@@ -4,6 +4,8 @@ package com.cosmotech.dataset.service
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.config.existTable
+import com.cosmotech.common.events.CsmEventPublisher
+import com.cosmotech.common.events.GetAttachedRunnerToDataset
 import com.cosmotech.common.exceptions.CsmAccessForbiddenException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.rbac.ROLE_ADMIN
@@ -44,6 +46,7 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.awspring.cloud.s3.S3Template
 import io.mockk.every
@@ -107,6 +110,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   @Autowired lateinit var s3Template: S3Template
   @Autowired lateinit var resourceLoader: ResourceLoader
   @Autowired lateinit var writerJdbcTemplate: JdbcTemplate
+  @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
 
   lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: WorkspaceCreateRequest
@@ -698,6 +702,66 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         exception.message)
 
     assertFalse(s3Template.objectExists(csmPlatformProperties.s3.bucketName, fileKeyPath))
+  }
+
+  @Test
+  fun `test deleteDataset when its a Runner dataset parameter`() {
+
+    val datasetPartName = "Customers list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = datasetPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = datasetPartDescription,
+            tags = datasetPartTags,
+            type = DatasetPartTypeEnum.File)
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            parts = mutableListOf(datasetPartCreateRequest))
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val datasetId =
+        datasetApiService
+            .createDataset(
+                organizationSaved.id,
+                workspaceSaved.id,
+                datasetCreateRequest,
+                arrayOf(mockMultipartFile))
+            .id
+
+    val fakeRunnerId = "r-XXXXXX"
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<GetAttachedRunnerToDataset>().response = fakeRunnerId
+        }
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          datasetApiService.deleteDataset(organizationSaved.id, workspaceSaved.id, datasetId)
+        }
+
+    assertEquals(
+        "Dataset $datasetId is defined as a runner dataset ($fakeRunnerId). It cannot be deleted",
+        exception.message)
   }
 
   @Test

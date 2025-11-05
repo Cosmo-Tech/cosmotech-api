@@ -54,6 +54,7 @@ import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.toGenericSecurity
 import java.time.Instant
 import kotlin.collections.mutableListOf
+import kotlin.jvm.optionals.getOrNull
 import org.springframework.context.annotation.Scope
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -173,6 +174,17 @@ class RunnerService(
       runnerRepository.save(it)
       updateChildrenRootId(it, newRootId)
     }
+  }
+
+  fun findRunnerByDatasetParameter(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String
+  ): Runner? {
+    return runnerRepository
+        .findByOrganizationIdAndWorkspaceIdAndDatasetsParameterValue(
+            organizationId, workspaceId, datasetId)
+        .getOrNull()
   }
 
   fun saveInstance(runnerInstance: RunnerInstance): Runner {
