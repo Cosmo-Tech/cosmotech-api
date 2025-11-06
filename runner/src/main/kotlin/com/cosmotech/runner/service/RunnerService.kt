@@ -141,10 +141,11 @@ class RunnerService(
     newRoots.forEach { updateChildrenRootId(parent = it, newRootId = it.id) }
 
     // Notify the deletion
-    val runnerDeleted = RunnerDeleted(this, runner.organizationId, runner.workspaceId, runner.id)
+    val runnerDeleted =
+        RunnerDeleted(
+            this, runner.organizationId, runner.workspaceId, runner.id, runner.datasets.parameter)
     this.eventPublisher.publishEvent(runnerDeleted)
-    datasetApiService.deleteDataset(
-        runner.organizationId, runner.workspaceId, runner.datasets.parameter)
+
     return runnerRepository.delete(runnerInstance.getRunnerDataObjet())
   }
 

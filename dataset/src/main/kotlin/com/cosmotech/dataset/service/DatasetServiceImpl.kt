@@ -4,7 +4,8 @@ package com.cosmotech.dataset.service
 
 import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.config.DATASET_INPUTS_SCHEMA
-import com.cosmotech.common.events.GetAttachedRunnerToDataset
+import com.cosmotech.common.events.GetRunnerAttachedToDataset
+import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmRbac
@@ -49,6 +50,7 @@ import org.apache.commons.lang3.StringUtils
 import org.postgresql.copy.CopyManager
 import org.postgresql.core.BaseConnection
 import org.postgresql.util.PSQLException
+import org.springframework.context.event.EventListener
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.jdbc.core.JdbcTemplate
@@ -195,12 +197,12 @@ class DatasetServiceImpl(
   override fun deleteDataset(organizationId: String, workspaceId: String, datasetId: String) {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_DELETE)
 
-    val getAttachedRunnerToDatasetEvent =
-        GetAttachedRunnerToDataset(this, organizationId, workspaceId, datasetId)
+    val getRunnerAttachedToDatasetEvent =
+        GetRunnerAttachedToDataset(this, organizationId, workspaceId, datasetId)
 
-    eventPublisher.publishEvent(getAttachedRunnerToDatasetEvent)
+    eventPublisher.publishEvent(getRunnerAttachedToDatasetEvent)
 
-    val datasetAttachedToRunnerId = getAttachedRunnerToDatasetEvent.response
+    val datasetAttachedToRunnerId = getRunnerAttachedToDatasetEvent.response
     require(datasetAttachedToRunnerId == null || datasetAttachedToRunnerId.isEmpty()) {
       "Dataset $datasetId is defined as a runner dataset ($datasetAttachedToRunnerId). It cannot be deleted"
     }
@@ -945,6 +947,25 @@ class DatasetServiceImpl(
 
     datasetList.forEach { it.security = updateSecurityVisibility(it).security }
     return datasetList
+  }
+
+  @EventListener(RunnerDeleted::class)
+  fun onRunnerDeleted(runnerDeletedEvent: RunnerDeleted) {
+    val organizationId = runnerDeletedEvent.organizationId
+    val workspaceId = runnerDeletedEvent.workspaceId
+    val datasetParameterId = runnerDeletedEvent.datasetParameterId
+
+    val dataset =
+        datasetRepository.findBy(organizationId, workspaceId, datasetParameterId).orElseThrow {
+          CsmResourceNotFoundException(
+              "Dataset $datasetParameterId not found in organization $organizationId and workspace $workspaceId")
+        }
+
+    datasetRepository.delete(dataset)
+    dataset.parts.forEach {
+      datasetPartRepository.delete(it)
+      datasetPartManagementFactory.removeData(it)
+    }
   }
 
   private fun validDatasetPartCreateRequest(

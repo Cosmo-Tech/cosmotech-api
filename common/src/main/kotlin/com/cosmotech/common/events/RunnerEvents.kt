@@ -13,7 +13,8 @@ class RunnerDeleted(
     publisher: Any,
     val organizationId: String,
     val workspaceId: String,
-    val runnerId: String
+    val runnerId: String,
+    val datasetParameterId: String
 ) : CsmEvent(publisher)
 
 class UpdateRunnerStatus(
@@ -24,7 +25,7 @@ class UpdateRunnerStatus(
     val lastRunId: String,
 ) : CsmRequestResponseEvent<String>(publisher)
 
-class GetAttachedRunnerToDataset(
+class GetRunnerAttachedToDataset(
     publisher: Any,
     val organizationId: String,
     val workspaceId: String,

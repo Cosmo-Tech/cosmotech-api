@@ -5,7 +5,7 @@ package com.cosmotech.dataset.service
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.config.existTable
 import com.cosmotech.common.events.CsmEventPublisher
-import com.cosmotech.common.events.GetAttachedRunnerToDataset
+import com.cosmotech.common.events.GetRunnerAttachedToDataset
 import com.cosmotech.common.exceptions.CsmAccessForbiddenException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.rbac.ROLE_ADMIN
@@ -751,7 +751,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val fakeRunnerId = "r-XXXXXX"
     every { eventPublisher.publishEvent(any()) } answers
         {
-          firstArg<GetAttachedRunnerToDataset>().response = fakeRunnerId
+          firstArg<GetRunnerAttachedToDataset>().response = fakeRunnerId
         }
 
     val exception =
