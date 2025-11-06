@@ -3,7 +3,7 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.common.config.CsmPlatformProperties
-import com.cosmotech.common.events.GetAttachedRunnerToDataset
+import com.cosmotech.common.events.GetRunnerAttachedToDataset
 import com.cosmotech.common.events.RunDeleted
 import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.common.rbac.PERMISSION_DELETE
@@ -271,16 +271,16 @@ internal class RunnerApiServiceImpl(
     }
   }
 
-  @EventListener(GetAttachedRunnerToDataset::class)
-  fun onGetAttachedRunnerToDataset(getAttachedRunnerToDataset: GetAttachedRunnerToDataset) {
-    val organizationId = getAttachedRunnerToDataset.organizationId
-    val workspaceId = getAttachedRunnerToDataset.workspaceId
-    val datasetId = getAttachedRunnerToDataset.datasetId
+  @EventListener(GetRunnerAttachedToDataset::class)
+  fun onGetAttachedRunnerToDataset(getRunnerAttachedToDataset: GetRunnerAttachedToDataset) {
+    val organizationId = getRunnerAttachedToDataset.organizationId
+    val workspaceId = getRunnerAttachedToDataset.workspaceId
+    val datasetId = getRunnerAttachedToDataset.datasetId
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
 
     val runnerId =
         runnerService.findRunnerByDatasetParameter(organizationId, workspaceId, datasetId)?.id
 
-    getAttachedRunnerToDataset.response = runnerId
+    getRunnerAttachedToDataset.response = runnerId
   }
 }

@@ -5,7 +5,7 @@ package com.cosmotech.runner.service
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.containerregistry.ContainerRegistryService
 import com.cosmotech.common.events.CsmEventPublisher
-import com.cosmotech.common.events.GetAttachedRunnerToDataset
+import com.cosmotech.common.events.GetRunnerAttachedToDataset
 import com.cosmotech.common.events.HasRunningRuns
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.UpdateRunnerStatus
@@ -2161,7 +2161,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
-  fun `test onGetAttachedRunnerToDataset behaviour`() {
+  fun `test onGetRunnerAttachedToDataset behaviour`() {
 
     logger.info(
         "should create a new Runner and retrieve parameter varType from solution ignoring the one declared")
@@ -2181,7 +2181,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val datasetParameterId = newRunnerSaved.datasets.parameter
 
     val getAttachedRunnerToDataset =
-        GetAttachedRunnerToDataset(
+        GetRunnerAttachedToDataset(
             this, organizationSaved.id, workspaceSaved.id, datasetParameterId)
     eventPublisher.publishEvent(getAttachedRunnerToDataset)
 
