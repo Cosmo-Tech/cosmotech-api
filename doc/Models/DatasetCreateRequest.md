@@ -9,7 +9,6 @@
 | **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
 | **parts** | [**List**](DatasetPartCreateRequest.md) |  | [optional] [default to []] |
 | **security** | [**DatasetSecurity**](DatasetSecurity.md) |  | [optional] [default to null] |
-| **runnerId** | **String** |  | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

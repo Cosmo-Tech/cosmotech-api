@@ -11,7 +11,7 @@
 | **tags** | **List** | the list of tags | [default to null] |
 | **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
 | **parts** | [**List**](DatasetPart.md) |  | [default to null] |
-| **createInfo** | [**DatasetCreateInfo**](DatasetCreateInfo.md) | The details of the Dataset creation | [default to null] |
+| **createInfo** | [**DatasetEditInfo**](DatasetEditInfo.md) | The details of the Dataset creation | [default to null] |
 | **updateInfo** | [**DatasetEditInfo**](DatasetEditInfo.md) | The details of the Dataset last update | [default to null] |
 | **security** | [**DatasetSecurity**](DatasetSecurity.md) |  | [default to null] |
 

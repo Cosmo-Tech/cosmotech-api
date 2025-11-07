@@ -121,7 +121,6 @@ All URIs are relative to *http://localhost:8080*
  - [CreatedRun](./Models/CreatedRun.md)
  - [Dataset](./Models/Dataset.md)
  - [DatasetAccessControl](./Models/DatasetAccessControl.md)
- - [DatasetCreateInfo](./Models/DatasetCreateInfo.md)
  - [DatasetCreateRequest](./Models/DatasetCreateRequest.md)
  - [DatasetEditInfo](./Models/DatasetEditInfo.md)
  - [DatasetPart](./Models/DatasetPart.md)

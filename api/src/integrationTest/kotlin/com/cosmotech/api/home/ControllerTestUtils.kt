@@ -438,7 +438,6 @@ class ControllerTestUtils {
           description = DATASET_DESCRIPTION,
           tags = mutableListOf("tag1", "tag2"),
           additionalData = mutableMapOf("customClient" to "customDatasetData"),
-          runnerId = "r-12345678910",
           parts =
               mutableListOf(
                   DatasetPartCreateRequest(
