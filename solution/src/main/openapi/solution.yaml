@@ -831,14 +831,12 @@ components:
           type: string
           description: The Solution key which groups Solution versions
           minLength: 1
-          maxLength: 50
           example: "brewery-solution"
         name:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: The Solution name
           minLength: 1
-          maxLength: 50
           example: "Brewery Solution"
         description:
           type: string
@@ -923,13 +921,11 @@ components:
           type: string
           description: Technical key for resource name convention and version grouping. Must be unique
           minLength: 1
-          maxLength: 50
           example: "brewery-solution"
         name:
           type: string
           description: Solution name. This name is displayed in the sample webApp
           minLength: 1
-          maxLength: 50
           example: "Brewery Solution"
         description:
           type: string
@@ -993,13 +989,11 @@ components:
           type: string
           description: Technical key for resource name convention and version grouping. Must be unique
           minLength: 1
-          maxLength: 50
           example: "brewery-solution"
         name:
           type: string
           description: The Solution name
           minLength: 1
-          maxLength: 50
           example: "Brewery Solution"
         description:
           type: string
@@ -1101,13 +1095,11 @@ components:
           type: string
           description: The Solution Run Template id
           minLength: 1
-          maxLength: 50
           example: "template-123"
         name:
           type: string
           description: The Run Template name
           minLength: 1
-          maxLength: 50
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         description:
@@ -1144,13 +1136,11 @@ components:
           type: string
           description: The Solution Run Template id
           minLength: 1
-          maxLength: 50
           example: "template-123"
         name:
           type: string
           description: The Run Template name
           minLength: 1
-          maxLength: 50
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         description:
@@ -1187,7 +1177,6 @@ components:
           type: string
           description: The Run Template name
           minLength: 1
-          maxLength: 50
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
         description:
@@ -1247,7 +1236,6 @@ components:
           type: string
           description: The Parameter Group id
           minLength: 1
-          maxLength: 50
         description:
           type: string
           description: A description of the parameter group
@@ -1275,7 +1263,6 @@ components:
           type: string
           description: The Parameter Group id
           minLength: 1
-          maxLength: 50
         description:
           type: string
           description: A description of the parameter group
@@ -1324,7 +1311,6 @@ components:
           type: string
           description: The Parameter id
           minLength: 1
-          maxLength: 50
         description:
           type: string
           description: The parameter description
@@ -1359,7 +1345,6 @@ components:
           type: string
           description: The Parameter id
           minLength: 1
-          maxLength: 50
         description:
           type: string
           description: The parameter description
