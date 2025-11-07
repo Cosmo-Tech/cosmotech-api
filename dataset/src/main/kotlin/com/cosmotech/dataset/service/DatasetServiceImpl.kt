@@ -27,7 +27,6 @@ import com.cosmotech.common.utils.sanitizeDatasetPartId
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetCreateInfo
 import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetEditInfo
 import com.cosmotech.dataset.domain.DatasetPart
@@ -152,9 +151,7 @@ class DatasetServiceImpl(
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
     val editInfo = DatasetEditInfo(timestamp = now, userId = userId)
-    val createInfo =
-        DatasetCreateInfo(
-            timestamp = now, userId = userId, runnerId = datasetCreateRequest.runnerId)
+    val createInfo = DatasetEditInfo(timestamp = now, userId = userId)
     val security =
         csmRbac
             .initSecurity(datasetCreateRequest.security.toGenericSecurity(datasetId))

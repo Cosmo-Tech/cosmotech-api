@@ -141,7 +141,6 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.organizationId").value(organizationId))
         .andExpect(jsonPath("$.workspaceId").value(workspaceId))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$.createInfo.runnerId").value("r-12345678910"))
         .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.createInfo.timestamp").value(greaterThan(0.toLong())))
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
@@ -180,8 +179,7 @@ class DatasetControllerTests : ControllerTestBase() {
                     DatasetCreateRequest(
                         name = DATASET_NAME,
                         description = DATASET_DESCRIPTION,
-                        tags = mutableListOf("tag1", "tag2"),
-                        runnerId = "r-12345678910"))
+                        tags = mutableListOf("tag1", "tag2")))
                 .toString()
                 .byteInputStream())
 
@@ -197,7 +195,6 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.workspaceId").value(workspaceId))
         .andExpect(jsonPath("$.parts", empty<DatasetPart>()))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$.createInfo.runnerId").value("r-12345678910"))
         .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.createInfo.timestamp").value(greaterThan(0.toLong())))
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
@@ -223,8 +220,7 @@ class DatasetControllerTests : ControllerTestBase() {
                         name = DATASET_NAME,
                         description = DATASET_DESCRIPTION,
                         tags = mutableListOf("tag1", "tag2"),
-                        parts = mutableListOf(),
-                        runnerId = "r-12345678910"))
+                        parts = mutableListOf()))
                 .toString()
                 .byteInputStream())
 
@@ -240,7 +236,6 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.workspaceId").value(workspaceId))
         .andExpect(jsonPath("$.parts", empty<DatasetPart>()))
         .andExpect(jsonPath("$.createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$.createInfo.runnerId").value("r-12345678910"))
         .andExpect(jsonPath("$.createInfo.timestamp").isNumber)
         .andExpect(jsonPath("$.createInfo.timestamp").value(greaterThan(0.toLong())))
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))

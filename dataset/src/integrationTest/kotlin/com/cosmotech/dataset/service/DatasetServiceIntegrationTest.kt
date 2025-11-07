@@ -152,10 +152,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val datasetTags = mutableListOf("dataset", "public", "customers")
     val datasetCreateRequest =
         DatasetCreateRequest(
-            name = datasetName,
-            description = datasetDescription,
-            tags = datasetTags,
-            runnerId = "r-12354678910")
+            name = datasetName, description = datasetDescription, tags = datasetTags)
 
     val createdDataset =
         datasetApiService.createDataset(
@@ -165,7 +162,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertEquals(datasetName, createdDataset.name)
     assertEquals(datasetDescription, createdDataset.description)
     assertEquals(datasetTags, createdDataset.tags)
-    assertEquals("r-12354678910", createdDataset.createInfo.runnerId)
     assertEquals(0, createdDataset.parts.size)
   }
 

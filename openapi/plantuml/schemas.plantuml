@@ -44,7 +44,7 @@ entity Dataset {
     * tags: List<String>
     additionalData: Map
     * parts: List<DatasetPart>
-    * createInfo: DatasetCreateInfo
+    * createInfo: DatasetEditInfo
     * updateInfo: DatasetEditInfo
     * security: DatasetSecurity
 }
@@ -54,12 +54,6 @@ entity DatasetAccessControl {
     * role: String
 }
 
-entity DatasetCreateInfo {
-    * timestamp: Long
-    * userId: String
-    runnerId: String
-}
-
 entity DatasetCreateRequest {
     * name: String
     description: String
@@ -67,7 +61,6 @@ entity DatasetCreateRequest {
     additionalData: Map
     parts: List<DatasetPartCreateRequest>
     security: DatasetSecurity
-    runnerId: String
 }
 
 entity DatasetEditInfo {
@@ -639,7 +632,7 @@ Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates
 Solution -- SolutionSecurity : security
 Dataset -- "0..*" DatasetPart : parts
-Dataset -- DatasetCreateInfo : createInfo
+Dataset -- DatasetEditInfo : createInfo
 Dataset -- DatasetEditInfo : updateInfo
 Dataset -- DatasetSecurity : security
 Run -- RunEditInfo : createInfo
