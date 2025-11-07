@@ -242,6 +242,12 @@ class RunnerService(
               .toList()
         }
     runners.forEach { it.security = updateSecurityVisibility(it).security }
+    runners.forEach { runner ->
+      val listDatasetParts =
+          datasetApiService.listDatasetParts(
+              organization!!.id, workspace!!.id, runner.datasets.parameter, null, null)
+      runner.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
+    }
     return runners
   }
 
