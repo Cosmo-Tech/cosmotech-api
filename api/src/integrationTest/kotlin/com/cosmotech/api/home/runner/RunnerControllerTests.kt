@@ -479,6 +479,10 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$[0].security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[0].datasets.parameters[0].name").value(solutionParameterId2))
+        .andExpect(jsonPath("$[0].datasets.parameters[0].sourceName").value(TEST_FILE_NAME))
+        .andExpect(
+            jsonPath("$[0].datasets.parameters[0].type").value(DatasetPartTypeEnum.File.name))
         .andExpect(jsonPath("$[1].id").value(secondRunnerId))
         .andExpect(jsonPath("$[1].name").value(secondRunnerName))
         .andExpect(jsonPath("$[1].createInfo.userId").value(PLATFORM_ADMIN_EMAIL))
@@ -487,6 +491,10 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[1].security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$[1].security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$[1].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$[1].datasets.parameters[0].name").value(solutionParameterId2))
+        .andExpect(jsonPath("$[1].datasets.parameters[0].sourceName").value(TEST_FILE_NAME))
+        .andExpect(
+            jsonPath("$[1].datasets.parameters[0].type").value(DatasetPartTypeEnum.File.name))
         .andDo(MockMvcResultHandlers.print())
         .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/runners/GET"))
   }

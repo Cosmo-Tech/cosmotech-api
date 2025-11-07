@@ -75,6 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -346,6 +347,59 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
       runnerApiService.createRunner(
           organizationSaved.id, workspaceSaved.id, makeRunnerCreateRequest())
     }
+  }
+
+  @Test
+  fun `test datasets_parameters is listed into listRunners response`() {
+    val workspaceDatasetCreateRequest =
+        makeDataset(
+            name = "WorkspaceDataset",
+            parts =
+                mutableListOf(
+                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt")))
+    val workspaceDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            workspaceDatasetCreateRequest,
+            arrayOf(
+                MockMultipartFile(
+                    "files",
+                    "test.txt",
+                    MediaType.MULTIPART_FORM_DATA_VALUE,
+                    "test".toByteArray())))
+    workspaceSaved =
+        workspaceApiService.updateWorkspace(
+            organizationSaved.id,
+            workspaceSaved.id,
+            WorkspaceUpdateRequest(
+                solution =
+                    WorkspaceSolution(
+                        solutionId = solutionSaved.id,
+                        datasetId = workspaceDataset.id,
+                        defaultParameterValues =
+                            mutableMapOf("param2" to workspaceDataset.parts[0].id))))
+    val runnerWithInheritedDatasetParameterCreateRequest =
+        makeRunnerCreateRequest(
+            name = "Runner_with_inherited_dataset_parameter",
+            datasetList = mutableListOf(datasetSaved.id))
+    val runnerWithInheritedDatasetParameter =
+        runnerApiService.createRunner(
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerWithInheritedDatasetParameterCreateRequest)
+
+    val runnerList =
+        runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id, null, null)
+    assertEquals(3, runnerList.size)
+
+    val runnerFromList = runnerList.firstOrNull { it.id == runnerWithInheritedDatasetParameter.id }
+    assertNotNull(runnerFromList)
+    val runnerDatasetParameters = runnerFromList.datasets.parameters as MutableList<DatasetPart>
+    assertNotNull(runnerDatasetParameters)
+    assertEquals(1, runnerDatasetParameters.size)
+    assertEquals("test.txt", runnerDatasetParameters[0].sourceName)
+    assertEquals("param2", runnerDatasetParameters[0].name)
   }
 
   @Test
@@ -2190,8 +2244,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   fun makeDataset(
       name: String = "name",
+      parts: MutableList<DatasetPartCreateRequest> = mutableListOf(),
   ): DatasetCreateRequest {
-    return DatasetCreateRequest(name)
+    return DatasetCreateRequest(name = name, parts = parts)
   }
 
   fun makeSolution(organizationId: String = organizationSaved.id): SolutionCreateRequest {
