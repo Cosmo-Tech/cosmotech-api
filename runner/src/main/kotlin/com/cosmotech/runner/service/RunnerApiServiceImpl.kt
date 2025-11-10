@@ -60,7 +60,12 @@ internal class RunnerApiServiceImpl(
           .initBaseDatasetListFromParent(parentId, runnerCreateRequest.datasetList)
     }
 
-    return runnerService.saveInstance(runnerInstance)
+    val runnerSaved = runnerService.saveInstance(runnerInstance)
+    val listDatasetParts =
+        datasetApiServiceInterface.listDatasetParts(
+            organizationId, workspaceId, runnerSaved.datasets.parameter, null, null)
+
+    return runnerSaved.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
   }
 
   override fun getRunner(organizationId: String, workspaceId: String, runnerId: String): Runner {
@@ -82,7 +87,14 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
 
-    return runnerService.saveInstance(runnerInstance.setValueFrom(runnerUpdateRequest).stamp())
+    val runnerSaved =
+        runnerService.saveInstance(runnerInstance.setValueFrom(runnerUpdateRequest).stamp())
+
+    val listDatasetParts =
+        datasetApiServiceInterface.listDatasetParts(
+            organizationId, workspaceId, runnerSaved.datasets.parameter, null, null)
+
+    return runnerSaved.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
   }
 
   override fun deleteRunner(organizationId: String, workspaceId: String, runnerId: String) {

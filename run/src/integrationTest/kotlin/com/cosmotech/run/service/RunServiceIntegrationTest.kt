@@ -15,6 +15,7 @@ import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCreateRequest
+import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -125,6 +126,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)
+    rediSearchIndexer.createIndexFor(DatasetPart::class.java)
     rediSearchIndexer.createIndexFor(Runner::class.java)
     rediSearchIndexer.createIndexFor(Run::class.java)
 
