@@ -24,6 +24,7 @@ import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.sanitizeDatasetPartId
+import com.cosmotech.common.utils.sanitizeForRedis
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
@@ -898,17 +899,20 @@ class DatasetServiceImpl(
     }
     getVerifiedDataset(organizationId, workspaceId, datasetId)
 
+    val tagsSanitized =
+        requestBody.map { it.trim() }.filter { it.isNotBlank() }.map { it.sanitizeForRedis() }
     val defaultPageSize = csmPlatformProperties.databases.resources.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     val datasetPartList =
         if (pageable != null) {
           datasetPartRepository
-              .findDatasetPartByTags(organizationId, workspaceId, datasetId, requestBody, pageable)
+              .findDatasetPartByTags(
+                  organizationId, workspaceId, datasetId, tagsSanitized, pageable)
               .toList()
         } else {
           findAllPaginated(defaultPageSize) {
             datasetPartRepository
-                .findDatasetPartByTags(organizationId, workspaceId, datasetId, requestBody, it)
+                .findDatasetPartByTags(organizationId, workspaceId, datasetId, tagsSanitized, it)
                 .toList()
           }
         }
@@ -927,18 +931,19 @@ class DatasetServiceImpl(
       return listDatasets(organizationId, workspaceId, page, size)
     }
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
-
+    val tagsSanitized =
+        requestBody.map { it.trim() }.filter { it.isNotBlank() }.map { it.sanitizeForRedis() }
     val defaultPageSize = csmPlatformProperties.databases.resources.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     val datasetList =
         if (pageable != null) {
           datasetRepository
-              .findDatasetByTags(organizationId, workspaceId, requestBody, pageable)
+              .findDatasetByTags(organizationId, workspaceId, tagsSanitized, pageable)
               .toList()
         } else {
           findAllPaginated(defaultPageSize) {
             datasetRepository
-                .findDatasetByTags(organizationId, workspaceId, requestBody, it)
+                .findDatasetByTags(organizationId, workspaceId, tagsSanitized, it)
                 .toList()
           }
         }
