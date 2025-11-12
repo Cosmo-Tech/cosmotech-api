@@ -181,7 +181,7 @@ class RunControllerTests : ControllerTestBase() {
         }
 
     mvc.perform(
-            get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs")
+            get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -219,7 +219,7 @@ class RunControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId")
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
@@ -264,7 +264,7 @@ class RunControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId")
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -294,7 +294,7 @@ class RunControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/logs")
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId/logs")
                 .accept(MediaType.TEXT_PLAIN))
         .andExpect(status().is2xxSuccessful)
         .andExpect(content().string(logs))
@@ -342,7 +342,7 @@ class RunControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId}/runs/$runId/status")
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId/status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)

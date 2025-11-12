@@ -1026,6 +1026,104 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
+  fun `test searchDatasets with special char listed`() {
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers", "!")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName, description = datasetDescription, tags = datasetTags)
+
+    datasetApiService.createDataset(
+        organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+
+    datasetApiService.createDataset(
+        organizationSaved.id,
+        workspaceSaved.id,
+        DatasetCreateRequest(
+            name = "Other Dataset",
+            description = "Other Dataset ",
+            tags = mutableListOf("dataset", "public", "other")),
+        arrayOf())
+
+    val foundDatasets =
+        datasetApiService.searchDatasets(
+            organizationSaved.id,
+            workspaceSaved.id,
+            listOf(
+                "other",
+                ",",
+                ".",
+                "/",
+                ";",
+                "'",
+                "[",
+                "]",
+                "-",
+                "=",
+                "<",
+                ">",
+                "?",
+                ":",
+                "\"",
+                "{",
+                "}",
+                "|",
+                "_",
+                "+",
+                "!",
+                "@",
+                "#",
+                "%",
+                "^",
+                "&",
+                "*",
+                "(",
+                ")",
+                "`",
+                "~",
+                "\$fofo"),
+            null,
+            null)
+
+    assertEquals(2, foundDatasets.size)
+  }
+
+  @Test
+  fun `test searchDatasets with special char aggregated`() {
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers", "!")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName, description = datasetDescription, tags = datasetTags)
+
+    datasetApiService.createDataset(
+        organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+
+    datasetApiService.createDataset(
+        organizationSaved.id,
+        workspaceSaved.id,
+        DatasetCreateRequest(
+            name = "Other Dataset",
+            description = "Other Dataset ",
+            tags = mutableListOf("dataset", "public", "other")),
+        arrayOf())
+
+    val foundDatasets =
+        datasetApiService.searchDatasets(
+            organizationSaved.id,
+            workspaceSaved.id,
+            listOf("other", ",./;'[]-=<>?:\"{}|_+!@#%^&*()`~$"),
+            null,
+            null)
+
+    assertEquals(1, foundDatasets.size)
+  }
+
+  @Test
   fun `test createDatasetPart type FILE`() {
 
     val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
@@ -1776,6 +1874,188 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertEquals(datasetPartTags, foundDatasetParts[0].tags)
     assertEquals(CUSTOMER_SOURCE_FILE_NAME, foundDatasetParts[0].sourceName)
     assertEquals(DatasetPartTypeEnum.File, foundDatasetParts[0].type)
+  }
+
+  @Test
+  fun `test searchDatasetParts with special char listed`() {
+
+    val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
+
+    val createDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+
+    assertTrue(createDataset.parts.isEmpty())
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val datasetPartName = "Customer list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+
+    datasetApiService.createDatasetPart(
+        organizationSaved.id,
+        workspaceSaved.id,
+        createDataset.id,
+        mockMultipartFile,
+        DatasetPartCreateRequest(
+            name = datasetPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = datasetPartDescription,
+            tags = datasetPartTags,
+            type = DatasetPartTypeEnum.File))
+
+    val foundDatasetParts =
+        datasetApiService.searchDatasetParts(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            listOf(
+                "part",
+                ",",
+                ".",
+                "/",
+                ";",
+                "'",
+                "[",
+                "]",
+                "-",
+                "=",
+                "<",
+                ">",
+                "?",
+                ":",
+                "\"",
+                "{",
+                "}",
+                "|",
+                "_",
+                "+",
+                "!",
+                "@",
+                "#",
+                "%",
+                "^",
+                "&",
+                "*",
+                "(",
+                ")",
+                "`",
+                "~",
+                "\$fofo"),
+            null,
+            null)
+
+    assertEquals(1, foundDatasetParts.size)
+  }
+
+  @Test
+  fun `test searchDatasetParts  with special char aggregated and no result`() {
+
+    val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
+
+    val createDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+
+    assertTrue(createDataset.parts.isEmpty())
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val datasetPartName = "Customer list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+
+    datasetApiService.createDatasetPart(
+        organizationSaved.id,
+        workspaceSaved.id,
+        createDataset.id,
+        mockMultipartFile,
+        DatasetPartCreateRequest(
+            name = datasetPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = datasetPartDescription,
+            tags = datasetPartTags,
+            type = DatasetPartTypeEnum.File))
+
+    val foundDatasetParts =
+        datasetApiService.searchDatasetParts(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            listOf("test", ",./;'[]-=<>?:\"{}|_+!@#%^&*()`~$"),
+            null,
+            null)
+
+    assertTrue(foundDatasetParts.isEmpty())
+  }
+
+  @Test
+  fun `test searchDatasetParts  with special char aggregated`() {
+
+    val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
+
+    val createDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+
+    assertTrue(createDataset.parts.isEmpty())
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val datasetPartName = "Customer list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+
+    datasetApiService.createDatasetPart(
+        organizationSaved.id,
+        workspaceSaved.id,
+        createDataset.id,
+        mockMultipartFile,
+        DatasetPartCreateRequest(
+            name = datasetPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = datasetPartDescription,
+            tags = datasetPartTags,
+            type = DatasetPartTypeEnum.File))
+
+    val foundDatasetParts =
+        datasetApiService.searchDatasetParts(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            listOf("part", ",./;'[]-=<>?:\"{}|_+!@#%^&*()`~$"),
+            null,
+            null)
+
+    assertEquals(1, foundDatasetParts.size)
   }
 
   @Test
