@@ -2168,26 +2168,36 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             tags = datasetTags,
             parts = mutableListOf(customerPartCreateRequest, inventoryPartCreateRequest))
 
-    val emptyCustomerMockMultipartFile =
+    val customersResourceTestFile =
+        resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val customersFileToSend = FileInputStream(customersResourceTestFile)
+
+    val inventoryResourceTestFile =
+        resourceLoader.getResource("classpath:/$INVENTORY_SOURCE_FILE_NAME").file
+
+    val inventoryFileToSend = FileInputStream(inventoryResourceTestFile)
+
+    val customerMockMultipartFile =
         MockMultipartFile(
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            IOUtils.toByteArray(customersFileToSend))
 
-    val emptyInventoryMockMultipartFile =
+    val inventoryMockMultipartFile =
         MockMultipartFile(
             "files",
             INVENTORY_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            IOUtils.toByteArray(inventoryFileToSend))
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(emptyCustomerMockMultipartFile, emptyInventoryMockMultipartFile))
+            arrayOf(customerMockMultipartFile, inventoryMockMultipartFile))
 
     var listDatasetParts =
         datasetApiService.listDatasetParts(
