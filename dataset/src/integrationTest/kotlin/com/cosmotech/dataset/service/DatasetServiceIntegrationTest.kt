@@ -1047,12 +1047,21 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             tags = mutableListOf("dataset", "public", "other")),
         arrayOf())
 
+    datasetApiService.createDataset(
+        organizationSaved.id,
+        workspaceSaved.id,
+        DatasetCreateRequest(
+            name = "Another Dataset",
+            description = "Another Dataset ",
+            tags = mutableListOf("dataset", "public", "other with blankspace    12 34")),
+        arrayOf())
+
     val foundDatasets =
         datasetApiService.searchDatasets(
             organizationSaved.id,
             workspaceSaved.id,
             listOf(
-                "other",
+                "other with blankspace    12 34",
                 ",",
                 ".",
                 "/",
