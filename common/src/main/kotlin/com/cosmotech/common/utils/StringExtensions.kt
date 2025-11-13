@@ -29,7 +29,7 @@ fun String.sanitizeForKubernetes(maxLength: Int = KUBERNETES_RESOURCE_NAME_MAX_L
 
 fun String.sanitizeForRedis(): String {
   var sanitizedString = this
-  ",./;'[]-=<>?:{}|_+!@#%^&*()`~"
+  ",./;'[]-=<>?:{}|_+!@#%^&*()`~ "
       .forEach { sanitizedString = sanitizedString.replace(it.toString(), "\\\\$it") }
   "\"$".forEach { sanitizedString = sanitizedString.replace(it.toString(), "\\\\\\${it}") }
   return sanitizedString
