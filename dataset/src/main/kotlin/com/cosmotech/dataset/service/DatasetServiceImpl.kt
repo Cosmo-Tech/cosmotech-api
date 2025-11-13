@@ -333,17 +333,15 @@ class DatasetServiceImpl(
     validDatasetUpdateRequest(datasetUpdateRequest, filesUploaded)
 
     val newDatasetParts =
-        datasetUpdateRequest.parts
-            ?.map { part ->
-              val constructDatasetPart =
-                  constructDatasetPart(organizationId, workspaceId, datasetId, part)
-              datasetPartManagementFactory.storeData(
-                  constructDatasetPart,
-                  filesUploaded.first { it.originalFilename == part.sourceName })
-              constructDatasetPart
-            }
-            ?.toMutableList()
+        datasetUpdateRequest.parts?.map { part ->
+          val constructDatasetPart =
+              constructDatasetPart(organizationId, workspaceId, datasetId, part)
+          datasetPartManagementFactory.storeData(
+              constructDatasetPart, filesUploaded.first { it.originalFilename == part.sourceName })
+          constructDatasetPart
+        }
 
+    val previousDatasetParts = previousDataset.parts
     val updatedDataset =
         Dataset(
             id = datasetId,
@@ -353,7 +351,7 @@ class DatasetServiceImpl(
             workspaceId = workspaceId,
             tags = datasetUpdateRequest.tags ?: previousDataset.tags,
             additionalData = datasetUpdateRequest.additionalData ?: previousDataset.additionalData,
-            parts = newDatasetParts ?: previousDataset.parts,
+            parts = newDatasetParts?.toMutableList() ?: previousDatasetParts,
             createInfo = previousDataset.createInfo,
             updateInfo =
                 DatasetEditInfo(
@@ -365,15 +363,14 @@ class DatasetServiceImpl(
 
     if (newDatasetParts != null) {
       datasetPartRepository.saveAll(newDatasetParts)
-    }
-    val newDataset = datasetRepository.update(updatedDataset)
 
-    if (previousDataset.parts.isNotEmpty()) {
-      datasetPartRepository.deleteAll(previousDataset.parts)
-      previousDataset.parts.forEach { datasetPartManagementFactory.removeData(it) }
+      if (previousDatasetParts.isNotEmpty()) {
+        datasetPartRepository.deleteAll(previousDatasetParts)
+        previousDatasetParts.forEach { datasetPartManagementFactory.removeData(it) }
+      }
     }
 
-    return newDataset
+    return datasetRepository.update(updatedDataset)
   }
 
   override fun updateDatasetAccessControl(

@@ -2387,6 +2387,94 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
+  fun `test updateDataset with empty body`() {
+
+    // Create a Dataset with dataset Part
+    val datasetPartName = "Customers list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartAdditionalData =
+        mutableMapOf("part" to "data", "complex" to mutableMapOf("nested" to "data"))
+    val datasetPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = datasetPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = datasetPartDescription,
+            tags = datasetPartTags,
+            additionalData = datasetPartAdditionalData,
+            type = DatasetPartTypeEnum.File)
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetAdditionalData =
+        mutableMapOf("dataset" to "data", "complex" to mutableMapOf("nested" to "data"))
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            additionalData = datasetAdditionalData,
+            parts = mutableListOf(datasetPartCreateRequest))
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(mockMultipartFile))
+
+    // Update dataset with an empty body
+    val updatedDataset =
+        datasetApiService.updateDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            DatasetUpdateRequest(),
+            arrayOf())
+
+    // check Dataset file data after update
+    val datasetPartFilePath = constructFilePathForDatasetPart(createdDataset, 0)
+    assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, datasetPartFilePath))
+    val downloadFile = s3Template.download(csmPlatformProperties.s3.bucketName, datasetPartFilePath)
+
+    val expectedText = FileInputStream(resourceTestFile).bufferedReader().use { it.readText() }
+    val retrievedText =
+        InputStreamResource(downloadFile).inputStream.bufferedReader().use { it.readText() }
+
+    assertEquals(expectedText, retrievedText)
+    // check Dataset simple data after update
+    assertNotNull(updatedDataset)
+    assertEquals(datasetName, updatedDataset.name)
+    assertEquals(datasetDescription, updatedDataset.description)
+    assertEquals(datasetTags, updatedDataset.tags)
+    assertEquals(createdDataset.createInfo, updatedDataset.createInfo)
+    assertEquals(createdDataset.updateInfo.userId, updatedDataset.updateInfo.userId)
+    assertTrue(createdDataset.updateInfo.timestamp < updatedDataset.updateInfo.timestamp)
+    assertEquals(datasetAdditionalData, updatedDataset.additionalData)
+    assertEquals(1, updatedDataset.parts.size)
+    val updatedDatasetPart = updatedDataset.parts[0]
+    assertNotNull(updatedDatasetPart)
+    assertEquals(datasetPartName, updatedDatasetPart.name)
+    assertEquals(datasetPartDescription, updatedDatasetPart.description)
+    assertEquals(datasetPartTags, updatedDatasetPart.tags)
+    assertEquals(datasetPartAdditionalData, updatedDatasetPart.additionalData)
+    assertEquals(CUSTOMER_SOURCE_FILE_NAME, updatedDatasetPart.sourceName)
+    assertEquals(DatasetPartTypeEnum.File, updatedDatasetPart.type)
+  }
+
+  @Test
   fun `test updateDataset with two dataset parts and same multipart file name`() {
 
     val initialDataset =
