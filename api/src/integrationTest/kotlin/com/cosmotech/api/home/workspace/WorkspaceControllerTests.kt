@@ -34,6 +34,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -657,5 +658,41 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andDo(
             document(
                 "organizations/{organization_id}/workspaces/{workspace_id}/files/download/GET"))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun `download workspace file with wrong file name`() {
+
+    val workspaceId =
+        createWorkspaceAndReturnId(
+            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+
+    val fileName = "test.txt"
+    val fileToUpload =
+        this::class.java.getResourceAsStream("/workspace/$fileName")
+            ?: throw IllegalStateException(
+                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null")
+
+    val mockFile =
+        MockMultipartFile(
+            "file", fileName, MediaType.TEXT_PLAIN_VALUE, IOUtils.toByteArray(fileToUpload))
+
+    val destination = "path/to/a/directory/"
+    mvc.perform(
+        multipart("/organizations/$organizationId/workspaces/$workspaceId/files")
+            .file(mockFile)
+            .param("overwrite", "true")
+            .param("destination", destination)
+            .accept(MediaType.APPLICATION_JSON)
+            .with(csrf()))
+
+    mvc.perform(
+            get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
+                .param("file_name", "Wrong file name")
+                .accept(MediaType.APPLICATION_OCTET_STREAM))
+        .andExpect(status().is4xxClientError)
+        .andExpect(jsonPath("$.detail").value("The specified key does not exist."))
+        .andDo(MockMvcResultHandlers.print())
   }
 }
