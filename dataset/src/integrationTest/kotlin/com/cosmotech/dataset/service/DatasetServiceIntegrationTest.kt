@@ -89,6 +89,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
   val EMPTY_SOURCE_FILE_NAME = "emptyfile.csv"
   val CUSTOMER_SOURCE_FILE_NAME = "customers.csv"
+  val CUSTOMER_ZIPPED_SOURCE_FILE_NAME = "customers.zip"
   val CUSTOMER_50K_SOURCE_FILE_NAME = "customers_50K.csv"
   val CUSTOMERS_WITH_QUOTES_SOURCE_FILE_NAME = "customerswithquotes.csv"
   val CUSTOMERS_WITH_DOUBLE_QUOTES_SOURCE_FILE_NAME = "customerswithdoublequotes.csv"
@@ -1568,6 +1569,48 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
+  fun `test createDatasetPart DB with mimetype unsupported`() {
+
+    val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
+
+    val createDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+
+    assertTrue(createDataset.parts.isEmpty())
+
+    val resourceTestFile =
+        resourceLoader.getResource("classpath:/$CUSTOMER_ZIPPED_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "file",
+            CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val exception =
+        assertThrows<CsmAccessForbiddenException> {
+          datasetApiService.createDatasetPart(
+              organizationSaved.id,
+              workspaceSaved.id,
+              createDataset.id,
+              mockMultipartFile,
+              DatasetPartCreateRequest(
+                  name = "Customer list",
+                  sourceName = CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
+                  description = "List of customers",
+                  tags = mutableListOf("part", "public", "customers"),
+                  type = DatasetPartTypeEnum.File))
+        }
+    assertEquals(
+        "MIME type application/zip for file $CUSTOMER_ZIPPED_SOURCE_FILE_NAME is not authorized.",
+        exception.message)
+  }
+
+  @Test
   fun `test createDatasetPart with unallowed file name`() {
 
     val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
@@ -2387,6 +2430,116 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
+  fun `test updateDataset with DB dataset part and mimetype unsupported`() {
+
+    // Create a Dataset with dataset Part
+    val datasetPartName = "Customers list"
+    val datasetPartDescription = "List of customers"
+    val datasetPartTags = mutableListOf("part", "public", "customers")
+    val datasetPartAdditionalData =
+        mutableMapOf("part" to "data", "complex" to mutableMapOf("nested" to "data"))
+    val datasetPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = datasetPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = datasetPartDescription,
+            tags = datasetPartTags,
+            additionalData = datasetPartAdditionalData,
+            type = DatasetPartTypeEnum.File)
+
+    val datasetName = "Customer Dataset"
+    val datasetDescription = "Dataset for customers"
+    val datasetTags = mutableListOf("dataset", "public", "customers")
+    val datasetAdditionalData =
+        mutableMapOf("dataset" to "data", "complex" to mutableMapOf("nested" to "data"))
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            additionalData = datasetAdditionalData,
+            parts = mutableListOf(datasetPartCreateRequest))
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(mockMultipartFile))
+
+    // Create a DatasetUpdateRequest with new dataset part
+    val newDatasetPartName = "Product list"
+    val newDatasetPartDescription = "List of Product"
+    val newDatasetPartTags = mutableListOf("part", "public", "product")
+    val newDatasetPartAdditionalData = mutableMapOf<String, Any>("part" to "new data")
+    val newDatasetPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = newDatasetPartName,
+            sourceName = CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
+            description = newDatasetPartDescription,
+            tags = newDatasetPartTags,
+            additionalData = newDatasetPartAdditionalData,
+            type = DatasetPartTypeEnum.DB)
+
+    val newDatasetName = "Shop Dataset"
+    val newDatasetDescription = "Dataset for shop"
+    val newDatasetTags = mutableListOf("dataset", "public", "shop")
+    val newDatasetAdditionalData = mutableMapOf<String, Any>("dataset" to "new data")
+    val newDatasetSecurity =
+        DatasetSecurity(
+            default = ROLE_NONE,
+            accessControlList =
+                mutableListOf(
+                    DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR)))
+    val datasetUpdateRequest =
+        DatasetUpdateRequest(
+            name = newDatasetName,
+            description = newDatasetDescription,
+            tags = newDatasetTags,
+            additionalData = newDatasetAdditionalData,
+            parts = mutableListOf(newDatasetPartCreateRequest),
+            security = newDatasetSecurity)
+
+    val newDatasetPartTestFile =
+        resourceLoader.getResource("classpath:/$CUSTOMER_ZIPPED_SOURCE_FILE_NAME").file
+
+    val newDatasetPartFileToSend = FileInputStream(newDatasetPartTestFile)
+
+    val newDatasetPartMockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(newDatasetPartFileToSend))
+
+    val exception =
+        assertThrows<CsmAccessForbiddenException> {
+          datasetApiService.updateDataset(
+              organizationSaved.id,
+              workspaceSaved.id,
+              createdDataset.id,
+              datasetUpdateRequest,
+              arrayOf(newDatasetPartMockMultipartFile))
+        }
+
+    assertEquals(
+        "MIME type application/zip for file $CUSTOMER_ZIPPED_SOURCE_FILE_NAME is not authorized.",
+        exception.message)
+  }
+
+  @Test
   fun `test updateDataset with empty body`() {
 
     // Create a Dataset with dataset Part
@@ -3030,6 +3183,77 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         }
     assertEquals(
         "MIME type text/x-yaml for file $UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME is not authorized.",
+        exception.message)
+  }
+
+  @Test
+  fun `test replaceDatasetPart with DB dataset part with mimetype unsupported`() {
+
+    // Create a Dataset with dataset Part
+    val datasetPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = "Customers list",
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = "List of customers",
+            tags = mutableListOf("part", "public", "customers"),
+            type = DatasetPartTypeEnum.DB)
+
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = "Customer Dataset",
+            description = "Dataset for customers",
+            tags = mutableListOf("dataset", "public", "customers"),
+            parts = mutableListOf(datasetPartCreateRequest))
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
+
+    val fileToSend = FileInputStream(resourceTestFile)
+
+    val mockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend))
+
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(mockMultipartFile))
+
+    // Create a DatasetUpdateRequest with new dataset part
+    val datasetPartUpdateRequest =
+        DatasetPartUpdateRequest(
+            sourceName = CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
+            description = "Dataset for shop",
+            tags = mutableListOf("dataset", "public", "shop"))
+
+    val wrongTypeTestFile =
+        resourceLoader.getResource("classpath:/$CUSTOMER_ZIPPED_SOURCE_FILE_NAME").file
+
+    val wrongTypeFileToSend = FileInputStream(wrongTypeTestFile)
+
+    val wrongTypeMockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(wrongTypeFileToSend))
+
+    val exception =
+        assertThrows<CsmAccessForbiddenException> {
+          datasetApiService.replaceDatasetPart(
+              organizationSaved.id,
+              workspaceSaved.id,
+              createdDataset.id,
+              createdDataset.parts[0].id,
+              wrongTypeMockMultipartFile,
+              datasetPartUpdateRequest)
+        }
+    assertEquals(
+        "MIME type application/zip for file $CUSTOMER_ZIPPED_SOURCE_FILE_NAME is not authorized.",
         exception.message)
   }
 
