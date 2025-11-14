@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import org.springframework.web.util.BindErrorUtils
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
@@ -157,6 +158,17 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
     response.type = URI.create(httpStatusCodeTypePrefix + notImplementedErrorStatus.value())
     if (exception.message != null) {
       response.detail = exception.message
+    }
+    return response
+  }
+
+  @ExceptionHandler(NoSuchKeyException::class)
+  fun handleNoSuchKeyException(exception: NoSuchKeyException): ProblemDetail {
+    val response = ProblemDetail.forStatus(HttpStatus.NOT_FOUND)
+    val notImplementedErrorStatus = HttpStatus.NOT_FOUND
+    response.type = URI.create(httpStatusCodeTypePrefix + notImplementedErrorStatus.value())
+    if (exception.awsErrorDetails().errorMessage() != null) {
+      response.detail = exception.awsErrorDetails().errorMessage()
     }
     return response
   }

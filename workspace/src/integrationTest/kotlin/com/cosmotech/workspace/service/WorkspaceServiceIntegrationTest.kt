@@ -178,6 +178,24 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
+  fun `test get workspace file with wrong name`() {
+    val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
+    val input = FileInputStream(resourceTestFile)
+    val multipartFile =
+        MockMultipartFile(
+            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
+    workspaceApiService.createWorkspaceFile(
+        organizationSaved.id, workspaceSaved.id, multipartFile, true, null)
+
+    val exception =
+        assertThrows<NoSuchKeyException> {
+          workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, "WrongName")
+        }
+
+    assertEquals("The specified key does not exist.", exception.awsErrorDetails().errorMessage())
+  }
+
+  @Test
   fun `test list workspace files`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
