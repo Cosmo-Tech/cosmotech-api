@@ -222,9 +222,9 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
     logger.info("should delete a workspace file")
     val resourceTestFile = resourceLoader.getResource("classpath:/$fileName").file
     val input = FileInputStream(resourceTestFile)
+    val originalFilename = resourceTestFile.getName()
     val multipartFile =
-        MockMultipartFile(
-            "file", resourceTestFile.getName(), "text/plain", IOUtils.toByteArray(input))
+        MockMultipartFile("file", originalFilename, "text/plain", IOUtils.toByteArray(input))
 
     workspaceApiService.createWorkspaceFile(
         organizationSaved.id, workspaceSaved.id, multipartFile, true, null)
@@ -232,11 +232,11 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
     workspaceApiService.deleteWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
 
     val exception =
-        assertThrows<NoSuchKeyException> {
+        assertThrows<CsmResourceNotFoundException> {
           workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, fileName)
         }
 
-    assertEquals("The specified key does not exist.", exception.awsErrorDetails().errorMessage())
+    assertEquals("$originalFilename does not exist.", exception.message)
   }
 
   @Test

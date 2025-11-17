@@ -163,13 +163,11 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
   }
 
   @ExceptionHandler(NoSuchKeyException::class)
-  fun handleNoSuchKeyException(exception: NoSuchKeyException): ProblemDetail {
+  fun handleNoSuchKeyException(): ProblemDetail {
     val response = ProblemDetail.forStatus(HttpStatus.NOT_FOUND)
     val notImplementedErrorStatus = HttpStatus.NOT_FOUND
     response.type = URI.create(httpStatusCodeTypePrefix + notImplementedErrorStatus.value())
-    if (exception.awsErrorDetails().errorMessage() != null) {
-      response.detail = exception.awsErrorDetails().errorMessage()
-    }
+    response.detail = "The specified file name does not exist."
     return response
   }
 }
