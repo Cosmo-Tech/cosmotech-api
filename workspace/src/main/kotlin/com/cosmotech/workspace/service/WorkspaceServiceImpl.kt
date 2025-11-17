@@ -56,6 +56,7 @@ import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.awscore.exception.AwsServiceException
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 
 private const val WORKSPACE_FILES_BASE_FOLDER = "workspace-files"
 
@@ -233,12 +234,20 @@ internal class WorkspaceServiceImpl(
         workspace.id,
         workspace.name,
         fileName)
-    return InputStreamResource(
-        s3Template
-            .download(
-                csmPlatformProperties.s3.bucketName,
-                "$organizationId/$workspaceId/$WORKSPACE_FILES_BASE_FOLDER/$fileName")
-            .inputStream)
+    var fileResource: Resource
+    try {
+      fileResource =
+          InputStreamResource(
+              s3Template
+                  .download(
+                      csmPlatformProperties.s3.bucketName,
+                      "$organizationId/$workspaceId/$WORKSPACE_FILES_BASE_FOLDER/$fileName")
+                  .inputStream)
+    } catch (exception: NoSuchKeyException) {
+      throw CsmResourceNotFoundException("$fileName does not exist.", exception)
+    }
+
+    return fileResource
   }
 
   override fun createWorkspaceFile(
