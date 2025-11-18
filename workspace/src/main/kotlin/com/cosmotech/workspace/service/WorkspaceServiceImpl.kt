@@ -335,13 +335,23 @@ internal class WorkspaceServiceImpl(
             .prefix(prefix)
             .build()
 
-    return s3Client
-        .listObjectsV2Paginator(listObjectsRequest)
-        .stream()
-        .flatMap {
-          it.contents().stream().map { WorkspaceFile(fileName = it.key().removePrefix(prefix)) }
-        }
-        .toList()
+    try {
+      return s3Client
+          .listObjectsV2Paginator(listObjectsRequest)
+          .stream()
+          .flatMap { s3Object ->
+            s3Object.contents().stream().map {
+              WorkspaceFile(fileName = it.key().removePrefix(prefix))
+            }
+          }
+          .toList()
+    } catch (e: AwsServiceException) {
+      throw S3Exception("Something wrong happened when listing workspace files", e)
+    } catch (e: SdkClientException) {
+      throw S3Exception("Something wrong happened when listing workspace files", e)
+    } catch (e: S3Exception) {
+      throw S3Exception("Something wrong happened when listing workspace files", e)
+    }
   }
 
   private fun deleteS3WorkspaceObject(

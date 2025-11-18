@@ -48,7 +48,6 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
@@ -188,11 +187,11 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
         organizationSaved.id, workspaceSaved.id, multipartFile, true, null)
 
     val exception =
-        assertThrows<NoSuchKeyException> {
+        assertThrows<CsmResourceNotFoundException> {
           workspaceApiService.getWorkspaceFile(organizationSaved.id, workspaceSaved.id, "WrongName")
         }
 
-    assertEquals("The specified key does not exist.", exception.awsErrorDetails().errorMessage())
+    assertEquals("WrongName does not exist.", exception.message)
   }
 
   @Test
