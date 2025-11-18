@@ -692,7 +692,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 .param("file_name", "Wrong file name")
                 .accept(MediaType.APPLICATION_OCTET_STREAM))
         .andExpect(status().is4xxClientError)
-        .andExpect(jsonPath("$.detail").value("The specified key does not exist."))
+        .andExpect(jsonPath("$.detail").value("Wrong file name does not exist."))
         .andDo(MockMvcResultHandlers.print())
   }
 }

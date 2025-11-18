@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.exceptions
 
+import io.awspring.cloud.s3.S3Exception
 import java.net.URI
 import org.apache.commons.lang3.NotImplementedException
 import org.springframework.core.Ordered
@@ -23,6 +24,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import org.springframework.web.util.BindErrorUtils
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 
+@Suppress("TooManyFunctions")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
@@ -165,9 +167,20 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
   @ExceptionHandler(NoSuchKeyException::class)
   fun handleNoSuchKeyException(): ProblemDetail {
     val response = ProblemDetail.forStatus(HttpStatus.NOT_FOUND)
-    val notImplementedErrorStatus = HttpStatus.NOT_FOUND
-    response.type = URI.create(httpStatusCodeTypePrefix + notImplementedErrorStatus.value())
+    val noSuchKeyErrorStatus = HttpStatus.NOT_FOUND
+    response.type = URI.create(httpStatusCodeTypePrefix + noSuchKeyErrorStatus.value())
     response.detail = "The specified file name does not exist."
+    return response
+  }
+
+  @ExceptionHandler(S3Exception::class)
+  fun handleS3Exception(exception: S3Exception): ProblemDetail {
+    val response = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    val internalServerErrorStatus = HttpStatus.INTERNAL_SERVER_ERROR
+    response.type = URI.create(httpStatusCodeTypePrefix + internalServerErrorStatus.value())
+    if (exception.message != null) {
+      response.detail = exception.message
+    }
     return response
   }
 }
