@@ -236,6 +236,7 @@ class OrganizationServiceImpl(
       organizationId: String,
       requiredPermission: String
   ): Organization {
+    check(organizationId.trim().isNotBlank()) { "Organization Id must not be blank" }
     val organization =
         organizationRepository.findByIdOrNull(organizationId)
             ?: throw CsmResourceNotFoundException("Organization $organizationId does not exist!")
@@ -247,6 +248,7 @@ class OrganizationServiceImpl(
       organizationId: String,
       requiredPermissions: List<String>
   ): Organization {
+    check(organizationId.trim().isNotBlank()) { "Organization Id must not be blank" }
     val organization = getVerifiedOrganization(organizationId)
     requiredPermissions.forEach {
       csmRbac.verify(organization.security.toGenericSecurity(organizationId), it)

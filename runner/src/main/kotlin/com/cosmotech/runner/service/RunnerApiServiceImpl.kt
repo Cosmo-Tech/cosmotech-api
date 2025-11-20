@@ -69,6 +69,7 @@ internal class RunnerApiServiceImpl(
   }
 
   override fun getRunner(organizationId: String, workspaceId: String, runnerId: String): Runner {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId)
     val runner = runnerInstance.getRunnerDataObjet()
@@ -84,6 +85,7 @@ internal class RunnerApiServiceImpl(
       runnerId: String,
       runnerUpdateRequest: RunnerUpdateRequest
   ): Runner {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
 
@@ -98,6 +100,7 @@ internal class RunnerApiServiceImpl(
   }
 
   override fun deleteRunner(organizationId: String, workspaceId: String, runnerId: String) {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_DELETE)
 
@@ -119,6 +122,7 @@ internal class RunnerApiServiceImpl(
   }
 
   override fun startRun(organizationId: String, workspaceId: String, runnerId: String): CreatedRun {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
 
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_LAUNCH)
@@ -127,6 +131,7 @@ internal class RunnerApiServiceImpl(
   }
 
   override fun stopRun(organizationId: String, workspaceId: String, runnerId: String) {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
 
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
@@ -151,6 +156,7 @@ internal class RunnerApiServiceImpl(
       runnerId: String,
       runnerAccessControl: RunnerAccessControl
   ): RunnerAccessControl {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE_SECURITY)
@@ -171,6 +177,7 @@ internal class RunnerApiServiceImpl(
       runnerId: String,
       identityId: String
   ): RunnerAccessControl {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
@@ -185,6 +192,7 @@ internal class RunnerApiServiceImpl(
       identityId: String,
       runnerRole: RunnerRole
   ): RunnerAccessControl {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE_SECURITY)
@@ -204,6 +212,7 @@ internal class RunnerApiServiceImpl(
       runnerId: String,
       identityId: String
   ) {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE_SECURITY)
@@ -218,6 +227,7 @@ internal class RunnerApiServiceImpl(
       workspaceId: String,
       runnerId: String
   ): RunnerSecurity {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
@@ -231,6 +241,7 @@ internal class RunnerApiServiceImpl(
       runnerId: String,
       role: String
   ): List<String> {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
 
@@ -242,6 +253,7 @@ internal class RunnerApiServiceImpl(
       workspaceId: String,
       runnerId: String
   ): List<String> {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
@@ -255,6 +267,7 @@ internal class RunnerApiServiceImpl(
       runnerId: String,
       runnerRole: RunnerRole
   ): RunnerSecurity {
+    check(runnerId.isNotBlank()) { "Runner Id must not be blank" }
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE_SECURITY)

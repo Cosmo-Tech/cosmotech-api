@@ -1172,6 +1172,101 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
+  fun `getOrganization with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> { organizationApiService.getOrganization("") }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
+  fun `createOrganizationAccessControl with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> {
+          organizationApiService.createOrganizationAccessControl(
+              "", OrganizationAccessControl(id = "test", role = ROLE_ADMIN))
+        }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
+  fun `deleteOrganization with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> { organizationApiService.deleteOrganization("") }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
+  fun `deleteOrganizationAccessControl with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> {
+          organizationApiService.deleteOrganizationAccessControl("", "identityId")
+        }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
+  fun `getOrganizationAccessControl with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> {
+          organizationApiService.getOrganizationAccessControl("", "identityId")
+        }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
+  fun `getOrganizationPermissions with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> {
+          organizationApiService.getOrganizationPermissions("", "roleId")
+        }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
+  fun `getOrganizationSecurity with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> { organizationApiService.getOrganizationSecurity("") }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
+  fun `listOrganizationSecurityUsers with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> {
+          organizationApiService.listOrganizationSecurityUsers("")
+        }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
+  fun `updateOrganization with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> {
+          organizationApiService.updateOrganization("", OrganizationUpdateRequest())
+        }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
+  fun `updateOrganizationAccessControl with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> {
+          organizationApiService.updateOrganizationAccessControl(
+              "", "identityId", OrganizationRole("roleId"))
+        }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
+  fun `updateOrganizationDefaultSecurity with empty organizationId`() {
+    val exception =
+        assertThrows<IllegalStateException> {
+          organizationApiService.updateOrganizationDefaultSecurity("", OrganizationRole("roleId"))
+        }
+    assertEquals("Organization Id must not be blank", exception.message)
+  }
+
+  @Test
   fun `createOrganization without required organization name`() {
     assertThrows<IllegalArgumentException> {
       organizationApiService.createOrganization(makeSimpleOrganizationCreateRequest(""))
