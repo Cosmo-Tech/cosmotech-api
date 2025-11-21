@@ -3,7 +3,6 @@
 package com.cosmotech.run.service
 
 import com.cosmotech.common.config.CsmPlatformProperties
-import com.cosmotech.common.events.RunDeleted
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.rbac.ROLE_ADMIN
 import com.cosmotech.common.rbac.ROLE_NONE
@@ -79,23 +78,28 @@ import org.springframework.web.client.RestClientResponseException
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class RunServiceIntegrationTest : CsmTestBase() {
 
-  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
-
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_READER_USER = "test.user@cosmotech.com"
+
+  val ORGANIZATION_ID_MUST_NOT_BE_BLANK = "Organization Id must not be blank"
+  val WORKSPACE_ID_MUST_NOT_BE_BLANK = "Workspace Id must not be blank"
+  val RUNNER_ID_MUST_NOT_BE_BLANK = "Runner Id must not be blank"
+  val RUN_ID_MUST_NOT_BE_BLANK = "Run Id must not be blank"
+
   private val logger = LoggerFactory.getLogger(RunServiceIntegrationTest::class.java)
 
   @MockK(relaxed = true) private lateinit var containerFactory: RunContainerFactory
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
+  @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
-  @SpykBean @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
-  @SpykBean @Autowired lateinit var runServiceImpl: RunServiceImpl
-  @SpykBean @Autowired lateinit var runApiService: RunApiServiceInterface
+  @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
+  @SpykBean lateinit var runServiceImpl: RunServiceImpl
+  @Autowired lateinit var runApiService: RunApiServiceInterface
   @Autowired lateinit var eventPublisher: com.cosmotech.common.events.CsmEventPublisher
 
   lateinit var dataset: DatasetCreateRequest
@@ -155,8 +159,6 @@ class RunServiceIntegrationTest : CsmTestBase() {
 
     every { workflowService.launchRun(any(), any(), any(), any()) } returns
         mockWorkflowRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-    every { runnerApiService.getRunner(any(), any(), any()) } returns runnerSaved
-    every { eventPublisher.publishEvent(any<RunDeleted>()) } returns Unit
   }
 
   fun makeDatasetCreateRequest() = DatasetCreateRequest(name = "Dataset Test")
@@ -436,5 +438,144 @@ class RunServiceIntegrationTest : CsmTestBase() {
     assertThrows<Exception> {
       runApiService.getRunLogs(organizationSaved.id, workspaceSaved.id, runnerSaved.id, runSavedId)
     }
+  }
+
+  @Test
+  fun `deleteRun with empty ids`() {
+    runSavedId =
+        mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, solutionSaved.id)
+    var exception =
+        assertThrows<IllegalStateException> {
+          runApiService.deleteRun("", workspaceSaved.id, runnerSaved.id, runSavedId)
+        }
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.deleteRun(organizationSaved.id, "", runnerSaved.id, runSavedId)
+        }
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.deleteRun(organizationSaved.id, workspaceSaved.id, "", runSavedId)
+        }
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.deleteRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, "")
+        }
+    assertEquals(RUN_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `getRun with empty ids`() {
+    runSavedId =
+        mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, solutionSaved.id)
+    var exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRun("", workspaceSaved.id, runnerSaved.id, runSavedId)
+        }
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRun(organizationSaved.id, "", runnerSaved.id, runSavedId)
+        }
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRun(organizationSaved.id, workspaceSaved.id, "", runSavedId)
+        }
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, "")
+        }
+    assertEquals(RUN_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `getRunLogs with empty ids`() {
+    runSavedId =
+        mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, solutionSaved.id)
+    var exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRunLogs("", workspaceSaved.id, runnerSaved.id, runSavedId)
+        }
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRunLogs(organizationSaved.id, "", runnerSaved.id, runSavedId)
+        }
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRunLogs(organizationSaved.id, workspaceSaved.id, "", runSavedId)
+        }
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRunLogs(organizationSaved.id, workspaceSaved.id, runnerSaved.id, "")
+        }
+    assertEquals(RUN_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `getRunStatus with empty ids`() {
+    runSavedId =
+        mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, solutionSaved.id)
+    var exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRunStatus("", workspaceSaved.id, runnerSaved.id, runSavedId)
+        }
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRunStatus(organizationSaved.id, "", runnerSaved.id, runSavedId)
+        }
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRunStatus(organizationSaved.id, workspaceSaved.id, "", runSavedId)
+        }
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.getRunStatus(organizationSaved.id, workspaceSaved.id, runnerSaved.id, "")
+        }
+    assertEquals(RUN_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `listRuns with empty ids`() {
+    runSavedId =
+        mockStartRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, solutionSaved.id)
+    var exception =
+        assertThrows<IllegalStateException> {
+          runApiService.listRuns("", workspaceSaved.id, runnerSaved.id, null, null)
+        }
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.listRuns(organizationSaved.id, "", runnerSaved.id, null, null)
+        }
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runApiService.listRuns(organizationSaved.id, workspaceSaved.id, "", null, null)
+        }
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
   }
 }
