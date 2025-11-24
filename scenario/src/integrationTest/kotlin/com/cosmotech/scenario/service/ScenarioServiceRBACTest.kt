@@ -27,7 +27,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.IoTypesEnum
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.*
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
@@ -100,7 +100,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var scenarioApiService: ScenarioApiService
@@ -4887,6 +4887,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               materializeTwingraph(datasetSaved)
+              every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+              every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returns
+                  datasetSaved
               val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -4959,6 +4962,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               materializeTwingraph(datasetSaved)
+              every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+              every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returns
+                  datasetSaved
               val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -5031,6 +5037,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               materializeTwingraph(datasetSaved)
+              every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+              every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returns
+                  datasetSaved
               val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -5102,6 +5111,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
+              every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+              every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returns
+                  datasetSaved
               val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -5169,6 +5181,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
+              every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+              every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returns
+                  datasetSaved
               val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)

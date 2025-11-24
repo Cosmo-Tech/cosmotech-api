@@ -25,7 +25,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.IoTypesEnum
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
@@ -56,6 +56,7 @@ import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -96,7 +97,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var runnerApiService: RunnerApiService
@@ -106,6 +107,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
 
   @BeforeEach
   fun setUp() {
+    clearAllMocks()
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
@@ -2369,6 +2371,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               materializeTwingraph(datasetSaved)
+              every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+              every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returns
+                  datasetSaved
               val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2440,6 +2445,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               materializeTwingraph(datasetSaved)
+              every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+              every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returns
+                  datasetSaved
               val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2511,6 +2519,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
               materializeTwingraph(datasetSaved)
+              every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+              every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returns
+                  datasetSaved
               val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, role)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2581,6 +2592,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
+              every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+              every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returns
+                  datasetSaved
               val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -2647,6 +2661,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetRepository.save(
                       datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
+              every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+              every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returns
+                  datasetSaved
               val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)

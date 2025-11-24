@@ -43,4 +43,12 @@ interface DatasetApiServiceInterface : DatasetApiService {
       identity: String,
       role: String
   ): DatasetAccessControl
+
+  /**
+   * Update the default security of the dataset passed in parameter
+   * @param organizationId an organization id
+   * @param dataset a dataset to update
+   * @param role new dataset role
+   */
+  fun updateDefaultSecurity(organizationId: String, dataset: Dataset, role: String)
 }

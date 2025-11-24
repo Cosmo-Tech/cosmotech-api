@@ -41,7 +41,6 @@ import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
-import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.service.getRbac
@@ -1166,19 +1165,17 @@ internal class ScenarioServiceImpl(
       scenario: Scenario,
       scenarioRole: String
   ) {
-    var datasetRole = ROLE_NONE
-    if (scenarioRole != ROLE_NONE) datasetRole = ROLE_VIEWER
+    var datasetRole = ROLE_VIEWER
+    if (scenarioRole == ROLE_NONE) datasetRole = ROLE_NONE
     scenario.datasetList!!.forEach { datasetId ->
-      val dataset = datasetService.findDatasetById(organizationId, datasetId)
+      val dataset = datasetService.findByOrganizationIdAndDatasetId(organizationId, datasetId)
+      if (dataset!!.main == true) return@forEach
       // We do not want to lower the default security if it's higher than viewer
-      if (dataset.security!!.default != ROLE_NONE && datasetRole == ROLE_VIEWER) return Unit
-      if (dataset.security!!.default != ROLE_NONE && datasetRole == ROLE_NONE) return Unit
+      if (datasetRole == ROLE_VIEWER && dataset.security!!.default != ROLE_NONE) return@forEach
+      if (datasetRole == ROLE_NONE && dataset.security!!.default != ROLE_VIEWER) return@forEach
       // Filter on dataset copy (because we do not want to update main dataset as it can be shared
       // between scenarios)
-      if (dataset.main != true) {
-        datasetService.setDatasetDefaultSecurity(
-            organizationId, datasetId, DatasetRole(datasetRole))
-      }
+      datasetService.updateDefaultSecurity(organizationId, dataset, datasetRole)
     }
   }
 

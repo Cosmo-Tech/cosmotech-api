@@ -50,6 +50,7 @@ import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -143,6 +144,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
   @BeforeEach
   fun setUp() {
+    clearAllMocks()
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
@@ -1261,51 +1263,55 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `when sharing a scenario, the linked dataset default security should be set to at least viewer if the dataset isn't main`() {
     scenarioSaved.datasetList!!.removeLast()
+    val linkedDatasets = mutableListOf<Dataset>()
     listOf(ROLE_NONE, ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).forEach { role ->
-      var linkedDataset =
+      linkedDatasets.add(
           datasetApiService.createDataset(
-              organizationSaved.id!!, makeDataset(isMain = false, default = role))
-      scenarioSaved.datasetList!!.add(linkedDataset.id!!)
-      linkedDataset =
+              organizationSaved.id!!, makeDataset(isMain = false, default = role)))
+      linkedDatasets.add(
           datasetApiService.createDataset(
-              organizationSaved.id!!, makeDataset(isMain = true, default = role))
-      scenarioSaved.datasetList!!.add(linkedDataset.id!!)
+              organizationSaved.id!!, makeDataset(isMain = true, default = role)))
     }
+    linkedDatasets.forEach { scenarioSaved.datasetList!!.add(it.id!!) }
     scenarioSaved =
         scenarioApiService.updateScenario(
             organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioSaved)
+    every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+    every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returnsMany
+        linkedDatasets
 
     scenarioApiService.setScenarioDefaultSecurity(
         organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, ScenarioRole(ROLE_EDITOR))
 
-    verify(exactly = 1) {
-      datasetApiService.setDatasetDefaultSecurity(any(), any(), DatasetRole(ROLE_VIEWER))
-    }
+    // Only one result correspond, the dataset with default security none and main=false
+    verify(exactly = 1) { datasetApiService.updateDefaultSecurity(any(), any(), ROLE_VIEWER) }
   }
 
   @Test
   fun `when stopping sharing a scenario, the dataset default security should be set to none it's not higher than viewer and the dataset isn't main`() {
     scenarioSaved.datasetList!!.removeLast()
+    val linkedDatasets = mutableListOf<Dataset>()
     listOf(ROLE_NONE, ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).forEach { role ->
-      var linkedDataset =
+      linkedDatasets.add(
           datasetApiService.createDataset(
-              organizationSaved.id!!, makeDataset(isMain = false, default = role))
-      scenarioSaved.datasetList!!.add(linkedDataset.id!!)
-      linkedDataset =
+              organizationSaved.id!!, makeDataset(isMain = false, default = role)))
+      linkedDatasets.add(
           datasetApiService.createDataset(
-              organizationSaved.id!!, makeDataset(isMain = true, default = role))
-      scenarioSaved.datasetList!!.add(linkedDataset.id!!)
+              organizationSaved.id!!, makeDataset(isMain = true, default = role)))
     }
+    linkedDatasets.forEach { scenarioSaved.datasetList!!.add(it.id!!) }
     scenarioSaved =
         scenarioApiService.updateScenario(
             organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioSaved)
+    every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+    every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returnsMany
+        linkedDatasets
 
     scenarioApiService.setScenarioDefaultSecurity(
         organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, ScenarioRole(ROLE_NONE))
 
-    verify(exactly = 1) {
-      datasetApiService.setDatasetDefaultSecurity(any(), any(), DatasetRole(ROLE_NONE))
-    }
+    // Only one result correspond, the dataset with default security viewer and main=false
+    verify(exactly = 1) { datasetApiService.updateDefaultSecurity(any(), any(), ROLE_NONE) }
   }
 
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
