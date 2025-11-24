@@ -15,6 +15,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.RolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
@@ -26,6 +27,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
@@ -506,6 +508,34 @@ class RunnerService(
       // create a rbacSecurity object from runner Rbac by changing default value
       val rbacSecurity = csmRbac.setDefault(this.getRbacSecurity(), role, this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
+      //      this.runner.datasetList!!
+      //          .mapNotNull {
+      //            datasetApiService.findByOrganizationIdAndDatasetId(this.runner.organizationId!!,
+      // it)
+      //          }
+      //          .forEach { dataset ->
+      updateLinkedDatasetDefaultSecurity(role)
+      //          }
+    }
+
+    private fun updateLinkedDatasetDefaultSecurity(role: String) {
+      var datasetRole = ROLE_NONE
+      if (role != ROLE_NONE) datasetRole = ROLE_VIEWER
+      this.runner.datasetList!!.forEach { datasetId ->
+        val linkedDataset =
+            datasetApiService.findDatasetById(this.runner.organizationId!!, datasetId)
+        // We do not want to lower the default security if it's higher than viewer
+        if (linkedDataset.security!!.default != ROLE_NONE && datasetRole == ROLE_VIEWER)
+            return@forEach Unit
+        if (linkedDataset.security!!.default != ROLE_NONE && datasetRole == ROLE_NONE)
+            return@forEach Unit
+        // Filter on dataset copy (because we do not want to update main dataset as it can be shared
+        // between scenarios)
+        if (linkedDataset.main != true) {
+          datasetApiService.setDatasetDefaultSecurity(
+              this.runner.organizationId!!, datasetId, DatasetRole(datasetRole))
+        }
+      }
     }
   }
 

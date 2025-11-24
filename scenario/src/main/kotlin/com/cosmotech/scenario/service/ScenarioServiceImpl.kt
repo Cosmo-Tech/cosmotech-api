@@ -27,6 +27,7 @@ import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
@@ -40,6 +41,7 @@ import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
+import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.service.getRbac
@@ -996,6 +998,7 @@ internal class ScenarioServiceImpl(
         csmRbac.setDefault(scenario.getRbac(), scenarioRole.role, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
     upsertScenarioData(scenario)
+    setLinkedDatasetDefaultSecurity(organizationId, scenario, scenarioRole.role)
     return scenario.security as ScenarioSecurity
   }
 
@@ -1154,6 +1157,27 @@ internal class ScenarioServiceImpl(
         if (datasetRBACIds.contains(identityId)) {
           datasetService.removeDatasetAccessControl(organizationId, datasetId, identityId)
         }
+      }
+    }
+  }
+
+  fun setLinkedDatasetDefaultSecurity(
+      organizationId: String,
+      scenario: Scenario,
+      scenarioRole: String
+  ) {
+    var datasetRole = ROLE_NONE
+    if (scenarioRole != ROLE_NONE) datasetRole = ROLE_VIEWER
+    scenario.datasetList!!.forEach { datasetId ->
+      val dataset = datasetService.findDatasetById(organizationId, datasetId)
+      // We do not want to lower the default security if it's higher than viewer
+      if (dataset.security!!.default != ROLE_NONE && datasetRole == ROLE_VIEWER) return Unit
+      if (dataset.security!!.default != ROLE_NONE && datasetRole == ROLE_NONE) return Unit
+      // Filter on dataset copy (because we do not want to update main dataset as it can be shared
+      // between scenarios)
+      if (dataset.main != true) {
+        datasetService.setDatasetDefaultSecurity(
+            organizationId, datasetId, DatasetRole(datasetRole))
       }
     }
   }
