@@ -27,7 +27,6 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
@@ -508,33 +507,29 @@ class RunnerService(
       // create a rbacSecurity object from runner Rbac by changing default value
       val rbacSecurity = csmRbac.setDefault(this.getRbacSecurity(), role, this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
-      //      this.runner.datasetList!!
-      //          .mapNotNull {
-      //            datasetApiService.findByOrganizationIdAndDatasetId(this.runner.organizationId!!,
-      // it)
-      //          }
-      //          .forEach { dataset ->
       updateLinkedDatasetDefaultSecurity(role)
-      //          }
     }
 
     private fun updateLinkedDatasetDefaultSecurity(role: String) {
-      var datasetRole = ROLE_NONE
-      if (role != ROLE_NONE) datasetRole = ROLE_VIEWER
+      var datasetRole = ROLE_VIEWER
+      if (role == ROLE_NONE) datasetRole = ROLE_NONE
       this.runner.datasetList!!.forEach { datasetId ->
         val linkedDataset =
-            datasetApiService.findDatasetById(this.runner.organizationId!!, datasetId)
-        // We do not want to lower the default security if it's higher than viewer
-        if (linkedDataset.security!!.default != ROLE_NONE && datasetRole == ROLE_VIEWER)
-            return@forEach Unit
-        if (linkedDataset.security!!.default != ROLE_NONE && datasetRole == ROLE_NONE)
-            return@forEach Unit
+            datasetApiService.findByOrganizationIdAndDatasetId(
+                this.runner.organizationId!!, datasetId)
+        if (linkedDataset!!.main == true) return@forEach
+        // If the dataset default security is different from none,
+        // Then it's already viewer or higher and doesn't need to change
+        if (datasetRole == ROLE_VIEWER && linkedDataset.security!!.default != ROLE_NONE)
+            return@forEach
+        // If the dataset default security is different from viewer,
+        // Then it's either already none or higher than viewer and doesn't need to change
+        if (datasetRole == ROLE_NONE && linkedDataset.security!!.default != ROLE_VIEWER)
+            return@forEach
         // Filter on dataset copy (because we do not want to update main dataset as it can be shared
-        // between scenarios)
-        if (linkedDataset.main != true) {
-          datasetApiService.setDatasetDefaultSecurity(
-              this.runner.organizationId!!, datasetId, DatasetRole(datasetRole))
-        }
+        // between runners)
+        datasetApiService.updateDefaultSecurity(
+            this.runner.organizationId!!, linkedDataset, datasetRole)
       }
     }
   }

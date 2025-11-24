@@ -20,7 +20,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.IoTypesEnum
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.*
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
@@ -39,6 +39,7 @@ import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
@@ -80,7 +81,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
@@ -128,6 +129,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @BeforeEach
   fun setUp() {
+    clearAllMocks()
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
@@ -1099,51 +1101,55 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `when sharing a runner, the linked dataset default security should be set to at least viewer if the dataset isn't main`() {
     runnerSaved.datasetList!!.removeLast()
+    val linkedDatasets = mutableListOf<Dataset>()
     listOf(ROLE_NONE, ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).forEach { role ->
-      var linkedDataset =
+      linkedDatasets.add(
           datasetApiService.createDataset(
-              organizationSaved.id!!, makeDataset(isMain = false, default = role))
-      runnerSaved.datasetList!!.add(linkedDataset.id!!)
-      linkedDataset =
+              organizationSaved.id!!, makeDataset(isMain = false, default = role)))
+      linkedDatasets.add(
           datasetApiService.createDataset(
-              organizationSaved.id!!, makeDataset(isMain = true, default = role))
-      runnerSaved.datasetList!!.add(linkedDataset.id!!)
+              organizationSaved.id!!, makeDataset(isMain = true, default = role)))
     }
+    linkedDatasets.forEach { runnerSaved.datasetList!!.add(it.id!!) }
     runnerSaved =
         runnerApiService.updateRunner(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerSaved)
+    every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+    every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returnsMany
+        linkedDatasets
 
     runnerApiService.setRunnerDefaultSecurity(
         organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, RunnerRole(ROLE_EDITOR))
 
-    verify(exactly = 1) {
-      datasetApiService.setDatasetDefaultSecurity(any(), any(), DatasetRole(ROLE_VIEWER))
-    }
+    // Only one result correspond, the dataset with default security none and main=false
+    verify(exactly = 1) { datasetApiService.updateDefaultSecurity(any(), any(), ROLE_VIEWER) }
   }
 
   @Test
   fun `when stopping sharing a scenario, the dataset default security should be set to none it's not higher than viewer and the dataset isn't main`() {
     runnerSaved.datasetList!!.removeLast()
+    val linkedDatasets = mutableListOf<Dataset>()
     listOf(ROLE_NONE, ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).forEach { role ->
-      var linkedDataset =
+      linkedDatasets.add(
           datasetApiService.createDataset(
-              organizationSaved.id!!, makeDataset(isMain = false, default = role))
-      runnerSaved.datasetList!!.add(linkedDataset.id!!)
-      linkedDataset =
+              organizationSaved.id!!, makeDataset(isMain = false, default = role)))
+      linkedDatasets.add(
           datasetApiService.createDataset(
-              organizationSaved.id!!, makeDataset(isMain = true, default = role))
-      runnerSaved.datasetList!!.add(linkedDataset.id!!)
+              organizationSaved.id!!, makeDataset(isMain = true, default = role)))
     }
+    linkedDatasets.forEach { runnerSaved.datasetList!!.add(it.id!!) }
     runnerSaved =
         runnerApiService.updateRunner(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerSaved)
+    every { datasetApiService.updateDefaultSecurity(any(), any(), any()) } returns Unit
+    every { datasetApiService.findByOrganizationIdAndDatasetId(any(), any()) } returnsMany
+        linkedDatasets
 
     runnerApiService.setRunnerDefaultSecurity(
         organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, RunnerRole(ROLE_NONE))
 
-    verify(exactly = 1) {
-      datasetApiService.setDatasetDefaultSecurity(any(), any(), DatasetRole(ROLE_NONE))
-    }
+    // Only one result correspond, the dataset with default security viewer and main=false
+    verify(exactly = 1) { datasetApiService.updateDefaultSecurity(any(), any(), ROLE_NONE) }
   }
 
   private fun makeConnector(name: String = "name"): Connector {

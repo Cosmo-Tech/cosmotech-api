@@ -1064,6 +1064,12 @@ class DatasetServiceImpl(
     return dataset.security as DatasetSecurity
   }
 
+  override fun updateDefaultSecurity(organizationId: String, dataset: Dataset, role: String) {
+    val rbacSecurity = csmRbac.setDefault(dataset.getRbac(), role)
+    dataset.setRbac(rbacSecurity)
+    datasetRepository.save(dataset)
+  }
+
   override fun addDatasetAccessControl(
       organizationId: String,
       datasetId: String,
