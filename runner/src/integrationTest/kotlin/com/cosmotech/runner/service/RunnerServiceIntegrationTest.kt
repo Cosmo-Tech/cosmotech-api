@@ -42,6 +42,7 @@ import com.redis.testcontainers.RedisStackContainer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import io.mockk.verify
 import java.time.Instant
 import java.util.*
 import kotlin.test.*
@@ -1095,6 +1096,56 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `when sharing a runner, the linked dataset default security should be set to at least viewer if the dataset isn't main`() {
+    runnerSaved.datasetList!!.removeLast()
+    listOf(ROLE_NONE, ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).forEach { role ->
+      var linkedDataset =
+          datasetApiService.createDataset(
+              organizationSaved.id!!, makeDataset(isMain = false, default = role))
+      runnerSaved.datasetList!!.add(linkedDataset.id!!)
+      linkedDataset =
+          datasetApiService.createDataset(
+              organizationSaved.id!!, makeDataset(isMain = true, default = role))
+      runnerSaved.datasetList!!.add(linkedDataset.id!!)
+    }
+    runnerSaved =
+        runnerApiService.updateRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerSaved)
+
+    runnerApiService.setRunnerDefaultSecurity(
+        organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, RunnerRole(ROLE_EDITOR))
+
+    verify(exactly = 1) {
+      datasetApiService.setDatasetDefaultSecurity(any(), any(), DatasetRole(ROLE_VIEWER))
+    }
+  }
+
+  @Test
+  fun `when stopping sharing a scenario, the dataset default security should be set to none it's not higher than viewer and the dataset isn't main`() {
+    runnerSaved.datasetList!!.removeLast()
+    listOf(ROLE_NONE, ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).forEach { role ->
+      var linkedDataset =
+          datasetApiService.createDataset(
+              organizationSaved.id!!, makeDataset(isMain = false, default = role))
+      runnerSaved.datasetList!!.add(linkedDataset.id!!)
+      linkedDataset =
+          datasetApiService.createDataset(
+              organizationSaved.id!!, makeDataset(isMain = true, default = role))
+      runnerSaved.datasetList!!.add(linkedDataset.id!!)
+    }
+    runnerSaved =
+        runnerApiService.updateRunner(
+            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerSaved)
+
+    runnerApiService.setRunnerDefaultSecurity(
+        organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, RunnerRole(ROLE_NONE))
+
+    verify(exactly = 1) {
+      datasetApiService.setDatasetDefaultSecurity(any(), any(), DatasetRole(ROLE_NONE))
+    }
+  }
+
   private fun makeConnector(name: String = "name"): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
@@ -1107,7 +1158,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   fun makeDataset(
       organizationId: String = organizationSaved.id!!,
       name: String = "name",
-      connector: Connector = connectorSaved
+      connector: Connector = connectorSaved,
+      isMain: Boolean = true,
+      default: String = ROLE_NONE
   ): Dataset {
     return Dataset(
         name = name,
@@ -1120,9 +1173,10 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
                 name = connector.name,
                 version = connector.version,
             ),
+        main = isMain,
         security =
             DatasetSecurity(
-                default = ROLE_NONE,
+                default = default,
                 accessControlList =
                     mutableListOf(
                         DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),

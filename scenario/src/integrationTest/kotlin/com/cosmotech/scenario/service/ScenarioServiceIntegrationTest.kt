@@ -54,6 +54,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import io.mockk.verify
 import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
@@ -1257,6 +1258,56 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `when sharing a scenario, the linked dataset default security should be set to at least viewer if the dataset isn't main`() {
+    scenarioSaved.datasetList!!.removeLast()
+    listOf(ROLE_NONE, ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).forEach { role ->
+      var linkedDataset =
+          datasetApiService.createDataset(
+              organizationSaved.id!!, makeDataset(isMain = false, default = role))
+      scenarioSaved.datasetList!!.add(linkedDataset.id!!)
+      linkedDataset =
+          datasetApiService.createDataset(
+              organizationSaved.id!!, makeDataset(isMain = true, default = role))
+      scenarioSaved.datasetList!!.add(linkedDataset.id!!)
+    }
+    scenarioSaved =
+        scenarioApiService.updateScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioSaved)
+
+    scenarioApiService.setScenarioDefaultSecurity(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, ScenarioRole(ROLE_EDITOR))
+
+    verify(exactly = 1) {
+      datasetApiService.setDatasetDefaultSecurity(any(), any(), DatasetRole(ROLE_VIEWER))
+    }
+  }
+
+  @Test
+  fun `when stopping sharing a scenario, the dataset default security should be set to none it's not higher than viewer and the dataset isn't main`() {
+    scenarioSaved.datasetList!!.removeLast()
+    listOf(ROLE_NONE, ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).forEach { role ->
+      var linkedDataset =
+          datasetApiService.createDataset(
+              organizationSaved.id!!, makeDataset(isMain = false, default = role))
+      scenarioSaved.datasetList!!.add(linkedDataset.id!!)
+      linkedDataset =
+          datasetApiService.createDataset(
+              organizationSaved.id!!, makeDataset(isMain = true, default = role))
+      scenarioSaved.datasetList!!.add(linkedDataset.id!!)
+    }
+    scenarioSaved =
+        scenarioApiService.updateScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioSaved)
+
+    scenarioApiService.setScenarioDefaultSecurity(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, ScenarioRole(ROLE_NONE))
+
+    verify(exactly = 1) {
+      datasetApiService.setDatasetDefaultSecurity(any(), any(), DatasetRole(ROLE_NONE))
+    }
+  }
+
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
     return WorkspaceEventHubInfo(
         eventHubNamespace = "eventHubNamespace",
@@ -1284,7 +1335,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       name: String = "name",
       connector: Connector = connectorSaved,
       sourceType: DatasetSourceType = DatasetSourceType.Twincache,
-      isMain: Boolean = true
+      isMain: Boolean = true,
+      default: String = ROLE_NONE
   ): Dataset {
     return Dataset(
         name = name,
@@ -1301,7 +1353,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         main = isMain,
         security =
             DatasetSecurity(
-                default = ROLE_NONE,
+                default = default,
                 accessControlList =
                     mutableListOf(
                         DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
@@ -1397,6 +1449,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       name: String = "name",
       datasetList: MutableList<String>? = mutableListOf(),
       parentId: String? = null,
+      defaultSecurity: String = ROLE_NONE,
       userName: String = "roleName",
       role: String = ROLE_USER,
       validationStatus: ScenarioValidationStatus = ScenarioValidationStatus.Draft,
@@ -1416,7 +1469,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         parametersValues = parametersValues,
         security =
             ScenarioSecurity(
-                ROLE_NONE,
+                defaultSecurity,
                 mutableListOf(
                     ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                     ScenarioAccessControl(userName, role))))
