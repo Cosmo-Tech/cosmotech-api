@@ -94,15 +94,18 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   val TEST_USER_MAIL = "fake@mail.fr"
   val CUSTOMERS_FILE_NAME = "customers.csv"
   val CUSTOMERS_5_LINES_FILE_NAME = "customers_5_lines.csv"
+  val ORGANIZATION_ID_MUST_NOT_BE_BLANK = "Organization Id must not be blank"
+  val WORKSPACE_ID_MUST_NOT_BE_BLANK = "Workspace Id must not be blank"
+  val RUNNER_ID_MUST_NOT_BE_BLANK = "Runner Id must not be blank"
 
   private val logger = LoggerFactory.getLogger(RunnerServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"
 
-  @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
+  @SpykBean private lateinit var eventPublisher: CsmEventPublisher
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
+  @SpykBean lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
@@ -2345,6 +2348,377 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     eventPublisher.publishEvent(getAttachedRunnerToDataset)
 
     assertEquals(newRunnerSaved.id, getAttachedRunnerToDataset.response)
+  }
+
+  @Test
+  fun `test createRunner with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.createRunner("", workspaceSaved.id, makeRunnerCreateRequest())
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.createRunner(organizationSaved.id, "", makeRunnerCreateRequest())
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test createRunnerAccessControl with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.createRunnerAccessControl(
+              "",
+              workspaceSaved.id,
+              runnerSaved.id,
+              RunnerAccessControl(id = "test", role = "role"))
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.createRunnerAccessControl(
+              organizationSaved.id,
+              "",
+              runnerSaved.id,
+              RunnerAccessControl(id = "test", role = "role"))
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.createRunnerAccessControl(
+              organizationSaved.id,
+              workspaceSaved.id,
+              "",
+              RunnerAccessControl(id = "test", role = "role"))
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test deleteRunner with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.deleteRunner("", workspaceSaved.id, runnerSaved.id)
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.deleteRunner(organizationSaved.id, "", runnerSaved.id)
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, "")
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test deleteRunnerAccessControl with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.deleteRunnerAccessControl("", workspaceSaved.id, runnerSaved.id, "test")
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.deleteRunnerAccessControl(
+              organizationSaved.id, "", runnerSaved.id, "test")
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.deleteRunnerAccessControl(
+              organizationSaved.id, workspaceSaved.id, "", "test")
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test getRunner with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.getRunner("", workspaceSaved.id, runnerSaved.id)
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.getRunner(organizationSaved.id, "", runnerSaved.id)
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, "")
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test getRunnerAccessControl with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.getRunnerAccessControl("", workspaceSaved.id, runnerSaved.id, "test")
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.getRunnerAccessControl(organizationSaved.id, "", runnerSaved.id, "test")
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.getRunnerAccessControl(
+              organizationSaved.id, workspaceSaved.id, "", "test")
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test getRunnerSecurity with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.getRunnerSecurity("", workspaceSaved.id, runnerSaved.id)
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.getRunnerSecurity(organizationSaved.id, "", runnerSaved.id)
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.getRunnerSecurity(organizationSaved.id, workspaceSaved.id, "")
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test listRunnerPermissions with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.listRunnerPermissions("", workspaceSaved.id, runnerSaved.id, "test")
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.listRunnerPermissions(organizationSaved.id, "", runnerSaved.id, "test")
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.listRunnerPermissions(
+              organizationSaved.id, workspaceSaved.id, "", "test")
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test listRunnerSecurityUsers with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.listRunnerSecurityUsers("", workspaceSaved.id, runnerSaved.id)
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.listRunnerSecurityUsers(organizationSaved.id, "", runnerSaved.id)
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.listRunnerSecurityUsers(organizationSaved.id, workspaceSaved.id, "")
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test listRunners with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.listRunners("", workspaceSaved.id, null, null)
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.listRunners(organizationSaved.id, "", null, null)
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test startRun with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.startRun("", workspaceSaved.id, runnerSaved.id)
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.startRun(organizationSaved.id, "", runnerSaved.id)
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, "")
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test stopRun with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.stopRun("", workspaceSaved.id, runnerSaved.id)
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.stopRun(organizationSaved.id, "", runnerSaved.id)
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, "")
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test updateRunner with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.updateRunner(
+              "", workspaceSaved.id, runnerSaved.id, RunnerUpdateRequest())
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.updateRunner(
+              organizationSaved.id, "", runnerSaved.id, RunnerUpdateRequest())
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.updateRunner(
+              organizationSaved.id, workspaceSaved.id, "", RunnerUpdateRequest())
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test updateRunnerAccessControl with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.updateRunnerAccessControl(
+              "", workspaceSaved.id, runnerSaved.id, "test", RunnerRole("role"))
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.updateRunnerAccessControl(
+              organizationSaved.id, "", runnerSaved.id, "test", RunnerRole("role"))
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.updateRunnerAccessControl(
+              organizationSaved.id, workspaceSaved.id, "", "test", RunnerRole("role"))
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
+  }
+
+  @Test
+  fun `test updateRunnerDefaultSecurity with empty ids`() {
+    var exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.updateRunnerDefaultSecurity(
+              "", workspaceSaved.id, runnerSaved.id, RunnerRole("role"))
+        }
+
+    assertEquals(ORGANIZATION_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.updateRunnerDefaultSecurity(
+              organizationSaved.id, "", runnerSaved.id, RunnerRole("role"))
+        }
+
+    assertEquals(WORKSPACE_ID_MUST_NOT_BE_BLANK, exception.message)
+
+    exception =
+        assertThrows<IllegalStateException> {
+          runnerApiService.updateRunnerDefaultSecurity(
+              organizationSaved.id, workspaceSaved.id, "", RunnerRole("role"))
+        }
+
+    assertEquals(RUNNER_ID_MUST_NOT_BE_BLANK, exception.message)
   }
 
   fun makeDataset(
