@@ -2304,13 +2304,22 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val datasetTags = mutableListOf("dataset", "public", "customers")
     val datasetAdditionalData =
         mutableMapOf("dataset" to "data", "complex" to mutableMapOf("nested" to "data"))
+
+    val datasetSecurity =
+        DatasetSecurity(
+            default = ROLE_NONE,
+            accessControlList =
+                mutableListOf(
+                    DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR)))
     val datasetCreateRequest =
         DatasetCreateRequest(
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
             additionalData = datasetAdditionalData,
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+            security = datasetSecurity)
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -2348,21 +2357,13 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val newDatasetDescription = "Dataset for shop"
     val newDatasetTags = mutableListOf("dataset", "public", "shop")
     val newDatasetAdditionalData = mutableMapOf<String, Any>("dataset" to "new data")
-    val newDatasetSecurity =
-        DatasetSecurity(
-            default = ROLE_NONE,
-            accessControlList =
-                mutableListOf(
-                    DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR)))
     val datasetUpdateRequest =
         DatasetUpdateRequest(
             name = newDatasetName,
             description = newDatasetDescription,
             tags = newDatasetTags,
             additionalData = newDatasetAdditionalData,
-            parts = mutableListOf(newDatasetPartCreateRequest),
-            security = newDatasetSecurity)
+            parts = mutableListOf(newDatasetPartCreateRequest))
 
     val newDatasetPartTestFile =
         resourceLoader.getResource("classpath:/$INVENTORY_SOURCE_FILE_NAME").file
@@ -2389,7 +2390,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertEquals(newDatasetName, updatedDataset.name)
     assertEquals(newDatasetDescription, updatedDataset.description)
     assertEquals(newDatasetTags, updatedDataset.tags)
-    assertEquals(newDatasetSecurity, updatedDataset.security)
+    assertEquals(datasetSecurity, updatedDataset.security)
     assertEquals(createdDataset.createInfo, updatedDataset.createInfo)
     assertEquals(createdDataset.updateInfo.userId, updatedDataset.updateInfo.userId)
     assertTrue(createdDataset.updateInfo.timestamp < updatedDataset.updateInfo.timestamp)
@@ -2509,8 +2510,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = newDatasetDescription,
             tags = newDatasetTags,
             additionalData = newDatasetAdditionalData,
-            parts = mutableListOf(newDatasetPartCreateRequest),
-            security = newDatasetSecurity)
+            parts = mutableListOf(newDatasetPartCreateRequest))
 
     val newDatasetPartTestFile =
         resourceLoader.getResource("classpath:/$CUSTOMER_ZIPPED_SOURCE_FILE_NAME").file
@@ -2708,12 +2708,21 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             tags = mutableListOf("part", "public", "customers"),
             type = DatasetPartTypeEnum.File)
 
+    val datasetSecurity =
+        DatasetSecurity(
+            default = ROLE_NONE,
+            accessControlList =
+                mutableListOf(
+                    DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR)))
+
     val datasetCreateRequest =
         DatasetCreateRequest(
             name = "Customer Dataset",
             description = "Dataset for customers",
             tags = mutableListOf("dataset", "public", "customers"),
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+            security = datasetSecurity)
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -2747,14 +2756,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = "Shop Dataset",
             description = "Dataset for shop",
             tags = mutableListOf("dataset", "public", "shop"),
-            parts = mutableListOf(newDatasetPartCreateRequest),
-            security =
-                DatasetSecurity(
-                    default = ROLE_NONE,
-                    accessControlList =
-                        mutableListOf(
-                            DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR))))
+            parts = mutableListOf(newDatasetPartCreateRequest))
 
     val wrongTypeTestFile =
         resourceLoader.getResource("classpath:/$UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME").file
@@ -2799,7 +2801,14 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = "Customer Dataset",
             description = "Dataset for customers",
             tags = mutableListOf("dataset", "public", "customers"),
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+            security =
+                DatasetSecurity(
+                    default = ROLE_NONE,
+                    accessControlList =
+                        mutableListOf(
+                            DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR))))
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -2833,14 +2842,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = "Shop Dataset",
             description = "Dataset for shop",
             tags = mutableListOf("dataset", "public", "shop"),
-            parts = mutableListOf(newDatasetPartCreateRequest),
-            security =
-                DatasetSecurity(
-                    default = ROLE_NONE,
-                    accessControlList =
-                        mutableListOf(
-                            DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR))))
+            parts = mutableListOf(newDatasetPartCreateRequest))
 
     val wrongTypeMockMultipartFile =
         MockMultipartFile(

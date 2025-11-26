@@ -357,7 +357,7 @@ class DatasetServiceImpl(
                 DatasetEditInfo(
                     timestamp = Instant.now().toEpochMilli(),
                     userId = getCurrentAccountIdentifier(csmPlatformProperties)),
-            security = datasetUpdateRequest.security ?: previousDataset.security)
+            security = previousDataset.security)
 
     logger.debug("New Dataset info to register: {}", updatedDataset)
 

@@ -879,8 +879,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DatasetPartCreateRequest'
-        security:
-          $ref: '#/components/schemas/DatasetSecurity'
 
     # main Dataset Part object
     DatasetPart:
