@@ -61,6 +61,17 @@ class OrganizationControllerTests : ControllerTestBase() {
 
   @Test
   @WithMockOauth2User
+  fun get_organization_with_wrong_orgId_format() {
+    mvc.perform(
+            get("/organizations/wrongid-format")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail").value("wrongid-format:must match \"^o-\\w{10,20}\""))
+  }
+
+  @Test
+  @WithMockOauth2User
   fun create_organization() {
     mvc.perform(
             post("/organizations")

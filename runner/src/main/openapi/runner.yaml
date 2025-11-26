@@ -520,6 +520,7 @@ components:
       required: true
       schema:
         type: string
+        pattern: '^o-\w{10,20}'
     workspaceId:
       name: workspace_id
       in: path
@@ -527,6 +528,7 @@ components:
       required: true
       schema:
         type: string
+        pattern: '^w-\w{10,20}'
     runnerId:
       name: runner_id
       in: path
@@ -534,6 +536,7 @@ components:
       required: true
       schema:
         type: string
+        pattern: '^(r|s)-\w{10,20}'
     page:
       name: page
       in: query

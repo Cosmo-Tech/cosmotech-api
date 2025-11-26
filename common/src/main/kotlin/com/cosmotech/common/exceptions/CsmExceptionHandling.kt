@@ -3,8 +3,10 @@
 package com.cosmotech.common.exceptions
 
 import io.awspring.cloud.s3.S3Exception
+import jakarta.validation.ConstraintViolationException
 import java.net.URI
 import org.apache.commons.lang3.NotImplementedException
+import org.hibernate.validator.internal.engine.ConstraintViolationImpl
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
@@ -126,6 +128,20 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
     val problemDetail = ProblemDetail.forStatus(badRequestStatus)
     problemDetail.type = URI.create(httpStatusCodeTypePrefix + badRequestStatus.value())
     problemDetail.detail = exception.message
+    return problemDetail
+  }
+
+  @ExceptionHandler
+  fun handleConstraintViolationException(exception: ConstraintViolationException): ProblemDetail {
+    val badRequestStatus = HttpStatus.BAD_REQUEST
+    val problemDetail = ProblemDetail.forStatus(badRequestStatus)
+    problemDetail.type = URI.create(httpStatusCodeTypePrefix + badRequestStatus.value())
+    val constraintViolations = exception.constraintViolations
+    problemDetail.detail =
+        constraintViolations.joinToString {
+          val constraint = (it as ConstraintViolationImpl)
+          "${constraint.invalidValue}:${constraint.message}"
+        }
     return problemDetail
   }
 

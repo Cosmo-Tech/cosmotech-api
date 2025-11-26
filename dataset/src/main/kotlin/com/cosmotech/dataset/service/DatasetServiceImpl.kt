@@ -79,7 +79,6 @@ class DatasetServiceImpl(
       datasetId: String,
       requiredPermission: String
   ): Dataset {
-    check(datasetId.isNotBlank()) { "Dataset Id must not be blank" }
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     val dataset =
         datasetRepository.findBy(organizationId, workspaceId, datasetId).orElseThrow {
@@ -494,7 +493,6 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetPartId: String
   ) {
-    check(datasetPartId.isNotBlank()) { "Dataset Part Id must not be blank" }
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
 
     val datasetPart =
@@ -527,7 +525,6 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetPartId: String
   ): DatasetPart {
-    check(datasetPartId.isNotBlank()) { "Dataset Part Id must not be blank" }
     getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
 
     return datasetPartRepository
@@ -806,7 +803,6 @@ class DatasetServiceImpl(
       datasetPartId: String,
       datasetPartUpdateRequest: DatasetPartUpdateRequest
   ): DatasetPart {
-    check(datasetPartId.isNotBlank()) { "Dataset Part Id must not be blank" }
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
     val datasetPart =
         datasetPartRepository
@@ -850,8 +846,6 @@ class DatasetServiceImpl(
       file: MultipartFile,
       datasetPartUpdateRequest: DatasetPartUpdateRequest?
   ): DatasetPart {
-    check(datasetPartId.isNotBlank()) { "Dataset Part Id must not be blank" }
-
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
     val datasetPart =
         datasetPartRepository
@@ -897,10 +891,10 @@ class DatasetServiceImpl(
       page: Int?,
       size: Int?
   ): List<DatasetPart> {
-    getVerifiedDataset(organizationId, workspaceId, datasetId)
     if (requestBody.isEmpty()) {
       return listDatasetParts(organizationId, workspaceId, datasetId, page, size)
     }
+    getVerifiedDataset(organizationId, workspaceId, datasetId)
 
     val tagsSanitized =
         requestBody.map { it.trim() }.filter { it.isNotBlank() }.map { it.sanitizeForRedis() }
@@ -930,10 +924,10 @@ class DatasetServiceImpl(
       page: Int?,
       size: Int?
   ): List<Dataset> {
-    workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     if (requestBody.isEmpty()) {
       return listDatasets(organizationId, workspaceId, page, size)
     }
+    workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     val tagsSanitized =
         requestBody.map { it.trim() }.filter { it.isNotBlank() }.map { it.sanitizeForRedis() }
     val defaultPageSize = csmPlatformProperties.databases.resources.dataset.defaultPageSize

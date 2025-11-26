@@ -587,7 +587,6 @@ class SolutionServiceImpl(
       solutionId: String,
       requiredPermission: String
   ): Solution {
-    check(solutionId.trim().isNotBlank()) { "Solution Id must not be blank" }
     organizationApiService.getVerifiedOrganization(organizationId)
     val solution =
         solutionRepository.findBy(organizationId, solutionId).orElseThrow {

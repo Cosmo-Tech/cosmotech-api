@@ -63,6 +63,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import java.time.Instant
 import java.util.*
+import org.hamcrest.core.StringContains.containsString
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -169,6 +170,85 @@ class RunControllerTests : ControllerTestBase() {
                     .response
                     .contentAsString)
             .getString("id")
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun get_run_with_wrong_ids_format() {
+    mvc.perform(
+            get(
+                    "/organizations/wrong-orgId/workspaces/wrong-workspaceId/runners/wrong-runnerId/runs/wrong-runId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-runnerId:must match \"^(r|s)-\\w{10,20}\"")))
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-runId:must match \"^(run|sr)-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/r-123456azerty/runs/run-123456azerty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/s-123456azerty/runs/run-123456azerty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/r-123456azerty/runs/run-123456azerty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/s-123456azerty/runs/run-123456azerty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/wrong-runnerId/runs/run-123456azerty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-runnerId:must match \"^(r|s)-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/r-123456azerty/runs/wrong-runId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-runId:must match \"^(run|sr)-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/s-123456azerty/runs/wrong-runId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-runId:must match \"^(run|sr)-\\w{10,20}\"")))
   }
 
   @Test

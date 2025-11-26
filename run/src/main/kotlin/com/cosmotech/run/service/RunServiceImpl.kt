@@ -136,8 +136,6 @@ class RunServiceImpl(
       runnerId: String,
       runId: String
   ): Run {
-    check(runId.trim().isNotBlank()) { "Run Id must not be blank" }
-
     runnerApiService.getRunner(organizationId, workspaceId, runnerId)
     val run =
         runRepository
