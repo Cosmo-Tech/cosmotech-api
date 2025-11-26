@@ -14,12 +14,7 @@ tags:
 paths:
   /organizations/{organization_id}/workspaces:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
     post:
       operationId: createWorkspace
       tags:
@@ -62,18 +57,8 @@ paths:
     get:
       operationId: listWorkspaces
       parameters:
-        - name: page
-          in: query
-          description: page number to query (first page is at index 0)
-          required: false
-          schema:
-            type: integer
-        - name: size
-          in: query
-          description: Amount of result by page
-          required: false
-          schema:
-            type: integer
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/size'
       tags:
         - workspace
       summary: List all Workspaces
@@ -99,18 +84,8 @@ paths:
                   $ref: '#/components/examples/WorkspaceList'
   /organizations/{organization_id}/workspaces/{workspace_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
     get:
       operationId: getWorkspace
       tags:
@@ -190,18 +165,8 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/files:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
     post:
       operationId: createWorkspaceFile
       tags:
@@ -298,18 +263,8 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/files/download:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
       - name: file_name
         in: query
         description: The file name
@@ -334,18 +289,8 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/files/delete:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
       - name: file_name
         in: query
         description: The file name
@@ -365,18 +310,8 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role}:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
       - name: role
         in: path
         description: The Role
@@ -401,18 +336,8 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
     get:
       operationId: getWorkspaceSecurity
       tags:
@@ -439,18 +364,8 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security/default:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
     patch:
       operationId: updateWorkspaceDefaultSecurity
       tags:
@@ -495,18 +410,8 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security/access:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
     post:
       operationId: createWorkspaceAccessControl
       tags:
@@ -549,18 +454,8 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
       - name: identity_id
         in: path
         description: The User identifier
@@ -642,18 +537,8 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security/users:
     parameters:
-      - name: organization_id
-        in: path
-        description: The Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: The Workspace identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
     get:
       operationId: listWorkspaceSecurityUsers
       tags:
@@ -682,6 +567,37 @@ components:
           authorizationUrl: "https://example.com/authorize"
           tokenUrl: "https://example.com/token"
           scopes: {}
+  parameters:
+    organizationId:
+      name: organization_id
+      in: path
+      description: The Organization identifier
+      required: true
+      schema:
+        type: string
+        pattern: '^o-\w{10,20}'
+    workspaceId:
+      name: workspace_id
+      in: path
+      description: The Workspace identifier
+      required: true
+      schema:
+        type: string
+        pattern: '^w-\w{10,20}'
+    page:
+      name: page
+      in: query
+      description: Page number to query (first page is at index 0)
+      required: false
+      schema:
+        type: integer
+    size:
+      name: size
+      in: query
+      description: Amount of result by page
+      required: false
+      schema:
+        type: integer
   schemas:
     # Base Workspace object that includes all information
     Workspace:

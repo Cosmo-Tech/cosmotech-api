@@ -49,6 +49,7 @@ import kotlin.test.assertEquals
 import org.apache.commons.io.IOUtils
 import org.hamcrest.Matchers.empty
 import org.hamcrest.Matchers.greaterThan
+import org.hamcrest.core.StringContains.containsString
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
@@ -107,6 +108,61 @@ class DatasetControllerTests : ControllerTestBase() {
     workspaceId =
         createWorkspaceAndReturnId(
             mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun get_dataset_part_with_wrong_ids_format() {
+    mvc.perform(
+            get(
+                    "/organizations/wrong-orgId/workspaces/wrong-workspaceId/datasets/wrong-datasetId/parts/wrong-datasetPartId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-datasetId:must match \"^d-\\w{10,20}\"")))
+        .andExpect(
+            jsonPath(
+                "$.detail", containsString("wrong-datasetPartId:must match \"^dp-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/wrong-orgId/workspaces/w-123456abcdef/datasets/d-123456azerty/parts/dp-123456azert")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/o-1233456azer/workspaces/wrong-workspaceId/datasets/d-123456azerty/parts/dp-123456azert")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/datasets/wrong-datasetId/parts/dp-123456azert")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-datasetId:must match \"^d-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/datasets/d-123456azerty/parts/wrong-datasetPartId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath(
+                "$.detail", containsString("wrong-datasetPartId:must match \"^dp-\\w{10,20}\"")))
   }
 
   @Test

@@ -14,30 +14,10 @@ tags:
 paths:
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
-      - name: run_id
-        in: path
-        description: the Run identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
+      - $ref: '#/components/parameters/runId'
     get:
       operationId: getRun
       tags:
@@ -75,30 +55,10 @@ paths:
           description: the Run specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
-      - name: run_id
-        in: path
-        description: the Run identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
+      - $ref: '#/components/parameters/runId'
     get:
       operationId: getRunStatus
       tags:
@@ -122,30 +82,10 @@ paths:
                   $ref: '#/components/examples/BreweryRunStatus'
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
-      - name: run_id
-        in: path
-        description: the Run identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
+      - $ref: '#/components/parameters/runId'
     get:
       operationId: getRunLogs
       tags:
@@ -163,24 +103,9 @@ paths:
                   $ref: '#/components/examples/BreweryRunLogs'
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
     get:
       operationId: listRuns
       parameters:
@@ -230,6 +155,53 @@ components:
           authorizationUrl: "https://example.com/authorize"
           tokenUrl: "https://example.com/token"
           scopes: {}
+  parameters:
+    organizationId:
+      name: organization_id
+      in: path
+      description: The Organization identifier
+      required: true
+      schema:
+        type: string
+        pattern: '^o-\w{10,20}'
+    workspaceId:
+      name: workspace_id
+      in: path
+      description: The Workspace identifier
+      required: true
+      schema:
+        type: string
+        pattern: '^w-\w{10,20}'
+    runnerId:
+      name: runner_id
+      in: path
+      description: The Runner identifier
+      required: true
+      schema:
+        type: string
+        pattern: '^(r|s)-\w{10,20}'
+    runId:
+      name: run_id
+      in: path
+      description: The Run identifier
+      required: true
+      schema:
+        type: string
+        pattern: '^(run|sr)-\w{10,20}'
+    page:
+      name: page
+      in: query
+      description: Page number to query (first page is at index 0)
+      required: false
+      schema:
+        type: integer
+    size:
+      name: size
+      in: query
+      description: Amount of result by page
+      required: false
+      schema:
+        type: integer
   schemas:
     RunStatus:
       type: object

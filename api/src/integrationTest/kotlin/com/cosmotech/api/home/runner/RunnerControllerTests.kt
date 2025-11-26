@@ -41,6 +41,7 @@ import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
 import com.ninjasquad.springmockk.SpykBean
 import io.mockk.every
+import org.hamcrest.core.StringContains.containsString
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -157,6 +158,59 @@ class RunnerControllerTests : ControllerTestBase() {
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun get_runner_with_wrong_ids_format() {
+    mvc.perform(
+            get("/organizations/wrong-orgId/workspaces/wrong-workspaceId/runners/wrong-runnerId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-runnerId:must match \"^(r|s)-\\w{10,20}\"")))
+
+    mvc.perform(
+            get("/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/r-123456azerty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+
+    mvc.perform(
+            get("/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/s-123456azerty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+
+    mvc.perform(
+            get("/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/r-123456azerty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+
+    mvc.perform(
+            get("/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/s-123456azerty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+
+    mvc.perform(
+            get("/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/wrong-runnerId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-runnerId:must match \"^(r|s)-\\w{10,20}\"")))
   }
 
   @Test

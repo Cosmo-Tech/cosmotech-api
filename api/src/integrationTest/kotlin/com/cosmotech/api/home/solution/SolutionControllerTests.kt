@@ -25,6 +25,7 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
 import io.mockk.every
 import io.mockk.mockk
+import org.hamcrest.core.StringContains.containsString
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -57,6 +58,34 @@ class SolutionControllerTests : ControllerTestBase() {
         SOLUTION_SDK_VERSION
 
     organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun get_solution_with_wrong_ids_format() {
+    mvc.perform(
+            get("/organizations/wrong-orgId/solutions/wrong-solutionId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-solutionId:must match \"^sol-\\w{10,20}\"")))
+
+    mvc.perform(
+            get("/organizations/wrong-orgId/solutions/sol-123456abcdef")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+
+    mvc.perform(
+            get("/organizations/o-123456abcdef/solutions/wrong-solutionId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-solutionId:must match \"^sol-\\w{10,20}\"")))
   }
 
   @Test

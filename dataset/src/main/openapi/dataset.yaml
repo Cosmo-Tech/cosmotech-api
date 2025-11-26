@@ -726,6 +726,7 @@ components:
       required: true
       schema:
         type: string
+        pattern: '^o-\w{10,20}'
     workspaceId:
       name: workspace_id
       in: path
@@ -733,6 +734,7 @@ components:
       required: true
       schema:
         type: string
+        pattern: '^w-\w{10,20}'
     datasetId:
       name: dataset_id
       in: path
@@ -740,6 +742,7 @@ components:
       required: true
       schema:
         type: string
+        pattern: '^d-\w{10,20}'
     datasetPartId:
       name: dataset_part_id
       in: path
@@ -747,6 +750,7 @@ components:
       required: true
       schema:
         type: string
+        pattern: '^dp-\w{10,20}'
     page:
       name: page
       in: query

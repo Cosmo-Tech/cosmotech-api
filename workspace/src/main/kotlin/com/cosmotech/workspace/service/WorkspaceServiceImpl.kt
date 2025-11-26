@@ -435,7 +435,6 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       requiredPermission: String
   ): Workspace {
-    check(workspaceId.isNotBlank()) { "Workspace Id must not be blank" }
     organizationService.getVerifiedOrganization(organizationId)
     val workspace =
         workspaceRepository.findBy(organizationId, workspaceId).orElseThrow {

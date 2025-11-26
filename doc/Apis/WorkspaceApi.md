@@ -408,7 +408,7 @@ List all Workspaces
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| The Organization identifier | [default to null] |
-| **page** | **Integer**| page number to query (first page is at index 0) | [optional] [default to null] |
+| **page** | **Integer**| Page number to query (first page is at index 0) | [optional] [default to null] |
 | **size** | **Integer**| Amount of result by page | [optional] [default to null] |
 
 ### Return type

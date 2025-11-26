@@ -22,6 +22,7 @@ import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import org.apache.commons.io.IOUtils
+import org.hamcrest.core.StringContains.containsString
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -51,6 +52,34 @@ class WorkspaceControllerTests : ControllerTestBase() {
   fun beforeEach() {
     organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
     solutionId = createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
+  }
+
+  @Test
+  @WithMockOauth2User
+  fun get_workspace_with_wrong_ids_format() {
+    mvc.perform(
+            get("/organizations/wrong-orgId/workspaces/wrong-workspaceId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+
+    mvc.perform(
+            get("/organizations/wrong-orgId/workspaces/w-123456abcdef")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+
+    mvc.perform(
+            get("/organizations/o-123456abcdef/workspaces/wrong-workspaceId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest)
+        .andExpect(
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
   }
 
   @Test
