@@ -117,7 +117,6 @@ entity DatasetUpdateRequest {
     tags: List<String>
     additionalData: Map
     parts: List<DatasetPartCreateRequest>
-    security: DatasetSecurity
 }
 
 entity LastRunInfo {
@@ -618,7 +617,6 @@ RunStatus -- RunEditInfo : createInfo
 RunStatus -- "0..*" RunStatusNode : nodes
 RunTemplate -- RunTemplateResourceSizing : runSizing
 DatasetUpdateRequest -- "0..*" DatasetPartCreateRequest : parts
-DatasetUpdateRequest -- DatasetSecurity : security
 RunTemplateCreateRequest -- RunTemplateResourceSizing : runSizing
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
 RunStatusNode -- RunResourceRequested : resourcesDuration

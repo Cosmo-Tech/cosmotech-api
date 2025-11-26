@@ -975,15 +975,7 @@ class DatasetControllerTests : ControllerTestBase() {
                         sourceName = TEST_FILE_NAME,
                         description = newPartDescription,
                         tags = newPartTags,
-                        type = DatasetPartTypeEnum.File)),
-            security =
-                DatasetSecurity(
-                    default = ROLE_NONE,
-                    accessControlList =
-                        mutableListOf(
-                            DatasetAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
-                            DatasetAccessControl(
-                                id = ORGANIZATION_USER_EMAIL, role = ROLE_VIEWER))))
+                        type = DatasetPartTypeEnum.File)))
 
     val datasetUpdateRequestMultipartFile =
         MockMultipartFile(
@@ -1039,7 +1031,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$.security.accessControlList[1].role").value(ROLE_VIEWER))
+        .andExpect(jsonPath("$.security.accessControlList[1].role").value(ROLE_EDITOR))
         .andExpect(jsonPath("$.security.accessControlList[1].id").value(ORGANIZATION_USER_EMAIL))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
@@ -1070,18 +1062,7 @@ class DatasetControllerTests : ControllerTestBase() {
     val newTags = mutableListOf("tag1_updated", "tag2_updated")
 
     val datasetUpdateRequest =
-        DatasetUpdateRequest(
-            name = newName,
-            description = newDescription,
-            tags = newTags,
-            security =
-                DatasetSecurity(
-                    default = ROLE_NONE,
-                    accessControlList =
-                        mutableListOf(
-                            DatasetAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
-                            DatasetAccessControl(
-                                id = ORGANIZATION_USER_EMAIL, role = ROLE_VIEWER))))
+        DatasetUpdateRequest(name = newName, description = newDescription, tags = newTags)
 
     val datasetUpdateRequestMultipartFile =
         MockMultipartFile(
@@ -1129,7 +1110,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$.security.accessControlList[1].role").value(ROLE_VIEWER))
+        .andExpect(jsonPath("$.security.accessControlList[1].role").value(ROLE_EDITOR))
         .andExpect(jsonPath("$.security.accessControlList[1].id").value(ORGANIZATION_USER_EMAIL))
         .andDo(MockMvcResultHandlers.print())
   }
@@ -1158,18 +1139,7 @@ class DatasetControllerTests : ControllerTestBase() {
 
     val datasetUpdateRequest =
         DatasetUpdateRequest(
-            name = newName,
-            description = newDescription,
-            tags = newTags,
-            parts = mutableListOf(),
-            security =
-                DatasetSecurity(
-                    default = ROLE_NONE,
-                    accessControlList =
-                        mutableListOf(
-                            DatasetAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
-                            DatasetAccessControl(
-                                id = ORGANIZATION_USER_EMAIL, role = ROLE_VIEWER))))
+            name = newName, description = newDescription, tags = newTags, parts = mutableListOf())
 
     val datasetUpdateRequestMultipartFile =
         MockMultipartFile(
@@ -1205,7 +1175,7 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
-        .andExpect(jsonPath("$.security.accessControlList[1].role").value(ROLE_VIEWER))
+        .andExpect(jsonPath("$.security.accessControlList[1].role").value(ROLE_EDITOR))
         .andExpect(jsonPath("$.security.accessControlList[1].id").value(ORGANIZATION_USER_EMAIL))
         .andDo(MockMvcResultHandlers.print())
   }
