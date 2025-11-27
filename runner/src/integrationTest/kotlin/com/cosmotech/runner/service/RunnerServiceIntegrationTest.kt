@@ -55,7 +55,6 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.io.FileInputStream
-import java.lang.IllegalStateException
 import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
@@ -1516,12 +1515,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     assertEquals(expectedRunId, run.id)
 
-    val exception =
-        assertThrows<IllegalStateException> {
-          runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-        }
-
-    assertEquals("Run $expectedRunId can not be stopped as its already finished", exception.message)
+    assertDoesNotThrow {
+      runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+    }
   }
 
   @Test
@@ -1543,12 +1539,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     assertEquals(expectedRunId, run.id)
 
-    val exception =
-        assertThrows<IllegalStateException> {
-          runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-        }
-
-    assertEquals("Run $expectedRunId can not be stopped as its already finished", exception.message)
+    assertDoesNotThrow {
+      runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+    }
   }
 
   @Test

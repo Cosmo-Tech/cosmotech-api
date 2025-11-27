@@ -23,6 +23,7 @@ import com.cosmotech.runner.domain.RunnerCreateRequest
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerUpdateRequest
+import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -34,6 +35,9 @@ internal class RunnerApiServiceImpl(
     private val runnerServiceManager: RunnerServiceManager,
     private val datasetApiServiceInterface: DatasetApiServiceInterface
 ) : RunnerApiServiceInterface {
+
+  private val logger = LoggerFactory.getLogger(RunnerApiServiceImpl::class.java)
+
   override fun getRunnerService(): RunnerService = runnerServiceManager.getRunnerService()
 
   override fun createRunner(
@@ -141,8 +145,8 @@ internal class RunnerApiServiceImpl(
       runnerService.stopLastRunOf(runnerInstance)
       return
     }
-    throw IllegalStateException(
-        "Run ${lastRunInfo.lastRunId} can not be stopped as its already finished")
+
+    logger.debug("Run ${lastRunInfo.lastRunId} can not be stopped as its already finished")
   }
 
   override fun createRunnerAccessControl(
