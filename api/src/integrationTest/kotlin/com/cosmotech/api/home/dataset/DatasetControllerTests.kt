@@ -15,7 +15,6 @@ import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.constructSolutio
 import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.createSolutionAndReturnId
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.createWorkspaceAndReturnId
-import com.cosmotech.api.home.annotations.WithMockOauth2User
 import com.cosmotech.api.home.dataset.DatasetConstants.CUSTOMERS_FILE_NAME
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_DESCRIPTION
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_NAME
@@ -29,6 +28,7 @@ import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_COMPU
 import com.cosmotech.api.home.run.RunConstants.RequestContent.RUN_TEMPLATE_NAME
 import com.cosmotech.api.home.run.RunConstants.RequestContent.TAGS
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
+import com.cosmotech.api.home.withPlatformAdminHeader
 import com.cosmotech.common.rbac.ROLE_ADMIN
 import com.cosmotech.common.rbac.ROLE_EDITOR
 import com.cosmotech.common.rbac.ROLE_NONE
@@ -111,12 +111,12 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_dataset_part_with_wrong_ids_format() {
     mvc.perform(
             get(
                     "/organizations/wrong-orgId/workspaces/wrong-workspaceId/datasets/wrong-datasetId/parts/wrong-datasetPartId")
                 .contentType(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
@@ -132,6 +132,7 @@ class DatasetControllerTests : ControllerTestBase() {
             get(
                     "/organizations/wrong-orgId/workspaces/w-123456abcdef/datasets/d-123456azerty/parts/dp-123456azert")
                 .contentType(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
@@ -140,6 +141,7 @@ class DatasetControllerTests : ControllerTestBase() {
             get(
                     "/organizations/o-1233456azer/workspaces/wrong-workspaceId/datasets/d-123456azerty/parts/dp-123456azert")
                 .contentType(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
         .andExpect(
@@ -149,6 +151,7 @@ class DatasetControllerTests : ControllerTestBase() {
             get(
                     "/organizations/o-1233456azer/workspaces/w-123456abcdef/datasets/wrong-datasetId/parts/dp-123456azert")
                 .contentType(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
         .andExpect(
@@ -158,6 +161,7 @@ class DatasetControllerTests : ControllerTestBase() {
             get(
                     "/organizations/o-1233456azer/workspaces/w-123456abcdef/datasets/d-123456azerty/parts/wrong-datasetPartId")
                 .contentType(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
         .andExpect(
@@ -166,7 +170,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_dataset() {
     val datasetCreateRequest =
         MockMultipartFile(
@@ -189,6 +192,7 @@ class DatasetControllerTests : ControllerTestBase() {
             multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
                 .file(datasetCreateRequest)
                 .file(files)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -224,7 +228,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_dataset_with_no_files_parameter() {
     val datasetCreateRequest =
         MockMultipartFile(
@@ -242,6 +245,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
                 .file(datasetCreateRequest)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -264,7 +268,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_dataset_with_no_files_parameter_empty_parts() {
     val datasetCreateRequest =
         MockMultipartFile(
@@ -284,6 +287,7 @@ class DatasetControllerTests : ControllerTestBase() {
             multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
                 .file(datasetCreateRequest)
                 .accept(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(DATASET_NAME))
@@ -305,7 +309,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun download_dataset_part() {
 
     val datasetId =
@@ -322,7 +325,8 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId/download")
-                .accept(MediaType.APPLICATION_OCTET_STREAM))
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .withPlatformAdminHeader())
         .andExpect(status().is2xxSuccessful)
         .andExpect { result ->
           result.response.contentAsString == fileUploaded.bufferedReader().readText()
@@ -334,13 +338,13 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_dataset() {
 
     val datasetId =
         createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(DATASET_NAME))
@@ -377,7 +381,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_dataset() {
 
     val datasetId =
@@ -386,6 +389,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             delete("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
                 .accept(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -395,7 +399,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_dataset_access_control() {
 
     val datasetId =
@@ -405,6 +408,7 @@ class DatasetControllerTests : ControllerTestBase() {
             post(
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access")
                 .contentType(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .content(
                     JSONObject(
                             DatasetAccessControl(
@@ -424,7 +428,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_dataset_access_control() {
 
     val datasetSecurity =
@@ -445,6 +448,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_EDITOR))
@@ -456,7 +460,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_dataset_access_control() {
 
     val datasetSecurity =
@@ -477,6 +480,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             delete(
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -487,7 +491,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_dataset_part() {
 
     val datasetId =
@@ -515,6 +518,7 @@ class DatasetControllerTests : ControllerTestBase() {
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts")
                 .file(file)
                 .file(datasetPartCreateRequest)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -539,7 +543,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_dataset_part() {
 
     val datasetId =
@@ -552,6 +555,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             delete(
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -562,7 +566,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_dataset_part() {
 
     val datasetId =
@@ -575,6 +578,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(datasetPartId))
@@ -599,7 +603,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_dataset_parts() {
 
     val datasetId =
@@ -610,6 +613,7 @@ class DatasetControllerTests : ControllerTestBase() {
             mvc, organizationId, workspaceId, datasetId, constructDatasetPartCreateRequest())
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].name").value(DATASET_PART_NAME))
@@ -648,7 +652,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun search_dataset_parts() {
 
     val datasetId =
@@ -662,6 +665,7 @@ class DatasetControllerTests : ControllerTestBase() {
             post(
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/search")
                 .contentType(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .content(JSONArray(listOf("tag_part3")).toString())
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -686,7 +690,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_dataset_users() {
 
     val datasetId =
@@ -707,6 +710,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/users")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -718,7 +722,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_datasets() {
 
     val datasetId =
@@ -726,6 +729,7 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/datasets")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -761,7 +765,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun search_datasets() {
 
     val datasetId =
@@ -771,6 +774,7 @@ class DatasetControllerTests : ControllerTestBase() {
             post("/organizations/$organizationId/workspaces/$workspaceId/datasets/search")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONArray(listOf("tag1")).toString())
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -809,7 +813,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun query_data() {
     val datasetCreateRequest =
         MockMultipartFile(
@@ -840,6 +843,7 @@ class DatasetControllerTests : ControllerTestBase() {
                     multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
                         .file(datasetCreateRequest)
                         .file(files)
+                        .withPlatformAdminHeader()
                         .accept(MediaType.APPLICATION_JSON)
                         .with(csrf()))
                 .andExpect(status().is2xxSuccessful)
@@ -855,6 +859,7 @@ class DatasetControllerTests : ControllerTestBase() {
         mvc.perform(
                 get(
                         "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId/query")
+                    .withPlatformAdminHeader()
                     .accept(MediaType.APPLICATION_OCTET_STREAM))
             .andExpect(status().is2xxSuccessful)
             .andDo(MockMvcResultHandlers.print())
@@ -874,7 +879,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun replace_dataset_part() {
 
     val datasetId =
@@ -907,6 +911,7 @@ class DatasetControllerTests : ControllerTestBase() {
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId")
                 .file(datasetPartUpdateRequest)
                 .file(newFile)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 // By default, behind multipart, the HTTP verb used is POST
@@ -939,7 +944,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_dataset_part() {
 
     val datasetId =
@@ -963,6 +967,7 @@ class DatasetControllerTests : ControllerTestBase() {
                                 description = newDescription,
                                 tags = newTags))
                         .toString())
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -989,7 +994,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_dataset() {
     val datasetId =
         createDatasetAndReturnId(
@@ -1050,6 +1054,7 @@ class DatasetControllerTests : ControllerTestBase() {
             multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
                 .file(datasetUpdateRequestMultipartFile)
                 .file(newFile)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 // By default, behind multipart, the HTTP verb used is POST
@@ -1096,7 +1101,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_dataset_with_no_files_parameter() {
     val datasetId =
         createDatasetAndReturnId(
@@ -1129,6 +1133,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
                 .file(datasetUpdateRequestMultipartFile)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 // By default, behind multipart, the HTTP verb used is POST
@@ -1172,7 +1177,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_dataset_with_no_files_parameter_empty_parts() {
     val datasetId =
         createDatasetAndReturnId(
@@ -1206,6 +1210,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
                 .file(datasetUpdateRequestMultipartFile)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf())
                 // By default, behind multipart, the HTTP verb used is POST
@@ -1237,7 +1242,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_dataset_access_control() {
 
     val datasetId =
@@ -1259,6 +1263,7 @@ class DatasetControllerTests : ControllerTestBase() {
             patch(
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL")
                 .contentType(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .content(JSONObject(DatasetRole(role = ROLE_ADMIN)).toString())
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -1272,7 +1277,6 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_dataset_default_security() {
 
     val datasetId =
@@ -1282,6 +1286,7 @@ class DatasetControllerTests : ControllerTestBase() {
             patch(
                     "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/default")
                 .contentType(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader()
                 .content(JSONObject(DatasetRole(role = ROLE_VIEWER)).toString())
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))

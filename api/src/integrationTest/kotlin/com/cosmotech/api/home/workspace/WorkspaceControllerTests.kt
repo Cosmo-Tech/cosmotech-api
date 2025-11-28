@@ -11,9 +11,9 @@ import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.createSolutionAn
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceUpdateRequest
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.createWorkspaceAndReturnId
-import com.cosmotech.api.home.annotations.WithMockOauth2User
 import com.cosmotech.api.home.organization.OrganizationConstants.NEW_USER_ID
 import com.cosmotech.api.home.organization.OrganizationConstants.NEW_USER_ROLE
+import com.cosmotech.api.home.withPlatformAdminHeader
 import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_KEY
 import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_NAME
 import com.cosmotech.common.rbac.ROLE_ADMIN
@@ -35,7 +35,6 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -55,10 +54,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_workspace_with_wrong_ids_format() {
     mvc.perform(
             get("/organizations/wrong-orgId/workspaces/wrong-workspaceId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -68,6 +67,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/wrong-orgId/workspaces/w-123456abcdef")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -75,6 +75,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/o-123456abcdef/workspaces/wrong-workspaceId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -83,7 +84,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_workspace() {
 
     val description = "here_is_workspace_description"
@@ -104,6 +104,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val workspaceDatasetId = "d-12345678910"
     mvc.perform(
             post("/organizations/$organizationId/workspaces")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     JSONObject(
@@ -153,7 +154,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_workspace() {
 
     val workspaceId =
@@ -169,6 +169,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val workspaceDatasetId = "d-12345678910"
     mvc.perform(
             patch("/organizations/$organizationId/workspaces/$workspaceId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     JSONObject(
@@ -213,7 +214,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_workspaces() {
 
     val firstWorkspaceKey = "first_workspace_key"
@@ -241,6 +241,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].id").value(firstWorkspaceId))
@@ -272,7 +273,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_workspace() {
 
     val description = "here_is_workspace_description"
@@ -312,6 +312,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(WORKSPACE_NAME))
@@ -342,7 +343,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_workspace() {
 
     val workspaceId =
@@ -350,6 +350,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete("/organizations/$organizationId/workspaces/$workspaceId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -358,14 +359,15 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_workspace_security() {
 
     val workspaceId =
         createWorkspaceAndReturnId(
             mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
 
-    mvc.perform(get("/organizations/$organizationId/workspaces/$workspaceId/security"))
+    mvc.perform(
+            get("/organizations/$organizationId/workspaces/$workspaceId/security")
+                .withPlatformAdminHeader())
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
@@ -375,7 +377,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun add_workspace_security_access() {
 
     val workspaceId =
@@ -384,6 +385,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/workspaces/$workspaceId/security/access")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -405,7 +407,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_workspace_security_access() {
 
     val workspaceId =
@@ -414,7 +415,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                "/organizations/$organizationId/workspaces/$workspaceId/security/access/$PLATFORM_ADMIN_EMAIL"))
+                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$PLATFORM_ADMIN_EMAIL")
+                .withPlatformAdminHeader())
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.id").value(PLATFORM_ADMIN_EMAIL))
@@ -425,7 +427,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_workspace_security_access() {
 
     val workspaceSecurity =
@@ -448,6 +449,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     mvc.perform(
             patch(
                     "/organizations/$organizationId/workspaces/$workspaceId/security/access/$NEW_USER_ID")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
@@ -462,7 +464,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_workspace_security_access() {
 
     val workspaceSecurity =
@@ -485,6 +486,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     mvc.perform(
             delete(
                     "/organizations/$organizationId/workspaces/$workspaceId/security/access/$NEW_USER_ID")
+                .withPlatformAdminHeader()
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -494,7 +496,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_workspace_security_default() {
 
     val workspaceId =
@@ -503,6 +504,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch("/organizations/$organizationId/workspaces/$workspaceId/security/default")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
@@ -518,7 +520,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_workspace_users() {
 
     val workspaceSecurity =
@@ -540,6 +541,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/security/users")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
@@ -552,7 +554,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_workspace_files() {
 
     val workspaceId =
@@ -561,6 +562,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/files")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -568,7 +570,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_workspace_files() {
     val workspaceId =
         createWorkspaceAndReturnId(
@@ -588,6 +589,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 .file(mockFile)
                 .param("overwrite", "true")
                 .param("destination", "path/to/a/directory/")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -597,7 +599,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_workspace_files() {
 
     val workspaceId =
@@ -606,6 +607,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete("/organizations/$organizationId/workspaces/$workspaceId/files")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -614,7 +616,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_workspace_file() {
     val workspaceId =
         createWorkspaceAndReturnId(
@@ -636,12 +637,14 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .file(mockFile)
             .param("overwrite", "true")
             .param("destination", destination)
+            .withPlatformAdminHeader()
             .accept(MediaType.APPLICATION_JSON)
             .with(csrf()))
 
     mvc.perform(
             delete("/organizations/$organizationId/workspaces/$workspaceId/files/delete")
                 .param("file_name", destination + fileName)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -652,7 +655,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun download_workspace_file() {
 
     val workspaceId =
@@ -675,12 +677,14 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .file(mockFile)
             .param("overwrite", "true")
             .param("destination", destination)
+            .withPlatformAdminHeader()
             .accept(MediaType.APPLICATION_JSON)
             .with(csrf()))
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
                 .param("file_name", destination + fileName)
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_OCTET_STREAM))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -690,7 +694,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun `download workspace file with wrong file name`() {
 
     val workspaceId =
@@ -713,12 +716,14 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .file(mockFile)
             .param("overwrite", "true")
             .param("destination", destination)
+            .withPlatformAdminHeader()
             .accept(MediaType.APPLICATION_JSON)
             .with(csrf()))
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
                 .param("file_name", "Wrong file name")
+                .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_OCTET_STREAM))
         .andExpect(status().is4xxClientError)
         .andExpect(jsonPath("$.detail").value("Wrong file name does not exist."))

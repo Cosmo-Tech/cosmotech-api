@@ -16,13 +16,13 @@ import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.constructSolutio
 import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.createSolutionAndReturnId
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.createWorkspaceAndReturnId
-import com.cosmotech.api.home.annotations.WithMockOauth2User
 import com.cosmotech.api.home.dataset.DatasetConstants.TEST_FILE_NAME
 import com.cosmotech.api.home.organization.OrganizationConstants
 import com.cosmotech.api.home.runner.RunnerConstants.NEW_USER_ID
 import com.cosmotech.api.home.runner.RunnerConstants.NEW_USER_ROLE
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_NAME
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
+import com.cosmotech.api.home.withPlatformAdminHeader
 import com.cosmotech.common.events.CsmEventPublisher
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.UpdateRunnerStatus
@@ -144,6 +144,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch("/organizations/$organizationId/workspaces/$workspaceId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     JSONObject(
@@ -161,10 +162,10 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_runner_with_wrong_ids_format() {
     mvc.perform(
             get("/organizations/wrong-orgId/workspaces/wrong-workspaceId/runners/wrong-runnerId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -176,6 +177,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/r-123456azerty")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -183,6 +185,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/s-123456azerty")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -190,6 +193,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/r-123456azerty")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -198,6 +202,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/s-123456azerty")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -206,6 +211,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/wrong-runnerId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -214,7 +220,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_runner() {
 
     val solutionName = "solution_name"
@@ -273,6 +278,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/workspaces/$workspaceId/runners")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject(constructRunnerRequest).toString())
                 .accept(MediaType.APPLICATION_JSON)
@@ -307,7 +313,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_runner() {
 
     val solutionName = "solution_name"
@@ -374,6 +379,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
@@ -409,7 +415,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_runner() {
 
     val solutionName = "solution_name"
@@ -464,6 +469,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch("/organizations/$organizationId/workspaces/$workspaceId/runners/$baseRunnerId")
+                .withPlatformAdminHeader()
                 .content(JSONObject(updateRunnerObject).toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -501,7 +507,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_runners() {
 
     val firstRunnerName = "my_first_runner"
@@ -528,6 +533,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/runners")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
@@ -560,7 +566,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_runner() {
 
     val runnerId =
@@ -572,6 +577,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -583,7 +589,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_runner_security() {
 
     val runnerId =
@@ -594,8 +599,8 @@ class RunnerControllerTests : ControllerTestBase() {
             constructRunnerObject(solutionId = solutionId, runTemplateId = RUNNER_RUN_TEMPLATE))
 
     mvc.perform(
-            get(
-                "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/security"))
+            get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/security")
+                .withPlatformAdminHeader())
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
@@ -607,7 +612,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun add_runner_security_access() {
 
     val runnerId =
@@ -620,6 +624,7 @@ class RunnerControllerTests : ControllerTestBase() {
     mvc.perform(
             post(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/security/access")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -641,7 +646,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_runner_security_access() {
 
     val runnerId =
@@ -653,7 +657,8 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/security/access/$PLATFORM_ADMIN_EMAIL"))
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/security/access/$PLATFORM_ADMIN_EMAIL")
+                .withPlatformAdminHeader())
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.id").value(PLATFORM_ADMIN_EMAIL))
@@ -664,7 +669,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_runner_security_access() {
 
     val runnerSecurity =
@@ -689,6 +693,7 @@ class RunnerControllerTests : ControllerTestBase() {
     mvc.perform(
             patch(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/security/access/${OrganizationConstants.NEW_USER_ID}")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
@@ -703,7 +708,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_runner_security_access() {
 
     val runnerSecurity =
@@ -728,6 +732,7 @@ class RunnerControllerTests : ControllerTestBase() {
     mvc.perform(
             delete(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/security/access/${OrganizationConstants.NEW_USER_ID}")
+                .withPlatformAdminHeader()
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -737,7 +742,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_runner_security_default() {
 
     val runnerId =
@@ -750,6 +754,7 @@ class RunnerControllerTests : ControllerTestBase() {
     mvc.perform(
             patch(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/security/default")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
@@ -765,7 +770,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_runner_users() {
 
     val runnerSecurity =
@@ -790,6 +794,7 @@ class RunnerControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/security/users")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
@@ -802,7 +807,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun start_runner() {
     val expectedRunId = "run-genid12345"
     every { eventPublisher.publishEvent(any<RunStart>()) } answers
@@ -834,6 +838,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/start")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -845,7 +850,6 @@ class RunnerControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun stop_runner() {
     val expectedRunId = "run-genid12345"
 
@@ -881,6 +885,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/start")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -888,6 +893,7 @@ class RunnerControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/stop")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))

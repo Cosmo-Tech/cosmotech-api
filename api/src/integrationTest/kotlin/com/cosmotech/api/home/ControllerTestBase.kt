@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home
 
+import com.cosmotech.api.home.Constants.ORGANIZATION_USER_EMAIL
+import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.organization.domain.Organization
@@ -86,7 +88,10 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
                 documentationConfiguration(restDocumentationContextProvider)
                     .operationPreprocessors()
                     .withRequestDefaults(
-                        modifyHeaders().remove(HttpHeaders.CONTENT_LENGTH), prettyPrint())
+                        modifyHeaders().remove(HttpHeaders.CONTENT_LENGTH),
+                        modifyHeaders().remove(PLATFORM_ADMIN_EMAIL),
+                        modifyHeaders().remove(ORGANIZATION_USER_EMAIL),
+                        prettyPrint())
                     .withResponseDefaults(
                         modifyHeaders()
                             .remove("X-Content-Type-Options")
