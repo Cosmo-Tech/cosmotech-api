@@ -3,7 +3,7 @@
 package com.cosmotech.api.home.meta
 
 import com.cosmotech.api.home.ControllerTestBase
-import com.cosmotech.api.home.annotations.WithMockOauth2User
+import com.cosmotech.api.home.withPlatformAdminHeader
 import kotlin.test.assertEquals
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
@@ -23,9 +23,8 @@ class MetaControllerTests : ControllerTestBase() {
   private val logger = LoggerFactory.getLogger(MetaControllerTests::class.java)
 
   @Test
-  @WithMockOauth2User
   fun about() {
-    mvc.perform(get("/about").accept(MediaType.APPLICATION_JSON))
+    mvc.perform(get("/about").withPlatformAdminHeader().accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andDo {
           val aboutVersion =

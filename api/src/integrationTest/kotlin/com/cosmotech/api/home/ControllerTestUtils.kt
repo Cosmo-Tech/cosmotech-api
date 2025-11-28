@@ -2,6 +2,10 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home
 
+import com.cosmotech.api.home.Constants.ORGANIZATION_USER_API_KEY_VALUE
+import com.cosmotech.api.home.Constants.ORGANIZATION_USER_EMAIL
+import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_API_KEY_VALUE
+import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_DESCRIPTION
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_NAME
 import com.cosmotech.api.home.dataset.DatasetConstants.DATASET_PART_DESCRIPTION
@@ -31,6 +35,7 @@ import org.springframework.http.MediaType
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -46,6 +51,7 @@ class ControllerTestUtils {
         JSONObject(
                 mvc.perform(
                         post("/organizations")
+                            .withPlatformAdminHeader()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(organizationCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
@@ -75,6 +81,7 @@ class ControllerTestUtils {
         JSONObject(
                 mvc.perform(
                         post("/organizations/$organizationId/solutions")
+                            .withPlatformAdminHeader()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(solutionCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
@@ -150,6 +157,7 @@ class ControllerTestUtils {
         JSONObject(
                 mvc.perform(
                         post("/organizations/$organizationId/workspaces/$workspaceId/runners")
+                            .withPlatformAdminHeader()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(runnerCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
@@ -233,6 +241,7 @@ class ControllerTestUtils {
         JSONObject(
                 mvc.perform(
                         post("/organizations/$organizationId/workspaces")
+                            .withPlatformAdminHeader()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(
                                 JSONObject(
@@ -257,6 +266,7 @@ class ControllerTestUtils {
         JSONObject(
                 mvc.perform(
                         post("/organizations/$organizationId/workspaces")
+                            .withPlatformAdminHeader()
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(workspaceCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
@@ -356,6 +366,7 @@ class ControllerTestUtils {
                       multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
                           .file(datasetCreateRequestFile)
                           .file(files)
+                          .withPlatformAdminHeader()
                           .accept(MediaType.APPLICATION_JSON)
                           .with(csrf()))
                   .andReturn()
@@ -376,6 +387,7 @@ class ControllerTestUtils {
                   mvc.perform(
                           get(
                                   "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
+                              .withPlatformAdminHeader()
                               .accept(MediaType.APPLICATION_JSON)
                               .with(csrf()))
                       .andReturn()
@@ -418,6 +430,7 @@ class ControllerTestUtils {
                               "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts")
                           .file(datasetPartCreateRequestFile)
                           .file(file)
+                          .withPlatformAdminHeader()
                           .accept(MediaType.APPLICATION_JSON)
                           .with(csrf()))
                   .andReturn()
@@ -464,3 +477,9 @@ class ControllerTestUtils {
     }
   }
 }
+
+fun MockHttpServletRequestBuilder.withPlatformAdminHeader(): MockHttpServletRequestBuilder =
+    this.header(PLATFORM_ADMIN_EMAIL, PLATFORM_ADMIN_API_KEY_VALUE)
+
+fun MockHttpServletRequestBuilder.withOrganizationUserHeader(): MockHttpServletRequestBuilder =
+    this.header(ORGANIZATION_USER_EMAIL, ORGANIZATION_USER_API_KEY_VALUE)

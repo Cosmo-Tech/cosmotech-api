@@ -12,7 +12,6 @@ import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.constructSolutio
 import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.createSolutionAndReturnId
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.constructWorkspaceCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.WorkspaceUtils.createWorkspaceAndReturnId
-import com.cosmotech.api.home.annotations.WithMockOauth2User
 import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_DEPENDENCIES
 import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_ENTRYPOINT
 import com.cosmotech.api.home.run.RunConstants.RequestContent.CONTAINER_ENV_VARS
@@ -47,6 +46,7 @@ import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKFLOW_PHASE
 import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKFLOW_PROGRESS
 import com.cosmotech.api.home.run.RunConstants.RequestContent.WORKSPACE_KEY
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
+import com.cosmotech.api.home.withPlatformAdminHeader
 import com.cosmotech.common.events.CsmEventPublisher
 import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.run.RunApiServiceInterface
@@ -162,6 +162,7 @@ class RunControllerTests : ControllerTestBase() {
                 mvc.perform(
                         post(
                                 "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/start")
+                            .withPlatformAdminHeader()
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON)
                             .with(csrf()))
@@ -173,11 +174,11 @@ class RunControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_run_with_wrong_ids_format() {
     mvc.perform(
             get(
                     "/organizations/wrong-orgId/workspaces/wrong-workspaceId/runners/wrong-runnerId/runs/wrong-runId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -192,6 +193,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/r-123456azerty/runs/run-123456azerty")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -200,6 +202,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/s-123456azerty/runs/run-123456azerty")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -208,6 +211,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/r-123456azerty/runs/run-123456azerty")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -217,6 +221,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/s-123456azerty/runs/run-123456azerty")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -226,6 +231,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/wrong-runnerId/runs/run-123456azerty")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -235,6 +241,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/r-123456azerty/runs/wrong-runId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -244,6 +251,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/s-123456azerty/runs/wrong-runId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -252,7 +260,6 @@ class RunControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_runs() {
 
     every { eventPublisher.publishEvent(any()) } answers
@@ -262,6 +269,7 @@ class RunControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -289,7 +297,6 @@ class RunControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_run() {
 
     every { eventPublisher.publishEvent(any()) } answers
@@ -300,6 +307,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
@@ -325,7 +333,6 @@ class RunControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_run() {
 
     every { workflowService.stopWorkflow(any()) } returns mockk<RunStatus>(relaxed = true)
@@ -345,6 +352,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             delete(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -356,7 +364,6 @@ class RunControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_run_logs() {
 
     val logs =
@@ -375,6 +382,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId/logs")
+                .withPlatformAdminHeader()
                 .accept(MediaType.TEXT_PLAIN))
         .andExpect(status().is2xxSuccessful)
         .andExpect(content().string(logs))
@@ -385,7 +393,6 @@ class RunControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_run_status() {
 
     val outboundNodes = mutableListOf("nodeId2", "nodeId3")
@@ -423,6 +430,7 @@ class RunControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId/status")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)

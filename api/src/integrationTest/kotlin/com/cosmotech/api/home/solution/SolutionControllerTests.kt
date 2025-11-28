@@ -9,7 +9,6 @@ import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.createOrgani
 import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.constructSolutionCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.constructSolutionUpdateRequest
 import com.cosmotech.api.home.ControllerTestUtils.SolutionUtils.createSolutionAndReturnId
-import com.cosmotech.api.home.annotations.WithMockOauth2User
 import com.cosmotech.api.home.organization.OrganizationConstants.NEW_USER_ID
 import com.cosmotech.api.home.organization.OrganizationConstants.NEW_USER_ROLE
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_KEY
@@ -17,6 +16,7 @@ import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_NAME
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_REPOSITORY
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_SDK_VERSION
 import com.cosmotech.api.home.solution.SolutionConstants.SOLUTION_VERSION
+import com.cosmotech.api.home.withPlatformAdminHeader
 import com.cosmotech.common.containerregistry.ContainerRegistryService
 import com.cosmotech.common.rbac.ROLE_ADMIN
 import com.cosmotech.common.rbac.ROLE_NONE
@@ -61,10 +61,10 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_solution_with_wrong_ids_format() {
     mvc.perform(
             get("/organizations/wrong-orgId/solutions/wrong-solutionId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -74,6 +74,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/wrong-orgId/solutions/sol-123456abcdef")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -81,6 +82,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/o-123456abcdef/solutions/wrong-solutionId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest)
@@ -89,7 +91,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_solutions() {
     val firstSolutionName = "firstSolutionName"
     val firstSolutionKey = "firstSolutionKey"
@@ -113,7 +114,9 @@ class SolutionControllerTests : ControllerTestBase() {
             ))
 
     mvc.perform(
-            get("/organizations/$organizationId/solutions").contentType(MediaType.APPLICATION_JSON))
+            get("/organizations/$organizationId/solutions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .withPlatformAdminHeader())
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].id").value(firstSolutionId))
         .andExpect(jsonPath("$[0].key").value(firstSolutionKey))
@@ -140,7 +143,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_solution() {
 
     val description = "this_is_a_description"
@@ -222,6 +224,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/solutions")
+                .withPlatformAdminHeader()
                 .content(JSONObject(solutionCreateRequest).toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -270,7 +273,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_solution() {
 
     val description = "this_is_a_description"
@@ -354,6 +356,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(solutionId))
@@ -412,13 +415,13 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_solution() {
     val solutionId =
         createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
 
     mvc.perform(
             delete("/organizations/$organizationId/solutions/$solutionId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -427,7 +430,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_solution() {
 
     val solutionId =
@@ -450,6 +452,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch("/organizations/$organizationId/solutions/$solutionId")
+                .withPlatformAdminHeader()
                 .content(JSONObject(solutionUpdateRequest).toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -474,7 +477,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_solution_parameter() {
 
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
@@ -504,6 +506,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/solutions/$solutionId/parameters")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject(parameterCreateRequest).toString())
                 .with(csrf()))
@@ -522,7 +525,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_solution_parameter() {
 
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
@@ -552,6 +554,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/solutions/$solutionId/parameters")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject(parameterCreateRequest).toString())
                 .with(csrf()))
@@ -559,6 +562,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/parameters/$parameterId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.labels").value(parameterLabels))
@@ -577,7 +581,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_solution_parameter() {
 
     val parameterId = "my_parameter_id"
@@ -623,6 +626,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch("/organizations/$organizationId/solutions/$solutionId/parameters/$parameterId")
+                .withPlatformAdminHeader()
                 .content(JSONObject(newParameterUpdateRequest).toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -645,7 +649,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_solution_parameters() {
 
     val parameterId = "parameter1"
@@ -675,6 +678,7 @@ class SolutionControllerTests : ControllerTestBase() {
             mvc, organizationId, constructSolutionCreateRequest(parameters = parameters))
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/parameters")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -691,7 +695,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_solution_parameter() {
 
     val parameterId = "parameter1"
@@ -721,6 +724,7 @@ class SolutionControllerTests : ControllerTestBase() {
             mvc, organizationId, constructSolutionCreateRequest(parameters = parameters))
     mvc.perform(
             delete("/organizations/$organizationId/solutions/$solutionId/parameters/$parameterId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -731,7 +735,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_solution_parameter_group() {
 
     val solutionId =
@@ -755,6 +758,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/solutions/$solutionId/parameterGroups")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject(parameterGroup).toString())
                 .with(csrf()))
@@ -772,7 +776,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_solution_parameter_group() {
     val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
@@ -799,6 +802,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             get(
                     "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(parameterGroupId))
@@ -814,7 +818,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_solution_parameter_group() {
     val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
@@ -855,6 +858,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             patch(
                     "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId")
+                .withPlatformAdminHeader()
                 .content(JSONObject(newParameterGroup).toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -873,7 +877,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_solution_parameter_groups() {
 
     val parameterId = "parameter1"
@@ -900,6 +903,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/parameterGroups")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -914,7 +918,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_solution_parameter_group() {
     val parameterId = "parameter1"
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
@@ -941,6 +944,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             delete(
                     "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -951,7 +955,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_solution_runTemplate() {
     val runTemplateId = "runtemplate1"
 
@@ -982,6 +985,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/runTemplates")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].id").value(runTemplateId))
@@ -1001,7 +1005,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun create_solution_runTemplate() {
 
     val description = "this_is_a_description"
@@ -1032,6 +1035,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/solutions/$solutionId/runTemplates")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject(runTemplate).toString())
                 .with(csrf()))
@@ -1054,7 +1058,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_solution_runTemplate() {
     val runTemplateId = "runtemplate1"
 
@@ -1085,6 +1088,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(runTemplateId))
@@ -1106,7 +1110,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_solution_runTemplate() {
     val runTemplateId = "runtemplate1"
 
@@ -1153,6 +1156,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             patch(
                     "/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId")
+                .withPlatformAdminHeader()
                 .content(JSONObject(newRunTemplate).toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
@@ -1176,7 +1180,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_solution_runTemplate() {
 
     val description = "this_is_a_description"
@@ -1210,6 +1213,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             delete(
                     "/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
@@ -1220,13 +1224,14 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_solution_security() {
 
     val solutionId =
         createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
 
-    mvc.perform(get("/organizations/$organizationId/solutions/$solutionId/security"))
+    mvc.perform(
+            get("/organizations/$organizationId/solutions/$solutionId/security")
+                .withPlatformAdminHeader())
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
@@ -1236,7 +1241,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun add_solution_security_access() {
 
     val solutionId =
@@ -1244,6 +1248,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post("/organizations/$organizationId/solutions/$solutionId/security/access")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -1265,7 +1270,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun get_solution_security_access() {
 
     val solutionId =
@@ -1273,7 +1277,8 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                "/organizations/$organizationId/solutions/$solutionId/security/access/$PLATFORM_ADMIN_EMAIL"))
+                    "/organizations/$organizationId/solutions/$solutionId/security/access/$PLATFORM_ADMIN_EMAIL")
+                .withPlatformAdminHeader())
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.id").value(PLATFORM_ADMIN_EMAIL))
@@ -1284,7 +1289,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_solution_security_access() {
 
     val solutionSecurity =
@@ -1301,6 +1305,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             patch(
                     "/organizations/$organizationId/solutions/$solutionId/security/access/$NEW_USER_ID")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
@@ -1315,7 +1320,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun delete_solution_security_access() {
 
     val solutionSecurity =
@@ -1332,6 +1336,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             delete(
                     "/organizations/$organizationId/solutions/$solutionId/security/access/$NEW_USER_ID")
+                .withPlatformAdminHeader()
                 .with(csrf()))
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -1341,7 +1346,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun update_solution_security_default() {
 
     val solutionId =
@@ -1349,6 +1353,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch("/organizations/$organizationId/solutions/$solutionId/security/default")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
@@ -1364,7 +1369,6 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
-  @WithMockOauth2User
   fun list_solution_users() {
 
     val solutionSecurity =
@@ -1380,6 +1384,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/security/users")
+                .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().is2xxSuccessful)
