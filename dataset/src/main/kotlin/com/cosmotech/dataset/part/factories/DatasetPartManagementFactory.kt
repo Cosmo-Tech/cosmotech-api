@@ -35,7 +35,8 @@ class DatasetPartManagementFactory(
   fun getDatasetPartManagementService(implementation: String): DatasetPartManagementService =
       datasetPartManagementServices[implementation]
           ?: throw IllegalStateException(
-              "No implementation found for DatasetPartManagementService with name '$implementation'")
+              "No implementation found for DatasetPartManagementService with name '$implementation'"
+          )
 
   fun storeData(datasetPart: DatasetPart, file: MultipartFile, overwrite: Boolean = false) {
     val datasetPartManagementService = getDatasetPartManagementService(datasetPart.type.value)

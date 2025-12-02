@@ -18,7 +18,7 @@ interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
   fun findBy(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
-      @Sanitize @Param("datasetId") datasetId: String
+      @Sanitize @Param("datasetId") datasetId: String,
   ): Optional<Dataset>
 
   @Query("(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId}) \$securityConstraint")
@@ -26,14 +26,14 @@ interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
-      pageRequest: PageRequest
+      pageRequest: PageRequest,
   ): Page<Dataset>
 
   @Query("(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId})")
   fun findByOrganizationIdAndWorkspaceIdNoSecurity(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
-      pageRequest: PageRequest
+      pageRequest: PageRequest,
   ): Page<Dataset>
 
   @Query("@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @tags:{\$tags}")
@@ -41,6 +41,6 @@ interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Param("tags") tags: List<String>,
-      pageRequest: PageRequest
+      pageRequest: PageRequest,
   ): Page<Dataset>
 }

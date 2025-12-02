@@ -12,11 +12,11 @@ open class CsmClientException(override val message: String, override val cause: 
 @ResponseStatus(HttpStatus.NOT_FOUND)
 class CsmResourceNotFoundException(
     override val message: String,
-    override val cause: Throwable? = null
+    override val cause: Throwable? = null,
 ) : CsmClientException(message, cause)
 
 @ResponseStatus(HttpStatus.FORBIDDEN)
 class CsmAccessForbiddenException(
     override val message: String,
-    override val cause: Throwable? = null
+    override val cause: Throwable? = null,
 ) : CsmClientException(message, cause)

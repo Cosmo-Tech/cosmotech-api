@@ -41,13 +41,16 @@ import org.springframework.util.StringUtils
 @Configuration
 @EnableWebSecurity(debug = true)
 @ConditionalOnProperty(
-    name = ["csm.platform.identityProvider.code"], havingValue = "keycloak", matchIfMissing = true)
+    name = ["csm.platform.identityProvider.code"],
+    havingValue = "keycloak",
+    matchIfMissing = true,
+)
 @EnableMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
 internal open class KeycloakSecurityConfiguration(
     private val oAuth2ResourceServerProperties: OAuth2ResourceServerProperties,
     private val csmPlatformProperties: CsmPlatformProperties,
     private val sslBundles: SslBundles,
-    private val restTemplateBuilder: RestTemplateBuilder
+    private val restTemplateBuilder: RestTemplateBuilder,
 ) : AbstractSecurityConfiguration() {
 
   private val logger = LoggerFactory.getLogger(KeycloakSecurityConfiguration::class.java)
@@ -69,13 +72,15 @@ internal open class KeycloakSecurityConfiguration(
             organizationAdminGroup,
             organizationUserGroup,
             organizationViewerGroup,
-            csmPlatformProperties)
+            csmPlatformProperties,
+        )
         .oauth2ResourceServer { oauth2 ->
           oauth2.jwt { jwt ->
             run {
               jwt.decoder(keycloakJwtDecoder(oAuth2ResourceServerProperties, csmPlatformProperties))
               jwt.jwtAuthenticationConverter(
-                  KeycloakJwtAuthenticationConverter(csmPlatformProperties))
+                  KeycloakJwtAuthenticationConverter(csmPlatformProperties)
+              )
             }
           }
         }
@@ -86,7 +91,7 @@ internal open class KeycloakSecurityConfiguration(
   @Bean
   open fun keycloakJwtDecoder(
       oAuth2ResourceServerProperties: OAuth2ResourceServerProperties,
-      csmPlatformProperties: CsmPlatformProperties
+      csmPlatformProperties: CsmPlatformProperties,
   ): JwtDecoder {
     val jwtProperties = oAuth2ResourceServerProperties.jwt
     val nimbusJwtDecoderBuilder =
@@ -98,7 +103,8 @@ internal open class KeycloakSecurityConfiguration(
         }
     if (tlsEnabled) {
       nimbusJwtDecoderBuilder.restOperations(
-          restTemplateBuilder.sslBundle(sslBundles.getBundle(tlsBundle)).build())
+          restTemplateBuilder.sslBundle(sslBundles.getBundle(tlsBundle)).build()
+      )
     }
     val nimbusJwtDecoder = nimbusJwtDecoderBuilder.build()
 
@@ -121,7 +127,8 @@ internal open class KeycloakSecurityConfiguration(
     if ("*" in allowedTenants) {
       logger.info(
           "All tenants allowed to authenticate, since the following property contains a wildcard " +
-              "element: csm.platform.authorization.allowed-tenants")
+              "element: csm.platform.authorization.allowed-tenants"
+      )
     } else {
       // Validate against the list of allowed tenants
       val tenantValidator =
@@ -150,13 +157,14 @@ class KeycloakJwtGrantedAuthoritiesConverter(
   override fun convert(jwt: Jwt): Collection<GrantedAuthority> {
     val extractAuthorities = mutableListOf<GrantedAuthority>()
     extractAuthorities.addAll(
-        convertRolesToAuthorities(jwt.claims, csmPlatformProperties.authorization.rolesJwtClaim))
+        convertRolesToAuthorities(jwt.claims, csmPlatformProperties.authorization.rolesJwtClaim)
+    )
     return extractAuthorities
   }
 
   private fun convertRolesToAuthorities(
       attributes: Map<String, Any>,
-      claimKey: String
+      claimKey: String,
   ): MutableCollection<GrantedAuthority> {
     if (!CollectionUtils.isEmpty(attributes) && StringUtils.hasText(claimKey)) {
       val rawRoleClaim = attributes[claimKey]
@@ -168,7 +176,9 @@ class KeycloakJwtGrantedAuthoritiesConverter(
             .collect(Collectors.toList())
       } else if (rawRoleClaim != null) {
         logger.debug(
-            "Could not extract authorities from claim '{}', value was not a collection", claimKey)
+            "Could not extract authorities from claim '{}', value was not a collection",
+            claimKey,
+        )
       }
     }
     return mutableSetOf()

@@ -16,43 +16,47 @@ interface DatasetPartRepository : RedisDocumentRepository<DatasetPart, String> {
 
   @Query(
       "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} " +
-          "@datasetId:{\$datasetId} @id:{\$datasetPartId}")
+          "@datasetId:{\$datasetId} @id:{\$datasetPartId}"
+  )
   fun findBy(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Sanitize @Param("datasetId") datasetId: String,
-      @Sanitize @Param("datasetPartId") datasetPartId: String
+      @Sanitize @Param("datasetPartId") datasetPartId: String,
   ): Optional<DatasetPart>
 
   @Query(
       "(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} " +
-          "@datasetId:{\$datasetId}) \$securityConstraint")
+          "@datasetId:{\$datasetId}) \$securityConstraint"
+  )
   fun findByOrganizationIdAndWorkspaceIdAndDatasetId(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Sanitize @Param("datasetId") datasetId: String,
       @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
-      pageRequest: PageRequest
+      pageRequest: PageRequest,
   ): Page<DatasetPart>
 
   @Query(
       "(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} " +
-          "@datasetId:{\$datasetId})")
+          "@datasetId:{\$datasetId})"
+  )
   fun findByOrganizationIdAndWorkspaceIdAndDatasetIdNoSecurity(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Sanitize @Param("datasetId") datasetId: String,
-      pageRequest: PageRequest
+      pageRequest: PageRequest,
   ): Page<DatasetPart>
 
   @Query(
       "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} " +
-          "@datasetId:{\$datasetId} @tags:{\$tags}")
+          "@datasetId:{\$datasetId} @tags:{\$tags}"
+  )
   fun findDatasetPartByTags(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Sanitize @Param("datasetId") datasetId: String,
       @Param("tags") tags: List<String>,
-      pageRequest: PageRequest
+      pageRequest: PageRequest,
   ): Page<DatasetPart>
 }

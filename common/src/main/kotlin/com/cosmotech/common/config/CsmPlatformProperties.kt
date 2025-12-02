@@ -42,7 +42,7 @@ data class CsmPlatformProperties(
     val namespace: String = "phoenix",
 
     /** Persistent metrics configuration */
-    val metrics: Metrics = Metrics()
+    val metrics: Metrics = Metrics(),
 ) {
 
   data class Metrics(
@@ -86,7 +86,7 @@ data class CsmPlatformProperties(
       val allowedTenants: List<String> = emptyList(),
 
       /** List of Api key allowed to access data, besides Oauth2 configuration */
-      val allowedApiKeyConsumers: List<ApiKeyConsumer> = emptyList()
+      val allowedApiKeyConsumers: List<ApiKeyConsumer> = emptyList(),
   ) {
     class ApiKeyConsumer(
 
@@ -103,7 +103,7 @@ data class CsmPlatformProperties(
         val associatedRole: String = ROLE_ORGANIZATION_USER,
 
         /** Secured URIs */
-        val securedUris: List<String> = emptyList()
+        val securedUris: List<String> = emptyList(),
     )
   }
 
@@ -117,7 +117,7 @@ data class CsmPlatformProperties(
       /** Credentials: secret access key */
       val secretAccessKey: String = "",
       /** Storage region */
-      val region: String = ""
+      val region: String = "",
   )
 
   data class Argo(
@@ -162,7 +162,7 @@ data class CsmPlatformProperties(
         val ignoreNodeSelector: Boolean = false,
 
         /** Info on k8s secret to mount on workflow */
-        val secrets: List<ExtraSecrets> = emptyList()
+        val secrets: List<ExtraSecrets> = emptyList(),
     ) {
       data class ExtraSecrets(val name: String, val keyPath: List<KeyPath>) {
         data class KeyPath(val key: String, val path: String)
@@ -261,7 +261,7 @@ data class CsmPlatformProperties(
 
   data class CsmDatabasesProperties(
       val resources: CsmResourcesProperties,
-      val data: CsmDataIOProperties
+      val data: CsmDataIOProperties,
   ) {
 
     data class CsmResourcesProperties(
@@ -305,7 +305,7 @@ data class CsmPlatformProperties(
         val solution: PageSizing = PageSizing(),
 
         /** TLS Platform bundle config */
-        val tls: TLSConfig = TLSConfig()
+        val tls: TLSConfig = TLSConfig(),
     ) {
 
       data class PageSizing(
@@ -328,7 +328,7 @@ data class CsmPlatformProperties(
         val reader: CsmStorageUser,
 
         /** Storage writer user configuration */
-        val writer: CsmStorageUser
+        val writer: CsmStorageUser,
     ) {
       data class CsmStorageUser(val username: String, val password: String)
     }

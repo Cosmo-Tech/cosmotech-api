@@ -34,7 +34,7 @@ class RedisAspect {
 
   private inline fun <reified T> applyAnnotation(
       methodSignature: MethodSignature,
-      applyLambda: (Int) -> Unit
+      applyLambda: (Int) -> Unit,
   ) {
     val parameterAnnotations = methodSignature.method.parameterAnnotations
     val annotatedParamIndexes =

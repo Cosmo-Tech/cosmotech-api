@@ -42,12 +42,14 @@ class KeycloakJwtAuthenticationConverterTests {
             "claimRoles" to listOf("role1", "role2", "role3"),
             "claimName" to "myClaimName",
             "sub" to "123-456-798",
-            principalClaimName to principalClaimValue)
+            principalClaimName to principalClaimValue,
+        )
     val expectedSimpleGrantedAuthorities =
         listOf(
             SimpleGrantedAuthority("role1"),
             SimpleGrantedAuthority("role2"),
-            SimpleGrantedAuthority("role3"))
+            SimpleGrantedAuthority("role3"),
+        )
 
     every { jwt.claims } returns claims
     every { csmPlatformProperties.authorization.rolesJwtClaim } returns "claimRoles"
@@ -58,7 +60,8 @@ class KeycloakJwtAuthenticationConverterTests {
 
     assertEquals(
         JwtAuthenticationToken(jwt, expectedSimpleGrantedAuthorities, principalClaimName),
-        jwtConverted)
+        jwtConverted,
+    )
   }
 
   @Test
@@ -71,12 +74,14 @@ class KeycloakJwtAuthenticationConverterTests {
             "claim1" to "10",
             "claimRoles" to listOf("role1", "role2", "role3"),
             "claimName" to "myClaimName",
-            applicationIdClaimName to applicationIdClaimValue)
+            applicationIdClaimName to applicationIdClaimValue,
+        )
     val expectedSimpleGrantedAuthorities =
         listOf(
             SimpleGrantedAuthority("role1"),
             SimpleGrantedAuthority("role2"),
-            SimpleGrantedAuthority("role3"))
+            SimpleGrantedAuthority("role3"),
+        )
 
     every { jwt.claims } returns claims
     every { csmPlatformProperties.authorization.rolesJwtClaim } returns "claimRoles"
@@ -90,7 +95,8 @@ class KeycloakJwtAuthenticationConverterTests {
 
     assertEquals(
         JwtAuthenticationToken(jwt, expectedSimpleGrantedAuthorities, applicationIdClaimValue),
-        jwtConverted)
+        jwtConverted,
+    )
   }
 
   @Test
@@ -103,7 +109,8 @@ class KeycloakJwtAuthenticationConverterTests {
             "claimRoles" to listOf("role1", "role2", "role3"),
             "claimName" to "myClaimName",
             "sub" to "123-456-798",
-            principalClaimName to principalClaimValue)
+            principalClaimName to principalClaimValue,
+        )
 
     every { jwt.claims } returns claims
     every { csmPlatformProperties.authorization.rolesJwtClaim } returns "unexisting-role-claim"
@@ -125,7 +132,8 @@ class KeycloakJwtAuthenticationConverterTests {
             "claim1" to "10",
             "claimRoles" to listOf("role1", "role2", "role3"),
             "claimName" to "myClaimName",
-            "sub" to "123-456-798")
+            "sub" to "123-456-798",
+        )
 
     every { jwt.claims } returns claims
     every { csmPlatformProperties.authorization.rolesJwtClaim } returns "unexisting-role-claim"
@@ -150,7 +158,8 @@ class KeycloakJwtAuthenticationConverterTests {
             "claimRoles" to emptyList<String>(),
             "claimName" to "myClaimName",
             "sub" to "123-456-798",
-            principalClaimName to principalClaimValue)
+            principalClaimName to principalClaimValue,
+        )
 
     every { jwt.claims } returns claims
     every { csmPlatformProperties.authorization.rolesJwtClaim } returns "claimRoles"
@@ -172,7 +181,8 @@ class KeycloakJwtAuthenticationConverterTests {
             "claim1" to "10",
             "claimRoles" to emptyList<String>(),
             "claimName" to "myClaimName",
-            "sub" to "123-456-798")
+            "sub" to "123-456-798",
+        )
 
     every { jwt.claims } returns claims
     every { csmPlatformProperties.authorization.rolesJwtClaim } returns "claimRoles"

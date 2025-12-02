@@ -18,6 +18,7 @@ private const val MILLISECONDS_IN_DAY = 86400000
 private const val KEY_PREFIX = "ts2"
 
 @Service
+@Suppress("TooManyFunctions")
 class MetricsServiceImpl(
     private val unifiedJedis: UnifiedJedis,
     private val csmPlatformProperties: CsmPlatformProperties,
@@ -50,61 +51,95 @@ class MetricsServiceImpl(
     logger.debug("Testing Redis TS exist: $key")
     val exist = unifiedJedis.exists(key)
     logger.debug("Redis TS exist: $key:$exist")
-
     val metricRetention = getMetricRetention(metric)
-
     val commonLabels = getCommonLabels(metric)
     if (!exist) {
-      val metricLabels = getMetricLabels(commonLabels)
+      createTimeSeries(commonLabels, key, metricRetention, metric)
+    } else {
+      alterTimeSeries(key, metricRetention, commonLabels)
+    }
+  }
+
+  private fun alterTimeSeries(
+      key: String,
+      metricRetention: Long,
+      commonLabels: Map<String, String>,
+  ) {
+    val timeSeriesRetention = unifiedJedis.tsInfo(key).getProperty("retentionTime")
+
+    if (timeSeriesRetention != metricRetention) {
       logger.debug(
-          "Creating Redis TS: $key with retention: $metricRetention and ${metricLabels.count()} labels")
-      unifiedJedis.tsCreate(
+          "Redis TS retention changed: {} from {} to {}." +
+              "Redis TS library cannot get current labels so it is not possible to check if labels changed",
           key,
-          TSCreateParams()
+          timeSeriesRetention,
+          metricRetention,
+      )
+      val metricLabels = getMetricLabels(commonLabels)
+      unifiedJedis.tsAlter(
+          key,
+          TSAlterParams()
               .retention(metricRetention)
               .labels(metricLabels)
-              .duplicatePolicy(DuplicatePolicy.MAX))
-      if (metric.downSampling || csmPlatformProperties.metrics.downSamplingDefaultEnabled) {
-        val downSamplingKey = getDownSamplingKey(metric)
-        val downSamplingMetricLabels = getDownSamplingMetricLabels(commonLabels)
-        val downSamplingRetention = getDownSamplingRetention(metric)
-        val downSamplingBucketDuration = getDownSamplingBucketDuration(metric)
-        logger.debug(
-            "Creating Redis DownSampling TS: $downSamplingKey with retention: $metricRetention " +
-                "and ${downSamplingMetricLabels.count()} labels")
-        unifiedJedis.tsCreate(
-            downSamplingKey,
-            TSCreateParams()
-                .retention(downSamplingRetention)
-                .labels(downSamplingMetricLabels)
-                .duplicatePolicy(DuplicatePolicy.MAX))
-        logger.debug(
-            "Creating Redis DownSampling TS rule: from $key to $downSamplingKey, " +
-                "aggregation: ${metric.downSamplingAggregation.value}, bucketDuration: $downSamplingBucketDuration")
-        unifiedJedis.tsCreateRule(
-            key,
-            downSamplingKey,
-            metric.downSamplingAggregation.toRedisAggregation(),
-            downSamplingBucketDuration,
-            0)
-      }
-    } else {
-      val timeSeriesRetention = unifiedJedis.tsInfo(key).getProperty("retentionTime")
-
-      if (timeSeriesRetention != metricRetention) {
-        logger.debug(
-            "Redis TS retention changed: $key from $timeSeriesRetention to $metricRetention")
-        logger.debug(
-            "Redis TS library cannot get current labels so it is not possible to check if labels changed")
-        val metricLabels = getMetricLabels(commonLabels)
-        unifiedJedis.tsAlter(
-            key,
-            TSAlterParams()
-                .retention(metricRetention)
-                .labels(metricLabels)
-                .duplicatePolicy(DuplicatePolicy.MAX))
-      }
+              .duplicatePolicy(DuplicatePolicy.MAX),
+      )
     }
+  }
+
+  private fun createTimeSeries(
+      commonLabels: Map<String, String>,
+      key: String,
+      metricRetention: Long,
+      metric: PersistentMetric,
+  ) {
+    val metricLabels = getMetricLabels(commonLabels)
+    logger.debug(
+        "Creating Redis TS: $key with retention: $metricRetention and ${metricLabels.count()} labels"
+    )
+    unifiedJedis.tsCreate(
+        key,
+        TSCreateParams()
+            .retention(metricRetention)
+            .labels(metricLabels)
+            .duplicatePolicy(DuplicatePolicy.MAX),
+    )
+    if (metric.downSampling || csmPlatformProperties.metrics.downSamplingDefaultEnabled) {
+      handleDownSampling(metric, commonLabels, metricRetention, key)
+    }
+  }
+
+  private fun handleDownSampling(
+      metric: PersistentMetric,
+      commonLabels: Map<String, String>,
+      metricRetention: Long,
+      key: String,
+  ) {
+    val downSamplingKey = getDownSamplingKey(metric)
+    val downSamplingMetricLabels = getDownSamplingMetricLabels(commonLabels)
+    val downSamplingRetention = getDownSamplingRetention(metric)
+    val downSamplingBucketDuration = getDownSamplingBucketDuration(metric)
+    logger.debug(
+        "Creating Redis DownSampling TS: $downSamplingKey with retention: $metricRetention " +
+            "and ${downSamplingMetricLabels.count()} labels"
+    )
+    unifiedJedis.tsCreate(
+        downSamplingKey,
+        TSCreateParams()
+            .retention(downSamplingRetention)
+            .labels(downSamplingMetricLabels)
+            .duplicatePolicy(DuplicatePolicy.MAX),
+    )
+    logger.debug(
+        "Creating Redis DownSampling TS rule: from $key to $downSamplingKey, " +
+            "aggregation: ${metric.downSamplingAggregation.value}, bucketDuration: $downSamplingBucketDuration"
+    )
+    unifiedJedis.tsCreateRule(
+        key,
+        downSamplingKey,
+        metric.downSamplingAggregation.toRedisAggregation(),
+        downSamplingBucketDuration,
+        0,
+    )
   }
 
   private fun getDownSamplingBucketDuration(metric: PersistentMetric): Long =

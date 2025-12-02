@@ -17,19 +17,19 @@ interface SolutionRepository : RedisDocumentRepository<Solution, String> {
   @Query("@organizationId:{\$organizationId} @id:{\$solutionId}")
   fun findBy(
       @Sanitize @Param("organizationId") organizationId: String,
-      @Sanitize @Param("solutionId") solutionId: String
+      @Sanitize @Param("solutionId") solutionId: String,
   ): Optional<Solution>
 
   @Query("(@organizationId:{\$organizationId})  \$securityConstraint")
   fun findByOrganizationIdAndSecurity(
       @Sanitize @Param("organizationId") organizationId: String,
       @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
-      pageable: Pageable
+      pageable: Pageable,
   ): Page<Solution>
 
   @Query("@organizationId:{\$organizationId}")
   fun findByOrganizationId(
       @Sanitize @Param("organizationId") organizationId: String,
-      pageable: Pageable
+      pageable: Pageable,
   ): Page<Solution>
 }

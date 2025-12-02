@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service
 internal class RunnerApiServiceImpl(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val runnerServiceManager: RunnerServiceManager,
-    private val datasetApiServiceInterface: DatasetApiServiceInterface
+    private val datasetApiServiceInterface: DatasetApiServiceInterface,
 ) : RunnerApiServiceInterface {
 
   private val logger = LoggerFactory.getLogger(RunnerApiServiceImpl::class.java)
@@ -43,7 +43,7 @@ internal class RunnerApiServiceImpl(
   override fun createRunner(
       organizationId: String,
       workspaceId: String,
-      runnerCreateRequest: RunnerCreateRequest
+      runnerCreateRequest: RunnerCreateRequest,
   ): Runner {
     val runnerService =
         getRunnerService()
@@ -67,7 +67,12 @@ internal class RunnerApiServiceImpl(
     val runnerSaved = runnerService.saveInstance(runnerInstance)
     val listDatasetParts =
         datasetApiServiceInterface.listDatasetParts(
-            organizationId, workspaceId, runnerSaved.datasets.parameter, null, null)
+            organizationId,
+            workspaceId,
+            runnerSaved.datasets.parameter,
+            null,
+            null,
+        )
 
     return runnerSaved.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
   }
@@ -78,7 +83,12 @@ internal class RunnerApiServiceImpl(
     val runner = runnerInstance.getRunnerDataObjet()
     val listDatasetParts =
         datasetApiServiceInterface.listDatasetParts(
-            organizationId, workspaceId, runner.datasets.parameter, null, null)
+            organizationId,
+            workspaceId,
+            runner.datasets.parameter,
+            null,
+            null,
+        )
     return runner.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
   }
 
@@ -86,7 +96,7 @@ internal class RunnerApiServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      runnerUpdateRequest: RunnerUpdateRequest
+      runnerUpdateRequest: RunnerUpdateRequest,
   ): Runner {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
@@ -96,7 +106,12 @@ internal class RunnerApiServiceImpl(
 
     val listDatasetParts =
         datasetApiServiceInterface.listDatasetParts(
-            organizationId, workspaceId, runnerSaved.datasets.parameter, null, null)
+            organizationId,
+            workspaceId,
+            runnerSaved.datasets.parameter,
+            null,
+            null,
+        )
 
     return runnerSaved.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
   }
@@ -112,7 +127,7 @@ internal class RunnerApiServiceImpl(
       organizationId: String,
       workspaceId: String,
       page: Int?,
-      size: Int?
+      size: Int?,
   ): List<Runner> {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
 
@@ -137,11 +152,14 @@ internal class RunnerApiServiceImpl(
 
     val lastRunInfo = runnerInstance.getRunnerDataObjet().lastRunInfo
 
-    if (lastRunInfo.lastRunStatus in
-        listOf(
-            LastRunInfo.LastRunStatus.Running,
-            LastRunInfo.LastRunStatus.NotStarted,
-            LastRunInfo.LastRunStatus.Unknown)) {
+    if (
+        lastRunInfo.lastRunStatus in
+            listOf(
+                LastRunInfo.LastRunStatus.Running,
+                LastRunInfo.LastRunStatus.NotStarted,
+                LastRunInfo.LastRunStatus.Unknown,
+            )
+    ) {
       runnerService.stopLastRunOf(runnerInstance)
       return
     }
@@ -153,7 +171,7 @@ internal class RunnerApiServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      runnerAccessControl: RunnerAccessControl
+      runnerAccessControl: RunnerAccessControl,
   ): RunnerAccessControl {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
@@ -173,7 +191,7 @@ internal class RunnerApiServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      identityId: String
+      identityId: String,
   ): RunnerAccessControl {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
@@ -187,7 +205,7 @@ internal class RunnerApiServiceImpl(
       workspaceId: String,
       runnerId: String,
       identityId: String,
-      runnerRole: RunnerRole
+      runnerRole: RunnerRole,
   ): RunnerAccessControl {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
@@ -206,7 +224,7 @@ internal class RunnerApiServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      identityId: String
+      identityId: String,
   ) {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
@@ -220,7 +238,7 @@ internal class RunnerApiServiceImpl(
   override fun getRunnerSecurity(
       organizationId: String,
       workspaceId: String,
-      runnerId: String
+      runnerId: String,
   ): RunnerSecurity {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
@@ -233,7 +251,7 @@ internal class RunnerApiServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      role: String
+      role: String,
   ): List<String> {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
@@ -244,7 +262,7 @@ internal class RunnerApiServiceImpl(
   override fun listRunnerSecurityUsers(
       organizationId: String,
       workspaceId: String,
-      runnerId: String
+      runnerId: String,
   ): List<String> {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
@@ -257,7 +275,7 @@ internal class RunnerApiServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      runnerRole: RunnerRole
+      runnerRole: RunnerRole,
   ): RunnerSecurity {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance =
@@ -279,7 +297,9 @@ internal class RunnerApiServiceImpl(
     if (runnerInstance.getRunnerDataObjet().lastRunInfo.lastRunId == runDeleted.runId) {
       runnerInstance.getRunnerDataObjet().lastRunInfo =
           LastRunInfo(
-              lastRunId = runDeleted.lastRun, lastRunStatus = LastRunInfo.LastRunStatus.NotStarted)
+              lastRunId = runDeleted.lastRun,
+              lastRunStatus = LastRunInfo.LastRunStatus.NotStarted,
+          )
     }
     runnerService.saveInstance(runnerInstance)
     if (runDeleted.lastRun != null) {

@@ -25,7 +25,8 @@ fun unzip(file: InputStream, prefixNames: List<String>, fileExtension: String): 
             UnzippedFile(
                 filename = it.name.extractFileNameFromPath(),
                 prefix = prefixNames.first { prefix -> it.name.contains(prefix, true) },
-                content = zipInputStream.readAllBytes())
+                content = zipInputStream.readAllBytes(),
+            )
           }
           .toList()
     }

@@ -56,7 +56,7 @@ internal fun buildTemplate(
     workspaceId: String?,
     runContainer: RunContainer,
     csmPlatformProperties: CsmPlatformProperties,
-    alwaysPull: Boolean = false
+    alwaysPull: Boolean = false,
 ): IoArgoprojWorkflowV1alpha1Template {
   var envVars: MutableList<V1EnvVar>? = null
   if (runContainer.envVars != null) {
@@ -88,7 +88,8 @@ internal fun buildTemplate(
           V1VolumeMount()
               .name(VOLUME_CLAIM)
               .mountPath(VOLUME_TEMP_PATH)
-              .subPath(VOLUME_CLAIM_TEMP_SUBPATH))
+              .subPath(VOLUME_CLAIM_TEMP_SUBPATH),
+      )
 
   val volumeMounts = normalVolumeMount + secretVolumeMount
 
@@ -105,7 +106,8 @@ internal fun buildTemplate(
           volumeMounts,
           sizingInfo,
           organizationId,
-          workspaceId)
+          workspaceId,
+      )
 
   if (runContainer.entrypoint != null) {
     container.command(listOf(runContainer.entrypoint))
@@ -131,7 +133,7 @@ private fun buildContainer(
     volumeMounts: List<V1VolumeMount>,
     sizingInfo: ContainerResourceSizing,
     organizationId: String,
-    workspaceId: String?
+    workspaceId: String?,
 ): V1Container {
 
   val container =
@@ -144,7 +146,8 @@ private fun buildContainer(
           .resources(
               V1ResourceRequirements()
                   .requests(sizingInfo.getRequestsMap())
-                  .limits(sizingInfo.getLimitsMap()))
+                  .limits(sizingInfo.getLimitsMap())
+          )
 
   if (workspaceId.isNullOrBlank()) return container
 
@@ -154,7 +157,10 @@ private fun buildContainer(
               .secretRef(
                   V1SecretEnvSource()
                       .name("$organizationId-$workspaceId".lowercase())
-                      .optional(true))))
+                      .optional(true)
+              )
+      )
+  )
 }
 
 internal fun buildWorkflowSpec(
@@ -163,7 +169,7 @@ internal fun buildWorkflowSpec(
     csmPlatformProperties: CsmPlatformProperties,
     startContainers: RunStartContainers,
     executionTimeout: Int?,
-    alwaysPull: Boolean = false
+    alwaysPull: Boolean = false,
 ): IoArgoprojWorkflowV1alpha1WorkflowSpec {
   val templates =
       startContainers.containers
@@ -180,7 +186,8 @@ internal fun buildWorkflowSpec(
               csmPlatformProperties.argo.imagePullSecrets
                   ?.filterNot(String::isBlank)
                   ?.map(V1LocalObjectReference()::name)
-                  ?.ifEmpty { null })
+                  ?.ifEmpty { null }
+          )
           .tolerations(listOf(V1Toleration().key("vendor").value("cosmotech").effect("NoSchedule")))
           .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
           .entrypoint(CSM_DAG_ENTRYPOINT)
@@ -200,14 +207,18 @@ internal fun buildWorkflowSpec(
                           .items(
                               secret.keyPath.map { secretKeyPath ->
                                 V1KeyToPath().key(secretKeyPath.key).path(secretKeyPath.path)
-                              }))
-            })
+                              }
+                          )
+                  )
+            }
+        )
   }
 
   if (csmPlatformProperties.argo.workflows.ignoreNodeSelector == false) {
     workflowSpec =
         workflowSpec.nodeSelector(
-            mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute"))
+            mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
+        )
   }
 
   workflowSpec.activeDeadlineSeconds = executionTimeout ?: CSM_ARGO_WORKFLOWS_TIMEOUT
@@ -221,13 +232,14 @@ internal fun buildWorkflow(
     csmPlatformProperties: CsmPlatformProperties,
     startContainers: RunStartContainers,
     executionTimeout: Int?,
-    alwaysPull: Boolean = false
+    alwaysPull: Boolean = false,
 ) =
     IoArgoprojWorkflowV1alpha1Workflow()
         .metadata(
             V1ObjectMeta()
                 .generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME)
-                .labels(startContainers.labels))
+                .labels(startContainers.labels)
+        )
         .spec(
             buildWorkflowSpec(
                 organizationId,
@@ -235,7 +247,9 @@ internal fun buildWorkflow(
                 csmPlatformProperties,
                 startContainers,
                 executionTimeout,
-                alwaysPull))
+                alwaysPull,
+            )
+        )
 
 private fun buildEntrypointTemplate(
     startContainers: RunStartContainers
@@ -280,9 +294,12 @@ private fun buildVolumeClaims(
                   .accessModes(workflowsConfig.accessModes)
                   .storageClassName(
                       if (workflowsConfig.storageClass.isNullOrBlank()) null
-                      else workflowsConfig.storageClass)
+                      else workflowsConfig.storageClass
+                  )
                   .resources(
                       V1VolumeResourceRequirements()
-                          .requests(workflowsConfig.requests.mapValues { Quantity(it.value) })))
+                          .requests(workflowsConfig.requests.mapValues { Quantity(it.value) })
+                  )
+          )
   return listOf(dataDir)
 }

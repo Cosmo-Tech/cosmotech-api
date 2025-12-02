@@ -38,15 +38,15 @@ plugins {
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.18.18"
-  id("com.diffplug.spotless") version "7.0.3"
-  id("org.springframework.boot") version "3.4.4" apply false
+  id("com.diffplug.spotless") version "8.1.0"
+  id("org.springframework.boot") version "3.5.8" apply false
   id("project-report")
-  id("org.owasp.dependencycheck") version "12.1.0"
-  id("com.github.jk1.dependency-license-report") version "2.9"
-  id("org.jetbrains.kotlinx.kover") version "0.9.1"
+  id("org.owasp.dependencycheck") version "12.1.9"
+  id("com.github.jk1.dependency-license-report") version "3.0.1"
+  id("org.jetbrains.kotlinx.kover") version "0.9.3"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   id("org.openapi.generator") version "7.13.0" apply false
-  id("com.google.cloud.tools.jib") version "3.4.5" apply false
+  id("com.google.cloud.tools.jib") version "3.5.1" apply false
   id("org.cyclonedx.bom") version "2.3.1"
 }
 
@@ -86,7 +86,7 @@ val awsSpringVersion = "3.3.0"
 val detektVersion = "1.23.8"
 
 // Tests
-val jUnitBomVersion = "5.12.2"
+val jUnitBomVersion = "6.0.1"
 val mockkVersion = "1.14.0"
 val awaitilityKVersion = "4.2.0"
 val springMockkVersion = "4.0.2"
@@ -113,7 +113,8 @@ licenseReport {
   renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"))
   filters =
       arrayOf<LicenseBundleNormalizer>(
-          LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true))
+          LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true)
+      )
 }
 
 allprojects {
@@ -234,26 +235,30 @@ subprojects {
         // observe findings in your browser with structure and code snippets
         required.set(true)
         outputLocation.set(
-            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.html"))
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.html")
+        )
       }
       xml {
         // checkstyle like format mainly for integrations like Jenkins
         required.set(false)
         outputLocation.set(
-            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.xml"))
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.xml")
+        )
       }
       txt {
         // similar to the console output, contains issue signature to manually edit baseline files
         required.set(true)
         outputLocation.set(
-            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.txt"))
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.txt")
+        )
       }
       sarif {
         // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations
         // with Github Code Scanning
         required.set(true)
         outputLocation.set(
-            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.sarif"))
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.sarif")
+        )
       }
     }
 
@@ -271,7 +276,8 @@ subprojects {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     implementation(
-        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
+        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+    )
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
@@ -293,21 +299,23 @@ subprojects {
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation(
-        "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springOauthAutoConfigureVersion}") {
+        "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springOauthAutoConfigureVersion}"
+    ) {
+      constraints {
+        implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+        implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+        implementation("org.springframework:spring-web:$springWebVersion")
+        implementation("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
+        implementation(
+            "org.springframework.security:spring-security-jwt:${springSecurityJwtVersion}"
+        ) {
+          exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
           constraints {
-            implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
-            implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-            implementation("org.springframework:spring-web:$springWebVersion")
-            implementation("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
-            implementation(
-                "org.springframework.security:spring-security-jwt:${springSecurityJwtVersion}") {
-                  exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
-                  constraints {
-                    implementation("org.bouncycastle:bcpkix-jdk18on:${bouncyCastleJdk18Version}")
-                  }
-                }
+            implementation("org.bouncycastle:bcpkix-jdk18on:${bouncyCastleJdk18Version}")
           }
         }
+      }
+    }
     implementation("org.springframework.security:spring-security-oauth2-jose")
     implementation("org.springframework.security:spring-security-oauth2-resource-server")
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
@@ -332,7 +340,8 @@ subprojects {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
     testImplementation("org.testng:testng:$testNgVersion")
     testImplementation(
-        "com.redis.testcontainers:testcontainers-redis-junit:$testContainersRedisVersion")
+        "com.redis.testcontainers:testcontainers-redis-junit:$testContainersRedisVersion"
+    )
     testImplementation("org.testcontainers:postgresql:$testContainersPostgreSQLVersion")
     testImplementation("org.testcontainers:localstack:$testContainersLocalStackVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -345,7 +354,8 @@ subprojects {
     integrationTestImplementation("com.ninja-squad:springmockk:$springMockkVersion")
     // developmentOnly("org.springframework.boot:spring-boot-devtools")
     integrationTestImplementation(
-        "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
+    )
   }
 
   tasks.withType<KotlinCompile> {
@@ -427,7 +437,8 @@ subprojects {
             TestLogEvent.FAILED,
             TestLogEvent.SKIPPED,
             TestLogEvent.STANDARD_ERROR,
-            TestLogEvent.STANDARD_OUT)
+            TestLogEvent.STANDARD_OUT,
+        )
         exceptionFormat = TestExceptionFormat.FULL
       }
 
@@ -469,7 +480,9 @@ subprojects {
               // Service Implementation to be present in the 'apiPackage' package,
               // which is not the case when serviceInterface is true.
               // We will write our own tests instead.
-              "apiTests" to "false"))
+              "apiTests" to "false",
+          )
+      )
       additionalProperties.set(
           mapOf(
               "title" to "Cosmo Tech ${projectDirName.capitalizeAsciiOnly()} Manager API",
@@ -482,7 +495,9 @@ subprojects {
               "useSpringBoot3" to true,
               "useTags" to true,
               "beanQualifiers" to true,
-              "modelMutable" to true))
+              "modelMutable" to true,
+          )
+      )
     }
   }
 
@@ -525,7 +540,9 @@ subprojects {
               mapOf(
                   "fullVersion" to fullVersion,
                   "releaseVersion" to project.version,
-                  "buildVersion" to buildVersion))
+                  "buildVersion" to buildVersion,
+              )
+      )
     }
   }
 
@@ -539,7 +556,9 @@ subprojects {
             mapOf(
                 "fullVersion" to fullVersion,
                 "releaseVersion" to project.version,
-                "buildVersion" to buildVersion))
+                "buildVersion" to buildVersion,
+            )
+    )
   }
   tasks.getByName<Copy>("processTestResources") {
     dependsOn("copyOpenApiYamlToTestResources")
@@ -567,12 +586,14 @@ subprojects {
       environment =
           mapOf(
               "JAVA_TOOL_OPTIONS" to
-                  "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005")
+                  "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005"
+          )
       jvmFlags =
           listOf(
               // Make sure Spring DevTools is disabled in production as running it is a
               // security risk
-              "-Dspring.devtools.restart.enabled=false")
+              "-Dspring.devtools.restart.enabled=false"
+          )
       ports = listOf("5005", "8080", "8081")
       // Docker Best Practice : run as non-root.
       // These are the 'nobody' UID and GID inside the image
@@ -602,17 +623,19 @@ val copySubProjectsDetektReportsTasks =
                 "detektCopy${formatCapitalized}ReportFor" +
                     "${subProject.projectDir.relativeTo(rootDir)}"
                         .capitalizeAsciiOnly()
-                        .replace("/", "_")) {
-                  group = "detekt"
-                  description =
-                      "Copy sub-projects detekt reports to \$projectDir/build/reports/detekt/\$format"
-                  dependsOn("spotlessKotlin", "spotlessKotlinGradle", "spotlessJava")
-                  from(
-                      file(
-                          "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"))
-                  into(
-                      "${subProject.parent!!.layout.projectDirectory}/build/reports/detekt/$format")
-                }
+                        .replace("/", "_")
+            ) {
+              group = "detekt"
+              description =
+                  "Copy sub-projects detekt reports to \$projectDir/build/reports/detekt/\$format"
+              dependsOn("spotlessKotlin", "spotlessKotlinGradle", "spotlessJava")
+              from(
+                  file(
+                      "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"
+                  )
+              )
+              into("${subProject.parent!!.layout.projectDirectory}/build/reports/detekt/$format")
+            }
         subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
         subProject.tasks.withType<CycloneDxTask> { finalizedBy(copyTask) }
         copyTask
@@ -651,9 +674,10 @@ tasks.register<ReportTask>("generateLicenseDoc") {
 tasks.register("generateAllReports") {
   group = "reporting"
   description =
-      """Generates all available reports (test, coverage, dependencies, licenses, detekt)
-    |/!\ Warning: Please do not run this task locally, tests are really resource consuming
-  """
+      """
+      |Generates all available reports (test, coverage, dependencies, licenses, detekt)
+      |/!\ Warning: Please do not run this task locally, tests are really resource consuming
+      """
           .trimMargin()
   dependsOn(
       // Test reports, need to gather them first
@@ -667,7 +691,8 @@ tasks.register("generateAllReports") {
       // License reports
       "generateLicenseReport",
       // Code analysis reports
-      "detekt")
+      "detekt",
+  )
   doLast {
     // Create reports directory if it doesn't exist
     val reportsDir = layout.buildDirectory.get().dir("reports").asFile

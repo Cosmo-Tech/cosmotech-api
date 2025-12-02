@@ -59,17 +59,20 @@ class WorkspaceControllerTests : ControllerTestBase() {
             get("/organizations/wrong-orgId/workspaces/wrong-workspaceId")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+        )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\""))
+        )
 
     mvc.perform(
             get("/organizations/wrong-orgId/workspaces/w-123456abcdef")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+        )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
 
@@ -77,10 +80,12 @@ class WorkspaceControllerTests : ControllerTestBase() {
             get("/organizations/o-123456abcdef/workspaces/wrong-workspaceId")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+        )
         .andExpect(status().isBadRequest)
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")))
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\""))
+        )
   }
 
   @Test
@@ -92,14 +97,18 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val tags = mutableListOf("tag1,tag2")
     val additionalData =
         mutableMapOf(
-            "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
+            "you_can_put" to "whatever_you_want_here",
+            "even" to mapOf("object" to "if_you_want"),
+        )
     val workspaceSecurity =
         WorkspaceSecurity(
             default = ROLE_NONE,
             accessControlList =
                 mutableListOf(
                     WorkspaceAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
-                    WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE)))
+                    WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE),
+                ),
+        )
 
     val workspaceDatasetId = "d-12345678910"
     mvc.perform(
@@ -115,16 +124,21 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                 workspaceDatasetId,
                                 mutableMapOf(
                                     "solution_parameter1" to "solution_parameter1_defaultValue",
-                                    "solution_parameter2" to "solution_parameter2_defaultValue"),
+                                    "solution_parameter2" to "solution_parameter2_defaultValue",
+                                ),
                                 description,
                                 version,
                                 datasetCopy,
                                 workspaceSecurity,
                                 additionalData,
-                                tags))
-                        .toString())
+                                tags,
+                            )
+                        )
+                        .toString()
+                )
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+                .with(csrf())
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(WORKSPACE_NAME))
         .andExpect(jsonPath("$.key").value(WORKSPACE_KEY))
@@ -135,10 +149,12 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter1")
-                .value("solution_parameter1_defaultValue"))
+                .value("solution_parameter1_defaultValue")
+        )
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter2")
-                .value("solution_parameter2_defaultValue"))
+                .value("solution_parameter2_defaultValue")
+        )
         .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.additionalData").value(additionalData))
@@ -164,7 +180,9 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val tags = mutableListOf("tag1,tag2")
     val additionalData =
         mutableMapOf(
-            "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
+            "you_can_put" to "whatever_you_want_here",
+            "even" to mapOf("object" to "if_you_want"),
+        )
 
     val workspaceDatasetId = "d-12345678910"
     mvc.perform(
@@ -180,14 +198,19 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                 workspaceDatasetId,
                                 mutableMapOf(
                                     "solution_parameter1" to "solution_parameter1_defaultValue",
-                                    "solution_parameter2" to "solution_parameter2_defaultValue"),
+                                    "solution_parameter2" to "solution_parameter2_defaultValue",
+                                ),
                                 description,
                                 datasetCopy,
                                 additionalData,
-                                tags))
-                        .toString())
+                                tags,
+                            )
+                        )
+                        .toString()
+                )
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+                .with(csrf())
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(WORKSPACE_NAME))
         .andExpect(jsonPath("$.key").value(WORKSPACE_KEY))
@@ -197,10 +220,12 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter1")
-                .value("solution_parameter1_defaultValue"))
+                .value("solution_parameter1_defaultValue")
+        )
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter2")
-                .value("solution_parameter2_defaultValue"))
+                .value("solution_parameter2_defaultValue")
+        )
         .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.additionalData").value(additionalData))
@@ -226,7 +251,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 key = firstWorkspaceKey,
                 name = firstWorkspaceName,
                 solutionId = solutionId,
-            ))
+            ),
+        )
     val secondWorkspaceKey = "second_workspace_key"
     val secondWorkspaceName = "second_workspace_name"
     val secondWorkspaceId =
@@ -237,12 +263,14 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 key = secondWorkspaceKey,
                 name = secondWorkspaceName,
                 solutionId = solutionId,
-            ))
+            ),
+        )
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].id").value(firstWorkspaceId))
         .andExpect(jsonPath("$[0].key").value(firstWorkspaceKey))
@@ -281,7 +309,9 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val tags = mutableListOf("tag1,tag2")
     val additionalData =
         mutableMapOf(
-            "you_can_put" to "whatever_you_want_here", "even" to mapOf("object" to "if_you_want"))
+            "you_can_put" to "whatever_you_want_here",
+            "even" to mapOf("object" to "if_you_want"),
+        )
 
     val workspaceDatasetId = "d-12345678910"
     val workspaceSecurity =
@@ -290,7 +320,9 @@ class WorkspaceControllerTests : ControllerTestBase() {
             accessControlList =
                 mutableListOf(
                     WorkspaceAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
-                    WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE)))
+                    WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE),
+                ),
+        )
     val workspaceId =
         createWorkspaceAndReturnId(
             mvc,
@@ -302,18 +334,22 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 workspaceDatasetId,
                 mutableMapOf(
                     "solution_parameter1" to "solution_parameter1_defaultValue",
-                    "solution_parameter2" to "solution_parameter2_defaultValue"),
+                    "solution_parameter2" to "solution_parameter2_defaultValue",
+                ),
                 description,
                 version,
                 datasetCopy,
                 workspaceSecurity,
                 additionalData,
-                tags))
+                tags,
+            ),
+        )
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(WORKSPACE_NAME))
         .andExpect(jsonPath("$.key").value(WORKSPACE_KEY))
@@ -329,10 +365,12 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter1")
-                .value("solution_parameter1_defaultValue"))
+                .value("solution_parameter1_defaultValue")
+        )
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter2")
-                .value("solution_parameter2_defaultValue"))
+                .value("solution_parameter2_defaultValue")
+        )
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
@@ -352,7 +390,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
             delete("/organizations/$organizationId/workspaces/$workspaceId")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+                .with(csrf())
+        )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/DELETE"))
@@ -363,11 +402,15 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val workspaceId =
         createWorkspaceAndReturnId(
-            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId),
+        )
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/security")
-                .withPlatformAdminHeader())
+                .withPlatformAdminHeader()
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
@@ -381,7 +424,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val workspaceId =
         createWorkspaceAndReturnId(
-            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId),
+        )
 
     mvc.perform(
             post("/organizations/$organizationId/workspaces/$workspaceId/security/access")
@@ -394,16 +440,20 @@ class WorkspaceControllerTests : ControllerTestBase() {
                         "role": "$NEW_USER_ROLE"
                         }
                     """
-                        .trimMargin())
+                        .trimMargin()
+                )
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+                .with(csrf())
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(NEW_USER_ROLE))
         .andExpect(jsonPath("$.id").value(NEW_USER_ID))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/POST"))
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/POST"
+            )
+        )
   }
 
   @Test
@@ -411,19 +461,26 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val workspaceId =
         createWorkspaceAndReturnId(
-            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId),
+        )
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$PLATFORM_ADMIN_EMAIL")
-                .withPlatformAdminHeader())
+                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$PLATFORM_ADMIN_EMAIL"
+                )
+                .withPlatformAdminHeader()
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.id").value(PLATFORM_ADMIN_EMAIL))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/GET"))
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/GET"
+            )
+        )
   }
 
   @Test
@@ -435,7 +492,9 @@ class WorkspaceControllerTests : ControllerTestBase() {
             accessControlList =
                 mutableListOf(
                     WorkspaceAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
-                    WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE)))
+                    WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE),
+                ),
+        )
     val workspaceId =
         createWorkspaceAndReturnId(
             mvc,
@@ -444,23 +503,29 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 key = WORKSPACE_KEY,
                 name = WORKSPACE_NAME,
                 solutionId = solutionId,
-                security = workspaceSecurity))
+                security = workspaceSecurity,
+            ),
+        )
 
     mvc.perform(
             patch(
-                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$NEW_USER_ID")
+                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$NEW_USER_ID"
+                )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+                .with(csrf())
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_VIEWER))
         .andExpect(jsonPath("$.id").value(NEW_USER_ID))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/PATCH"))
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/PATCH"
+            )
+        )
   }
 
   @Test
@@ -472,7 +537,9 @@ class WorkspaceControllerTests : ControllerTestBase() {
             accessControlList =
                 mutableListOf(
                     WorkspaceAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
-                    WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE)))
+                    WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE),
+                ),
+        )
     val workspaceId =
         createWorkspaceAndReturnId(
             mvc,
@@ -481,18 +548,24 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 key = WORKSPACE_KEY,
                 name = WORKSPACE_NAME,
                 solutionId = solutionId,
-                security = workspaceSecurity))
+                security = workspaceSecurity,
+            ),
+        )
 
     mvc.perform(
             delete(
-                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$NEW_USER_ID")
+                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$NEW_USER_ID"
+                )
                 .withPlatformAdminHeader()
-                .with(csrf()))
+                .with(csrf())
+        )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/DELETE"))
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/DELETE"
+            )
+        )
   }
 
   @Test
@@ -500,7 +573,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val workspaceId =
         createWorkspaceAndReturnId(
-            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId),
+        )
 
     mvc.perform(
             patch("/organizations/$organizationId/workspaces/$workspaceId/security/default")
@@ -508,7 +584,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+                .with(csrf())
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_VIEWER))
         .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
@@ -516,7 +593,9 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/default/POST"))
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/default/POST"
+            )
+        )
   }
 
   @Test
@@ -528,7 +607,9 @@ class WorkspaceControllerTests : ControllerTestBase() {
             accessControlList =
                 mutableListOf(
                     WorkspaceAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
-                    WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE)))
+                    WorkspaceAccessControl(id = NEW_USER_ID, role = NEW_USER_ROLE),
+                ),
+        )
     val workspaceId =
         createWorkspaceAndReturnId(
             mvc,
@@ -537,20 +618,23 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 key = WORKSPACE_KEY,
                 name = WORKSPACE_NAME,
                 solutionId = solutionId,
-                security = workspaceSecurity))
+                security = workspaceSecurity,
+            ),
+        )
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/security/users")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[1]").value(NEW_USER_ID))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
-            document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/users/GET"))
+            document("organizations/{organization_id}/workspaces/{workspace_id}/security/users/GET")
+        )
   }
 
   @Test
@@ -558,12 +642,16 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val workspaceId =
         createWorkspaceAndReturnId(
-            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId),
+        )
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/files")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON)
+        )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/files/GET"))
@@ -573,16 +661,24 @@ class WorkspaceControllerTests : ControllerTestBase() {
   fun create_workspace_files() {
     val workspaceId =
         createWorkspaceAndReturnId(
-            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId),
+        )
     val fileName = "test.txt"
     val fileToUpload =
         this::class.java.getResourceAsStream("/workspace/$fileName")
             ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null")
+                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null"
+            )
 
     val mockFile =
         MockMultipartFile(
-            "file", fileName, MediaType.TEXT_PLAIN_VALUE, IOUtils.toByteArray(fileToUpload))
+            "file",
+            fileName,
+            MediaType.TEXT_PLAIN_VALUE,
+            IOUtils.toByteArray(fileToUpload),
+        )
 
     mvc.perform(
             multipart("/organizations/$organizationId/workspaces/$workspaceId/files")
@@ -591,7 +687,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 .param("destination", "path/to/a/directory/")
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+                .with(csrf())
+        )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.fileName").value("path/to/a/directory/$fileName"))
         .andDo(MockMvcResultHandlers.print())
@@ -603,13 +700,17 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val workspaceId =
         createWorkspaceAndReturnId(
-            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId),
+        )
 
     mvc.perform(
             delete("/organizations/$organizationId/workspaces/$workspaceId/files")
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+                .with(csrf())
+        )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/files/DELETE"))
@@ -619,17 +720,25 @@ class WorkspaceControllerTests : ControllerTestBase() {
   fun delete_workspace_file() {
     val workspaceId =
         createWorkspaceAndReturnId(
-            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId),
+        )
 
     val fileName = "test.txt"
     val fileToUpload =
         this::class.java.getResourceAsStream("/workspace/$fileName")
             ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null")
+                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null"
+            )
 
     val mockFile =
         MockMultipartFile(
-            "file", fileName, MediaType.TEXT_PLAIN_VALUE, IOUtils.toByteArray(fileToUpload))
+            "file",
+            fileName,
+            MediaType.TEXT_PLAIN_VALUE,
+            IOUtils.toByteArray(fileToUpload),
+        )
 
     val destination = "path/to/a/directory/"
     mvc.perform(
@@ -639,19 +748,23 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .param("destination", destination)
             .withPlatformAdminHeader()
             .accept(MediaType.APPLICATION_JSON)
-            .with(csrf()))
+            .with(csrf())
+    )
 
     mvc.perform(
             delete("/organizations/$organizationId/workspaces/$workspaceId/files/delete")
                 .param("file_name", destination + fileName)
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf()))
+                .with(csrf())
+        )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/files/delete/DELETE"))
+                "organizations/{organization_id}/workspaces/{workspace_id}/files/delete/DELETE"
+            )
+        )
   }
 
   @Test
@@ -659,17 +772,25 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val workspaceId =
         createWorkspaceAndReturnId(
-            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId),
+        )
 
     val fileName = "test.txt"
     val fileToUpload =
         this::class.java.getResourceAsStream("/workspace/$fileName")
             ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null")
+                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null"
+            )
 
     val mockFile =
         MockMultipartFile(
-            "file", fileName, MediaType.TEXT_PLAIN_VALUE, IOUtils.toByteArray(fileToUpload))
+            "file",
+            fileName,
+            MediaType.TEXT_PLAIN_VALUE,
+            IOUtils.toByteArray(fileToUpload),
+        )
 
     val destination = "path/to/a/directory/"
     mvc.perform(
@@ -679,18 +800,20 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .param("destination", destination)
             .withPlatformAdminHeader()
             .accept(MediaType.APPLICATION_JSON)
-            .with(csrf()))
+            .with(csrf())
+    )
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
                 .param("file_name", destination + fileName)
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_OCTET_STREAM))
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+        )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
-            document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/files/download/GET"))
+            document("organizations/{organization_id}/workspaces/{workspace_id}/files/download/GET")
+        )
   }
 
   @Test
@@ -698,17 +821,25 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val workspaceId =
         createWorkspaceAndReturnId(
-            mvc, organizationId, constructWorkspaceCreateRequest(solutionId = solutionId))
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(solutionId = solutionId),
+        )
 
     val fileName = "test.txt"
     val fileToUpload =
         this::class.java.getResourceAsStream("/workspace/$fileName")
             ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null")
+                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null"
+            )
 
     val mockFile =
         MockMultipartFile(
-            "file", fileName, MediaType.TEXT_PLAIN_VALUE, IOUtils.toByteArray(fileToUpload))
+            "file",
+            fileName,
+            MediaType.TEXT_PLAIN_VALUE,
+            IOUtils.toByteArray(fileToUpload),
+        )
 
     val destination = "path/to/a/directory/"
     mvc.perform(
@@ -718,13 +849,15 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .param("destination", destination)
             .withPlatformAdminHeader()
             .accept(MediaType.APPLICATION_JSON)
-            .with(csrf()))
+            .with(csrf())
+    )
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
                 .param("file_name", "Wrong file name")
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_OCTET_STREAM))
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+        )
         .andExpect(status().is4xxClientError)
         .andExpect(jsonPath("$.detail").value("Wrong file name does not exist."))
         .andDo(MockMvcResultHandlers.print())

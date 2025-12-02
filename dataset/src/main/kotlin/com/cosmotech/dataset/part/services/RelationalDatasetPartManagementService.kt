@@ -32,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile
 class RelationalDatasetPartManagementService(
     val writerJdbcTemplate: JdbcTemplate,
     val readerJdbcTemplate: JdbcTemplate,
-    val csmPlatformProperties: CsmPlatformProperties
+    val csmPlatformProperties: CsmPlatformProperties,
 ) : DatasetPartManagementService {
 
   private val logger = LoggerFactory.getLogger(RelationalDatasetPartManagementService::class.java)
@@ -52,7 +52,8 @@ class RelationalDatasetPartManagementService(
 
     if (tableExists && !overwrite) {
       throw IllegalArgumentException(
-          "Table ${datasetPart.id} already exists and overwrite is set to false.")
+          "Table ${datasetPart.id} already exists and overwrite is set to false."
+      )
     }
 
     inputStream.bufferedReader().use { reader ->
@@ -71,7 +72,8 @@ class RelationalDatasetPartManagementService(
             val prepareStatement =
                 connection.prepareStatement(
                     "CREATE TABLE IF NOT EXISTS $tableName ${constructSQLColumnsValues(headers)};" +
-                        "GRANT SELECT ON $tableName to \"$readerUserName\";")
+                        "GRANT SELECT ON $tableName to \"$readerUserName\";"
+                )
             prepareStatement.execute()
           }
           val insertedRows =

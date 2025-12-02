@@ -21,7 +21,8 @@ fun generateId(scope: String, prependPrefix: String? = null): String {
       Hashids("$scope-${UUID.randomUUID()}", MIN_HASH_LENGTH, ALPHABET)
           .encode(
               // PROD-8703: encodedElement might be higher than the maximum number supported
-              min(System.nanoTime(), MAX_NUMBER))
+              min(System.nanoTime(), MAX_NUMBER)
+          )
 
   return "${prependPrefix ?: "${scope[0].lowercaseChar()}-"}$id"
 }

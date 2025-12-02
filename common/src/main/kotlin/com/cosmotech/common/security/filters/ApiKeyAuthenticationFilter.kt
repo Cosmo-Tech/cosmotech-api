@@ -20,7 +20,7 @@ class ApiKeyAuthenticationFilter(val csmPlatformProperties: CsmPlatformPropertie
   override fun doFilterInternal(
       request: HttpServletRequest,
       response: HttpServletResponse,
-      chain: FilterChain
+      chain: FilterChain,
   ) {
     logger.debug("API-Key filter starts")
     val allowedApiKeyConsumers = csmPlatformProperties.authorization.allowedApiKeyConsumers
@@ -67,7 +67,8 @@ class ApiKeyAuthenticationFilter(val csmPlatformProperties: CsmPlatformPropertie
                 ApiKeyAuthentication(
                     apiKeyValueConfigured,
                     apiKeyHeaderName,
-                    AuthorityUtils.createAuthorityList(associatedRole))
+                    AuthorityUtils.createAuthorityList(associatedRole),
+                )
             HttpSessionSecurityContextRepository().saveContext(securityContext, request, response)
           } else {
             response.status = HttpStatus.FORBIDDEN.value()
@@ -88,7 +89,7 @@ class ApiKeyAuthenticationFilter(val csmPlatformProperties: CsmPlatformPropertie
   private fun filterSecuredUriWithRequestUri(
       securedUriSplitted: List<String>,
       requestUri: String,
-      securedUri: String
+      securedUri: String,
   ) =
       if (securedUriSplitted.size == 1 && securedUriSplitted[0] == "/") {
         true
@@ -106,7 +107,7 @@ class ApiKeyAuthenticationFilter(val csmPlatformProperties: CsmPlatformPropertie
 class ApiKeyAuthentication(
     val apiKey: String,
     val apiKeyName: String,
-    authorities: MutableCollection<GrantedAuthority>
+    authorities: MutableCollection<GrantedAuthority>,
 ) : AbstractAuthenticationToken(authorities) {
 
   init {

@@ -11,7 +11,7 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter
 import org.springframework.security.web.context.DelegatingSecurityContextRepository
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher
 import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher
 import org.springframework.web.cors.CorsConfiguration
 
@@ -64,7 +64,8 @@ val PATHS_ORGANIZATIONS =
         "/organizations/*/security/access",
         "/organizations/*/security/access/*",
         "/organizations/*/security/default",
-        "/organizations/*/security/users")
+        "/organizations/*/security/users",
+    )
 
 // Path Runs
 val PATHS_RUNS =
@@ -74,7 +75,8 @@ val PATHS_RUNS =
         "/organizations/*/workspaces/*/runners/*/runs/*/data/query",
         "/organizations/*/workspaces/*/runners/*/runs/*/data/send",
         "/organizations/*/workspaces/*/runners/*/runs/*/logs",
-        "/organizations/*/workspaces/*/runners/*/runs/*/status")
+        "/organizations/*/workspaces/*/runners/*/runs/*/status",
+    )
 
 // Path Runners
 val PATHS_RUNNERS =
@@ -88,7 +90,8 @@ val PATHS_RUNNERS =
         "/organizations/*/workspaces/*/runners/*/security/default",
         "/organizations/*/workspaces/*/runners/*/security/users",
         "/organizations/*/workspaces/*/runners/*/start",
-        "/organizations/*/workspaces/*/runners/*/stop")
+        "/organizations/*/workspaces/*/runners/*/stop",
+    )
 
 // Path Solutions
 val PATHS_SOLUTIONS =
@@ -113,7 +116,8 @@ val PATHS_WORKSPACES_FILES =
     listOf(
         "/organizations/*/workspaces/*/files",
         "/organizations/*/workspaces/*/files/delete",
-        "/organizations/*/workspaces/*/files/download")
+        "/organizations/*/workspaces/*/files/download",
+    )
 
 // Path Workspaces
 val PATHS_WORKSPACES =
@@ -147,7 +151,7 @@ val endpointSecurityPublic =
 internal fun endpointSecurityReaders(
     customOrganizationAdmin: String,
     customOrganizationUser: String,
-    customOrganizationViewer: String
+    customOrganizationViewer: String,
 ) =
     listOf(
         CsmSecurityEndpointsRolesReader(
@@ -157,8 +161,10 @@ internal fun endpointSecurityReaders(
                     ROLE_ORGANIZATION_USER,
                     ROLE_ORGANIZATION_VIEWER,
                     customOrganizationUser,
-                    customOrganizationViewer),
-            customAdmin = customOrganizationAdmin),
+                    customOrganizationViewer,
+                ),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_DATASETS,
             roles =
@@ -168,8 +174,10 @@ internal fun endpointSecurityReaders(
                     SCOPE_DATASET_READ,
                     SCOPE_DATASET_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer),
-            customAdmin = customOrganizationAdmin),
+                    customOrganizationViewer,
+                ),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_ORGANIZATIONS,
             roles =
@@ -179,8 +187,10 @@ internal fun endpointSecurityReaders(
                     SCOPE_ORGANIZATION_READ,
                     SCOPE_ORGANIZATION_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer),
-            customAdmin = customOrganizationAdmin),
+                    customOrganizationViewer,
+                ),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_SOLUTIONS,
             roles =
@@ -190,8 +200,10 @@ internal fun endpointSecurityReaders(
                     SCOPE_SOLUTION_READ,
                     SCOPE_SOLUTION_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer),
-            customAdmin = customOrganizationAdmin),
+                    customOrganizationViewer,
+                ),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_WORKSPACES,
             roles =
@@ -201,8 +213,10 @@ internal fun endpointSecurityReaders(
                     SCOPE_WORKSPACE_READ,
                     SCOPE_WORKSPACE_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer),
-            customAdmin = customOrganizationAdmin),
+                    customOrganizationViewer,
+                ),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_RUNS,
             roles =
@@ -212,8 +226,10 @@ internal fun endpointSecurityReaders(
                     SCOPE_RUN_READ,
                     SCOPE_RUN_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer),
-            customAdmin = customOrganizationAdmin),
+                    customOrganizationViewer,
+                ),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_RUNNERS,
             roles =
@@ -223,43 +239,53 @@ internal fun endpointSecurityReaders(
                     SCOPE_RUNNER_READ,
                     SCOPE_RUNNER_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer),
-            customAdmin = customOrganizationAdmin))
+                    customOrganizationViewer,
+                ),
+            customAdmin = customOrganizationAdmin,
+        ),
+    )
 
 @Suppress("LongMethod")
 internal fun endpointSecurityWriters(
     customOrganizationAdmin: String,
-    customOrganizationUser: String
+    customOrganizationUser: String,
 ) =
     listOf(
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_DATASETS,
             roles = arrayOf(ROLE_ORGANIZATION_USER, SCOPE_DATASET_WRITE, customOrganizationUser),
-            customAdmin = customOrganizationAdmin),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_ORGANIZATIONS,
             roles = arrayOf(SCOPE_ORGANIZATION_WRITE),
-            customAdmin = customOrganizationAdmin),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_SOLUTIONS,
             roles = arrayOf(ROLE_ORGANIZATION_USER, SCOPE_SOLUTION_WRITE, customOrganizationUser),
-            customAdmin = customOrganizationAdmin),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_WORKSPACES,
             roles = arrayOf(SCOPE_WORKSPACE_WRITE),
-            customAdmin = customOrganizationAdmin),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_RUNS,
             roles = arrayOf(ROLE_ORGANIZATION_USER, SCOPE_RUN_WRITE, customOrganizationUser),
-            customAdmin = customOrganizationAdmin),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_RUNNERS,
             roles = arrayOf(ROLE_ORGANIZATION_USER, SCOPE_RUNNER_WRITE, customOrganizationUser),
-            customAdmin = customOrganizationAdmin),
+            customAdmin = customOrganizationAdmin,
+        ),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_WORKSPACES_FILES,
             roles = arrayOf(ROLE_ORGANIZATION_USER, SCOPE_WORKSPACE_WRITE, customOrganizationUser),
-            customAdmin = customOrganizationAdmin),
+            customAdmin = customOrganizationAdmin,
+        ),
     )
 
 abstract class AbstractSecurityConfiguration {
@@ -269,7 +295,7 @@ abstract class AbstractSecurityConfiguration {
       organizationAdminGroup: String,
       organizationUserGroup: String,
       organizationViewerGroup: String,
-      csmPlatformProperties: CsmPlatformProperties
+      csmPlatformProperties: CsmPlatformProperties,
   ): HttpSecurity {
 
     val corsHttpMethodsAllowed =
@@ -286,30 +312,42 @@ abstract class AbstractSecurityConfiguration {
         .csrf { csrfConfigurer ->
           csmPlatformProperties.authorization.allowedApiKeyConsumers.forEach { apiKeyConsumer ->
             csrfConfigurer.ignoringRequestMatchers(
-                RequestHeaderRequestMatcher(apiKeyConsumer.apiKeyHeaderName))
+                RequestHeaderRequestMatcher(apiKeyConsumer.apiKeyHeaderName)
+            )
           }
         }
         .securityContext {
           it.securityContextRepository(
               DelegatingSecurityContextRepository(
                   RequestAttributeSecurityContextRepository(),
-                  HttpSessionSecurityContextRepository()))
+                  HttpSessionSecurityContextRepository(),
+              )
+          )
         }
         .addFilterBefore(
-            ApiKeyAuthenticationFilter(csmPlatformProperties), AuthorizationFilter::class.java)
+            ApiKeyAuthenticationFilter(csmPlatformProperties),
+            AuthorizationFilter::class.java,
+        )
         .authorizeHttpRequests { requests ->
           requests
-              .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.OPTIONS, "/**"))
+              .requestMatchers(
+                  PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.OPTIONS, "/**")
+              )
               .permitAll()
           // Public paths
           endpointSecurityPublic.forEach { path ->
             requests
-                .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, path))
+                .requestMatchers(
+                    PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, path)
+                )
                 .permitAll()
           }
           // Endpoint security for reader roles
           endpointSecurityReaders(
-                  organizationAdminGroup, organizationUserGroup, organizationViewerGroup)
+                  organizationAdminGroup,
+                  organizationUserGroup,
+                  organizationViewerGroup,
+              )
               .forEach { endpointsRoles -> endpointsRoles.applyRoles(requests) }
 
           // Endpoint security for writer roles
@@ -337,11 +375,13 @@ internal class CsmSecurityEndpointsRolesWriter(
     val authoritiesList = addAdminRolesIfNotAlreadyDefined(this.roles)
     this.paths.forEach { path ->
       requests
-          .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.POST, path))
+          .requestMatchers(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, path))
           .hasAnyAuthority(*authoritiesList.toTypedArray())
-          .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.PATCH, path))
+          .requestMatchers(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.PATCH, path))
           .hasAnyAuthority(*authoritiesList.toTypedArray())
-          .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.DELETE, path))
+          .requestMatchers(
+              PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.DELETE, path)
+          )
           .hasAnyAuthority(*authoritiesList.toTypedArray())
     }
   }
@@ -372,7 +412,7 @@ internal class CsmSecurityEndpointsRolesReader(
     val authoritiesList = addAdminRolesIfNotAlreadyDefined(this.roles)
     this.paths.forEach { path ->
       requests
-          .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, path))
+          .requestMatchers(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, path))
           .hasAnyAuthority(*authoritiesList.toTypedArray())
     }
   }

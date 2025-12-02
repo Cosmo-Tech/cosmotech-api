@@ -25,11 +25,14 @@ private const val SERVICE_NAME = "API"
 @Aspect
 @Component
 @ConditionalOnProperty(
-    name = ["csm.platform.metrics.enabled"], havingValue = "true", matchIfMissing = false)
+    name = ["csm.platform.metrics.enabled"],
+    havingValue = "true",
+    matchIfMissing = false,
+)
 class MonitorServiceAspect(
     private var meterRegistry: MeterRegistry,
     private val eventPublisher: CsmEventPublisher,
-    private val csmPlatformProperties: CsmPlatformProperties
+    private val csmPlatformProperties: CsmPlatformProperties,
 ) {
   private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
@@ -41,10 +44,12 @@ class MonitorServiceAspect(
           "runnerId",
           "runId",
           "datasetId",
-          "connectorId")
+          "connectorId",
+      )
 
   @Pointcut(
-      "within(@org.springframework.web.bind.annotation.RestController *) && within(com.cosmotech..*Controller)")
+      "within(@org.springframework.web.bind.annotation.RestController *) && within(com.cosmotech..*Controller)"
+  )
   @Suppress("EmptyFunctionBlock")
   fun cosmotechPointcut() {}
 

@@ -142,14 +142,19 @@ class RunServiceIntegrationTest : CsmTestBase() {
 
     datasetSaved =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
+            organizationSaved.id,
+            workspaceSaved.id,
+            dataset,
+            emptyArray(),
+        )
 
     runner =
         makeRunnerCreateRequest(
             solutionSaved.id,
             solutionSaved.runTemplates[0].id,
             "Runner",
-            mutableListOf(datasetSaved.id))
+            mutableListOf(datasetSaved.id),
+        )
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
     every { workflowService.launchRun(any(), any(), any(), any()) } returns
@@ -167,7 +172,9 @@ class RunServiceIntegrationTest : CsmTestBase() {
                   RunTemplateCreateRequest(
                       id = UUID.randomUUID().toString(),
                       name = "RunTemplate1",
-                      description = "RunTemplate1 description")),
+                      description = "RunTemplate1 description",
+                  )
+              ),
           parameters = mutableListOf(RunTemplateParameterCreateRequest("parameter", "string")),
           version = "1.0.0",
           repository = "repository",
@@ -178,7 +185,10 @@ class RunServiceIntegrationTest : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                          SolutionAccessControl(id = CONNECTED_READER_USER, role = ROLE_ADMIN))))
+                          SolutionAccessControl(id = CONNECTED_READER_USER, role = ROLE_ADMIN),
+                      ),
+              ),
+      )
 
   fun makeOrganizationCreateRequest() =
       OrganizationCreateRequest(
@@ -189,11 +199,14 @@ class RunServiceIntegrationTest : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                          OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
+                          OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
+                      ),
+              ),
+      )
 
   fun makeWorkspaceCreateRequest(
       solutionId: String = solutionSaved.id,
-      name: String = "workspace"
+      name: String = "workspace",
   ) =
       WorkspaceCreateRequest(
           key = UUID.randomUUID().toString(),
@@ -205,13 +218,15 @@ class RunServiceIntegrationTest : CsmTestBase() {
           security =
               WorkspaceSecurity(
                   ROLE_NONE,
-                  mutableListOf(WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+                  mutableListOf(WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN)),
+              ),
+      )
 
   fun makeRunnerCreateRequest(
       solutionId: String = solutionSaved.id,
       runTemplateId: String = solutionSaved.runTemplates[0].id,
       name: String = "runner",
-      datasetList: MutableList<String> = mutableListOf(datasetSaved.id)
+      datasetList: MutableList<String> = mutableListOf(datasetSaved.id),
   ) =
       RunnerCreateRequest(
           name = name,
@@ -220,13 +235,16 @@ class RunServiceIntegrationTest : CsmTestBase() {
           datasetList = datasetList,
           security =
               RunnerSecurity(
-                  ROLE_NONE, mutableListOf(RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+                  ROLE_NONE,
+                  mutableListOf(RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN)),
+              ),
+      )
 
   fun mockStartRun(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      solutionId: String
+      solutionId: String,
   ): String {
     val runner =
         Runner(
@@ -238,18 +256,21 @@ class RunServiceIntegrationTest : CsmTestBase() {
             createInfo =
                 RunnerEditInfo(
                     timestamp = Instant.now().toEpochMilli(),
-                    userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                ),
             updateInfo =
                 RunnerEditInfo(
                     timestamp = Instant.now().toEpochMilli(),
-                    userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                ),
             datasets = RunnerDatasets(bases = mutableListOf(), parameter = ""),
             workspaceId = workspaceId,
             validationStatus = RunnerValidationStatus.Draft,
             parametersValues = mutableListOf(),
             lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
             security =
-                RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))))
+                RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))),
+        )
     val runStart = RunStart(this, runner)
     eventPublisher.publishEvent(runStart)
     return runStart.response!!
@@ -263,7 +284,8 @@ class RunServiceIntegrationTest : CsmTestBase() {
         createInfo =
             RunEditInfo(
                 timestamp = Instant.now().toEpochMilli(),
-                userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                userId = getCurrentAccountIdentifier(csmPlatformProperties),
+            ),
     )
   }
 
@@ -320,7 +342,12 @@ class RunServiceIntegrationTest : CsmTestBase() {
     logger.info("should find all Runs and assert there are $numberOfRuns")
     var runs =
         runApiService.listRuns(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id, null, numberOfRuns * 2)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            null,
+            numberOfRuns * 2,
+        )
     assertEquals(numberOfRuns, runs.size)
 
     logger.info("should find all Runs and assert it equals defaultPageSize: $defaultPageSize")
@@ -330,13 +357,23 @@ class RunServiceIntegrationTest : CsmTestBase() {
     logger.info("should find all Runs and assert there are expected size: $expectedSize")
     runs =
         runApiService.listRuns(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id, 0, expectedSize)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            0,
+            expectedSize,
+        )
     assertEquals(expectedSize, runs.size)
 
     logger.info("should find all Runs and assert it returns the second / last page")
     runs =
         runApiService.listRuns(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id, 1, expectedSize)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            1,
+            expectedSize,
+        )
     assertEquals(numberOfRuns - expectedSize, runs.size)
   }
 
@@ -374,7 +411,12 @@ class RunServiceIntegrationTest : CsmTestBase() {
     assertEquals(
         "first line of result" + "|second line of result" + "|third line of result",
         runApiService.getRunLogs(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id, runSavedId))
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            runSavedId,
+        ),
+    )
   }
 
   @Test
@@ -394,7 +436,12 @@ class RunServiceIntegrationTest : CsmTestBase() {
     assertEquals(
         "first line of result" + "|second line of result" + "|third line of result",
         runApiService.getRunLogs(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id, runSavedId))
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            runSavedId,
+        ),
+    )
   }
 
   @Test
@@ -417,7 +464,12 @@ class RunServiceIntegrationTest : CsmTestBase() {
     assertEquals(
         "first line of result" + "|second line of result" + "|third line of result",
         runApiService.getRunLogs(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id, runSavedId))
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            runSavedId,
+        ),
+    )
   }
 
   @Test

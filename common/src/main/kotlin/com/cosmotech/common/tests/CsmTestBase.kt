@@ -26,7 +26,9 @@ open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
     var postgres: PostgreSQLContainer<*> =
         PostgreSQLContainer("postgres:alpine3.19")
             .withCopyFileToContainer(
-                MountableFile.forClasspathResource("init-db.sql"), "/docker-entrypoint-initdb.d/")
+                MountableFile.forClasspathResource("init-db.sql"),
+                "/docker-entrypoint-initdb.d/",
+            )
 
     var redisStackServer = RedisStackContainer(RedisStackContainer.DEFAULT_IMAGE_NAME)
 

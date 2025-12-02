@@ -98,7 +98,9 @@ class AnyExtensionsTests {
 
     assertThrows<IllegalArgumentException> {
       myDataClassObj.compareToAndMutateIfNeeded(
-          MyDataClass("new_attr", false), mutateIfChanged = true)
+          MyDataClass("new_attr", false),
+          mutateIfChanged = true,
+      )
     }
     assertEquals("old_attr", myDataClassObj.attr)
     assertTrue { myDataClassObj.anotherAttr }
@@ -111,7 +113,9 @@ class AnyExtensionsTests {
 
     val changes =
         myDataClassObj.compareToAndMutateIfNeeded(
-            MyDataClass("new_attr", false), mutateIfChanged = false)
+            MyDataClass("new_attr", false),
+            mutateIfChanged = false,
+        )
     assertEquals(2, changes.size)
     assertTrue { "attr" in changes }
     assertTrue { "anotherAttr" in changes }
@@ -152,7 +156,9 @@ class AnyExtensionsTests {
 
     val changes =
         myDataClassObj.compareToAndMutateIfNeeded(
-            MyDataClass("id2", "attr2", false), excludedFields = arrayOf("attr", "anotherAttr"))
+            MyDataClass("id2", "attr2", false),
+            excludedFields = arrayOf("attr", "anotherAttr"),
+        )
 
     assertTrue(changes.isEmpty())
 
@@ -168,7 +174,8 @@ class AnyExtensionsTests {
 
     val changes =
         myDataClassObj.compareToAndMutateIfNeeded(
-            MyDataClass("id2", listOf("attr2", "attr3", "attr4"), false))
+            MyDataClass("id2", listOf("attr2", "attr3", "attr4"), false)
+        )
 
     assertEquals(2, changes.size)
     assertTrue("listAttr" in changes)
@@ -187,7 +194,8 @@ class AnyExtensionsTests {
 
     val changes =
         myDataClassObj.compareToAndMutateIfNeeded(
-            MyDataClass("id2", listOf("attr2", "attr1"), false))
+            MyDataClass("id2", listOf("attr2", "attr1"), false)
+        )
 
     assertEquals(1, changes.size)
     assertTrue("anotherAttr" in changes)
@@ -202,5 +210,5 @@ private data class TestDataClass(val id: String, val name: String)
 
 private data class TestDataClassWithCollections(
     val dataList: List<TestDataClass> = listOf(),
-    val dataMap: Map<String, TestDataClass> = mapOf()
+    val dataMap: Map<String, TestDataClass> = mapOf(),
 )

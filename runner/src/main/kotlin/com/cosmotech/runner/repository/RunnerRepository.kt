@@ -20,7 +20,7 @@ interface RunnerRepository : RedisDocumentRepository<Runner, String> {
   fun findBy(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
-      @Sanitize @Param("runnerId") runnerId: String
+      @Sanitize @Param("runnerId") runnerId: String,
   ): Optional<Runner>
 
   @Query("(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @parentId:{\$parentId})")
@@ -28,14 +28,14 @@ interface RunnerRepository : RedisDocumentRepository<Runner, String> {
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Sanitize @Param("parentId") parentId: String,
-      pageable: Pageable
+      pageable: Pageable,
   ): Page<Runner>
 
   @Query("(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId})")
   fun findByWorkspaceId(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
-      pageable: Pageable
+      pageable: Pageable,
   ): Page<Runner>
 
   @Query("(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId}) \$securityConstraint")
@@ -43,14 +43,15 @@ interface RunnerRepository : RedisDocumentRepository<Runner, String> {
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
-      pageable: Pageable
+      pageable: Pageable,
   ): Page<Runner>
 
   @Query(
-      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @datasets_parameter:{\$datasetId}")
+      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @datasets_parameter:{\$datasetId}"
+  )
   fun findByOrganizationIdAndWorkspaceIdAndDatasetsParameterValue(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
-      @Sanitize @Param("datasetId") datasetId: String
+      @Sanitize @Param("datasetId") datasetId: String,
   ): Optional<Runner>
 }

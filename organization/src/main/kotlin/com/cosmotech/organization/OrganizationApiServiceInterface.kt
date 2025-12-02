@@ -10,11 +10,11 @@ interface OrganizationApiServiceInterface : OrganizationApiService {
 
   fun getVerifiedOrganization(
       organizationId: String,
-      requiredPermission: String = PERMISSION_READ
+      requiredPermission: String = PERMISSION_READ,
   ): Organization
 
   fun getVerifiedOrganization(
       organizationId: String,
-      requiredPermissions: List<String>
+      requiredPermissions: List<String>,
   ): Organization
 }

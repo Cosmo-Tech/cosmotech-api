@@ -65,7 +65,7 @@ const val DATASET_PART_VARTYPE_DB = "%DATASET_PART_ID_DB%"
 
 @Component
 @Scope("prototype")
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LargeClass")
 class RunnerService(
     private val runnerRepository: RunnerRepository,
     private val organizationApiService: OrganizationApiServiceInterface,
@@ -78,9 +78,9 @@ class RunnerService(
 ) : CsmPhoenixService() {
 
   fun updateSecurityVisibility(runner: Runner): Runner {
-    if (csmRbac
-        .check(runner.getRbac(), PERMISSION_READ_SECURITY, getRunnerRolesDefinition())
-        .not()) {
+    if (
+        csmRbac.check(runner.getRbac(), PERMISSION_READ_SECURITY, getRunnerRolesDefinition()).not()
+    ) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = runner.security.accessControlList.firstOrNull { it.id == username }
 
@@ -122,7 +122,8 @@ class RunnerService(
     this.eventPublisher.publishEvent(hasRunningRuns)
     if (hasRunningRuns.response == true) {
       throw CsmClientException(
-          "Can't delete runner ${runner.id}: at least one run is still running")
+          "Can't delete runner ${runner.id}: at least one run is still running"
+      )
     }
 
     // Update parent and root references to deleted runner
@@ -143,7 +144,12 @@ class RunnerService(
     // Notify the deletion
     val runnerDeleted =
         RunnerDeleted(
-            this, runner.organizationId, runner.workspaceId, runner.id, runner.datasets.parameter)
+            this,
+            runner.organizationId,
+            runner.workspaceId,
+            runner.id,
+            runner.datasets.parameter,
+        )
     this.eventPublisher.publishEvent(runnerDeleted)
 
     return runnerRepository.delete(runnerInstance.getRunnerDataObjet())
@@ -152,7 +158,7 @@ class RunnerService(
   private fun listAllRunnerByParentId(
       organizationId: String,
       workspaceId: String,
-      parentId: String
+      parentId: String,
   ): List<Runner> {
     val defaultPageSize = csmPlatformProperties.databases.resources.runner.defaultPageSize
     var pageRequest: Pageable = PageRequest.ofSize(defaultPageSize)
@@ -180,11 +186,14 @@ class RunnerService(
   fun findRunnerByDatasetParameter(
       organizationId: String,
       workspaceId: String,
-      datasetId: String
+      datasetId: String,
   ): Runner? {
     return runnerRepository
         .findByOrganizationIdAndWorkspaceIdAndDatasetsParameterValue(
-            organizationId, workspaceId, datasetId)
+            organizationId,
+            workspaceId,
+            datasetId,
+        )
         .getOrNull()
   }
 
@@ -201,11 +210,14 @@ class RunnerService(
     var runner =
         runnerRepository.findBy(organization!!.id, workspace!!.id, runnerId).orElseThrow {
           CsmResourceNotFoundException(
-              "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
+              "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}"
+          )
         }
     if (runner.lastRunInfo.lastRunId != null) {
-      if (runner.lastRunInfo.lastRunStatus != LastRunStatus.Failed ||
-          runner.lastRunInfo.lastRunStatus != LastRunStatus.Successful) {
+      if (
+          runner.lastRunInfo.lastRunStatus != LastRunStatus.Failed ||
+              runner.lastRunInfo.lastRunStatus != LastRunStatus.Successful
+      ) {
         runner = updateRunnerStatus(runner)
       }
     }
@@ -220,7 +232,8 @@ class RunnerService(
             runner.organizationId,
             runner.workspaceId,
             runner.id,
-            runner.lastRunInfo.lastRunId ?: "")
+            runner.lastRunInfo.lastRunId ?: "",
+        )
     eventPublisher.publishEvent(updateRunnerStatusEvent)
     val runStatus = LastRunStatus.forValue(updateRunnerStatusEvent.response!!)
     return runnerRepository.save(runner.apply { lastRunInfo.lastRunStatus = runStatus })
@@ -238,14 +251,23 @@ class RunnerService(
           val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
           runnerRepository
               .findByWorkspaceIdAndSecurity(
-                  organization!!.id, workspace!!.id, currentUser, pageRequest)
+                  organization!!.id,
+                  workspace!!.id,
+                  currentUser,
+                  pageRequest,
+              )
               .toList()
         }
     runners.forEach { it.security = updateSecurityVisibility(it).security }
     runners.forEach { runner ->
       val listDatasetParts =
           datasetApiService.listDatasetParts(
-              organization!!.id, workspace!!.id, runner.datasets.parameter, null, null)
+              organization!!.id,
+              workspace!!.id,
+              runner.datasets.parameter,
+              null,
+              null,
+          )
       runner.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
     }
     return runners
@@ -280,10 +302,14 @@ class RunnerService(
               name = "init",
               createInfo =
                   RunnerEditInfo(
-                      timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                      timestamp = now,
+                      userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                  ),
               updateInfo =
                   RunnerEditInfo(
-                      timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                      timestamp = now,
+                      userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                  ),
               solutionId = "init",
               runTemplateId = "init",
               organizationId = organization!!.id,
@@ -303,7 +329,8 @@ class RunnerService(
       this.runner.updateInfo =
           RunnerEditInfo(
               timestamp = Instant.now().toEpochMilli(),
-              userId = getCurrentAccountIdentifier(csmPlatformProperties))
+              userId = getCurrentAccountIdentifier(csmPlatformProperties),
+          )
     }
 
     fun getRunnerDataObjet(): Runner = this.runner
@@ -319,9 +346,11 @@ class RunnerService(
               organization!!.id,
               workspace!!.id,
               workspace!!.solution.solutionId,
-              runner.runTemplateId)) {
-            "Run Template not found: ${runner.runTemplateId}"
-          }
+              runner.runTemplateId,
+          )
+      ) {
+        "Run Template not found: ${runner.runTemplateId}"
+      }
 
       val excludeFields =
           arrayOf(
@@ -331,11 +360,13 @@ class RunnerService(
               "organizationId",
               "workspaceId",
               "creationDate",
-              "security")
+              "security",
+          )
       this.runner.compareToAndMutateIfNeeded(runner, excludedFields = excludeFields)
       consolidateParametersVarType()
     }
 
+    @Suppress("LongMethod")
     fun setValueFrom(runnerCreateRequest: RunnerCreateRequest): RunnerInstance {
 
       val runnerSecurity = runnerCreateRequest.security
@@ -351,23 +382,29 @@ class RunnerService(
                   .map { access ->
                     DatasetAccessControl(
                         id = access.id,
-                        role = access.role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER)
+                        role = access.role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER,
+                    )
                   }
-                  .toMutableList())
+                  .toMutableList(),
+          )
 
       val parameterDataset =
           datasetApiService.createDataset(
               organization!!.id,
               workspace!!.id,
               DatasetCreateRequest(
-                  name = "Dataset attached to ${this.runner.id}", security = datasetSecurity),
-              emptyArray())
+                  name = "Dataset attached to ${this.runner.id}",
+                  security = datasetSecurity,
+              ),
+              emptyArray(),
+          )
 
       val filteredParameterValues =
           useOnlyDefinedParameterValues(
               runnerCreateRequest.solutionId,
               runnerCreateRequest.runTemplateId,
-              runnerCreateRequest.parametersValues)
+              runnerCreateRequest.parametersValues,
+          )
 
       return setValueFrom(
           Runner(
@@ -379,13 +416,15 @@ class RunnerService(
               datasets =
                   RunnerDatasets(
                       bases = runnerCreateRequest.datasetList ?: mutableListOf(),
-                      parameter = parameterDataset.id),
+                      parameter = parameterDataset.id,
+                  ),
               parametersValues = filteredParameterValues,
               parentId = runnerCreateRequest.parentId,
               lastRunInfo =
                   LastRunInfo(
                       lastRunId = this.runner.lastRunInfo.lastRunId,
-                      lastRunStatus = this.runner.lastRunInfo.lastRunStatus),
+                      lastRunStatus = this.runner.lastRunInfo.lastRunStatus,
+                  ),
               solutionName = runnerCreateRequest.solutionName,
               solutionId = runnerCreateRequest.solutionId,
               validationStatus = this.runner.validationStatus,
@@ -397,7 +436,8 @@ class RunnerService(
               updateInfo = this.runner.updateInfo,
               organizationId = this.runner.organizationId,
               workspaceId = this.runner.workspaceId,
-          ))
+          )
+      )
     }
 
     fun setValueFrom(runnerUpdateRequest: RunnerUpdateRequest): RunnerInstance {
@@ -409,7 +449,10 @@ class RunnerService(
             this.runner.parametersValues
           } else {
             useOnlyDefinedParameterValues(
-                this.runner.solutionId, runTemplateId, runnerUpdateRequest.parametersValues)
+                this.runner.solutionId,
+                runTemplateId,
+                runnerUpdateRequest.parametersValues,
+            )
           }
 
       return setValueFrom(
@@ -422,7 +465,8 @@ class RunnerService(
               datasets =
                   RunnerDatasets(
                       bases = runnerUpdateRequest.datasetList ?: this.runner.datasets.bases,
-                      parameter = this.runner.datasets.parameter),
+                      parameter = this.runner.datasets.parameter,
+                  ),
               parametersValues = filteredParameterValues,
               id = this.runner.id,
               organizationId = this.runner.organizationId,
@@ -436,14 +480,18 @@ class RunnerService(
               updateInfo =
                   RunnerEditInfo(
                       timestamp = Instant.now().toEpochMilli(),
-                      userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                      userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                  ),
               parentId = this.runner.parentId,
               workspaceId = this.runner.workspaceId,
               lastRunInfo =
                   LastRunInfo(
                       lastRunStatus = this.runner.lastRunInfo.lastRunStatus,
-                      lastRunId = this.runner.lastRunInfo.lastRunId),
-              validationStatus = this.runner.validationStatus))
+                      lastRunId = this.runner.lastRunInfo.lastRunId,
+                  ),
+              validationStatus = this.runner.validationStatus,
+          )
+      )
     }
 
     fun setLastRunInfo(runId: String, runStatus: LastRunStatus = LastRunStatus.Running) {
@@ -511,14 +559,22 @@ class RunnerService(
 
       val inheritedParameterValues =
           constructParametersValuesFromParent(
-              runTemplateParametersIds, parentId, parentRunner, this.runner)
+              runTemplateParametersIds,
+              parentId,
+              parentRunner,
+              this.runner,
+          )
       val parameterValueList = this.runner.parametersValues
       parameterValueList.addAll(inheritedParameterValues)
       this.runner.parametersValues = parameterValueList
       consolidateParametersVarType()
 
       constructDatasetParametersFromParent(
-          runTemplateParametersIds, parentId, parentRunner, this.runner)
+          runTemplateParametersIds,
+          parentId,
+          parentRunner,
+          this.runner,
+      )
 
       // Compute rootId
       this.runner.parentId?.let {
@@ -533,7 +589,7 @@ class RunnerService(
     private fun useOnlyDefinedParameterValues(
         solutionId: String,
         runTemplateId: String,
-        parametersValues: MutableList<RunnerRunTemplateParameterValue>?
+        parametersValues: MutableList<RunnerRunTemplateParameterValue>?,
     ): MutableList<RunnerRunTemplateParameterValue> {
       if (parametersValues.isNullOrEmpty()) return mutableListOf()
 
@@ -562,7 +618,7 @@ class RunnerService(
         runTemplateParametersIds: List<String>,
         parentId: String,
         parent: Runner,
-        runner: Runner
+        runner: Runner,
     ): List<DatasetPart> {
 
       val datasetPartList = mutableListOf<DatasetPart>()
@@ -570,7 +626,12 @@ class RunnerService(
         val parentDatasetParameters =
             datasetApiService
                 .listDatasetParts(
-                    organization!!.id, workspace!!.id, parent.datasets.parameter, null, null)
+                    organization!!.id,
+                    workspace!!.id,
+                    parent.datasets.parameter,
+                    null,
+                    null,
+                )
                 .associateBy { it.name }
 
         runTemplateParametersIds
@@ -578,16 +639,23 @@ class RunnerService(
             .forEach { parameterId ->
               logger.debug(
                   "Creating dataset part from parent for parameter $parameterId " +
-                      "in Dataset ${runner.datasets.parameter}")
+                      "in Dataset ${runner.datasets.parameter}"
+              )
               val parentDatasetParameter = parentDatasetParameters[parameterId]
               if (parentDatasetParameter != null) {
                 datasetPartList.add(
                     addDatasetPartInDatasetParameter(
-                        parentDatasetParameter, runner.datasets.parameter, parameterId, runner.id))
+                        parentDatasetParameter,
+                        runner.datasets.parameter,
+                        parameterId,
+                        runner.id,
+                    )
+                )
               } else {
                 logger.warn(
                     "Parameter $parameterId not found in parent ($parentId) dataset parameters: " +
-                        "No dataset part will be created")
+                        "No dataset part will be created"
+                )
               }
             }
       }
@@ -599,7 +667,7 @@ class RunnerService(
         datasetPartToAdd: DatasetPart,
         datasetId: String,
         parameterId: String,
-        runnerId: String
+        runnerId: String,
     ): DatasetPart {
 
       val sourceName = datasetPartToAdd.sourceName
@@ -609,19 +677,22 @@ class RunnerService(
               description = "Dataset Part associated to $parameterId parameter",
               sourceName = sourceName,
               tags = mutableListOf(runnerId, parameterId),
-              type = datasetPartToAdd.type)
+              type = datasetPartToAdd.type,
+          )
       val datasetPartResource =
           datasetApiService.downloadDatasetPart(
               datasetPartToAdd.organizationId,
               datasetPartToAdd.workspaceId,
               datasetPartToAdd.datasetId,
-              datasetPartToAdd.id)
+              datasetPartToAdd.id,
+          )
       return datasetApiService.createDatasetPartFromResource(
           datasetPartToAdd.organizationId,
           datasetPartToAdd.workspaceId,
           datasetId,
           datasetPartResource,
-          datasetPartCreateRequest)
+          datasetPartCreateRequest,
+      )
     }
 
     private fun createPartInDatasetParameter(
@@ -631,12 +702,16 @@ class RunnerService(
         workspaceDatasetId: String,
         parameterId: String,
         defaultParameterPartId: String,
-        runnerId: String
+        runnerId: String,
     ): DatasetPart {
 
       val defaultDatasetPart =
           datasetApiService.getDatasetPart(
-              organizationId, workspaceId, workspaceDatasetId, defaultParameterPartId)
+              organizationId,
+              workspaceId,
+              workspaceDatasetId,
+              defaultParameterPartId,
+          )
 
       val datasetPartCreateRequest =
           DatasetPartCreateRequest(
@@ -645,18 +720,24 @@ class RunnerService(
               sourceName = defaultDatasetPart.sourceName,
               tags =
                   mutableListOf(runnerId, parameterId, datasetParameterId, defaultParameterPartId),
-              type = defaultDatasetPart.type)
+              type = defaultDatasetPart.type,
+          )
 
       val datasetPartResource =
           datasetApiService.downloadDatasetPart(
-              organizationId, workspaceId, workspaceDatasetId, defaultParameterPartId)
+              organizationId,
+              workspaceId,
+              workspaceDatasetId,
+              defaultParameterPartId,
+          )
 
       return datasetApiService.createDatasetPartFromResource(
           organizationId,
           workspaceId,
           datasetParameterId,
           datasetPartResource,
-          datasetPartCreateRequest)
+          datasetPartCreateRequest,
+      )
     }
 
     private fun consolidateParametersVarType() {
@@ -681,7 +762,7 @@ class RunnerService(
 
     fun initBaseDatasetListFromParent(
         parentId: String,
-        newDatasetList: List<String>?
+        newDatasetList: List<String>?,
     ): RunnerInstance = apply {
       val runnerId = this.runner.id
       val parentRunner =
@@ -704,7 +785,8 @@ class RunnerService(
               this.runner.getRbac(),
               runnerAccessControl.id,
               runnerAccessControl.role,
-              this.roleDefinition)
+              this.roleDefinition,
+          )
       this.setRbacSecurity(rbacSecurity)
 
       val userId = runnerAccessControl.id
@@ -715,7 +797,10 @@ class RunnerService(
       // Assign roles on parameter datasets if not already present on dataset resource
       val parameterDataset =
           datasetApiService.findByOrganizationIdWorkspaceIdAndDatasetId(
-              organizationId, workspaceId, this.runner.datasets.parameter)
+              organizationId,
+              workspaceId,
+              this.runner.datasets.parameter,
+          )
       parameterDataset?.let {
         addUserAccessControlOnDataset(parameterDataset, RunnerAccessControl(userId, datasetRole))
       }
@@ -736,7 +821,10 @@ class RunnerService(
 
     fun checkUserExists(userId: String) {
       csmRbac.checkEntityExists(
-          runner.getRbac(), userId, "User '$userId' not found in runner ${runner.id}")
+          runner.getRbac(),
+          userId,
+          "User '$userId' not found in runner ${runner.id}",
+      )
     }
 
     private fun getRbacSecurity(): RbacSecurity {
@@ -750,14 +838,16 @@ class RunnerService(
               rbacSecurity.accessControlList
                   .distinctBy { it.id }
                   .map { RunnerAccessControl(it.id, it.role) }
-                  .toMutableList())
+                  .toMutableList(),
+          )
     }
 
     private fun extractRbacSecurity(security: RunnerSecurity): RbacSecurity {
       return RbacSecurity(
           this.runner.id,
           security.default,
-          security.accessControlList.map { RbacAccessControl(it.id, it.role) }.toMutableList())
+          security.accessControlList.map { RbacAccessControl(it.id, it.role) }.toMutableList(),
+      )
     }
 
     private fun constructParametersValues(
@@ -779,7 +869,8 @@ class RunnerService(
                     parameterId = runTemplateParameter.id,
                     varType = runTemplateParameter.varType,
                     value = defaultParameterValue ?: "",
-                ))
+                )
+            )
           }
 
       return runnerParameters
@@ -787,7 +878,7 @@ class RunnerService(
 
     private fun constructDatasetParameters(
         runTemplateParameters: List<RunTemplateParameter>,
-        datasetParameterId: String
+        datasetParameterId: String,
     ): List<DatasetPart> {
 
       val datasetPartList = mutableListOf<DatasetPart>()
@@ -810,7 +901,9 @@ class RunnerService(
                         workspaceDatasetId,
                         parameterId,
                         defaultParameterPartId,
-                        runner.id))
+                        runner.id,
+                    )
+                )
               }
             }
       }
@@ -823,7 +916,7 @@ class RunnerService(
         runTemplateParametersIds: List<String>,
         parentId: String,
         parent: Runner,
-        runner: Runner
+        runner: Runner,
     ): List<RunnerRunTemplateParameterValue> {
       val parametersValuesList = mutableListOf<RunnerRunTemplateParameterValue>()
 
@@ -857,7 +950,8 @@ class RunnerService(
                 parametersValuesList.add(parameterValue)
               } else {
                 logger.warn(
-                    "Parameter $parameterId not found in parent ($parentId) parameters values")
+                    "Parameter $parameterId not found in parent ($parentId) parameters values"
+                )
               }
             }
       }
@@ -877,7 +971,11 @@ class RunnerService(
 
       if (datasetACL != null && datasetACL.any { it.id == userId })
           datasetApiService.deleteDatasetAccessControl(
-              organizationId, workspaceId, datasetId, userId)
+              organizationId,
+              workspaceId,
+              datasetId,
+              userId,
+          )
     }
 
     fun getUsers(): List<String> {
@@ -898,7 +996,8 @@ class RunnerService(
           organization!!.id,
           workspace!!.id,
           dataset.id,
-          DatasetAccessControl(roleDefinition.id, roleDefinition.role))
+          DatasetAccessControl(roleDefinition.id, roleDefinition.role),
+      )
     }
   }
 }
@@ -908,4 +1007,5 @@ fun RunnerSecurity?.toGenericSecurity(runnerId: String) =
         runnerId,
         this?.default ?: ROLE_NONE,
         this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
-            ?: mutableListOf())
+            ?: mutableListOf(),
+    )

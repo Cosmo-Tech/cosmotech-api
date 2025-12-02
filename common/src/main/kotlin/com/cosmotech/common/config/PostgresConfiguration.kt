@@ -25,7 +25,8 @@ class PostgresConfiguration(val csmPlatformProperties: CsmPlatformProperties) {
         DriverManagerDataSource(
             jdbcUrl,
             csmPlatformProperties.databases.data.reader.username,
-            csmPlatformProperties.databases.data.reader.password)
+            csmPlatformProperties.databases.data.reader.password,
+        )
     dataSource.setDriverClassName(jdbcDriverClass)
     return JdbcTemplate(dataSource)
   }
@@ -36,7 +37,8 @@ class PostgresConfiguration(val csmPlatformProperties: CsmPlatformProperties) {
         DriverManagerDataSource(
             jdbcUrl,
             csmPlatformProperties.databases.data.writer.username,
-            csmPlatformProperties.databases.data.writer.password)
+            csmPlatformProperties.databases.data.writer.password,
+        )
     dataSource.setDriverClassName(jdbcDriverClass)
     return JdbcTemplate(dataSource)
   }
@@ -44,6 +46,7 @@ class PostgresConfiguration(val csmPlatformProperties: CsmPlatformProperties) {
 
 fun JdbcTemplate.existTable(name: String): Boolean {
   return this.queryForList(
-          "select * from pg_tables where schemaname='$DATASET_INPUTS_SCHEMA' and tablename = '$name';")
+          "select * from pg_tables where schemaname='$DATASET_INPUTS_SCHEMA' and tablename = '$name';"
+      )
       .isNotEmpty()
 }

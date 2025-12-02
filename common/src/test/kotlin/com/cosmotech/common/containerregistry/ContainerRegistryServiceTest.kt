@@ -161,7 +161,8 @@ class ContainerRegistryServiceTest {
     val response =
         ResponseEntity<String>(
             MultiValueMap.fromSingleValue(mapOf(HttpHeaders.LOCATION to String())),
-            HttpStatus.TEMPORARY_REDIRECT)
+            HttpStatus.TEMPORARY_REDIRECT,
+        )
     every {
       noRedirectClient
           .get()

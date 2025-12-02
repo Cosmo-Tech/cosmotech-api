@@ -12,7 +12,7 @@ data class RunStartContainers(
     val csmSimulationId: String,
     val nodeLabel: String? = null,
     val labels: Map<String, String>? = null,
-    val containers: List<RunContainer>
+    val containers: List<RunContainer>,
 )
 
 interface WorkflowService : HealthIndicator {
@@ -30,7 +30,7 @@ interface WorkflowService : HealthIndicator {
       workspaceId: String?,
       runStartContainers: RunStartContainers,
       executionTimeout: Int?,
-      alwaysPull: Boolean = false
+      alwaysPull: Boolean = false,
   ): Run
 
   /**
@@ -83,5 +83,5 @@ data class WorkflowContextData(
 data class WorkflowStatus(
     val workflowId: String,
     val status: String? = null,
-    val contextData: WorkflowContextData? = null
+    val contextData: WorkflowContextData? = null,
 )

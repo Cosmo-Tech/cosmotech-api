@@ -112,7 +112,11 @@ internal class RunArgoWorkflowService(
       workflow =
           newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
               .workflowServiceGetWorkflow(
-                  csmPlatformProperties.argo.workflows.namespace, workflowName, "", "")
+                  csmPlatformProperties.argo.workflows.namespace,
+                  workflowName,
+                  "",
+                  "",
+              )
     } catch (e: ApiException) {
       logger.warn(
           """
@@ -120,7 +124,8 @@ internal class RunArgoWorkflowService(
         Status code: ${e.code}
         Reason: ${e.responseBody}
         """
-              .trimIndent())
+              .trimIndent()
+      )
       logger.debug("Response headers: " + e.getResponseHeaders())
     }
 
@@ -132,7 +137,7 @@ internal class RunArgoWorkflowService(
       workspaceId: String?,
       runStartContainers: RunStartContainers,
       executionTimeout: Int?,
-      alwaysPull: Boolean
+      alwaysPull: Boolean,
   ): Run {
     val body =
         IoArgoprojWorkflowV1alpha1WorkflowCreateRequest()
@@ -143,7 +148,9 @@ internal class RunArgoWorkflowService(
                     csmPlatformProperties,
                     runStartContainers,
                     executionTimeout,
-                    alwaysPull))
+                    alwaysPull,
+                )
+            )
 
     logger.debug("Workflow: {}", body.workflow)
 
@@ -160,7 +167,8 @@ internal class RunArgoWorkflowService(
           createInfo =
               RunEditInfo(
                   timestamp = Instant.now().toEpochMilli(),
-                  userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                  userId = getCurrentAccountIdentifier(csmPlatformProperties),
+              ),
           workflowId = workflow.metadata.uid,
           workflowName = workflow.metadata.name,
           nodeLabel = runStartContainers.nodeLabel,
@@ -173,7 +181,8 @@ internal class RunArgoWorkflowService(
         Status code: ${e.code}
         Reason: ${e.responseBody}
         """
-              .trimIndent())
+              .trimIndent()
+      )
       logger.debug("Response headers: {}", e.responseHeaders)
       throw IllegalStateException(e)
     }
@@ -193,7 +202,8 @@ internal class RunArgoWorkflowService(
       WorkflowStatus(
           workflowId = workflowId,
           status = status,
-          contextData = WorkflowContextData(organizationId, workspaceId, runnerId))
+          contextData = WorkflowContextData(organizationId, workspaceId, runnerId),
+      )
     }
   }
 
@@ -213,7 +223,8 @@ internal class RunArgoWorkflowService(
             null,
             null,
             null,
-            null)
+            null,
+        )
         .items
   }
 
@@ -223,7 +234,8 @@ internal class RunArgoWorkflowService(
     val workflowName =
         run.workflowName
             ?: throw IllegalStateException(
-                "Run $runId for Organization $organizationId contains a null workflowName")
+                "Run $runId for Organization $organizationId contains a null workflowName"
+            )
     val workflowStatus = getWorkflowStatus(workflowName)
     return buildRunStatusFromWorkflowStatus(run, workflowStatus)
   }
@@ -246,7 +258,8 @@ internal class RunArgoWorkflowService(
                     .get()
                     .uri(
                         "/api/v1/workflows/${csmPlatformProperties.argo.workflows.namespace}" +
-                            "/$workflowName/log?podName=${podName}&logOptions.container=main")
+                            "/$workflowName/log?podName=${podName}&logOptions.container=main"
+                    )
                     .retrieve()
                     .body(String::class.java)
             lines?.split("\n")?.forEach {
@@ -301,7 +314,8 @@ internal class RunArgoWorkflowService(
               .workflowServiceStopWorkflow(
                   csmPlatformProperties.argo.workflows.namespace,
                   run.workflowName,
-                  IoArgoprojWorkflowV1alpha1WorkflowStopRequest())
+                  IoArgoprojWorkflowV1alpha1WorkflowStopRequest(),
+              )
     } catch (e: ApiException) {
       logger.warn(
           """
@@ -309,7 +323,8 @@ internal class RunArgoWorkflowService(
         Status code: ${e.code}
         Reason: ${e.responseBody}
         """
-              .trimIndent())
+              .trimIndent()
+      )
       logger.debug("Response headers: " + e.responseHeaders)
     }
 
@@ -318,7 +333,7 @@ internal class RunArgoWorkflowService(
 
   private fun buildRunStatusFromWorkflowStatus(
       run: Run,
-      workflowStatus: IoArgoprojWorkflowV1alpha1WorkflowStatus?
+      workflowStatus: IoArgoprojWorkflowV1alpha1WorkflowStatus?,
   ): RunStatus {
     return RunStatus(
         id = run.id,
@@ -344,7 +359,8 @@ internal class RunArgoWorkflowService(
                   resourcesDuration =
                       RunResourceRequested(
                           nodeStatus.resourcesDuration?.get("cpu"),
-                          nodeStatus.resourcesDuration?.get("memory")),
+                          nodeStatus.resourcesDuration?.get("memory"),
+                      ),
                   outboundNodes = nodeStatus.outboundNodes,
                   hostNodeName = nodeStatus.hostNodeName,
                   message = nodeStatus.message,
@@ -353,7 +369,8 @@ internal class RunArgoWorkflowService(
                   startTime = nodeStatus.startedAt?.toString(),
                   endTime = nodeStatus.finishedAt?.toString(),
               )
-            })
+            },
+    )
   }
 
   // Should be handled synchronously

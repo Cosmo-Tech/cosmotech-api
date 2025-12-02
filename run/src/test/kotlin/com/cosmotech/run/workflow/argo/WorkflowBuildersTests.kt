@@ -267,7 +267,8 @@ class WorkflowBuildersTests {
                 .name("applyparameterscontainer")
                 .template("applyparameterscontainer")
                 .dependencies(
-                    listOf("fetchdatasetcontainer-1", "fetchscenarioparameterscontainer")),
+                    listOf("fetchdatasetcontainer-1", "fetchscenarioparameterscontainer")
+                ),
             IoArgoprojWorkflowV1alpha1DAGTask()
                 .name("validatedatacontainer")
                 .template("validatedatacontainer")
@@ -428,7 +429,8 @@ class WorkflowBuildersTests {
                 V1PersistentVolumeClaimSpec()
                     .accessModes(emptyList())
                     .storageClassName(null)
-                    .resources(V1VolumeResourceRequirements().requests(emptyMap())))
+                    .resources(V1VolumeResourceRequirements().requests(emptyMap()))
+            )
     val expected = listOf(dataDir)
     assertEquals(expected, workflowSpec.volumeClaimTemplates)
   }
@@ -450,7 +452,9 @@ class WorkflowBuildersTests {
                     .storageClassName("cosmotech-api-test-phoenix")
                     .resources(
                         V1VolumeResourceRequirements()
-                            .requests(mapOf("storage" to Quantity("300Gi")))))
+                            .requests(mapOf("storage" to Quantity("300Gi")))
+                    )
+            )
     val expected = listOf(dataDir)
     assertEquals(expected, workflowSpec.volumeClaimTemplates)
   }
@@ -476,7 +480,8 @@ class WorkflowBuildersTests {
             V1VolumeMount()
                 .name(VOLUME_CLAIM)
                 .mountPath("/usr/tmp")
-                .subPath(VOLUME_CLAIM_TEMP_SUBPATH))
+                .subPath(VOLUME_CLAIM_TEMP_SUBPATH),
+        )
     assertEquals(expected, template.container?.volumeMounts)
   }
 
@@ -539,7 +544,7 @@ class WorkflowBuildersTests {
 
   private fun getRunContainerDependencies(
       name: String = "default",
-      dependencies: List<String>? = null
+      dependencies: List<String>? = null,
   ): RunContainer {
     val src =
         RunContainer(
@@ -555,27 +560,32 @@ class WorkflowBuildersTests {
         RunContainer(
             name = name,
             image = "cosmotech/testcontainer",
-            runArgs = listOf("arg1", "arg2", "arg3"))
+            runArgs = listOf("arg1", "arg2", "arg3"),
+        )
     return src
   }
 
   private fun getRunContainerEntrypoint(name: String = "default"): RunContainer {
     val src =
         RunContainer(
-            name = name, image = "cosmotech/testcontainer", entrypoint = DEFAULT_ENTRY_POINT)
+            name = name,
+            image = "cosmotech/testcontainer",
+            entrypoint = DEFAULT_ENTRY_POINT,
+        )
     return src
   }
 
   private fun getRunContainerEntrypointDependencies(
       name: String = "default",
-      dependencies: List<String>? = null
+      dependencies: List<String>? = null,
   ): RunContainer {
     val src =
         RunContainer(
             name = name,
             image = "cosmotech/testcontainer",
             entrypoint = DEFAULT_ENTRY_POINT,
-            dependencies = dependencies)
+            dependencies = dependencies,
+        )
     return src
   }
 
@@ -584,7 +594,8 @@ class WorkflowBuildersTests {
         RunContainer(
             name = name,
             image = "cosmotech/testcontainer",
-            envVars = mapOf("env1" to "envvar1", "env2" to "envvar2", "env3" to "envvar3"))
+            envVars = mapOf("env1" to "envvar1", "env2" to "envvar2", "env3" to "envvar3"),
+        )
 
     return src
   }
@@ -594,7 +605,8 @@ class WorkflowBuildersTests {
         RunStartContainers(
             nodeLabel = "basicpool",
             containers = listOf(getRunContainerEntrypoint()),
-            csmSimulationId = csmSimulationId)
+            csmSimulationId = csmSimulationId,
+        )
     return sc
   }
 
@@ -603,7 +615,8 @@ class WorkflowBuildersTests {
         RunStartContainers(
             nodeLabel = "highcpupool",
             containers = listOf(getRunContainerEntrypoint("runcontainer")),
-            csmSimulationId = csmSimulationId)
+            csmSimulationId = csmSimulationId,
+        )
     return sc
   }
 
@@ -611,7 +624,8 @@ class WorkflowBuildersTests {
     val sc =
         RunStartContainers(
             containers = listOf(getRunContainerEntrypoint("runcontainer")),
-            csmSimulationId = csmSimulationId)
+            csmSimulationId = csmSimulationId,
+        )
     return sc
   }
 
@@ -630,7 +644,8 @@ class WorkflowBuildersTests {
                     getRunContainerEntrypoint("runcontainer"),
                     getRunContainerEntrypoint("postruncontainer"),
                 ),
-            csmSimulationId = csmSimulationId)
+            csmSimulationId = csmSimulationId,
+        )
     return sc
   }
 
@@ -642,20 +657,30 @@ class WorkflowBuildersTests {
                 listOf(
                     getRunContainerDependencies("fetchdatasetcontainer-1", listOf("DAG_ROOT")),
                     getRunContainerDependencies(
-                        "fetchscenarioparameterscontainer", listOf("DAG_ROOT")),
+                        "fetchscenarioparameterscontainer",
+                        listOf("DAG_ROOT"),
+                    ),
                     getRunContainerEntrypointDependencies(
                         "applyparameterscontainer",
-                        listOf("fetchdatasetcontainer-1", "fetchscenarioparameterscontainer")),
+                        listOf("fetchdatasetcontainer-1", "fetchscenarioparameterscontainer"),
+                    ),
                     getRunContainerEntrypointDependencies(
-                        "validatedatacontainer", listOf("applyparameterscontainer")),
+                        "validatedatacontainer",
+                        listOf("applyparameterscontainer"),
+                    ),
                     getRunContainerDependencies(
-                        "senddatawarehousecontainer", listOf("validatedatacontainer")),
+                        "senddatawarehousecontainer",
+                        listOf("validatedatacontainer"),
+                    ),
                     getRunContainerEntrypointDependencies(
-                        "preruncontainer", listOf("validatedatacontainer")),
+                        "preruncontainer",
+                        listOf("validatedatacontainer"),
+                    ),
                     getRunContainerEntrypoint("runcontainer"),
                     getRunContainerEntrypoint("postruncontainer"),
                 ),
-            csmSimulationId = csmSimulationId)
+            csmSimulationId = csmSimulationId,
+        )
     return sc
   }
 
@@ -674,7 +699,8 @@ class WorkflowBuildersTests {
                     getRunContainerEntrypoint("runcontainer"),
                     getRunContainerEntrypoint("postruncontainer"),
                 ),
-            csmSimulationId = csmSimulationId)
+            csmSimulationId = csmSimulationId,
+        )
     return sc
   }
 
@@ -694,7 +720,8 @@ class WorkflowBuildersTests {
                     getRunContainerEntrypoint("runcontainer"),
                     getRunContainerEntrypoint("postruncontainer"),
                 ),
-            csmSimulationId = csmSimulationId)
+            csmSimulationId = csmSimulationId,
+        )
     return sc
   }
 
@@ -707,9 +734,12 @@ class WorkflowBuildersTests {
                     getRunContainerDependencies("Diamond-B", dependencies = listOf("Diamond-A")),
                     getRunContainerDependencies("Diamond-C", dependencies = listOf("Diamond-A")),
                     getRunContainerDependencies(
-                        "Diamond-D", dependencies = listOf("Diamond-B", "Diamond-C")),
+                        "Diamond-D",
+                        dependencies = listOf("Diamond-B", "Diamond-C"),
+                    ),
                 ),
-            csmSimulationId = csmSimulationId)
+            csmSimulationId = csmSimulationId,
+        )
     return sc
   }
 }

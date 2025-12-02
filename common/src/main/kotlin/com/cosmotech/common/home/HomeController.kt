@@ -25,7 +25,8 @@ internal class HomeController(
           [
               "/",
           ],
-      produces = [MediaType.APPLICATION_JSON_VALUE])
+      produces = [MediaType.APPLICATION_JSON_VALUE],
+  )
   fun redirectHomeToOpenApi(httpServletResponse: HttpServletResponse) {
     redirectOpenApiJsonToOpenApi(httpServletResponse)
   }

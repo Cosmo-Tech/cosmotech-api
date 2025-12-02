@@ -70,20 +70,21 @@ class DatasetServiceImpl(
     private val csmRbac: CsmRbac,
     private val datasetPartManagementFactory: DatasetPartManagementFactory,
     private val resourceScanner: ResourceScanner,
-    private val readerJdbcTemplate: JdbcTemplate
+    private val readerJdbcTemplate: JdbcTemplate,
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   override fun getVerifiedDataset(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      requiredPermission: String
+      requiredPermission: String,
   ): Dataset {
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     val dataset =
         datasetRepository.findBy(organizationId, workspaceId, datasetId).orElseThrow {
           CsmResourceNotFoundException(
-              "Dataset $datasetId not found in organization $organizationId and workspace $workspaceId")
+              "Dataset $datasetId not found in organization $organizationId and workspace $workspaceId"
+          )
         }
     csmRbac.verify(dataset.security.toGenericSecurity(datasetId), requiredPermission)
     return dataset
@@ -92,12 +93,13 @@ class DatasetServiceImpl(
   override fun findByOrganizationIdWorkspaceIdAndDatasetId(
       organizationId: String,
       workspaceId: String,
-      datasetId: String
+      datasetId: String,
   ): Dataset {
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     return datasetRepository.findBy(organizationId, workspaceId, datasetId).orElseThrow {
       CsmResourceNotFoundException(
-          "Dataset $datasetId not found in organization $organizationId and workspace $workspaceId")
+          "Dataset $datasetId not found in organization $organizationId and workspace $workspaceId"
+      )
     }
   }
 
@@ -116,7 +118,7 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      datasetAccessControl: DatasetAccessControl
+      datasetAccessControl: DatasetAccessControl,
   ): DatasetAccessControl {
     val dataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE_SECURITY)
@@ -127,13 +129,16 @@ class DatasetServiceImpl(
         csmRbac.setEntityRole(
             dataset.security.toGenericSecurity(datasetId),
             datasetAccessControl.id,
-            datasetAccessControl.role)
+            datasetAccessControl.role,
+        )
     dataset.security = rbacSecurity.toResourceSecurity()
     save(dataset)
 
     val rbacAccessControl =
         csmRbac.getAccessControl(
-            dataset.security.toGenericSecurity(datasetId), datasetAccessControl.id)
+            dataset.security.toGenericSecurity(datasetId),
+            datasetAccessControl.id,
+        )
     return DatasetAccessControl(id = rbacAccessControl.id, role = rbacAccessControl.role)
   }
 
@@ -141,7 +146,7 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetCreateRequest: DatasetCreateRequest,
-      files: Array<MultipartFile>?
+      files: Array<MultipartFile>?,
   ): Dataset {
     val filesUploaded = files ?: emptyArray()
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_CREATE_CHILDREN)
@@ -165,7 +170,8 @@ class DatasetServiceImpl(
                   constructDatasetPart(organizationId, workspaceId, datasetId, part)
               datasetPartManagementFactory.storeData(
                   constructDatasetPart,
-                  filesUploaded.first { it.originalFilename == part.sourceName })
+                  filesUploaded.first { it.originalFilename == part.sourceName },
+              )
               constructDatasetPart
             }
             ?.toMutableList()
@@ -186,7 +192,8 @@ class DatasetServiceImpl(
             parts = datasetParts ?: mutableListOf(),
             createInfo = createInfo,
             updateInfo = editInfo,
-            security = security)
+            security = security,
+        )
     logger.debug("Registering Dataset: {}", createdDataset)
 
     return datasetRepository.save(createdDataset)
@@ -214,14 +221,15 @@ class DatasetServiceImpl(
 
   override fun getDataset(organizationId: String, workspaceId: String, datasetId: String): Dataset {
     return updateSecurityVisibility(
-        getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ))
+        getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
+    )
   }
 
   override fun getDatasetAccessControl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      identityId: String
+      identityId: String,
   ): DatasetAccessControl {
     val dataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ_SECURITY)
@@ -233,7 +241,7 @@ class DatasetServiceImpl(
   override fun listDatasetSecurityUsers(
       organizationId: String,
       workspaceId: String,
-      datasetId: String
+      datasetId: String,
   ): List<String> {
 
     val dataset =
@@ -246,14 +254,16 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       page: Int?,
-      size: Int?
+      size: Int?,
   ): List<Dataset> {
     val workspace = workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     val defaultPageSize = csmPlatformProperties.databases.resources.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     val isAdmin =
         csmRbac.isAdmin(
-            workspace.security.toGenericSecurity(workspaceId), getCommonRolesDefinition())
+            workspace.security.toGenericSecurity(workspaceId),
+            getCommonRolesDefinition(),
+        )
     val result: MutableList<Dataset>
     val rbacEnabled = !isAdmin && this.csmPlatformProperties.rbac.enabled
     if (pageable == null) {
@@ -276,7 +286,11 @@ class DatasetServiceImpl(
             val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
             datasetRepository
                 .findByOrganizationIdAndWorkspaceId(
-                    organizationId, workspaceId, currentUser, pageable)
+                    organizationId,
+                    workspaceId,
+                    currentUser,
+                    pageable,
+                )
                 .toList()
           } else {
             datasetRepository
@@ -292,7 +306,7 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      identityId: String
+      identityId: String,
   ) {
 
     val dataset =
@@ -307,7 +321,7 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      datasetRole: DatasetRole
+      datasetRole: DatasetRole,
   ): DatasetSecurity {
 
     val dataset =
@@ -324,7 +338,7 @@ class DatasetServiceImpl(
       workspaceId: String,
       datasetId: String,
       datasetUpdateRequest: DatasetUpdateRequest,
-      files: Array<MultipartFile>?
+      files: Array<MultipartFile>?,
   ): Dataset {
     logger.debug("Updating Dataset: {}", datasetUpdateRequest)
     val filesUploaded = files ?: emptyArray()
@@ -337,7 +351,9 @@ class DatasetServiceImpl(
           val constructDatasetPart =
               constructDatasetPart(organizationId, workspaceId, datasetId, part)
           datasetPartManagementFactory.storeData(
-              constructDatasetPart, filesUploaded.first { it.originalFilename == part.sourceName })
+              constructDatasetPart,
+              filesUploaded.first { it.originalFilename == part.sourceName },
+          )
           constructDatasetPart
         }
 
@@ -356,8 +372,10 @@ class DatasetServiceImpl(
             updateInfo =
                 DatasetEditInfo(
                     timestamp = Instant.now().toEpochMilli(),
-                    userId = getCurrentAccountIdentifier(csmPlatformProperties)),
-            security = previousDataset.security)
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                ),
+            security = previousDataset.security,
+        )
 
     logger.debug("New Dataset info to register: {}", updatedDataset)
 
@@ -378,7 +396,7 @@ class DatasetServiceImpl(
       workspaceId: String,
       datasetId: String,
       identityId: String,
-      datasetRole: DatasetRole
+      datasetRole: DatasetRole,
   ): DatasetAccessControl {
 
     val dataset =
@@ -386,10 +404,14 @@ class DatasetServiceImpl(
     csmRbac.checkEntityExists(
         dataset.security.toGenericSecurity(datasetId),
         identityId,
-        "User '$identityId' not found in dataset $datasetId")
+        "User '$identityId' not found in dataset $datasetId",
+    )
     val rbacSecurity =
         csmRbac.setEntityRole(
-            dataset.security.toGenericSecurity(datasetId), identityId, datasetRole.role)
+            dataset.security.toGenericSecurity(datasetId),
+            identityId,
+            datasetRole.role,
+        )
     dataset.security = rbacSecurity.toResourceSecurity()
     save(dataset)
     val rbacAccessControl =
@@ -398,9 +420,11 @@ class DatasetServiceImpl(
   }
 
   fun updateSecurityVisibility(dataset: Dataset): Dataset {
-    if (csmRbac
-        .check(dataset.security.toGenericSecurity(dataset.id), PERMISSION_READ_SECURITY)
-        .not()) {
+    if (
+        csmRbac
+            .check(dataset.security.toGenericSecurity(dataset.id), PERMISSION_READ_SECURITY)
+            .not()
+    ) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = dataset.security.accessControlList.firstOrNull { it.id == username }
 
@@ -413,7 +437,10 @@ class DatasetServiceImpl(
       return dataset.copy(
           security =
               DatasetSecurity(
-                  default = dataset.security.default, accessControlList = accessControlList))
+                  default = dataset.security.default,
+                  accessControlList = accessControlList,
+              )
+      )
     }
     return dataset
   }
@@ -422,7 +449,8 @@ class DatasetServiceImpl(
     dataset.updateInfo =
         DatasetEditInfo(
             timestamp = Instant.now().toEpochMilli(),
-            userId = getCurrentAccountIdentifier(csmPlatformProperties))
+            userId = getCurrentAccountIdentifier(csmPlatformProperties),
+        )
     return datasetRepository.save(dataset)
   }
 
@@ -431,7 +459,7 @@ class DatasetServiceImpl(
       workspaceId: String,
       datasetId: String,
       file: MultipartFile,
-      datasetPartCreateRequest: DatasetPartCreateRequest
+      datasetPartCreateRequest: DatasetPartCreateRequest,
   ): DatasetPart {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
     validDatasetPartCreateRequest(datasetPartCreateRequest, file)
@@ -448,7 +476,7 @@ class DatasetServiceImpl(
       workspaceId: String,
       datasetId: String,
       file: Resource,
-      datasetPartCreateRequest: DatasetPartCreateRequest
+      datasetPartCreateRequest: DatasetPartCreateRequest,
   ): DatasetPart {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
     val createdDatasetPart =
@@ -462,7 +490,7 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      datasetPartCreateRequest: DatasetPartCreateRequest
+      datasetPartCreateRequest: DatasetPartCreateRequest,
   ): DatasetPart {
     logger.debug("Registering DatasetPart: {}", datasetPartCreateRequest)
     val now = Instant.now().toEpochMilli()
@@ -482,7 +510,8 @@ class DatasetServiceImpl(
             workspaceId = workspaceId,
             createInfo = editInfo,
             updateInfo = editInfo,
-            sourceName = datasetPartCreateRequest.sourceName)
+            sourceName = datasetPartCreateRequest.sourceName,
+        )
     logger.debug("Registering DatasetPart: {}", createdDatasetPart)
     return createdDatasetPart
   }
@@ -491,7 +520,7 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      datasetPartId: String
+      datasetPartId: String,
   ) {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
 
@@ -501,7 +530,8 @@ class DatasetServiceImpl(
             .orElseThrow {
               CsmResourceNotFoundException(
                   "Dataset Part $datasetPartId not found in organization $organizationId, " +
-                      "workspace $workspaceId and dataset $datasetId")
+                      "workspace $workspaceId and dataset $datasetId"
+              )
             }
 
     removeDatasetPartFromDataset(dataset, datasetPartId)
@@ -513,7 +543,7 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      datasetPartId: String
+      datasetPartId: String,
   ): Resource {
     val datasetPart = getDatasetPart(organizationId, workspaceId, datasetId, datasetPartId)
     return datasetPartManagementFactory.getData(datasetPart)
@@ -523,7 +553,7 @@ class DatasetServiceImpl(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      datasetPartId: String
+      datasetPartId: String,
   ): DatasetPart {
     getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
 
@@ -532,7 +562,8 @@ class DatasetServiceImpl(
         .orElseThrow {
           CsmResourceNotFoundException(
               "Dataset Part $datasetPartId not found in organization $organizationId, " +
-                  "workspace $workspaceId and dataset $datasetId")
+                  "workspace $workspaceId and dataset $datasetId"
+          )
         }
   }
 
@@ -541,7 +572,7 @@ class DatasetServiceImpl(
       workspaceId: String,
       datasetId: String,
       page: Int?,
-      size: Int?
+      size: Int?,
   ): List<DatasetPart> {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
 
@@ -559,12 +590,21 @@ class DatasetServiceImpl(
               val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
               datasetPartRepository
                   .findByOrganizationIdAndWorkspaceIdAndDatasetId(
-                      organizationId, workspaceId, datasetId, currentUser, it)
+                      organizationId,
+                      workspaceId,
+                      datasetId,
+                      currentUser,
+                      it,
+                  )
                   .toList()
             } else {
               datasetPartRepository
                   .findByOrganizationIdAndWorkspaceIdAndDatasetIdNoSecurity(
-                      organizationId, workspaceId, datasetId, it)
+                      organizationId,
+                      workspaceId,
+                      datasetId,
+                      it,
+                  )
                   .toList()
             }
           }
@@ -574,12 +614,21 @@ class DatasetServiceImpl(
             val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
             datasetPartRepository
                 .findByOrganizationIdAndWorkspaceIdAndDatasetId(
-                    organizationId, workspaceId, datasetId, currentUser, pageable)
+                    organizationId,
+                    workspaceId,
+                    datasetId,
+                    currentUser,
+                    pageable,
+                )
                 .toList()
           } else {
             datasetPartRepository
                 .findByOrganizationIdAndWorkspaceIdAndDatasetIdNoSecurity(
-                    organizationId, workspaceId, datasetId, pageable)
+                    organizationId,
+                    workspaceId,
+                    datasetId,
+                    pageable,
+                )
                 .toList()
           }
     }
@@ -601,7 +650,7 @@ class DatasetServiceImpl(
       offset: Int?,
       limit: Int?,
       groupBys: List<String>?,
-      orderBys: List<String>?
+      orderBys: List<String>?,
   ): Resource {
     val datasetPart = getDatasetPart(organizationId, workspaceId, datasetId, datasetPartId)
     require(datasetPart.type != DatasetPartTypeEnum.File) {
@@ -616,7 +665,9 @@ class DatasetServiceImpl(
             "mins" to mins,
             "maxs" to maxs,
             "groupBys" to groupBys,
-            "orderBys" to orderBys))
+            "orderBys" to orderBys,
+        )
+    )
     val query =
         constructQuery(
             datasetPartId,
@@ -629,7 +680,8 @@ class DatasetServiceImpl(
             offset,
             limit,
             groupBys,
-            orderBys)
+            orderBys,
+        )
 
     val outputStream = ByteArrayOutputStream()
     try {
@@ -639,7 +691,9 @@ class DatasetServiceImpl(
       }
     } catch (e: PSQLException) {
       throw IllegalArgumentException(
-          "Error while querying Dataset Part $datasetPartId: ($query)", e)
+          "Error while querying Dataset Part $datasetPartId: ($query)",
+          e,
+      )
     }
 
     return ByteArrayResource(outputStream.toByteArray())
@@ -673,7 +727,7 @@ class DatasetServiceImpl(
       offset: Int?,
       limit: Int?,
       groupBys: List<String>?,
-      orderBys: List<String>?
+      orderBys: List<String>?,
   ): String {
     val tableName = "${DATASET_INPUTS_SCHEMA}.${datasetPartId.sanitizeDatasetPartId()}"
 
@@ -721,7 +775,7 @@ class DatasetServiceImpl(
       columnNames: List<String>?,
       aggregationFunction: AggregationType?,
       castType: String?,
-      orderable: Boolean = false
+      orderable: Boolean = false,
   ): String {
     return columnNames?.joinToString(separator = ",") { columnName ->
       if (aggregationFunction != null) {
@@ -751,19 +805,21 @@ class DatasetServiceImpl(
   private fun getDistinctData(columnSpec: String) =
       Pair(
           columnSpec.endsWith(DISTINCT_COLUMN_CHAR),
-          columnSpec.substringBeforeLast(DISTINCT_COLUMN_CHAR))
+          columnSpec.substringBeforeLast(DISTINCT_COLUMN_CHAR),
+      )
 
   private fun createDistinctClause(isDistinct: Boolean, columnName: String): String {
     return "%s %s"
         .format(
             if (isDistinct) COLUMN_DISTINCT_KEYWORD.uppercase() else "",
-            StringUtils.wrapIfMissing(columnName, "\""))
+            StringUtils.wrapIfMissing(columnName, "\""),
+        )
   }
 
   private fun createAggregationClause(
       aggFunction: String,
       columnName: String,
-      castType: String?
+      castType: String?,
   ): String {
     val queryPart = StringBuilder(aggFunction)
     val (isMarkedAsDistinct, actualColumnName) = getDistinctData(columnName)
@@ -776,7 +832,7 @@ class DatasetServiceImpl(
 
   private fun StringBuilder.addAggregatedColumn(
       isDistinct: Boolean,
-      columnName: String
+      columnName: String,
   ): StringBuilder = apply {
     this.append("(%s".format(createDistinctClause(isDistinct, columnName)))
   }
@@ -788,12 +844,16 @@ class DatasetServiceImpl(
   private fun StringBuilder.addRenameClause(
       isDistinct: Boolean,
       columnName: String,
-      aggFunction: String
+      aggFunction: String,
   ): StringBuilder = apply {
     this.append(
         "as \"%s%s%s\""
             .format(
-                aggFunction, if (isDistinct) "_${COLUMN_DISTINCT_KEYWORD}_" else "_", columnName))
+                aggFunction,
+                if (isDistinct) "_${COLUMN_DISTINCT_KEYWORD}_" else "_",
+                columnName,
+            )
+    )
   }
 
   override fun updateDatasetPart(
@@ -801,7 +861,7 @@ class DatasetServiceImpl(
       workspaceId: String,
       datasetId: String,
       datasetPartId: String,
-      datasetPartUpdateRequest: DatasetPartUpdateRequest
+      datasetPartUpdateRequest: DatasetPartUpdateRequest,
   ): DatasetPart {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
     val datasetPart =
@@ -810,7 +870,8 @@ class DatasetServiceImpl(
             .orElseThrow {
               CsmResourceNotFoundException(
                   "Dataset Part $datasetPartId not found in organization $organizationId, " +
-                      "workspace $workspaceId and dataset $datasetId")
+                      "workspace $workspaceId and dataset $datasetId"
+              )
             }
     val now = Instant.now().toEpochMilli()
     val userId = getCurrentAccountIdentifier(csmPlatformProperties)
@@ -844,7 +905,7 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetPartId: String,
       file: MultipartFile,
-      datasetPartUpdateRequest: DatasetPartUpdateRequest?
+      datasetPartUpdateRequest: DatasetPartUpdateRequest?,
   ): DatasetPart {
     val dataset = getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE)
     val datasetPart =
@@ -853,7 +914,8 @@ class DatasetServiceImpl(
             .orElseThrow {
               CsmResourceNotFoundException(
                   "Dataset Part $datasetPartId not found in organization $organizationId, " +
-                      "workspace $workspaceId and dataset $datasetId")
+                      "workspace $workspaceId and dataset $datasetId"
+              )
             }
 
     validateFile(datasetPart.type == DatasetPartTypeEnum.DB, file)
@@ -889,7 +951,7 @@ class DatasetServiceImpl(
       datasetId: String,
       requestBody: List<String>,
       page: Int?,
-      size: Int?
+      size: Int?,
   ): List<DatasetPart> {
     if (requestBody.isEmpty()) {
       return listDatasetParts(organizationId, workspaceId, datasetId, page, size)
@@ -904,7 +966,12 @@ class DatasetServiceImpl(
         if (pageable != null) {
           datasetPartRepository
               .findDatasetPartByTags(
-                  organizationId, workspaceId, datasetId, tagsSanitized, pageable)
+                  organizationId,
+                  workspaceId,
+                  datasetId,
+                  tagsSanitized,
+                  pageable,
+              )
               .toList()
         } else {
           findAllPaginated(defaultPageSize) {
@@ -922,7 +989,7 @@ class DatasetServiceImpl(
       workspaceId: String,
       requestBody: List<String>,
       page: Int?,
-      size: Int?
+      size: Int?,
   ): List<Dataset> {
     if (requestBody.isEmpty()) {
       return listDatasets(organizationId, workspaceId, page, size)
@@ -958,7 +1025,8 @@ class DatasetServiceImpl(
     val dataset =
         datasetRepository.findBy(organizationId, workspaceId, datasetParameterId).orElseThrow {
           CsmResourceNotFoundException(
-              "Dataset $datasetParameterId not found in organization $organizationId and workspace $workspaceId")
+              "Dataset $datasetParameterId not found in organization $organizationId and workspace $workspaceId"
+          )
         }
 
     datasetRepository.delete(dataset)
@@ -970,7 +1038,7 @@ class DatasetServiceImpl(
 
   private fun validDatasetPartCreateRequest(
       datasetPartCreateRequest: DatasetPartCreateRequest,
-      file: MultipartFile
+      file: MultipartFile,
   ) {
     require(datasetPartCreateRequest.name.isNotBlank()) { "Dataset Part name must not be blank" }
     require(datasetPartCreateRequest.sourceName == file.originalFilename) {
@@ -994,13 +1062,14 @@ class DatasetServiceImpl(
       resourceScanner.scanMimeTypes(
           originalFilename,
           file.inputStream,
-          csmPlatformProperties.upload.authorizedMimeTypes.datasets)
+          csmPlatformProperties.upload.authorizedMimeTypes.datasets,
+      )
     }
   }
 
   private fun validDatasetCreateRequest(
       datasetCreateRequest: DatasetCreateRequest,
-      files: Array<MultipartFile>
+      files: Array<MultipartFile>,
   ) {
     require(datasetCreateRequest.name.isNotBlank()) { "Dataset name must not be blank" }
     require(files.size == datasetCreateRequest.parts?.size) {
@@ -1008,18 +1077,20 @@ class DatasetServiceImpl(
           "${files.size} != ${datasetCreateRequest.parts?.size}"
     }
     require(
-        files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty()) {
-          "Part File names should be unique during dataset creation. " +
-              "Multipart file names: ${files.map { it.originalFilename }}. " +
-              "Dataset parts source names: ${datasetCreateRequest.parts?.map { it.sourceName }}."
-        }
+        files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty()
+    ) {
+      "Part File names should be unique during dataset creation. " +
+          "Multipart file names: ${files.map { it.originalFilename }}. " +
+          "Dataset parts source names: ${datasetCreateRequest.parts?.map { it.sourceName }}."
+    }
     require(
         files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
-            datasetCreateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())) {
-          "All files must have the same name as corresponding sourceName in a Dataset Part. " +
-              "Multipart file names: ${files.map { it.originalFilename }}. " +
-              "Dataset parts source names: ${datasetCreateRequest.parts?.map { it.sourceName }}."
-        }
+            datasetCreateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())
+    ) {
+      "All files must have the same name as corresponding sourceName in a Dataset Part. " +
+          "Multipart file names: ${files.map { it.originalFilename }}. " +
+          "Dataset parts source names: ${datasetCreateRequest.parts?.map { it.sourceName }}."
+    }
     val parts = datasetCreateRequest.parts
     files.forEach { file ->
       val isDBFile =
@@ -1030,31 +1101,34 @@ class DatasetServiceImpl(
 
   private fun validDatasetUpdateRequest(
       datasetUpdateRequest: DatasetUpdateRequest,
-      files: Array<MultipartFile>
+      files: Array<MultipartFile>,
   ) {
     require(
         datasetUpdateRequest.name == null ||
-            (datasetUpdateRequest.name != null && datasetUpdateRequest.name!!.isNotBlank())) {
-          "Dataset name must not be blank"
-        }
+            (datasetUpdateRequest.name != null && datasetUpdateRequest.name!!.isNotBlank())
+    ) {
+      "Dataset name must not be blank"
+    }
     require(files.size == (datasetUpdateRequest.parts?.size ?: 0)) {
       "Number of files must be equal to the number of parts if specified. " +
           "${files.size} != ${datasetUpdateRequest.parts?.size}"
     }
     require(
-        files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty()) {
-          "Multipart file names should be unique during dataset update. " +
-              "Multipart file names: ${files.map { it.originalFilename }}. " +
-              "Dataset parts source names: ${datasetUpdateRequest.parts?.map { it.sourceName }}."
-        }
+        files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty()
+    ) {
+      "Multipart file names should be unique during dataset update. " +
+          "Multipart file names: ${files.map { it.originalFilename }}. " +
+          "Dataset parts source names: ${datasetUpdateRequest.parts?.map { it.sourceName }}."
+    }
     require(
         files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
             (datasetUpdateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())
-                ?: emptySet<String>())) {
-          "All files must have the same name as corresponding sourceName in a Dataset Part. " +
-              "Multipart file names: ${files.map { it.originalFilename }}. " +
-              "Dataset parts source names: ${datasetUpdateRequest.parts?.map { it.sourceName } ?: emptyList()}."
-        }
+                ?: emptySet<String>())
+    ) {
+      "All files must have the same name as corresponding sourceName in a Dataset Part. " +
+          "Multipart file names: ${files.map { it.originalFilename }}. " +
+          "Dataset parts source names: ${datasetUpdateRequest.parts?.map { it.sourceName } ?: emptyList()}."
+    }
 
     val parts = datasetUpdateRequest.parts
     files.forEach { file ->
@@ -1070,7 +1144,7 @@ enum class AggregationType {
   Avg,
   Count,
   Min,
-  Max
+  Max,
 }
 
 fun DatasetSecurity?.toGenericSecurity(id: String) =
@@ -1078,9 +1152,11 @@ fun DatasetSecurity?.toGenericSecurity(id: String) =
         id,
         this?.default ?: ROLE_NONE,
         this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
-            ?: mutableListOf())
+            ?: mutableListOf(),
+    )
 
 fun RbacSecurity.toResourceSecurity() =
     DatasetSecurity(
         this.default,
-        this.accessControlList.map { DatasetAccessControl(it.id, it.role) }.toMutableList())
+        this.accessControlList.map { DatasetAccessControl(it.id, it.role) }.toMutableList(),
+    )

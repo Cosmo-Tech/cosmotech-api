@@ -25,6 +25,7 @@ class MetaServiceImplTests {
     mockkStatic("com.cosmotech.common.utils.AboutInfoKt")
   }
 
+  @Suppress("LongMethod")
   @TestFactory
   fun `about version info`() =
       mapOf(
@@ -36,7 +37,8 @@ class MetaServiceImplTests {
                       label = "",
                       build = "abcdef12",
                       release = "",
-                      full = ""),
+                      full = "",
+                  ),
               "Release, no label, no build" to
                   AboutInfoVersion(
                       major = 1,
@@ -45,7 +47,8 @@ class MetaServiceImplTests {
                       label = "",
                       build = "",
                       release = "",
-                      full = ""),
+                      full = "",
+                  ),
               "SNAPSHOT label" to
                   AboutInfoVersion(
                       major = 1,
@@ -54,7 +57,8 @@ class MetaServiceImplTests {
                       label = "SNAPSHOT",
                       build = "abcdef12",
                       release = "",
-                      full = ""),
+                      full = "",
+                  ),
               "'-' in label" to
                   AboutInfoVersion(
                       major = 1,
@@ -63,7 +67,8 @@ class MetaServiceImplTests {
                       label = "my-branch-SNAPSHOT",
                       build = "abcdef12",
                       release = "",
-                      full = ""),
+                      full = "",
+                  ),
           )
           .map { (name, data) ->
             DynamicTest.dynamicTest("about version info: $name") {
@@ -80,7 +85,10 @@ class MetaServiceImplTests {
                               mapOf(
                                   "full" to data.full,
                                   "release" to data.release,
-                                  "build" to data.build)))
+                                  "build" to data.build,
+                              )
+                      )
+                  )
 
               assertEquals(data, metaApiService.about().version)
             }

@@ -127,11 +127,18 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   val runTemplateParameterValue1 =
       RunnerRunTemplateParameterValue(
-          parameterId = "param1", value = "param1value", isInherited = true, varType = "String")
+          parameterId = "param1",
+          value = "param1value",
+          isInherited = true,
+          varType = "String",
+      )
 
   val runTemplateParameterValue2 =
       RunnerRunTemplateParameterValue(
-          parameterId = "param2", value = "param2value", varType = "String")
+          parameterId = "param2",
+          value = "param2value",
+          varType = "String",
+      )
 
   @BeforeEach
   fun setUp() {
@@ -140,7 +147,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     mockkStatic("org.springframework.web.context.request.RequestContextHolder")
 
     ReflectionTestUtils.setField(
-        solutionApiService, "containerRegistryService", containerRegistryService)
+        solutionApiService,
+        "containerRegistryService",
+        containerRegistryService,
+    )
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
@@ -169,13 +179,18 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     dataset = makeDataset("Dataset")
     datasetSaved =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, dataset, emptyArray())
+            organizationSaved.id,
+            workspaceSaved.id,
+            dataset,
+            emptyArray(),
+        )
 
     parentRunner =
         makeRunnerCreateRequest(
             name = "RunnerParent",
             datasetList = mutableListOf(datasetSaved.id),
-            parametersValues = mutableListOf(runTemplateParameterValue1))
+            parametersValues = mutableListOf(runTemplateParameterValue1),
+        )
 
     parentRunnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, parentRunner)
@@ -185,7 +200,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "Runner",
             parentId = parentRunnerSaved.id,
             datasetList = mutableListOf(datasetSaved.id),
-            parametersValues = mutableListOf(runTemplateParameterValue2))
+            parametersValues = mutableListOf(runTemplateParameterValue2),
+        )
 
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
   }
@@ -199,7 +215,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test createRunner and check parameterValues data`() {
 
     logger.info(
-        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared")
+        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared"
+    )
     val newRunner =
         makeRunnerCreateRequest(
             name = "NewRunner",
@@ -207,7 +224,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             parametersValues =
                 mutableListOf(
                     RunnerRunTemplateParameterValue(
-                        parameterId = "param1", value = "7", varType = "ignored_var_type")))
+                        parameterId = "param1",
+                        value = "7",
+                        varType = "ignored_var_type",
+                    )
+                ),
+        )
     val newRunnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
 
@@ -222,15 +244,20 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test updateRunner and check parameterValues data`() {
 
     logger.info(
-        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared")
+        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared"
+    )
     val creationParameterValue =
         RunnerRunTemplateParameterValue(
-            parameterId = "param1", value = "7", varType = "ignored_var_type")
+            parameterId = "param1",
+            value = "7",
+            varType = "ignored_var_type",
+        )
     val newRunner =
         makeRunnerCreateRequest(
             name = "NewRunner",
             datasetList = mutableListOf(datasetSaved.id),
-            parametersValues = mutableListOf(creationParameterValue))
+            parametersValues = mutableListOf(creationParameterValue),
+        )
     val newRunnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
 
@@ -240,13 +267,17 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val newParameterValue =
         RunnerRunTemplateParameterValue(
-            parameterId = "param1", value = "10", varType = "still_ignored_var_type")
+            parameterId = "param1",
+            value = "10",
+            varType = "still_ignored_var_type",
+        )
     val updateRunnerSaved =
         runnerApiService.updateRunner(
             organizationSaved.id,
             workspaceSaved.id,
             newRunnerSaved.id,
-            RunnerUpdateRequest(parametersValues = mutableListOf(newParameterValue)))
+            RunnerUpdateRequest(parametersValues = mutableListOf(newParameterValue)),
+        )
 
     assertNotNull(updateRunnerSaved.parametersValues)
     assertTrue(updateRunnerSaved.parametersValues.size == 1)
@@ -266,7 +297,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         makeRunnerCreateRequest(
             name = "NewRunner",
             datasetList = mutableListOf(datasetSaved.id),
-            parametersValues = mutableListOf(creationParameterValue))
+            parametersValues = mutableListOf(creationParameterValue),
+        )
     val newRunnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
 
@@ -280,19 +312,24 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         organizationSaved.id,
         solutionSaved.id,
         parameterId,
-        RunTemplateParameterUpdateRequest(varType = DATASET_PART_VARTYPE_FILE))
+        RunTemplateParameterUpdateRequest(varType = DATASET_PART_VARTYPE_FILE),
+    )
 
     // 3 - try to update the runner and check that the parameters are updated too
     val newParameterValue =
         RunnerRunTemplateParameterValue(
-            parameterId = parameterId, value = "10", varType = "integer")
+            parameterId = parameterId,
+            value = "10",
+            varType = "integer",
+        )
 
     val updateRunnerSaved =
         runnerApiService.updateRunner(
             organizationSaved.id,
             workspaceSaved.id,
             newRunnerSaved.id,
-            RunnerUpdateRequest(parametersValues = mutableListOf(newParameterValue)))
+            RunnerUpdateRequest(parametersValues = mutableListOf(newParameterValue)),
+        )
 
     assertNotNull(updateRunnerSaved.parametersValues)
     assertTrue(updateRunnerSaved.parametersValues.isEmpty())
@@ -327,12 +364,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             organizationSaved.id,
             workspaceSaved.id,
             runnerRetrieved.id,
-            RunnerUpdateRequest(name = "Runner Updated"))
+            RunnerUpdateRequest(name = "Runner Updated"),
+        )
     assertEquals(
         runnerRetrieved.copy(name = "Runner Updated"),
         runnerUpdated.copy(updateInfo = runnerRetrieved.updateInfo).apply {
           datasets.parameters = mutableListOf()
-        })
+        },
+    )
 
     logger.info("should delete the Runner and assert there is one less Runner left")
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, newRunnerSaved.id)
@@ -344,7 +383,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     // deleteAllRunners still works with high quantities of runners
     repeat(csmPlatformProperties.databases.resources.runner.defaultPageSize + 1) {
       runnerApiService.createRunner(
-          organizationSaved.id, workspaceSaved.id, makeRunnerCreateRequest())
+          organizationSaved.id,
+          workspaceSaved.id,
+          makeRunnerCreateRequest(),
+      )
     }
   }
 
@@ -355,7 +397,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "WorkspaceDataset",
             parts =
                 mutableListOf(
-                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt")))
+                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt")
+                ),
+        )
     val workspaceDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
@@ -366,7 +410,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     "files",
                     "test.txt",
                     MediaType.MULTIPART_FORM_DATA_VALUE,
-                    "test".toByteArray())))
+                    "test".toByteArray(),
+                )
+            ),
+        )
     workspaceSaved =
         workspaceApiService.updateWorkspace(
             organizationSaved.id,
@@ -377,16 +424,21 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         solutionId = solutionSaved.id,
                         datasetId = workspaceDataset.id,
                         defaultParameterValues =
-                            mutableMapOf("param2" to workspaceDataset.parts[0].id))))
+                            mutableMapOf("param2" to workspaceDataset.parts[0].id),
+                    )
+            ),
+        )
     val runnerWithInheritedDatasetParameterCreateRequest =
         makeRunnerCreateRequest(
             name = "Runner_with_inherited_dataset_parameter",
-            datasetList = mutableListOf(datasetSaved.id))
+            datasetList = mutableListOf(datasetSaved.id),
+        )
     val runnerWithInheritedDatasetParameter =
         runnerApiService.createRunner(
             organizationSaved.id,
             workspaceSaved.id,
-            runnerWithInheritedDatasetParameterCreateRequest)
+            runnerWithInheritedDatasetParameterCreateRequest,
+        )
 
     val runnerList =
         runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id, null, null)
@@ -408,7 +460,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "WorkspaceDataset",
             parts =
                 mutableListOf(
-                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt")))
+                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt")
+                ),
+        )
     val workspaceDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
@@ -419,7 +473,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     "files",
                     "test.txt",
                     MediaType.MULTIPART_FORM_DATA_VALUE,
-                    "test".toByteArray())))
+                    "test".toByteArray(),
+                )
+            ),
+        )
     workspaceSaved =
         workspaceApiService.updateWorkspace(
             organizationSaved.id,
@@ -430,16 +487,21 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         solutionId = solutionSaved.id,
                         datasetId = workspaceDataset.id,
                         defaultParameterValues =
-                            mutableMapOf("param2" to workspaceDataset.parts[0].id))))
+                            mutableMapOf("param2" to workspaceDataset.parts[0].id),
+                    )
+            ),
+        )
     val runnerWithInheritedDatasetParameterCreateRequest =
         makeRunnerCreateRequest(
             name = "Runner_with_inherited_dataset_parameter",
-            datasetList = mutableListOf(datasetSaved.id))
+            datasetList = mutableListOf(datasetSaved.id),
+        )
     val runnerWithInheritedDatasetParameter =
         runnerApiService.createRunner(
             organizationSaved.id,
             workspaceSaved.id,
-            runnerWithInheritedDatasetParameterCreateRequest)
+            runnerWithInheritedDatasetParameterCreateRequest,
+        )
 
     assertNotNull(runnerWithInheritedDatasetParameter)
     val runnerDatasetParameters =
@@ -457,7 +519,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "WorkspaceDataset",
             parts =
                 mutableListOf(
-                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt")))
+                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt")
+                ),
+        )
     val workspaceDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
@@ -468,7 +532,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     "files",
                     "test.txt",
                     MediaType.MULTIPART_FORM_DATA_VALUE,
-                    "test".toByteArray())))
+                    "test".toByteArray(),
+                )
+            ),
+        )
     workspaceSaved =
         workspaceApiService.updateWorkspace(
             organizationSaved.id,
@@ -479,23 +546,29 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         solutionId = solutionSaved.id,
                         datasetId = workspaceDataset.id,
                         defaultParameterValues =
-                            mutableMapOf("param2" to workspaceDataset.parts[0].id))))
+                            mutableMapOf("param2" to workspaceDataset.parts[0].id),
+                    )
+            ),
+        )
     val runnerWithInheritedDatasetParameterCreateRequest =
         makeRunnerCreateRequest(
             name = "Runner_with_inherited_dataset_parameter",
-            datasetList = mutableListOf(datasetSaved.id))
+            datasetList = mutableListOf(datasetSaved.id),
+        )
     val runnerWithInheritedDatasetParameter =
         runnerApiService.createRunner(
             organizationSaved.id,
             workspaceSaved.id,
-            runnerWithInheritedDatasetParameterCreateRequest)
+            runnerWithInheritedDatasetParameterCreateRequest,
+        )
 
     val runnerUpdatedWithInheritedDatasetParameter =
         runnerApiService.updateRunner(
             organizationSaved.id,
             workspaceSaved.id,
             runnerWithInheritedDatasetParameter.id,
-            RunnerUpdateRequest(name = "New Dataset name"))
+            RunnerUpdateRequest(name = "New Dataset name"),
+        )
 
     assertNotNull(runnerUpdatedWithInheritedDatasetParameter)
     val runnerDatasetParameters =
@@ -618,19 +691,19 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     // Delete grand parent
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, grandParentRunner.id)
     assertNull(
-        runnerApiService
-            .getRunner(organizationSaved.id, workspaceSaved.id, parentRunner1.id)
-            .rootId)
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, parentRunner1.id).rootId
+    )
     assertNull(
-        runnerApiService
-            .getRunner(organizationSaved.id, workspaceSaved.id, parentRunner2.id)
-            .rootId)
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, parentRunner2.id).rootId
+    )
     assertEquals(
         parentRunner1.id,
-        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, childRunner1.id).rootId)
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, childRunner1.id).rootId,
+    )
     assertEquals(
         parentRunner2.id,
-        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, childRunner2.id).rootId)
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, childRunner2.id).rootId,
+    )
   }
 
   @Test
@@ -646,7 +719,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val runnerRole = RunnerRole(ROLE_VIEWER)
     val runnerSecurityRegistered =
         runnerApiService.updateRunnerDefaultSecurity(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id, runnerRole)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            runnerRole,
+        )
     assertEquals(runnerRole.role, runnerSecurityRegistered.default)
   }
 
@@ -664,7 +741,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val runnerRole = RunnerRole(ROLE_VIEWER)
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.updateRunnerDefaultSecurity(
-          organizationSaved.id, workspaceSaved.id, runnerSaved.id, runnerRole)
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.id,
+          runnerRole,
+      )
     }
   }
 
@@ -674,20 +755,33 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val runnerAccessControl = RunnerAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     var runnerAccessControlRegistered =
         runnerApiService.createRunnerAccessControl(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id, runnerAccessControl)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            runnerAccessControl,
+        )
     assertEquals(runnerAccessControl, runnerAccessControlRegistered)
 
     logger.info("should get the Access Control and assert it is the one created")
     runnerAccessControlRegistered =
         runnerApiService.getRunnerAccessControl(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            TEST_USER_MAIL,
+        )
     assertEquals(runnerAccessControl, runnerAccessControlRegistered)
 
     logger.info(
-        "should add an Access Control and assert it is the one created in the parameter dataset")
+        "should add an Access Control and assert it is the one created in the parameter dataset"
+    )
     assertDoesNotThrow {
       datasetApiService.getDatasetAccessControl(
-          organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.parameter, TEST_USER_MAIL)
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.datasets.parameter,
+          TEST_USER_MAIL,
+      )
     }
 
     logger.info("should update the Access Control and assert it has been updated")
@@ -697,11 +791,13 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             workspaceSaved.id,
             runnerSaved.id,
             TEST_USER_MAIL,
-            RunnerRole(ROLE_EDITOR))
+            RunnerRole(ROLE_EDITOR),
+        )
     assertEquals(ROLE_EDITOR, runnerAccessControlRegistered.role)
 
     logger.info(
-        "Should not change the parameter dataset access control because ACL already exist on it")
+        "Should not change the parameter dataset access control because ACL already exist on it"
+    )
     assertEquals(
         ROLE_VIEWER,
         datasetApiService
@@ -709,28 +805,46 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 organizationSaved.id,
                 workspaceSaved.id,
                 runnerSaved.datasets.parameter,
-                TEST_USER_MAIL)
-            .role)
+                TEST_USER_MAIL,
+            )
+            .role,
+    )
 
     logger.info("should get the list of users and assert there are 2")
     val userList =
         runnerApiService.listRunnerSecurityUsers(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+        )
     assertEquals(3, userList.size)
 
     logger.info("should remove the Access Control and assert it has been removed")
     runnerApiService.deleteRunnerAccessControl(
-        organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
+        organizationSaved.id,
+        workspaceSaved.id,
+        runnerSaved.id,
+        TEST_USER_MAIL,
+    )
     assertThrows<CsmResourceNotFoundException> {
       runnerApiService.getRunnerAccessControl(
-          organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.id,
+          TEST_USER_MAIL,
+      )
     }
 
     logger.info(
-        "should remove the Access Control and assert it has been removed in the parameter dataset")
+        "should remove the Access Control and assert it has been removed in the parameter dataset"
+    )
     assertThrows<CsmResourceNotFoundException> {
       datasetApiService.getDatasetAccessControl(
-          organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.parameter, TEST_USER_MAIL)
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.datasets.parameter,
+          TEST_USER_MAIL,
+      )
     }
   }
 
@@ -742,44 +856,66 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val runnerAccessControl = RunnerAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.createRunnerAccessControl(
-          organizationSaved.id, workspaceSaved.id, runnerSaved.id, runnerAccessControl)
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.id,
+          runnerAccessControl,
+      )
     }
 
     logger.info("should throw CsmAccessForbiddenException when trying to get RunnerAccessControl")
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.getRunnerAccessControl(
-          organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.id,
+          TEST_USER_MAIL,
+      )
     }
 
     logger.info(
-        "should throw CsmAccessForbiddenException when trying to update RunnerAccessControl")
+        "should throw CsmAccessForbiddenException when trying to update RunnerAccessControl"
+    )
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.updateRunnerAccessControl(
           organizationSaved.id,
           workspaceSaved.id,
           runnerSaved.id,
           TEST_USER_MAIL,
-          RunnerRole(ROLE_VIEWER))
+          RunnerRole(ROLE_VIEWER),
+      )
     }
 
     logger.info("should throw CsmAccessForbiddenException when getting the list of users")
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.listRunnerSecurityUsers(
-          organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.id,
+      )
     }
 
     logger.info(
-        "should throw CsmAccessForbiddenException when trying to remove RunnerAccessControl")
+        "should throw CsmAccessForbiddenException when trying to remove RunnerAccessControl"
+    )
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.deleteRunnerAccessControl(
-          organizationSaved.id, workspaceSaved.id, runnerSaved.id, TEST_USER_MAIL)
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.id,
+          TEST_USER_MAIL,
+      )
     }
   }
 
   @Test
   fun `test deleting a running runner`() {
     runnerApiService.updateRunner(
-        organizationSaved.id, workspaceSaved.id, runnerSaved.id, RunnerUpdateRequest())
+        organizationSaved.id,
+        workspaceSaved.id,
+        runnerSaved.id,
+        RunnerUpdateRequest(),
+    )
 
     every { eventPublisher.publishEvent(any<HasRunningRuns>()) } answers
         {
@@ -792,7 +928,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         }
     assertEquals(
         "Can't delete runner ${runnerSaved.id}: at least one run is still running",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -813,7 +950,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         "Dataset $parameterDatasetId not found " +
             "in organization ${organizationSaved.id} " +
             "and workspace ${workspaceSaved.id}",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -849,7 +987,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val parentId =
         runnerApiService
             .createRunner(
-                organizationSaved.id, workspaceSaved.id, parentRunnerWithNonEmptyDatasetList)
+                organizationSaved.id,
+                workspaceSaved.id,
+                parentRunnerWithNonEmptyDatasetList,
+            )
             .id
     val childRunnerWithNullDatasetList =
         makeRunnerCreateRequest(parentId = parentId, datasetList = null)
@@ -875,7 +1016,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val parentId =
         runnerApiService
             .createRunner(
-                organizationSaved.id, workspaceSaved.id, parentRunnerWithNonEmptyDatasetList)
+                organizationSaved.id,
+                workspaceSaved.id,
+                parentRunnerWithNonEmptyDatasetList,
+            )
             .id
     val childRunnerWithEmptyDatasetList =
         makeRunnerCreateRequest(parentId = parentId, datasetList = mutableListOf())
@@ -900,7 +1044,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val parentId =
         runnerApiService
             .createRunner(
-                organizationSaved.id, workspaceSaved.id, parentRunnerWithNonEmptyDatasetList)
+                organizationSaved.id,
+                workspaceSaved.id,
+                parentRunnerWithNonEmptyDatasetList,
+            )
             .id
 
     val childDataset =
@@ -908,7 +1055,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             organizationSaved.id,
             workspaceSaved.id,
             makeDataset(name = "For Child Runner"),
-            emptyArray())
+            emptyArray(),
+        )
 
     val childDatasetList = mutableListOf(childDataset.id)
     val childRunnerWithNonEmptyDatasetList =
@@ -916,7 +1064,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val childRunnerDatasetList =
         runnerApiService
             .createRunner(
-                organizationSaved.id, workspaceSaved.id, childRunnerWithNonEmptyDatasetList)
+                organizationSaved.id,
+                workspaceSaved.id,
+                childRunnerWithNonEmptyDatasetList,
+            )
             .datasets
             .bases
 
@@ -928,21 +1079,32 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test updating (adding) runner's datasetList add runner users to new dataset`() {
     val newDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, makeDataset(), emptyArray())
+            organizationSaved.id,
+            workspaceSaved.id,
+            makeDataset(),
+            emptyArray(),
+        )
     runnerSaved =
         runnerApiService.updateRunner(
             organizationSaved.id,
             workspaceSaved.id,
             runnerSaved.id,
-            RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id, newDataset.id)))
+            RunnerUpdateRequest(datasetList = mutableListOf(datasetSaved.id, newDataset.id)),
+        )
 
     val runnerUserList =
         runnerApiService.listRunnerSecurityUsers(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+        )
 
     val datasetUserList =
         datasetApiService.listDatasetSecurityUsers(
-            organizationSaved.id, workspaceSaved.id, newDataset.id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            newDataset.id,
+        )
     datasetUserList.containsAll(runnerUserList)
   }
 
@@ -965,7 +1127,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     accessControlList =
                         mutableListOf(
                             RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                            RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
+                            RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR),
+                        ),
+                ),
+        )
     assertThrows<IllegalArgumentException> {
       runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, brokenRunner)
     }
@@ -984,7 +1149,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val runnerSavedSecurityUsers =
         runnerApiService.listRunnerSecurityUsers(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+        )
     assertEquals(2, runnerSavedSecurityUsers.size)
 
     assertThrows<IllegalArgumentException> {
@@ -992,12 +1160,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
           organizationSaved.id,
           workspaceSaved.id,
           runnerSaved.id,
-          RunnerAccessControl(defaultName, ROLE_EDITOR))
+          RunnerAccessControl(defaultName, ROLE_EDITOR),
+      )
     }
 
     val runnerSecurityUsers =
         runnerApiService.listRunnerSecurityUsers(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+        )
     assertEquals(2, runnerSecurityUsers.size)
     assert(runnerSavedSecurityUsers == runnerSecurityUsers)
   }
@@ -1015,7 +1187,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val runnerSavedSecurityUsers =
         runnerApiService.listRunnerSecurityUsers(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+        )
     assertEquals(2, runnerSavedSecurityUsers.size)
 
     assertThrows<CsmResourceNotFoundException> {
@@ -1024,12 +1199,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
           workspaceSaved.id,
           runnerSaved.id,
           "invalid user",
-          RunnerRole(ROLE_VIEWER))
+          RunnerRole(ROLE_VIEWER),
+      )
     }
 
     val runnerSecurityUsers =
         runnerApiService.listRunnerSecurityUsers(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+        )
     assertEquals(2, runnerSecurityUsers.size)
     assert(runnerSavedSecurityUsers == runnerSecurityUsers)
   }
@@ -1041,18 +1220,26 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id),
-            datasetCopy = false)
+            datasetCopy = false,
+        )
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     val runnerDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, makeDataset(), emptyArray())
+            organizationSaved.id,
+            workspaceSaved.id,
+            makeDataset(),
+            emptyArray(),
+        )
 
     runner = makeRunnerCreateRequest(datasetList = mutableListOf(runnerDataset.id))
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
     val datasetRetrieved =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.bases[0])
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.datasets.bases[0],
+        )
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
     assertDoesNotThrow {
@@ -1067,11 +1254,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id),
-            datasetCopy = true)
+            datasetCopy = true,
+        )
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     val runnerDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, makeDataset("runnerDataset"), emptyArray())
+            organizationSaved.id,
+            workspaceSaved.id,
+            makeDataset("runnerDataset"),
+            emptyArray(),
+        )
     runner = makeRunnerCreateRequest(datasetList = mutableListOf(runnerDataset.id))
     runnerSaved = runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
 
@@ -1079,16 +1271,24 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         organizationSaved.id,
         workspaceSaved.id,
         runnerSaved.id,
-        RunnerAccessControl(id = "id", role = ROLE_EDITOR))
+        RunnerAccessControl(id = "id", role = ROLE_EDITOR),
+    )
 
     val retrievedDataset =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.bases[0])
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.datasets.bases[0],
+        )
 
     val exception =
         assertThrows<CsmResourceNotFoundException> {
           datasetApiService.getDatasetAccessControl(
-              organizationSaved.id, workspaceSaved.id, retrievedDataset.id, "id")
+              organizationSaved.id,
+              workspaceSaved.id,
+              retrievedDataset.id,
+              "id",
+          )
         }
     assertEquals("Entity id not found in ${retrievedDataset.id} component", exception.message)
   }
@@ -1104,7 +1304,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val runTemplateId = "runTemplateId"
     val newRunner =
         RunnerCreateRequest(
-            name = name, solutionId = solutionSaved.id, runTemplateId = runTemplateId)
+            name = name,
+            solutionId = solutionSaved.id,
+            runTemplateId = runTemplateId,
+        )
 
     val newRunnerCreated =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
@@ -1125,16 +1328,21 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             parentId = "unknown_parent_id",
             runTemplateId = "unknown_runtemplate_id",
             datasetList = mutableListOf(datasetSaved.id),
-            parametersValues = mutableListOf(runTemplateParameterValue2))
+            parametersValues = mutableListOf(runTemplateParameterValue2),
+        )
 
     val assertThrows =
         assertThrows<CsmResourceNotFoundException> {
           runnerApiService.createRunner(
-              organizationSaved.id, workspaceSaved.id, runnerWithWrongRunTemplateId)
+              organizationSaved.id,
+              workspaceSaved.id,
+              runnerWithWrongRunTemplateId,
+          )
         }
     assertEquals(
         "Solution run template with id ${runnerWithWrongRunTemplateId.runTemplateId} does not exist",
-        assertThrows.message)
+        assertThrows.message,
+    )
   }
 
   @Test
@@ -1145,12 +1353,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "Runner_With_unknown_parent",
             parentId = parentId,
             datasetList = mutableListOf(datasetSaved.id),
-            parametersValues = mutableListOf(runTemplateParameterValue2))
+            parametersValues = mutableListOf(runTemplateParameterValue2),
+        )
 
     val assertThrows =
         assertThrows<IllegalArgumentException> {
           runnerApiService.createRunner(
-              organizationSaved.id, workspaceSaved.id, runnerWithWrongParentId)
+              organizationSaved.id,
+              workspaceSaved.id,
+              runnerWithWrongParentId,
+          )
         }
     assertTrue(assertThrows.message!!.startsWith("Parent Id $parentId define on"))
   }
@@ -1168,7 +1380,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     val parentRunnerWithEmptyParams = makeRunnerCreateRequest(name = "parent")
     val parentRunnerSaved =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, parentRunnerWithEmptyParams)
+            organizationSaved.id,
+            workspaceSaved.id,
+            parentRunnerWithEmptyParams,
+        )
 
     val parentRunnerUpdated =
         runnerApiService.updateRunner(
@@ -1182,19 +1397,28 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                             parameterId = "param1",
                             value = "param1value",
                             isInherited = false,
-                            varType = "String"))))
+                            varType = "String",
+                        )
+                    )
+            ),
+        )
 
     val childRunnerWithEmptyParams =
         makeRunnerCreateRequest(name = "child", parentId = parentRunnerUpdated.id)
 
     val childRunnerWithEmptyParamsSaved =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, childRunnerWithEmptyParams)
+            organizationSaved.id,
+            workspaceSaved.id,
+            childRunnerWithEmptyParams,
+        )
 
     assertNotNull(childRunnerWithEmptyParamsSaved.parametersValues)
     assertEquals(1, childRunnerWithEmptyParamsSaved.parametersValues.size)
     assertEquals(
-        mutableListOf(runTemplateParameterValue1), childRunnerWithEmptyParamsSaved.parametersValues)
+        mutableListOf(runTemplateParameterValue1),
+        childRunnerWithEmptyParamsSaved.parametersValues,
+    )
   }
 
   @Test
@@ -1210,33 +1434,46 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     mutableListOf(
                         RunTemplateParameterGroupCreateRequest(
                             id = "defaultDatasetPartParameterGroup",
-                            parameters = mutableListOf("datasetPartParam"))),
+                            parameters = mutableListOf("datasetPartParam"),
+                        )
+                    ),
                 parameters =
                     mutableListOf(
                         RunTemplateParameterCreateRequest(
                             id = "datasetPartParam",
                             defaultValue = "this_value_is_ignored",
-                            varType = DATASET_PART_VARTYPE_DB)),
+                            varType = DATASET_PART_VARTYPE_DB,
+                        )
+                    ),
                 runTemplates =
                     mutableListOf(
                         RunTemplateCreateRequest(
                             id = "runTemplateWithOneDatasetPartByDefault",
-                            parameterGroups = mutableListOf("defaultDatasetPartParameterGroup"))),
+                            parameterGroups = mutableListOf("defaultDatasetPartParameterGroup"),
+                        )
+                    ),
                 repository = "repository",
-                version = "1.0.0"))
+                version = "1.0.0",
+            ),
+        )
     workspace =
         WorkspaceCreateRequest(
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id),
-            datasetCopy = false)
+            datasetCopy = false,
+        )
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     val customersFile = resourceLoader.getResource("classpath:/$CUSTOMERS_FILE_NAME").file
     val customersInputStream = FileInputStream(customersFile)
     val customersMultipartFile =
         MockMultipartFile(
-            "file", CUSTOMERS_FILE_NAME, "text/csv", IOUtils.toByteArray(customersInputStream))
+            "file",
+            CUSTOMERS_FILE_NAME,
+            "text/csv",
+            IOUtils.toByteArray(customersInputStream),
+        )
     val workspaceDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
@@ -1248,8 +1485,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         DatasetPartCreateRequest(
                             name = "datasetPart1",
                             sourceName = CUSTOMERS_FILE_NAME,
-                            type = DatasetPartTypeEnum.DB))),
-            arrayOf(customersMultipartFile))
+                            type = DatasetPartTypeEnum.DB,
+                        )
+                    ),
+            ),
+            arrayOf(customersMultipartFile),
+        )
     workspaceSaved =
         workspaceApiService.updateWorkspace(
             organizationSaved.id,
@@ -1260,20 +1501,28 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         solutionId = solutionSaved.id,
                         datasetId = workspaceDataset.id,
                         defaultParameterValues =
-                            mutableMapOf("datasetPartParam" to workspaceDataset.parts[0].id))))
+                            mutableMapOf("datasetPartParam" to workspaceDataset.parts[0].id),
+                    )
+            ),
+        )
 
     val runner =
         runnerApiService.createRunner(
             organizationSaved.id,
             workspaceSaved.id,
-            makeRunnerCreateRequest(runTemplateId = "runTemplateWithOneDatasetPartByDefault"))
+            makeRunnerCreateRequest(runTemplateId = "runTemplateWithOneDatasetPartByDefault"),
+        )
 
     val runnerDatasetId = runner.datasets.parameter
     val runnerDataset =
         datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, runnerDatasetId)
     val inheritedRunnerDatasetPartContent =
         datasetApiService.downloadDatasetPart(
-            organizationSaved.id, workspaceSaved.id, runnerDataset.id, runnerDataset.parts[0].id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerDataset.id,
+            runnerDataset.parts[0].id,
+        )
     val expectedText = FileInputStream(customersFile).bufferedReader().use { it.readText() }
     val retrievedText =
         InputStreamResource(inheritedRunnerDatasetPartContent).inputStream.bufferedReader().use {
@@ -1295,33 +1544,46 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     mutableListOf(
                         RunTemplateParameterGroupCreateRequest(
                             id = "defaultDatasetPartParameterGroup",
-                            parameters = mutableListOf("datasetPartParam"))),
+                            parameters = mutableListOf("datasetPartParam"),
+                        )
+                    ),
                 parameters =
                     mutableListOf(
                         RunTemplateParameterCreateRequest(
                             id = "datasetPartParam",
                             defaultValue = "this_value_is_ignored",
-                            varType = DATASET_PART_VARTYPE_DB)),
+                            varType = DATASET_PART_VARTYPE_DB,
+                        )
+                    ),
                 runTemplates =
                     mutableListOf(
                         RunTemplateCreateRequest(
                             id = "runTemplateWithOneDatasetPartByDefault",
-                            parameterGroups = mutableListOf("defaultDatasetPartParameterGroup"))),
+                            parameterGroups = mutableListOf("defaultDatasetPartParameterGroup"),
+                        )
+                    ),
                 repository = "repository",
-                version = "1.0.0"))
+                version = "1.0.0",
+            ),
+        )
     workspace =
         WorkspaceCreateRequest(
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id),
-            datasetCopy = false)
+            datasetCopy = false,
+        )
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     val customersFile = resourceLoader.getResource("classpath:/$CUSTOMERS_FILE_NAME").file
     val customersInputStream = FileInputStream(customersFile)
     val customersMultipartFile =
         MockMultipartFile(
-            "file", CUSTOMERS_FILE_NAME, "text/csv", IOUtils.toByteArray(customersInputStream))
+            "file",
+            CUSTOMERS_FILE_NAME,
+            "text/csv",
+            IOUtils.toByteArray(customersInputStream),
+        )
     val workspaceDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
@@ -1333,8 +1595,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         DatasetPartCreateRequest(
                             name = "datasetPart1",
                             sourceName = CUSTOMERS_FILE_NAME,
-                            type = DatasetPartTypeEnum.DB))),
-            arrayOf(customersMultipartFile))
+                            type = DatasetPartTypeEnum.DB,
+                        )
+                    ),
+            ),
+            arrayOf(customersMultipartFile),
+        )
     workspaceSaved =
         workspaceApiService.updateWorkspace(
             organizationSaved.id,
@@ -1345,13 +1611,17 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         solutionId = solutionSaved.id,
                         datasetId = workspaceDataset.id,
                         defaultParameterValues =
-                            mutableMapOf("datasetPartParam" to workspaceDataset.parts[0].id))))
+                            mutableMapOf("datasetPartParam" to workspaceDataset.parts[0].id),
+                    )
+            ),
+        )
 
     val runner =
         runnerApiService.createRunner(
             organizationSaved.id,
             workspaceSaved.id,
-            makeRunnerCreateRequest(runTemplateId = "runTemplateWithOneDatasetPartByDefault"))
+            makeRunnerCreateRequest(runTemplateId = "runTemplateWithOneDatasetPartByDefault"),
+        )
 
     val runnerDatasetId = runner.datasets.parameter
     val runnerDataset =
@@ -1364,7 +1634,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             "file",
             CUSTOMERS_5_LINES_FILE_NAME,
             "text/csv",
-            IOUtils.toByteArray(customers5InputStream))
+            IOUtils.toByteArray(customers5InputStream),
+        )
 
     val runnerDatasetPartId = runnerDataset.parts[0].id
 
@@ -1374,14 +1645,18 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         runnerDataset.id,
         runnerDatasetPartId,
         customers5MultipartFile,
-        DatasetPartUpdateRequest(sourceName = CUSTOMERS_5_LINES_FILE_NAME))
+        DatasetPartUpdateRequest(sourceName = CUSTOMERS_5_LINES_FILE_NAME),
+    )
 
     val childRunner =
         runnerApiService.createRunner(
             organizationSaved.id,
             workspaceSaved.id,
             makeRunnerCreateRequest(
-                runTemplateId = "runTemplateWithOneDatasetPartByDefault", parentId = runner.id))
+                runTemplateId = "runTemplateWithOneDatasetPartByDefault",
+                parentId = runner.id,
+            ),
+        )
 
     val childRunnerDatasetId = childRunner.datasets.parameter
     val childRunnerDataset =
@@ -1392,7 +1667,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             organizationSaved.id,
             workspaceSaved.id,
             childRunnerDataset.id,
-            childRunnerDataset.parts[0].id)
+            childRunnerDataset.parts[0].id,
+        )
     val expectedText = FileInputStream(customers5File).bufferedReader().use { it.readText() }
     val retrievedText =
         InputStreamResource(childRunnerDatasetPartContent).inputStream.bufferedReader().use {
@@ -1427,7 +1703,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val runner =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, makeRunnerCreateRequest())
+            organizationSaved.id,
+            workspaceSaved.id,
+            makeRunnerCreateRequest(),
+        )
 
     assertNull(runner.lastRunInfo.lastRunId)
     assertEquals(LastRunInfo.LastRunStatus.NotStarted, runner.lastRunInfo.lastRunStatus)
@@ -1554,8 +1833,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     assertEquals(
         RunnerSecurity(
-            default = ROLE_NONE, mutableListOf(RunnerAccessControl(defaultName, ROLE_VIEWER))),
-        runnerSaved.security)
+            default = ROLE_NONE,
+            mutableListOf(RunnerAccessControl(defaultName, ROLE_VIEWER)),
+        ),
+        runnerSaved.security,
+    )
     assertEquals(1, runnerSaved.security.accessControlList.size)
   }
 
@@ -1573,8 +1855,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     runners.forEach {
       assertEquals(
           RunnerSecurity(
-              default = ROLE_NONE, mutableListOf(RunnerAccessControl(defaultName, ROLE_VIEWER))),
-          it.security)
+              default = ROLE_NONE,
+              mutableListOf(RunnerAccessControl(defaultName, ROLE_VIEWER)),
+          ),
+          it.security,
+      )
       assertEquals(1, it.security.accessControlList.size)
     }
   }
@@ -1592,9 +1877,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(ROLE_NONE, runnerSaved.security.default)
     assertEquals(
         RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-        runnerSaved.security.accessControlList[0])
+        runnerSaved.security.accessControlList[0],
+    )
     assertEquals(
-        RunnerAccessControl(defaultName, ROLE_VALIDATOR), runnerSaved.security.accessControlList[1])
+        RunnerAccessControl(defaultName, ROLE_VALIDATOR),
+        runnerSaved.security.accessControlList[1],
+    )
   }
 
   @Test
@@ -1612,9 +1900,13 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
       assertEquals(2, it.security.accessControlList.size)
       assertEquals(ROLE_NONE, it.security.default)
       assertEquals(
-          RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN), it.security.accessControlList[0])
+          RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+          it.security.accessControlList[0],
+      )
       assertEquals(
-          RunnerAccessControl(defaultName, ROLE_VALIDATOR), it.security.accessControlList[1])
+          RunnerAccessControl(defaultName, ROLE_VALIDATOR),
+          it.security.accessControlList[1],
+      )
     }
   }
 
@@ -1622,7 +1914,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `assert timestamps are functional for base CRUD`() {
     runnerSaved =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, makeRunnerCreateRequest())
+            organizationSaved.id,
+            workspaceSaved.id,
+            makeRunnerCreateRequest(),
+        )
     assertTrue(runnerSaved.createInfo.timestamp > startTime)
     assertEquals(runnerSaved.createInfo, runnerSaved.updateInfo)
 
@@ -1632,7 +1927,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             organizationSaved.id,
             workspaceSaved.id,
             runnerSaved.id,
-            RunnerUpdateRequest("runnerUpdated"))
+            RunnerUpdateRequest("runnerUpdated"),
+        )
 
     assertTrue { updateTime < runnerUpdated.updateInfo.timestamp }
     assertEquals(runnerSaved.createInfo, runnerUpdated.createInfo)
@@ -1650,12 +1946,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `assert timestamps are functional for RBAC CRUD`() {
     runnerSaved =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, makeRunnerCreateRequest())
+            organizationSaved.id,
+            workspaceSaved.id,
+            makeRunnerCreateRequest(),
+        )
     runnerApiService.createRunnerAccessControl(
         organizationSaved.id,
         workspaceSaved.id,
         runnerSaved.id,
-        RunnerAccessControl("newUser", ROLE_VIEWER))
+        RunnerAccessControl("newUser", ROLE_VIEWER),
+    )
     val rbacAdded =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
@@ -1663,7 +1963,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertTrue { runnerSaved.updateInfo.timestamp < rbacAdded.updateInfo.timestamp }
 
     runnerApiService.getRunnerAccessControl(
-        organizationSaved.id, workspaceSaved.id, runnerSaved.id, "newUser")
+        organizationSaved.id,
+        workspaceSaved.id,
+        runnerSaved.id,
+        "newUser",
+    )
     val rbacFetched =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
@@ -1671,7 +1975,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(rbacAdded.updateInfo, rbacFetched.updateInfo)
 
     runnerApiService.updateRunnerAccessControl(
-        organizationSaved.id, workspaceSaved.id, runnerSaved.id, "newUser", RunnerRole(ROLE_VIEWER))
+        organizationSaved.id,
+        workspaceSaved.id,
+        runnerSaved.id,
+        "newUser",
+        RunnerRole(ROLE_VIEWER),
+    )
     val rbacUpdated =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
@@ -1679,7 +1988,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertTrue { rbacFetched.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
 
     runnerApiService.deleteRunnerAccessControl(
-        organizationSaved.id, workspaceSaved.id, runnerSaved.id, "newUser")
+        organizationSaved.id,
+        workspaceSaved.id,
+        runnerSaved.id,
+        "newUser",
+    )
     val rbacDeleted =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
@@ -1699,23 +2012,32 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 mutableListOf(
                     RunTemplateParameterGroupCreateRequest(
                         id = "testParameterGroups",
-                        parameters = mutableListOf("my_property_name"))),
+                        parameters = mutableListOf("my_property_name"),
+                    )
+                ),
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
                         id = "my_property_name",
                         defaultValue = "ignored_default_value",
-                        varType = DATASET_PART_VARTYPE_FILE)),
+                        varType = DATASET_PART_VARTYPE_FILE,
+                    )
+                ),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
-                        parameterGroups = mutableListOf("testParameterGroups"))),
+                        parameterGroups = mutableListOf("testParameterGroups"),
+                    )
+                ),
             repository = "repository",
-            version = "1.0.0")
+            version = "1.0.0",
+        )
     solutionSaved =
         solutionApiService.createSolution(
-            organizationSaved.id, solutionCreateRequestWithDatasetParameters)
+            organizationSaved.id,
+            solutionCreateRequestWithDatasetParameters,
+        )
 
     // 2 - Create a workspace
     workspace = makeWorkspaceCreateRequest("Workspace")
@@ -1740,8 +2062,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         DatasetPartCreateRequest(
                             name = "my_property_name",
                             sourceName = CUSTOMERS_FILE_NAME,
-                            type = DatasetPartTypeEnum.File))),
-            arrayOf(multipartFile))
+                            type = DatasetPartTypeEnum.File,
+                        )
+                    ),
+            ),
+            arrayOf(multipartFile),
+        )
 
     // 4- Create update workspace with default dataset
 
@@ -1754,14 +2080,18 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     solutionId = solutionSaved.id,
                     datasetId = workspaceDataset.id,
                     defaultParameterValues =
-                        mutableMapOf("my_property_name" to workspaceDataset.parts[0].id))))
+                        mutableMapOf("my_property_name" to workspaceDataset.parts[0].id),
+                )
+        ),
+    )
 
     // 5 - Create a runner with the newly created solution using the runTemplate
     val runnerCreateRequest =
         RunnerCreateRequest(
             name = "Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId")
+            runTemplateId = "runTemplateId",
+        )
 
     val createdRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runnerCreateRequest)
@@ -1774,7 +2104,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val datasetParameter =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, retrievedRunner.datasets.parameter)
+            organizationSaved.id,
+            workspaceSaved.id,
+            retrievedRunner.datasets.parameter,
+        )
 
     assertEquals(datasetParameter.parts.size, retrievedRunner.datasets.parameters!!.size)
 
@@ -1786,7 +2119,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             organizationSaved.id,
             workspaceSaved.id,
             retrievedRunner.datasets.parameter,
-            runnerDatasetPartId)
+            runnerDatasetPartId,
+        )
 
     val expectedText = FileInputStream(resourceTestFile).bufferedReader().use { it.readText() }
     val retrievedText =
@@ -1809,23 +2143,33 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             parameterGroups =
                 mutableListOf(
                     RunTemplateParameterGroupCreateRequest(
-                        id = "testParameterGroups", parameters = mutableListOf(simpleParameterId))),
+                        id = "testParameterGroups",
+                        parameters = mutableListOf(simpleParameterId),
+                    )
+                ),
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
                         id = simpleParameterId,
                         defaultValue = simpleParameterDefaultValue,
-                        varType = simpleParameterVarType)),
+                        varType = simpleParameterVarType,
+                    )
+                ),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
-                        parameterGroups = mutableListOf("testParameterGroups"))),
+                        parameterGroups = mutableListOf("testParameterGroups"),
+                    )
+                ),
             repository = "repository",
-            version = "1.0.0")
+            version = "1.0.0",
+        )
     solutionSaved =
         solutionApiService.createSolution(
-            organizationSaved.id, solutionCreateRequestWithDatasetParameters)
+            organizationSaved.id,
+            solutionCreateRequestWithDatasetParameters,
+        )
 
     workspace = makeWorkspaceCreateRequest("Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -1835,7 +2179,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerCreateRequest(
             name = "Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId")
+            runTemplateId = "runTemplateId",
+        )
 
     val createdRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runnerCreateRequest)
@@ -1848,7 +2193,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val datasetParameter =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, retrievedRunner.datasets.parameter)
+            organizationSaved.id,
+            workspaceSaved.id,
+            retrievedRunner.datasets.parameter,
+        )
 
     assertEquals(0, datasetParameter.parts.size)
 
@@ -1876,23 +2224,33 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             parameterGroups =
                 mutableListOf(
                     RunTemplateParameterGroupCreateRequest(
-                        id = "testParameterGroups", parameters = mutableListOf(simpleParameterId))),
+                        id = "testParameterGroups",
+                        parameters = mutableListOf(simpleParameterId),
+                    )
+                ),
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
                         id = simpleParameterId,
                         defaultValue = simpleParameterDefaultValue,
-                        varType = simpleParameterVarType)),
+                        varType = simpleParameterVarType,
+                    )
+                ),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
-                        parameterGroups = mutableListOf("testParameterGroups"))),
+                        parameterGroups = mutableListOf("testParameterGroups"),
+                    )
+                ),
             repository = "repository",
-            version = "1.0.0")
+            version = "1.0.0",
+        )
     solutionSaved =
         solutionApiService.createSolution(
-            organizationSaved.id, solutionCreateRequestWithDatasetParameters)
+            organizationSaved.id,
+            solutionCreateRequestWithDatasetParameters,
+        )
 
     val simpleParameterOverridedValue = "my_override_value"
     workspace =
@@ -1902,7 +2260,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 WorkspaceSolution(
                     solutionId = solutionSaved.id,
                     defaultParameterValues =
-                        mutableMapOf(simpleParameterId to simpleParameterOverridedValue)))
+                        mutableMapOf(simpleParameterId to simpleParameterOverridedValue),
+                ),
+        )
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
     // 2 - Create a runner with the newly created solution using the runTemplate
@@ -1910,7 +2270,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerCreateRequest(
             name = "Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId")
+            runTemplateId = "runTemplateId",
+        )
 
     val createdRunner =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runnerCreateRequest)
@@ -1923,7 +2284,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val datasetParameter =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, retrievedRunner.datasets.parameter)
+            organizationSaved.id,
+            workspaceSaved.id,
+            retrievedRunner.datasets.parameter,
+        )
 
     assertEquals(0, datasetParameter.parts.size)
 
@@ -1949,21 +2313,31 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 mutableListOf(
                     RunTemplateParameterGroupCreateRequest(
                         id = "testParameterGroups",
-                        parameters = mutableListOf("my_property_name"))),
+                        parameters = mutableListOf("my_property_name"),
+                    )
+                ),
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
-                        id = "my_property_name", varType = DATASET_PART_VARTYPE_FILE)),
+                        id = "my_property_name",
+                        varType = DATASET_PART_VARTYPE_FILE,
+                    )
+                ),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
-                        parameterGroups = mutableListOf("testParameterGroups"))),
+                        parameterGroups = mutableListOf("testParameterGroups"),
+                    )
+                ),
             repository = "repository",
-            version = "1.0.0")
+            version = "1.0.0",
+        )
     solutionSaved =
         solutionApiService.createSolution(
-            organizationSaved.id, solutionCreateRequestWithDatasetParameters)
+            organizationSaved.id,
+            solutionCreateRequestWithDatasetParameters,
+        )
 
     // 2 - Create a workspace
 
@@ -1988,8 +2362,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         DatasetPartCreateRequest(
                             name = "my_property_name",
                             sourceName = CUSTOMERS_FILE_NAME,
-                            type = DatasetPartTypeEnum.File))),
-            arrayOf(multipartFile))
+                            type = DatasetPartTypeEnum.File,
+                        )
+                    ),
+            ),
+            arrayOf(multipartFile),
+        )
     // 4- Create update workspace with default dataset
 
     workspaceApiService.updateWorkspace(
@@ -2001,7 +2379,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     solutionId = solutionSaved.id,
                     datasetId = workspaceDataset.id,
                     defaultParameterValues =
-                        mutableMapOf("my_property_name" to workspaceDataset.parts[0].id))))
+                        mutableMapOf("my_property_name" to workspaceDataset.parts[0].id),
+                )
+        ),
+    )
 
     // 5 - Create a parent runner with the newly created solution using the runTemplate with no
     // value
@@ -2009,11 +2390,15 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerCreateRequest(
             name = "Parent Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId")
+            runTemplateId = "runTemplateId",
+        )
 
     val parentCreatedRunner =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, parentRunnerCreateRequest)
+            organizationSaved.id,
+            workspaceSaved.id,
+            parentRunnerCreateRequest,
+        )
 
     // 4 - Check parent runner parameters
     val retrievedParentRunner =
@@ -2023,7 +2408,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val datasetParameterFromParentRunner =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, retrievedParentRunner.datasets.parameter)
+            organizationSaved.id,
+            workspaceSaved.id,
+            retrievedParentRunner.datasets.parameter,
+        )
 
     assertEquals(1, datasetParameterFromParentRunner.parts.size)
 
@@ -2033,11 +2421,15 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "Child Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
             runTemplateId = "runTemplateId",
-            parentId = parentCreatedRunner.id)
+            parentId = parentCreatedRunner.id,
+        )
 
     val childCreatedRunner =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, childRunnerCreateRequest)
+            organizationSaved.id,
+            workspaceSaved.id,
+            childRunnerCreateRequest,
+        )
 
     // 6 - Check child runner parameters
     val retrievedChildRunner =
@@ -2045,19 +2437,26 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertNotNull(retrievedChildRunner.datasets.parameters)
     assertEquals(1, retrievedChildRunner.datasets.parameters!!.size)
     assertNotEquals(
-        retrievedParentRunner.datasets.parameter, retrievedChildRunner.datasets.parameter)
+        retrievedParentRunner.datasets.parameter,
+        retrievedChildRunner.datasets.parameter,
+    )
 
     val datasetParameterFromChildRunner =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, retrievedChildRunner.datasets.parameter)
+            organizationSaved.id,
+            workspaceSaved.id,
+            retrievedChildRunner.datasets.parameter,
+        )
 
     assertEquals(
         datasetParameterFromChildRunner.parts,
-        retrievedChildRunner.datasets.parameters as MutableList<DatasetPart>)
+        retrievedChildRunner.datasets.parameters as MutableList<DatasetPart>,
+    )
 
     assertNotEquals(
         datasetParameterFromChildRunner.parts,
-        retrievedParentRunner.datasets.parameters as MutableList<DatasetPart>)
+        retrievedParentRunner.datasets.parameters as MutableList<DatasetPart>,
+    )
 
     // 7 - Check DatasetPart content on child runner
     val childRunnerDatasetPartId = datasetParameterFromChildRunner.parts[0].id
@@ -2067,7 +2466,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             organizationSaved.id,
             workspaceSaved.id,
             retrievedChildRunner.datasets.parameter,
-            childRunnerDatasetPartId)
+            childRunnerDatasetPartId,
+        )
 
     val parentRunnerDatasetPartId = datasetParameterFromParentRunner.parts[0].id
 
@@ -2076,7 +2476,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             organizationSaved.id,
             workspaceSaved.id,
             retrievedParentRunner.datasets.parameter,
-            parentRunnerDatasetPartId)
+            parentRunnerDatasetPartId,
+        )
 
     val expectedText = FileInputStream(resourceTestFile).bufferedReader().use { it.readText() }
 
@@ -2109,25 +2510,36 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 mutableListOf(
                     RunTemplateParameterGroupCreateRequest(
                         id = "testParameterGroups",
-                        parameters = mutableListOf(parameterFileId, parameterStringId))),
+                        parameters = mutableListOf(parameterFileId, parameterStringId),
+                    )
+                ),
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
-                        id = parameterFileId, varType = DATASET_PART_VARTYPE_FILE),
+                        id = parameterFileId,
+                        varType = DATASET_PART_VARTYPE_FILE,
+                    ),
                     RunTemplateParameterCreateRequest(
                         id = parameterStringId,
                         defaultValue = parameterStringDefaultValue,
-                        varType = parameterStringVarType)),
+                        varType = parameterStringVarType,
+                    ),
+                ),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
-                        parameterGroups = mutableListOf("testParameterGroups"))),
+                        parameterGroups = mutableListOf("testParameterGroups"),
+                    )
+                ),
             repository = "repository",
-            version = "1.0.0")
+            version = "1.0.0",
+        )
     solutionSaved =
         solutionApiService.createSolution(
-            organizationSaved.id, solutionCreateRequestWithDatasetParameters)
+            organizationSaved.id,
+            solutionCreateRequestWithDatasetParameters,
+        )
 
     workspace = makeWorkspaceCreateRequest("Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -2150,8 +2562,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         DatasetPartCreateRequest(
                             name = parameterFileId,
                             sourceName = CUSTOMERS_FILE_NAME,
-                            type = DatasetPartTypeEnum.File))),
-            arrayOf(multipartFile))
+                            type = DatasetPartTypeEnum.File,
+                        )
+                    ),
+            ),
+            arrayOf(multipartFile),
+        )
 
     // 3- Create update workspace with default dataset
 
@@ -2164,18 +2580,25 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     solutionId = solutionSaved.id,
                     datasetId = workspaceDataset.id,
                     defaultParameterValues =
-                        mutableMapOf(parameterFileId to workspaceDataset.parts[0].id))))
+                        mutableMapOf(parameterFileId to workspaceDataset.parts[0].id),
+                )
+        ),
+    )
 
     // 4 - Create a parent runner with the newly created solution using the runTemplate
     val parentRunnerCreateRequest =
         RunnerCreateRequest(
             name = "Parent Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId")
+            runTemplateId = "runTemplateId",
+        )
 
     val parentCreatedRunner =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, parentRunnerCreateRequest)
+            organizationSaved.id,
+            workspaceSaved.id,
+            parentRunnerCreateRequest,
+        )
 
     // 5 - Check parent runner parameters
     val retrievedParentRunner =
@@ -2190,14 +2613,19 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val datasetParameterFromParentRunner =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, retrievedParentRunner.datasets.parameter)
+            organizationSaved.id,
+            workspaceSaved.id,
+            retrievedParentRunner.datasets.parameter,
+        )
 
     assertEquals(
         datasetParameterFromParentRunner.parts.size,
-        retrievedParentRunner.datasets.parameters!!.size)
+        retrievedParentRunner.datasets.parameters!!.size,
+    )
     assertEquals(
         datasetParameterFromParentRunner.parts,
-        retrievedParentRunner.datasets.parameters!! as MutableList<DatasetPart>)
+        retrievedParentRunner.datasets.parameters!! as MutableList<DatasetPart>,
+    )
 
     // 6 - Create a child runner
     val childRunnerCreateRequest =
@@ -2205,11 +2633,15 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "Child Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
             runTemplateId = "runTemplateId",
-            parentId = parentCreatedRunner.id)
+            parentId = parentCreatedRunner.id,
+        )
 
     val childCreatedRunner =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, childRunnerCreateRequest)
+            organizationSaved.id,
+            workspaceSaved.id,
+            childRunnerCreateRequest,
+        )
 
     // 7 - Check child runner parameters
     val retrievedChildRunner =
@@ -2217,7 +2649,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertNotNull(retrievedChildRunner.datasets.parameters)
     assertEquals(1, retrievedChildRunner.datasets.parameters!!.size)
     assertNotEquals(
-        retrievedParentRunner.datasets.parameter, retrievedChildRunner.datasets.parameter)
+        retrievedParentRunner.datasets.parameter,
+        retrievedChildRunner.datasets.parameter,
+    )
     assertEquals(1, retrievedChildRunner.parametersValues.size)
     val childRunnerParameterValue = retrievedChildRunner.parametersValues[0]
     assertEquals(parameterStringId, childRunnerParameterValue.parameterId)
@@ -2226,15 +2660,20 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val datasetParameterFromChildRunner =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, retrievedChildRunner.datasets.parameter)
+            organizationSaved.id,
+            workspaceSaved.id,
+            retrievedChildRunner.datasets.parameter,
+        )
 
     assertEquals(
         datasetParameterFromChildRunner.parts,
-        retrievedChildRunner.datasets.parameters as MutableList<DatasetPart>)
+        retrievedChildRunner.datasets.parameters as MutableList<DatasetPart>,
+    )
 
     assertNotEquals(
         datasetParameterFromChildRunner.parts,
-        retrievedParentRunner.datasets.parameters as MutableList<DatasetPart>)
+        retrievedParentRunner.datasets.parameters as MutableList<DatasetPart>,
+    )
   }
 
   @Test
@@ -2250,10 +2689,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
-                        id = "runTemplateId", parameterGroups = mutableListOf())))
+                        id = "runTemplateId",
+                        parameterGroups = mutableListOf(),
+                    )
+                ),
+        )
     solutionSaved =
         solutionApiService.createSolution(
-            organizationSaved.id, solutionCreateRequestWithDatasetParameters)
+            organizationSaved.id,
+            solutionCreateRequestWithDatasetParameters,
+        )
 
     workspace = makeWorkspaceCreateRequest("Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -2263,11 +2708,15 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerCreateRequest(
             name = "Parent Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
-            runTemplateId = "runTemplateId")
+            runTemplateId = "runTemplateId",
+        )
 
     val parentCreatedRunner =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, parentRunnerCreateRequest)
+            organizationSaved.id,
+            workspaceSaved.id,
+            parentRunnerCreateRequest,
+        )
 
     // 4 - Check parent runner parameters
     val retrievedParentRunner =
@@ -2278,7 +2727,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val datasetParameterFromParentRunner =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, retrievedParentRunner.datasets.parameter)
+            organizationSaved.id,
+            workspaceSaved.id,
+            retrievedParentRunner.datasets.parameter,
+        )
 
     assertEquals(0, datasetParameterFromParentRunner.parts.size)
     assertEquals(0, retrievedParentRunner.datasets.parameters!!.size)
@@ -2289,11 +2741,15 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "Child Runner with expected dataset parameter",
             solutionId = solutionSaved.id,
             runTemplateId = "runTemplateId",
-            parentId = parentCreatedRunner.id)
+            parentId = parentCreatedRunner.id,
+        )
 
     val childCreatedRunner =
         runnerApiService.createRunner(
-            organizationSaved.id, workspaceSaved.id, childRunnerCreateRequest)
+            organizationSaved.id,
+            workspaceSaved.id,
+            childRunnerCreateRequest,
+        )
 
     // 6 - Check child runner parameters
     val retrievedChildRunner =
@@ -2301,12 +2757,17 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertNotNull(retrievedChildRunner.datasets.parameters)
     assertEquals(0, retrievedChildRunner.datasets.parameters!!.size)
     assertNotEquals(
-        retrievedParentRunner.datasets.parameter, retrievedChildRunner.datasets.parameter)
+        retrievedParentRunner.datasets.parameter,
+        retrievedChildRunner.datasets.parameter,
+    )
     assertEquals(0, retrievedChildRunner.parametersValues.size)
 
     val datasetParameterFromChildRunner =
         datasetApiService.getDataset(
-            organizationSaved.id, workspaceSaved.id, retrievedChildRunner.datasets.parameter)
+            organizationSaved.id,
+            workspaceSaved.id,
+            retrievedChildRunner.datasets.parameter,
+        )
 
     assertEquals(0, retrievedChildRunner.datasets.parameters!!.size)
     assertEquals(0, datasetParameterFromChildRunner.parts.size)
@@ -2316,7 +2777,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test onGetRunnerAttachedToDataset behaviour`() {
 
     logger.info(
-        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared")
+        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared"
+    )
     val newRunner =
         makeRunnerCreateRequest(
             name = "NewRunner",
@@ -2324,7 +2786,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             parametersValues =
                 mutableListOf(
                     RunnerRunTemplateParameterValue(
-                        parameterId = "param1", value = "7", varType = "ignored_var_type")))
+                        parameterId = "param1",
+                        value = "7",
+                        varType = "ignored_var_type",
+                    )
+                ),
+        )
     val newRunnerSaved =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
 
@@ -2334,7 +2801,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
     val getAttachedRunnerToDataset =
         GetRunnerAttachedToDataset(
-            this, organizationSaved.id, workspaceSaved.id, datasetParameterId)
+            this,
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetParameterId,
+        )
     eventPublisher.publishEvent(getAttachedRunnerToDataset)
 
     assertEquals(newRunnerSaved.id, getAttachedRunnerToDataset.response)
@@ -2354,7 +2825,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         parameterGroups =
             mutableListOf(
                 RunTemplateParameterGroupCreateRequest(
-                    id = "testParameterGroups", parameters = mutableListOf("param1", "param2"))),
+                    id = "testParameterGroups",
+                    parameters = mutableListOf("param1", "param2"),
+                )
+            ),
         parameters =
             mutableListOf(
                 RunTemplateParameterCreateRequest(
@@ -2362,14 +2836,20 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     maxValue = "10",
                     minValue = "0",
                     defaultValue = "5",
-                    varType = "integer"),
+                    varType = "integer",
+                ),
                 RunTemplateParameterCreateRequest(
-                    id = "param2", varType = DATASET_PART_VARTYPE_FILE),
+                    id = "param2",
+                    varType = DATASET_PART_VARTYPE_FILE,
+                ),
             ),
         runTemplates =
             mutableListOf(
                 RunTemplateCreateRequest(
-                    id = "runTemplateId", parameterGroups = mutableListOf("testParameterGroups"))),
+                    id = "runTemplateId",
+                    parameterGroups = mutableListOf("testParameterGroups"),
+                )
+            ),
         repository = "repository",
         version = "1.0.0",
         security =
@@ -2378,7 +2858,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 accessControlList =
                     mutableListOf(
                         SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        SolutionAccessControl(id = defaultName, role = ROLE_USER))))
+                        SolutionAccessControl(id = defaultName, role = ROLE_USER),
+                    ),
+            ),
+    )
   }
 
   fun makeOrganizationCreateRequest(userName: String = defaultName, role: String = ROLE_ADMIN) =
@@ -2391,13 +2874,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                       mutableListOf(
                           OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
                           OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
-                          OrganizationAccessControl(id = userName, role = role))))
+                          OrganizationAccessControl(id = userName, role = role),
+                      ),
+              ),
+      )
 
   fun makeWorkspaceCreateRequest(
       name: String = "name",
       workspaceSolution: WorkspaceSolution = WorkspaceSolution(solutionId = solutionSaved.id),
       userName: String = defaultName,
-      role: String = ROLE_ADMIN
+      role: String = ROLE_ADMIN,
   ) =
       WorkspaceCreateRequest(
           key = UUID.randomUUID().toString(),
@@ -2408,7 +2894,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                   default = ROLE_NONE,
                   mutableListOf(
                       WorkspaceAccessControl(id = userName, role = role),
-                      WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+                      WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                  ),
+              ),
+      )
 
   fun makeRunnerCreateRequest(
       name: String = "name",
@@ -2417,7 +2906,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
       userName: String = defaultName,
       role: String = ROLE_USER,
       runTemplateId: String = "runTemplateId",
-      parametersValues: MutableList<RunnerRunTemplateParameterValue>? = null
+      parametersValues: MutableList<RunnerRunTemplateParameterValue>? = null,
   ) =
       RunnerCreateRequest(
           name = name,
@@ -2429,11 +2918,15 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
           additionalData =
               mutableMapOf(
                   "you_can_put" to "whatever_you_want_here",
-                  "even" to mapOf("object" to "if_you_want")),
+                  "even" to mapOf("object" to "if_you_want"),
+              ),
           security =
               RunnerSecurity(
                   ROLE_NONE,
                   mutableListOf(
                       RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                      RunnerAccessControl(userName, role))))
+                      RunnerAccessControl(userName, role),
+                  ),
+              ),
+      )
 }

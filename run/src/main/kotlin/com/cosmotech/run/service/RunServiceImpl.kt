@@ -48,7 +48,7 @@ class RunServiceImpl(
     private val workflowService: WorkflowService,
     private val runnerApiService: RunnerApiServiceInterface,
     private val runRepository: RunRepository,
-    private val csmRbac: CsmRbac
+    private val csmRbac: CsmRbac,
 ) : CsmPhoenixService(), RunApiServiceInterface {
 
   override fun listRuns(
@@ -56,7 +56,7 @@ class RunServiceImpl(
       workspaceId: String,
       runnerId: String,
       page: Int?,
-      size: Int?
+      size: Int?,
   ): List<Run> {
     // This call verify the user read authorization in the Runner
     runnerApiService.getRunner(organizationId, workspaceId, runnerId)
@@ -74,7 +74,7 @@ class RunServiceImpl(
   override fun listAllRuns(
       organizationId: String,
       workspaceId: String,
-      runnerId: String
+      runnerId: String,
   ): List<Run> {
     // This call verify the user read authorization in the Runner
     runnerApiService.getRunner(organizationId, workspaceId, runnerId)
@@ -111,7 +111,8 @@ class RunServiceImpl(
   fun getRunStatus(run: Run): RunStatus {
     val runStatus = this.workflowService.getRunStatus(run)
     return runStatus.copy(
-        state = mapWorkflowPhaseToRunStatus(phase = runStatus.phase, runId = run.id))
+        state = mapWorkflowPhaseToRunStatus(phase = runStatus.phase, runId = run.id)
+    )
   }
 
   private fun mapWorkflowPhaseToRunStatus(phase: String?, runId: String?): RunState {
@@ -134,7 +135,7 @@ class RunServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      runId: String
+      runId: String,
   ): Run {
     runnerApiService.getRunner(organizationId, workspaceId, runnerId)
     val run =
@@ -142,7 +143,8 @@ class RunServiceImpl(
             .findBy(organizationId, workspaceId, runnerId, runId)
             .orElseThrow {
               throw IllegalArgumentException(
-                  "Run #$runId not found in #$runnerId. In #$workspaceId, #$organizationId.")
+                  "Run #$runId not found in #$runnerId. In #$workspaceId, #$organizationId."
+              )
             }
             .withStateInformation()
             .withoutSensitiveData()
@@ -155,7 +157,7 @@ class RunServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      runId: String
+      runId: String,
   ) {
     val run = this.getRun(organizationId, workspaceId, runnerId, runId)
     run.hasPermission(PERMISSION_DELETE)
@@ -188,7 +190,11 @@ class RunServiceImpl(
       runRepository.delete(run)
     } catch (exception: IllegalStateException) {
       logger.debug(
-          "An error occurred while deleting Run {}: {}", run.id, exception.message, exception)
+          "An error occurred while deleting Run {}: {}",
+          run.id,
+          exception.message,
+          exception,
+      )
     }
   }
 
@@ -196,7 +202,7 @@ class RunServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      runId: String
+      runId: String,
   ): String {
     val run = getRun(organizationId, workspaceId, runnerId, runId)
     val status = getRunStatus(run)
@@ -214,7 +220,7 @@ class RunServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      runId: String
+      runId: String,
   ): RunStatus {
     return getRunStatus(this.getRun(organizationId, workspaceId, runnerId, runId))
   }
@@ -226,14 +232,20 @@ class RunServiceImpl(
 
     val startInfo =
         containerFactory.getStartInfo(
-            runner.organizationId, runner.workspaceId, runner.id, WORKFLOW_TYPE_RUN, runId)
+            runner.organizationId,
+            runner.workspaceId,
+            runner.id,
+            WORKFLOW_TYPE_RUN,
+            runId,
+        )
     val runRequest =
         workflowService.launchRun(
             runner.organizationId,
             runner.workspaceId,
             startInfo.startContainers,
             startInfo.runTemplate.executionTimeout,
-            startInfo.solution.alwaysPull ?: false)
+            startInfo.solution.alwaysPull ?: false,
+        )
     val run = this.dbCreateRun(runId, runner, startInfo, runRequest)
     runStartRequest.response = run.id
   }
@@ -242,7 +254,7 @@ class RunServiceImpl(
       runId: String,
       runner: Runner,
       startInfo: StartInfo,
-      runRequest: Run
+      runRequest: Run,
   ): Run {
     val now = Instant.now().toEpochMilli()
     val run =
@@ -258,11 +270,16 @@ class RunServiceImpl(
             datasetList = runner.datasets.bases + runner.datasets.parameter,
             createInfo =
                 RunEditInfo(
-                    timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                    timestamp = now,
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                ),
             parametersValues =
                 (runner.parametersValues.map {
                       RunTemplateParameterValue(
-                          parameterId = it.parameterId, varType = it.varType, value = it.value)
+                          parameterId = it.parameterId,
+                          varType = it.varType,
+                          value = it.value,
+                      )
                     })
                     .toList(),
             nodeLabel = startInfo.startContainers.nodeLabel,
@@ -273,7 +290,8 @@ class RunServiceImpl(
             "[workspaceId=${run.workspaceId}]" +
             "[runnerId=${run.runnerId}]" +
             "[runId=${run.id}] has been launched by " +
-            "[ownerId=${run.createInfo.userId}]")
+            "[ownerId=${run.createInfo.userId}]"
+    )
     return runRepository.save(run)
   }
 
@@ -289,7 +307,8 @@ class RunServiceImpl(
               .findBy(organizationId, workspaceId, runnerId, runId)
               .orElseThrow {
                 throw IllegalArgumentException(
-                    "Run #$runId not found in #$runnerId. In #$workspaceId, #$organizationId.")
+                    "Run #$runId not found in #$runnerId. In #$workspaceId, #$organizationId."
+                )
               }
               .withStateInformation()
               .withoutSensitiveData()

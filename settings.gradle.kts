@@ -24,7 +24,8 @@ include(
     "metrics",
     "runner",
     "run",
-    "common")
+    "common",
+)
 
 project(":api").name = "cosmotech-api"
 

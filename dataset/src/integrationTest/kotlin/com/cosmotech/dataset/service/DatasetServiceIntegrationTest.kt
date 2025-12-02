@@ -153,11 +153,18 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val datasetTags = mutableListOf("dataset", "public", "customers")
     val datasetCreateRequest =
         DatasetCreateRequest(
-            name = datasetName, description = datasetDescription, tags = datasetTags)
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertNotNull(createdDataset)
     assertEquals(datasetName, createdDataset.name)
@@ -181,7 +188,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = datasetPartDescription,
             tags = datasetPartTags,
             additionalData = datasetPartAdditionalData,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
@@ -194,7 +202,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = datasetDescription,
             tags = datasetTags,
             additionalData = datasetAdditionalData,
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -205,14 +214,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     val datasetPartFilePath = constructFilePathForDatasetPart(createdDataset, 0)
     assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, datasetPartFilePath))
@@ -248,14 +259,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME,
             description = "List of customers",
             tags = mutableListOf("part", "public", "customers"),
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
             name = "Customer Dataset",
             description = "Dataset for customers",
             tags = mutableListOf("dataset", "public", "customers"),
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile =
         resourceLoader.getResource("classpath:/$UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME").file
@@ -267,7 +280,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val exception =
         assertThrows<CsmAccessForbiddenException> {
@@ -275,12 +289,14 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               organizationSaved.id,
               workspaceSaved.id,
               datasetCreateRequest,
-              arrayOf(mockMultipartFile))
+              arrayOf(mockMultipartFile),
+          )
         }
 
     assertEquals(
         "MIME type text/x-yaml for file $UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME is not authorized.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -292,21 +308,24 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = WRONG_ORIGINAL_FILE_NAME,
             description = "List of customers",
             tags = mutableListOf("part", "public", "customers"),
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
             name = "Customer Dataset",
             description = "Dataset for customers",
             tags = mutableListOf("dataset", "public", "customers"),
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val mockMultipartFile =
         MockMultipartFile(
             "files",
             WRONG_ORIGINAL_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            InputStream.nullInputStream(),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -314,12 +333,14 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               organizationSaved.id,
               workspaceSaved.id,
               datasetCreateRequest,
-              arrayOf(mockMultipartFile))
+              arrayOf(mockMultipartFile),
+          )
         }
 
     assertEquals(
         "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. File name should neither contains '..' nor starts by '/'.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -334,7 +355,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = customerPartDescription,
             tags = customerPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val inventoryPartName = "Product list"
     val inventoryPartDescription = "List of Product"
@@ -345,7 +367,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = INVENTORY_SOURCE_FILE_NAME,
             description = inventoryPartDescription,
             tags = inventoryPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Shop Dataset"
     val datasetDescription = "Dataset for shop"
@@ -355,7 +378,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
-            parts = mutableListOf(customerPartCreateRequest, inventoryPartCreateRequest))
+            parts = mutableListOf(customerPartCreateRequest, inventoryPartCreateRequest),
+        )
 
     val customerTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
     val inventoryTestFile =
@@ -369,21 +393,24 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(customerFileToSend))
+            IOUtils.toByteArray(customerFileToSend),
+        )
 
     val inventoryMockMultipartFile =
         MockMultipartFile(
             "files",
             INVENTORY_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(inventoryFileToSend))
+            IOUtils.toByteArray(inventoryFileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(customerMockMultipartFile, inventoryMockMultipartFile))
+            arrayOf(customerMockMultipartFile, inventoryMockMultipartFile),
+        )
 
     val customerPartFilePath = constructFilePathForDatasetPart(createdDataset, 0)
     val inventoryPartFilePath = constructFilePathForDatasetPart(createdDataset, 1)
@@ -442,7 +469,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = customerPartDescription,
             tags = customerPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Shop Dataset"
     val datasetDescription = "Dataset for shop"
@@ -456,7 +484,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 mutableListOf(
                     customerPartCreateRequest,
                     DatasetPartCreateRequest(
-                        name = "Part create request 2", sourceName = "anotherFile.txt")))
+                        name = "Part create request 2",
+                        sourceName = "anotherFile.txt",
+                    ),
+                ),
+        )
 
     val customerTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -467,14 +499,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(customerFileToSend))
+            IOUtils.toByteArray(customerFileToSend),
+        )
 
     val customerMockMultipartFile2 =
         MockMultipartFile(
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            InputStream.nullInputStream(),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -482,13 +516,15 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               organizationSaved.id,
               workspaceSaved.id,
               datasetCreateRequest,
-              arrayOf(customerMockMultipartFile, customerMockMultipartFile2))
+              arrayOf(customerMockMultipartFile, customerMockMultipartFile2),
+          )
         }
     assertEquals(
         "Part File names should be unique during dataset creation. " +
             "Multipart file names: [$CUSTOMER_SOURCE_FILE_NAME, $CUSTOMER_SOURCE_FILE_NAME]. " +
             "Dataset parts source names: [$CUSTOMER_SOURCE_FILE_NAME, anotherFile.txt].",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -498,7 +534,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val datasetCreated =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
     assertNotNull(datasetCreated)
   }
 
@@ -517,7 +557,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -525,7 +566,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               organizationSaved.id,
               workspaceSaved.id,
               datasetCreateRequest,
-              arrayOf(mockMultipartFile))
+              arrayOf(mockMultipartFile),
+          )
         }
     assertEquals("Dataset name must not be blank", exception.message)
   }
@@ -539,16 +581,22 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             parts =
                 mutableListOf(
                     DatasetPartCreateRequest(name = "part1", sourceName = "filepart1.csv"),
-                ))
+                ),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
           datasetApiService.createDataset(
-              organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+              organizationSaved.id,
+              workspaceSaved.id,
+              datasetCreateRequest,
+              arrayOf(),
+          )
         }
     assertEquals(
         "Number of files must be equal to the number of parts if specified. 0 != 1",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -565,7 +613,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -573,11 +622,13 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               organizationSaved.id,
               workspaceSaved.id,
               datasetCreateRequest,
-              arrayOf(mockMultipartFile))
+              arrayOf(mockMultipartFile),
+          )
         }
     assertEquals(
         "Number of files must be equal to the number of parts if specified. 1 != 0",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -588,7 +639,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = "Dataset Test",
             parts =
                 mutableListOf(
-                    DatasetPartCreateRequest(name = "part1", sourceName = "wrongname.csv")))
+                    DatasetPartCreateRequest(name = "part1", sourceName = "wrongname.csv")
+                ),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -599,7 +652,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -607,13 +661,15 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               organizationSaved.id,
               workspaceSaved.id,
               datasetCreateRequest,
-              arrayOf(mockMultipartFile))
+              arrayOf(mockMultipartFile),
+          )
         }
     assertEquals(
         "All files must have the same name as corresponding sourceName in a Dataset Part. " +
             "Multipart file names: [customers.csv]. " +
             "Dataset parts source names: [wrongname.csv].",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -623,7 +679,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     val datasetId = createDataset.id
     datasetApiService.deleteDataset(organizationSaved.id, workspaceSaved.id, datasetId)
@@ -637,7 +697,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         "Dataset $datasetId not found " +
             "in organization ${organizationSaved.id} " +
             "and workspace ${workspaceSaved.id}",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -652,7 +713,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = datasetPartDescription,
             tags = datasetPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
@@ -662,7 +724,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -673,14 +736,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     val fileKeyPath = constructFilePathForDatasetPart(createdDataset, 0)
 
@@ -698,7 +763,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         "Dataset $datasetId not found " +
             "in organization ${organizationSaved.id} " +
             "and workspace ${workspaceSaved.id}",
-        exception.message)
+        exception.message,
+    )
 
     assertFalse(s3Template.objectExists(csmPlatformProperties.s3.bucketName, fileKeyPath))
   }
@@ -715,7 +781,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = datasetPartDescription,
             tags = datasetPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
@@ -725,7 +792,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -736,7 +804,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val datasetId =
         datasetApiService
@@ -744,7 +813,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 organizationSaved.id,
                 workspaceSaved.id,
                 datasetCreateRequest,
-                arrayOf(mockMultipartFile))
+                arrayOf(mockMultipartFile),
+            )
             .id
 
     val fakeRunnerId = "r-XXXXXX"
@@ -760,7 +830,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     assertEquals(
         "Dataset $datasetId is defined as a runner dataset ($fakeRunnerId). It cannot be deleted",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -770,7 +841,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     val retrievedDataset =
         datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createDataset.id)
@@ -791,7 +866,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = datasetPartDescription,
             tags = datasetPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
@@ -801,7 +877,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -812,14 +889,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     val retrievedDataset =
         datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createdDataset.id)
@@ -835,11 +914,19 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     val retrievedDatasetAccessControl =
         datasetApiService.getDatasetAccessControl(
-            organizationSaved.id, workspaceSaved.id, createDataset.id, CONNECTED_ADMIN_USER)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            CONNECTED_ADMIN_USER,
+        )
 
     assertNotNull(retrievedDatasetAccessControl)
     assertEquals(CONNECTED_ADMIN_USER, retrievedDatasetAccessControl.id)
@@ -853,11 +940,18 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     val retrievedDatasetListUsers =
         datasetApiService.listDatasetSecurityUsers(
-            organizationSaved.id, workspaceSaved.id, createDataset.id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+        )
 
     assertNotNull(retrievedDatasetListUsers)
     assertTrue(retrievedDatasetListUsers.size == 1)
@@ -871,13 +965,21 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     val datasetCreateRequest2 = DatasetCreateRequest(name = "Dataset Test 2")
 
     val createDataset2 =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest2, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest2,
+            arrayOf(),
+        )
 
     var retrievedDatasetList =
         datasetApiService.listDatasets(organizationSaved.id, workspaceSaved.id, null, null)
@@ -911,18 +1013,33 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     accessControlList =
                         mutableListOf(
                             DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR))))
+                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR),
+                        ),
+                ),
+        )
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     datasetApiService.deleteDatasetAccessControl(
-        organizationSaved.id, workspaceSaved.id, createDataset.id, CONNECTED_DEFAULT_USER)
+        organizationSaved.id,
+        workspaceSaved.id,
+        createDataset.id,
+        CONNECTED_DEFAULT_USER,
+    )
 
     val retrievedDatasetAccessControl =
         datasetApiService.getDatasetAccessControl(
-            organizationSaved.id, workspaceSaved.id, createDataset.id, CONNECTED_ADMIN_USER)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            CONNECTED_ADMIN_USER,
+        )
 
     assertNotNull(retrievedDatasetAccessControl)
     assertEquals(CONNECTED_ADMIN_USER, retrievedDatasetAccessControl.id)
@@ -941,18 +1058,26 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     accessControlList =
                         mutableListOf(
                             DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR))))
+                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR),
+                        ),
+                ),
+        )
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     val newDatasetSecurity =
         datasetApiService.updateDatasetDefaultSecurity(
             organizationSaved.id,
             workspaceSaved.id,
             createDataset.id,
-            DatasetRole(role = ROLE_EDITOR))
+            DatasetRole(role = ROLE_EDITOR),
+        )
     assertNotNull(newDatasetSecurity)
     assertEquals(ROLE_EDITOR, newDatasetSecurity.default)
     val accessControlList = newDatasetSecurity.accessControlList
@@ -975,11 +1100,18 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     accessControlList =
                         mutableListOf(
                             DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR))))
+                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR),
+                        ),
+                ),
+        )
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     val newDatasetAccessControl =
         datasetApiService.updateDatasetAccessControl(
@@ -987,7 +1119,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createDataset.id,
             CONNECTED_DEFAULT_USER,
-            DatasetRole(role = ROLE_ADMIN))
+            DatasetRole(role = ROLE_ADMIN),
+        )
     assertNotNull(newDatasetAccessControl)
     assertEquals(ROLE_ADMIN, newDatasetAccessControl.role)
     assertEquals(CONNECTED_DEFAULT_USER, newDatasetAccessControl.id)
@@ -1001,10 +1134,17 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val datasetTags = mutableListOf("dataset", "public", "customers")
     val datasetCreateRequest =
         DatasetCreateRequest(
-            name = datasetName, description = datasetDescription, tags = datasetTags)
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+        )
 
     datasetApiService.createDataset(
-        organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+        organizationSaved.id,
+        workspaceSaved.id,
+        datasetCreateRequest,
+        arrayOf(),
+    )
 
     datasetApiService.createDataset(
         organizationSaved.id,
@@ -1012,12 +1152,19 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         DatasetCreateRequest(
             name = "Other Dataset",
             description = "Other Dataset ",
-            tags = mutableListOf("dataset", "public", "other")),
-        arrayOf())
+            tags = mutableListOf("dataset", "public", "other"),
+        ),
+        arrayOf(),
+    )
 
     val foundDatasets =
         datasetApiService.searchDatasets(
-            organizationSaved.id, workspaceSaved.id, listOf("customers"), null, null)
+            organizationSaved.id,
+            workspaceSaved.id,
+            listOf("customers"),
+            null,
+            null,
+        )
 
     assertTrue(foundDatasets.size == 1)
     assertEquals(datasetName, foundDatasets[0].name)
@@ -1034,10 +1181,17 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val datasetTags = mutableListOf("dataset", "public", "customers", "!")
     val datasetCreateRequest =
         DatasetCreateRequest(
-            name = datasetName, description = datasetDescription, tags = datasetTags)
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+        )
 
     datasetApiService.createDataset(
-        organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+        organizationSaved.id,
+        workspaceSaved.id,
+        datasetCreateRequest,
+        arrayOf(),
+    )
 
     datasetApiService.createDataset(
         organizationSaved.id,
@@ -1045,8 +1199,10 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         DatasetCreateRequest(
             name = "Other Dataset",
             description = "Other Dataset ",
-            tags = mutableListOf("dataset", "public", "other")),
-        arrayOf())
+            tags = mutableListOf("dataset", "public", "other"),
+        ),
+        arrayOf(),
+    )
 
     datasetApiService.createDataset(
         organizationSaved.id,
@@ -1054,8 +1210,10 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         DatasetCreateRequest(
             name = "Another Dataset",
             description = "Another Dataset ",
-            tags = mutableListOf("dataset", "public", "other with blankspace    12 34")),
-        arrayOf())
+            tags = mutableListOf("dataset", "public", "other with blankspace    12 34"),
+        ),
+        arrayOf(),
+    )
 
     val foundDatasets =
         datasetApiService.searchDatasets(
@@ -1093,9 +1251,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 ")",
                 "`",
                 "~",
-                "\$fofo"),
+                "\$fofo",
+            ),
             null,
-            null)
+            null,
+        )
 
     assertEquals(2, foundDatasets.size)
   }
@@ -1108,10 +1268,17 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val datasetTags = mutableListOf("dataset", "public", "customers", "!")
     val datasetCreateRequest =
         DatasetCreateRequest(
-            name = datasetName, description = datasetDescription, tags = datasetTags)
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+        )
 
     datasetApiService.createDataset(
-        organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+        organizationSaved.id,
+        workspaceSaved.id,
+        datasetCreateRequest,
+        arrayOf(),
+    )
 
     datasetApiService.createDataset(
         organizationSaved.id,
@@ -1119,8 +1286,10 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         DatasetCreateRequest(
             name = "Other Dataset",
             description = "Other Dataset ",
-            tags = mutableListOf("dataset", "public", "other")),
-        arrayOf())
+            tags = mutableListOf("dataset", "public", "other"),
+        ),
+        arrayOf(),
+    )
 
     val foundDatasets =
         datasetApiService.searchDatasets(
@@ -1128,7 +1297,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             listOf("other", ",./;'[]-=<>?:\"{}|_+!@#%^&*()`~$"),
             null,
-            null)
+            null,
+        )
 
     assertEquals(1, foundDatasets.size)
   }
@@ -1140,7 +1310,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1153,7 +1327,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val datasetPartName = "Customer list"
     val datasetPartDescription = "List of customers"
@@ -1173,7 +1348,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 description = datasetPartDescription,
                 tags = datasetPartTags,
                 additionalData = datasetPartAdditionalData,
-                type = DatasetPartTypeEnum.File))
+                type = DatasetPartTypeEnum.File,
+            ),
+        )
 
     assertNotNull(createDatasetPart)
     assertEquals(datasetPartName, createDatasetPart.name)
@@ -1205,13 +1382,21 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   fun `test createDatasetPart type DB`() {
     testCreateDatasetPartWithSimpleFile(CUSTOMER_SOURCE_FILE_NAME, CUSTOMER_SOURCE_FILE_NAME)
     testCreateDatasetPartWithSimpleFile(
-        CUSTOMERS_1000_SOURCE_FILE_NAME, CUSTOMERS_1000_SOURCE_FILE_NAME)
+        CUSTOMERS_1000_SOURCE_FILE_NAME,
+        CUSTOMERS_1000_SOURCE_FILE_NAME,
+    )
     testCreateDatasetPartWithSimpleFile(
-        CUSTOMERS_10000_SOURCE_FILE_NAME, CUSTOMERS_10000_SOURCE_FILE_NAME)
+        CUSTOMERS_10000_SOURCE_FILE_NAME,
+        CUSTOMERS_10000_SOURCE_FILE_NAME,
+    )
     testCreateDatasetPartWithSimpleFile(
-        CUSTOMERS_WITH_QUOTES_SOURCE_FILE_NAME, CUSTOMERS_WITH_QUOTES_SOURCE_FILE_NAME)
+        CUSTOMERS_WITH_QUOTES_SOURCE_FILE_NAME,
+        CUSTOMERS_WITH_QUOTES_SOURCE_FILE_NAME,
+    )
     testCreateDatasetPartWithSimpleFile(
-        CUSTOMERS_WITH_DOUBLE_QUOTES_SOURCE_FILE_NAME, CUSTOMER_SOURCE_FILE_NAME)
+        CUSTOMERS_WITH_DOUBLE_QUOTES_SOURCE_FILE_NAME,
+        CUSTOMER_SOURCE_FILE_NAME,
+    )
   }
 
   @Test
@@ -1227,7 +1412,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMERS_1000_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(customers1000FileToSend))
+            IOUtils.toByteArray(customers1000FileToSend),
+        )
 
     val customers10000File =
         resourceLoader.getResource("classpath:/$CUSTOMERS_10000_SOURCE_FILE_NAME").file
@@ -1239,7 +1425,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMERS_10000_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(customers10000FileToSend))
+            IOUtils.toByteArray(customers10000FileToSend),
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
@@ -1249,18 +1436,23 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     DatasetPartCreateRequest(
                         name = "File part",
                         sourceName = CUSTOMERS_1000_SOURCE_FILE_NAME,
-                        type = DatasetPartTypeEnum.File),
+                        type = DatasetPartTypeEnum.File,
+                    ),
                     DatasetPartCreateRequest(
                         name = "DB part",
                         sourceName = CUSTOMERS_10000_SOURCE_FILE_NAME,
-                        type = DatasetPartTypeEnum.DB)))
+                        type = DatasetPartTypeEnum.DB,
+                    ),
+                ),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(customers1000MultipartFile, customers10000MultipartFile))
+            arrayOf(customers1000MultipartFile, customers10000MultipartFile),
+        )
 
     val fileDatasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.File }.id
     val dBDatasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
@@ -1274,14 +1466,22 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val datasetPartFile =
         datasetApiService.downloadDatasetPart(
-            organizationSaved.id, workspaceSaved.id, createdDataset.id, fileDatasetPartId)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            fileDatasetPartId,
+        )
     var expectedText = FileInputStream(customers1000File).bufferedReader().use { it.readText() }
     var retrievedText = datasetPartFile.inputStream.bufferedReader().use { it.readText() }
     assertEquals(expectedText, retrievedText)
 
     val datasetPartDB =
         datasetApiService.downloadDatasetPart(
-            organizationSaved.id, workspaceSaved.id, createdDataset.id, dBDatasetPartId)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            dBDatasetPartId,
+        )
     expectedText = FileInputStream(customers10000File).bufferedReader().use { it.readText() }
     retrievedText = datasetPartDB.inputStream.bufferedReader().use { it.readText() }
     assertEquals(expectedText, retrievedText)
@@ -1300,7 +1500,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMERS_10000_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(customers10000FileToSend))
+            IOUtils.toByteArray(customers10000FileToSend),
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
@@ -1310,21 +1511,29 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     DatasetPartCreateRequest(
                         name = "DB part",
                         sourceName = CUSTOMERS_10000_SOURCE_FILE_NAME,
-                        type = DatasetPartTypeEnum.DB)))
+                        type = DatasetPartTypeEnum.DB,
+                    )
+                ),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(customers10000MultipartFile))
+            arrayOf(customers10000MultipartFile),
+        )
 
     val dBDatasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
 
     assertTrue(writerJdbcTemplate.existTable(dBDatasetPartId.replace('-', '_')))
 
     datasetApiService.deleteDatasetPart(
-        organizationSaved.id, workspaceSaved.id, createdDataset.id, dBDatasetPartId)
+        organizationSaved.id,
+        workspaceSaved.id,
+        createdDataset.id,
+        dBDatasetPartId,
+    )
 
     assertFalse(writerJdbcTemplate.existTable(dBDatasetPartId.replace('-', '_')))
   }
@@ -1342,7 +1551,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMERS_10000_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(customers10000FileToSend))
+            IOUtils.toByteArray(customers10000FileToSend),
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
@@ -1352,14 +1562,18 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     DatasetPartCreateRequest(
                         name = "DB part",
                         sourceName = CUSTOMERS_10000_SOURCE_FILE_NAME,
-                        type = DatasetPartTypeEnum.DB)))
+                        type = DatasetPartTypeEnum.DB,
+                    )
+                ),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(customers10000MultipartFile))
+            arrayOf(customers10000MultipartFile),
+        )
 
     val firstDBDatasetPartId = createdDataset.parts.first { it.type == DatasetPartTypeEnum.DB }.id
 
@@ -1367,7 +1581,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     var datasetPartDB =
         datasetApiService.downloadDatasetPart(
-            organizationSaved.id, workspaceSaved.id, createdDataset.id, firstDBDatasetPartId)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            firstDBDatasetPartId,
+        )
     var expectedText = FileInputStream(customers10000File).bufferedReader().use { it.readText() }
     var retrievedText = datasetPartDB.inputStream.bufferedReader().use { it.readText() }
     assertEquals(expectedText, retrievedText)
@@ -1382,7 +1600,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMERS_1000_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(customers1000FileToSend))
+            IOUtils.toByteArray(customers1000FileToSend),
+        )
 
     val updatedDataset =
         datasetApiService.updateDataset(
@@ -1395,8 +1614,12 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                         DatasetPartCreateRequest(
                             name = "New part DB",
                             sourceName = CUSTOMERS_1000_SOURCE_FILE_NAME,
-                            type = DatasetPartTypeEnum.DB))),
-            arrayOf(customers1000MultipartFile))
+                            type = DatasetPartTypeEnum.DB,
+                        )
+                    )
+            ),
+            arrayOf(customers1000MultipartFile),
+        )
 
     assertFalse(writerJdbcTemplate.existTable(firstDBDatasetPartId.replace('-', '_')))
 
@@ -1406,7 +1629,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     datasetPartDB =
         datasetApiService.downloadDatasetPart(
-            organizationSaved.id, workspaceSaved.id, createdDataset.id, updatedDBDatasetPartId)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            updatedDBDatasetPartId,
+        )
     expectedText = FileInputStream(customers1000File).bufferedReader().use { it.readText() }
     retrievedText = datasetPartDB.inputStream.bufferedReader().use { it.readText() }
     assertEquals(expectedText, retrievedText)
@@ -1425,7 +1652,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             UNALLOWED_CHAR_HEADERS_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(unallowedCharInHeaderFileToSend))
+            IOUtils.toByteArray(unallowedCharInHeaderFileToSend),
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
@@ -1435,7 +1663,10 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     DatasetPartCreateRequest(
                         name = "DB part",
                         sourceName = UNALLOWED_CHAR_HEADERS_FILE_NAME,
-                        type = DatasetPartTypeEnum.DB)))
+                        type = DatasetPartTypeEnum.DB,
+                    )
+                ),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -1443,13 +1674,15 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               organizationSaved.id,
               workspaceSaved.id,
               datasetCreateRequest,
-              arrayOf(unallowedCharInHeaderMultipartFile))
+              arrayOf(unallowedCharInHeaderMultipartFile),
+          )
         }
 
     assertEquals(
         "Invalid header name found in dataset part file: " +
             "header name must match [a-zA-Z0-9_\"' ]+ (found: [\"%1325 \\ sr\", \"-#()char'\\`\\\"\"])",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1465,7 +1698,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             EMPTY_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(unallowedCharInHeaderFileToSend))
+            IOUtils.toByteArray(unallowedCharInHeaderFileToSend),
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
@@ -1475,7 +1709,10 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     DatasetPartCreateRequest(
                         name = "DB part",
                         sourceName = EMPTY_SOURCE_FILE_NAME,
-                        type = DatasetPartTypeEnum.DB)))
+                        type = DatasetPartTypeEnum.DB,
+                    )
+                ),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -1483,7 +1720,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               organizationSaved.id,
               workspaceSaved.id,
               datasetCreateRequest,
-              arrayOf(unallowedCharInHeaderMultipartFile))
+              arrayOf(unallowedCharInHeaderMultipartFile),
+          )
         }
 
     assertEquals("No headers found in dataset part file", exception.message)
@@ -1502,7 +1740,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             SAME_HEADERS_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(unallowedCharInHeaderFileToSend))
+            IOUtils.toByteArray(unallowedCharInHeaderFileToSend),
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
@@ -1512,7 +1751,10 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     DatasetPartCreateRequest(
                         name = "DB part",
                         sourceName = SAME_HEADERS_FILE_NAME,
-                        type = DatasetPartTypeEnum.DB)))
+                        type = DatasetPartTypeEnum.DB,
+                    )
+                ),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -1520,7 +1762,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               organizationSaved.id,
               workspaceSaved.id,
               datasetCreateRequest,
-              arrayOf(unallowedCharInHeaderMultipartFile))
+              arrayOf(unallowedCharInHeaderMultipartFile),
+          )
         }
 
     assertEquals("Duplicate headers found in dataset part file", exception.message)
@@ -1533,7 +1776,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1547,7 +1794,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val exception =
         assertThrows<CsmAccessForbiddenException> {
@@ -1561,11 +1809,14 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                   sourceName = UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME,
                   description = "List of customers",
                   tags = mutableListOf("part", "public", "customers"),
-                  type = DatasetPartTypeEnum.File))
+                  type = DatasetPartTypeEnum.File,
+              ),
+          )
         }
     assertEquals(
         "MIME type text/x-yaml for file $UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME is not authorized.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1575,7 +1826,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1589,7 +1844,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val exception =
         assertThrows<CsmAccessForbiddenException> {
@@ -1603,11 +1859,14 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                   sourceName = CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
                   description = "List of customers",
                   tags = mutableListOf("part", "public", "customers"),
-                  type = DatasetPartTypeEnum.File))
+                  type = DatasetPartTypeEnum.File,
+              ),
+          )
         }
     assertEquals(
         "MIME type application/zip for file $CUSTOMER_ZIPPED_SOURCE_FILE_NAME is not authorized.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1617,7 +1876,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1626,7 +1889,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             WRONG_ORIGINAL_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            InputStream.nullInputStream(),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -1640,11 +1904,14 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                   sourceName = WRONG_ORIGINAL_FILE_NAME,
                   description = "List of customers",
                   tags = mutableListOf("part", "public", "customers"),
-                  type = DatasetPartTypeEnum.File))
+                  type = DatasetPartTypeEnum.File,
+              ),
+          )
         }
     assertEquals(
         "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. File name should neither contains '..' nor starts by '/'.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1654,7 +1921,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1663,7 +1934,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            InputStream.nullInputStream(),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -1675,7 +1947,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               DatasetPartCreateRequest(
                   name = "",
                   sourceName = CUSTOMER_SOURCE_FILE_NAME,
-                  type = DatasetPartTypeEnum.File))
+                  type = DatasetPartTypeEnum.File,
+              ),
+          )
         }
     assertEquals("Dataset Part name must not be blank", exception.message)
   }
@@ -1687,7 +1961,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1696,7 +1974,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             "wrongFileName.csv",
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            InputStream.nullInputStream(),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -1708,12 +1987,15 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               DatasetPartCreateRequest(
                   name = "Dataset Part Name",
                   sourceName = CUSTOMER_SOURCE_FILE_NAME,
-                  type = DatasetPartTypeEnum.File))
+                  type = DatasetPartTypeEnum.File,
+              ),
+          )
         }
     assertEquals(
         "You must upload a file with the same name as the Dataset Part sourceName. " +
             "You provided $CUSTOMER_SOURCE_FILE_NAME and wrongFileName.csv instead.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1723,7 +2005,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1736,7 +2022,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val datasetPartName = "Customer list"
     val datasetPartDescription = "List of customers"
@@ -1753,11 +2040,17 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 sourceName = CUSTOMER_SOURCE_FILE_NAME,
                 description = datasetPartDescription,
                 tags = datasetPartTags,
-                type = DatasetPartTypeEnum.File))
+                type = DatasetPartTypeEnum.File,
+            ),
+        )
 
     assertNotNull(createDatasetPart)
     datasetApiService.deleteDatasetPart(
-        organizationSaved.id, workspaceSaved.id, createDataset.id, createDatasetPart.id)
+        organizationSaved.id,
+        workspaceSaved.id,
+        createDataset.id,
+        createDatasetPart.id,
+    )
 
     val retrievedDataset =
         datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createDataset.id)
@@ -1781,7 +2074,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1794,7 +2091,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val datasetPartName = "Customer list"
     val datasetPartDescription = "List of customers"
@@ -1811,11 +2109,17 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 sourceName = CUSTOMER_SOURCE_FILE_NAME,
                 description = datasetPartDescription,
                 tags = datasetPartTags,
-                type = DatasetPartTypeEnum.DB))
+                type = DatasetPartTypeEnum.DB,
+            ),
+        )
 
     assertNotNull(createDatasetPart)
     datasetApiService.deleteDatasetPart(
-        organizationSaved.id, workspaceSaved.id, createDataset.id, createDatasetPart.id)
+        organizationSaved.id,
+        workspaceSaved.id,
+        createDataset.id,
+        createDatasetPart.id,
+    )
 
     val retrievedDataset =
         datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createDataset.id)
@@ -1832,7 +2136,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1845,7 +2153,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val datasetPartName = "Customer list"
     val datasetPartDescription = "List of customers"
@@ -1862,11 +2171,17 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 sourceName = CUSTOMER_SOURCE_FILE_NAME,
                 description = datasetPartDescription,
                 tags = datasetPartTags,
-                type = DatasetPartTypeEnum.File))
+                type = DatasetPartTypeEnum.File,
+            ),
+        )
 
     val retrievedDatasetPart =
         datasetApiService.getDatasetPart(
-            organizationSaved.id, workspaceSaved.id, createDataset.id, createDatasetPart.id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            createDatasetPart.id,
+        )
 
     assertEquals(createDatasetPart, retrievedDatasetPart)
   }
@@ -1878,7 +2193,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1891,7 +2210,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val datasetPartName = "Customer list"
     val datasetPartDescription = "List of customers"
@@ -1908,7 +2228,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 sourceName = CUSTOMER_SOURCE_FILE_NAME,
                 description = datasetPartDescription,
                 tags = datasetPartTags,
-                type = DatasetPartTypeEnum.File))
+                type = DatasetPartTypeEnum.File,
+            ),
+        )
 
     val foundDatasetParts =
         datasetApiService.searchDatasetParts(
@@ -1917,7 +2239,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             createDataset.id,
             listOf("customers"),
             null,
-            null)
+            null,
+        )
 
     assertTrue(foundDatasetParts.size == 1)
     assertEquals(createDatasetPart.id, foundDatasetParts[0].id)
@@ -1935,7 +2258,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -1948,7 +2275,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val datasetPartName = "Customer list"
     val datasetPartDescription = "List of customers"
@@ -1964,7 +2292,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = datasetPartDescription,
             tags = datasetPartTags,
-            type = DatasetPartTypeEnum.File))
+            type = DatasetPartTypeEnum.File,
+        ),
+    )
 
     val foundDatasetParts =
         datasetApiService.searchDatasetParts(
@@ -2003,9 +2333,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 ")",
                 "`",
                 "~",
-                "\$fofo"),
+                "\$fofo",
+            ),
             null,
-            null)
+            null,
+        )
 
     assertEquals(1, foundDatasetParts.size)
   }
@@ -2017,7 +2349,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -2030,7 +2366,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val datasetPartName = "Customer list"
     val datasetPartDescription = "List of customers"
@@ -2046,7 +2383,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = datasetPartDescription,
             tags = datasetPartTags,
-            type = DatasetPartTypeEnum.File))
+            type = DatasetPartTypeEnum.File,
+        ),
+    )
 
     val foundDatasetParts =
         datasetApiService.searchDatasetParts(
@@ -2055,7 +2394,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             createDataset.id,
             listOf("test", ",./;'[]-=<>?:\"{}|_+!@#%^&*()`~$"),
             null,
-            null)
+            null,
+        )
 
     assertTrue(foundDatasetParts.isEmpty())
   }
@@ -2067,7 +2407,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -2080,7 +2424,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "file",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val datasetPartName = "Customer list"
     val datasetPartDescription = "List of customers"
@@ -2096,7 +2441,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = datasetPartDescription,
             tags = datasetPartTags,
-            type = DatasetPartTypeEnum.File))
+            type = DatasetPartTypeEnum.File,
+        ),
+    )
 
     val foundDatasetParts =
         datasetApiService.searchDatasetParts(
@@ -2105,7 +2452,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             createDataset.id,
             listOf("part", ",./;'[]-=<>?:\"{}|_+!@#%^&*()`~$"),
             null,
-            null)
+            null,
+        )
 
     assertEquals(1, foundDatasetParts.size)
   }
@@ -2117,20 +2465,29 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
     val exception =
         assertThrows<CsmResourceNotFoundException> {
           datasetApiService.getDatasetPart(
-              organizationSaved.id, workspaceSaved.id, createDataset.id, "wrongDatasetPartId")
+              organizationSaved.id,
+              workspaceSaved.id,
+              createDataset.id,
+              "wrongDatasetPartId",
+          )
         }
 
     assertEquals(
         "Dataset Part wrongDatasetPartId not found in organization ${organizationSaved.id}, " +
             "workspace ${workspaceSaved.id} and dataset ${createDataset.id}",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -2145,7 +2502,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = customerPartDescription,
             tags = customerPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val inventoryPartName = "Product list"
     val inventoryPartDescription = "List of Product"
@@ -2156,7 +2514,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = INVENTORY_SOURCE_FILE_NAME,
             description = inventoryPartDescription,
             tags = inventoryPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Shop Dataset"
     val datasetDescription = "Dataset for shop"
@@ -2166,32 +2525,41 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
-            parts = mutableListOf(customerPartCreateRequest, inventoryPartCreateRequest))
+            parts = mutableListOf(customerPartCreateRequest, inventoryPartCreateRequest),
+        )
 
     val emptyCustomerMockMultipartFile =
         MockMultipartFile(
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            InputStream.nullInputStream(),
+        )
 
     val emptyInventoryMockMultipartFile =
         MockMultipartFile(
             "files",
             INVENTORY_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            InputStream.nullInputStream(),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(emptyCustomerMockMultipartFile, emptyInventoryMockMultipartFile))
+            arrayOf(emptyCustomerMockMultipartFile, emptyInventoryMockMultipartFile),
+        )
 
     var listDatasetParts =
         datasetApiService.listDatasetParts(
-            organizationSaved.id, workspaceSaved.id, createdDataset.id, null, null)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            null,
+            null,
+        )
 
     assertNotNull(listDatasetParts)
     assertEquals(2, listDatasetParts.size)
@@ -2210,7 +2578,12 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     listDatasetParts =
         datasetApiService.listDatasetParts(
-            organizationSaved.id, workspaceSaved.id, createdDataset.id, 0, 1)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            0,
+            1,
+        )
 
     assertNotNull(listDatasetParts)
     assertEquals(1, listDatasetParts.size)
@@ -2223,7 +2596,12 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     listDatasetParts =
         datasetApiService.listDatasetParts(
-            organizationSaved.id, workspaceSaved.id, createdDataset.id, 1, 5)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            1,
+            5,
+        )
     assertNotNull(listDatasetParts)
     assertTrue(listDatasetParts.isEmpty())
   }
@@ -2240,7 +2618,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = datasetPartDescription,
             tags = datasetPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
@@ -2250,7 +2629,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -2261,18 +2641,24 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     val downloadFile =
         datasetApiService.downloadDatasetPart(
-            organizationSaved.id, workspaceSaved.id, createdDataset.id, createdDataset.parts[0].id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            createdDataset.parts[0].id,
+        )
 
     val expectedText = FileInputStream(resourceTestFile).bufferedReader().use { it.readText() }
     val retrievedText =
@@ -2297,7 +2683,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = datasetPartDescription,
             tags = datasetPartTags,
             additionalData = datasetPartAdditionalData,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
@@ -2311,7 +2698,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             accessControlList =
                 mutableListOf(
                     DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR)))
+                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR),
+                ),
+        )
     val datasetCreateRequest =
         DatasetCreateRequest(
             name = datasetName,
@@ -2319,7 +2708,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             tags = datasetTags,
             additionalData = datasetAdditionalData,
             parts = mutableListOf(datasetPartCreateRequest),
-            security = datasetSecurity)
+            security = datasetSecurity,
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -2330,14 +2720,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     // Create a DatasetUpdateRequest with new dataset part
     val newDatasetPartName = "Product list"
@@ -2351,7 +2743,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = newDatasetPartDescription,
             tags = newDatasetPartTags,
             additionalData = newDatasetPartAdditionalData,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val newDatasetName = "Shop Dataset"
     val newDatasetDescription = "Dataset for shop"
@@ -2363,7 +2756,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = newDatasetDescription,
             tags = newDatasetTags,
             additionalData = newDatasetAdditionalData,
-            parts = mutableListOf(newDatasetPartCreateRequest))
+            parts = mutableListOf(newDatasetPartCreateRequest),
+        )
 
     val newDatasetPartTestFile =
         resourceLoader.getResource("classpath:/$INVENTORY_SOURCE_FILE_NAME").file
@@ -2375,7 +2769,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             INVENTORY_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(newDatasetPartFileToSend))
+            IOUtils.toByteArray(newDatasetPartFileToSend),
+        )
 
     // Update dataset with all new information + new part instead of the previous one
     val updatedDataset =
@@ -2384,7 +2779,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetUpdateRequest,
-            arrayOf(newDatasetPartMockMultipartFile))
+            arrayOf(newDatasetPartMockMultipartFile),
+        )
 
     // check new Dataset simple data
     assertEquals(newDatasetName, updatedDataset.name)
@@ -2398,7 +2794,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     // check the new Dataset part is created and corresponding to data specified during update
     val newDatasetPart =
         datasetApiService.getDatasetPart(
-            organizationSaved.id, workspaceSaved.id, updatedDataset.id, updatedDataset.parts[0].id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            updatedDataset.id,
+            updatedDataset.parts[0].id,
+        )
     assertTrue(updatedDataset.parts.size == 1)
     assertEquals(newDatasetPart, updatedDataset.parts[0])
 
@@ -2409,25 +2809,31 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               organizationSaved.id,
               workspaceSaved.id,
               createdDataset.id,
-              createdDataset.parts[0].id)
+              createdDataset.parts[0].id,
+          )
         }
     assertEquals(
         "Dataset Part ${createdDataset.parts[0].id} not found " +
             "in organization ${organizationSaved.id}, " +
             "workspace ${workspaceSaved.id} and dataset ${createdDataset.id}",
-        oldDatasetPartShouldNotExistInDB.message)
+        oldDatasetPartShouldNotExistInDB.message,
+    )
 
     // check the old Dataset part is not in s3 storage anymore
     assertFalse(
         s3Template.objectExists(
             csmPlatformProperties.s3.bucketName,
-            constructFilePathForDatasetPart(createdDataset, 0)))
+            constructFilePathForDatasetPart(createdDataset, 0),
+        )
+    )
 
     // check the new Dataset part is in s3 storage now
     assertTrue(
         s3Template.objectExists(
             csmPlatformProperties.s3.bucketName,
-            constructFilePathForDatasetPart(updatedDataset, 0)))
+            constructFilePathForDatasetPart(updatedDataset, 0),
+        )
+    )
   }
 
   @Test
@@ -2446,7 +2852,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = datasetPartDescription,
             tags = datasetPartTags,
             additionalData = datasetPartAdditionalData,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
@@ -2459,7 +2866,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = datasetDescription,
             tags = datasetTags,
             additionalData = datasetAdditionalData,
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -2470,14 +2878,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     // Create a DatasetUpdateRequest with new dataset part
     val newDatasetPartName = "Product list"
@@ -2491,7 +2901,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = newDatasetPartDescription,
             tags = newDatasetPartTags,
             additionalData = newDatasetPartAdditionalData,
-            type = DatasetPartTypeEnum.DB)
+            type = DatasetPartTypeEnum.DB,
+        )
 
     val newDatasetName = "Shop Dataset"
     val newDatasetDescription = "Dataset for shop"
@@ -2503,14 +2914,17 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             accessControlList =
                 mutableListOf(
                     DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR)))
+                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR),
+                ),
+        )
     val datasetUpdateRequest =
         DatasetUpdateRequest(
             name = newDatasetName,
             description = newDatasetDescription,
             tags = newDatasetTags,
             additionalData = newDatasetAdditionalData,
-            parts = mutableListOf(newDatasetPartCreateRequest))
+            parts = mutableListOf(newDatasetPartCreateRequest),
+        )
 
     val newDatasetPartTestFile =
         resourceLoader.getResource("classpath:/$CUSTOMER_ZIPPED_SOURCE_FILE_NAME").file
@@ -2522,7 +2936,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(newDatasetPartFileToSend))
+            IOUtils.toByteArray(newDatasetPartFileToSend),
+        )
 
     val exception =
         assertThrows<CsmAccessForbiddenException> {
@@ -2531,12 +2946,14 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               workspaceSaved.id,
               createdDataset.id,
               datasetUpdateRequest,
-              arrayOf(newDatasetPartMockMultipartFile))
+              arrayOf(newDatasetPartMockMultipartFile),
+          )
         }
 
     assertEquals(
         "MIME type application/zip for file $CUSTOMER_ZIPPED_SOURCE_FILE_NAME is not authorized.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -2555,7 +2972,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = datasetPartDescription,
             tags = datasetPartTags,
             additionalData = datasetPartAdditionalData,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
@@ -2568,7 +2986,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = datasetDescription,
             tags = datasetTags,
             additionalData = datasetAdditionalData,
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -2579,14 +2998,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     // Update dataset with an empty body
     val updatedDataset =
@@ -2595,7 +3016,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             DatasetUpdateRequest(),
-            arrayOf())
+            arrayOf(),
+        )
 
     // check Dataset file data after update
     val datasetPartFilePath = constructFilePathForDatasetPart(createdDataset, 0)
@@ -2635,7 +3057,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             organizationSaved.id,
             workspaceSaved.id,
             DatasetCreateRequest(name = "Dataset without parts"),
-            emptyArray())
+            emptyArray(),
+        )
 
     val customerPartName = "Customers list"
     val customerPartDescription = "List of customers"
@@ -2646,7 +3069,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = customerPartDescription,
             tags = customerPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Shop Dataset"
     val datasetDescription = "Dataset for shop"
@@ -2660,7 +3084,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 mutableListOf(
                     customerPartCreateRequest,
                     DatasetPartCreateRequest(
-                        name = "Part create request 2", sourceName = "anotherFile.txt")))
+                        name = "Part create request 2",
+                        sourceName = "anotherFile.txt",
+                    ),
+                ),
+        )
 
     val customerTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -2671,14 +3099,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(customerFileToSend))
+            IOUtils.toByteArray(customerFileToSend),
+        )
 
     val customerMockMultipartFile2 =
         MockMultipartFile(
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            InputStream.nullInputStream(),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -2687,13 +3117,15 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               workspaceSaved.id,
               initialDataset.id,
               datasetUpdateRequest,
-              arrayOf(customerMockMultipartFile, customerMockMultipartFile2))
+              arrayOf(customerMockMultipartFile, customerMockMultipartFile2),
+          )
         }
     assertEquals(
         "Multipart file names should be unique during dataset update. " +
             "Multipart file names: [$CUSTOMER_SOURCE_FILE_NAME, $CUSTOMER_SOURCE_FILE_NAME]. " +
             "Dataset parts source names: [$CUSTOMER_SOURCE_FILE_NAME, anotherFile.txt].",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -2706,7 +3138,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = "List of customers",
             tags = mutableListOf("part", "public", "customers"),
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetSecurity =
         DatasetSecurity(
@@ -2714,7 +3147,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             accessControlList =
                 mutableListOf(
                     DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR)))
+                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR),
+                ),
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
@@ -2722,7 +3157,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = "Dataset for customers",
             tags = mutableListOf("dataset", "public", "customers"),
             parts = mutableListOf(datasetPartCreateRequest),
-            security = datasetSecurity)
+            security = datasetSecurity,
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -2733,14 +3169,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     // Create a DatasetUpdateRequest with new dataset part
     val newDatasetPartCreateRequest =
@@ -2749,14 +3187,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME,
             description = "List of Product",
             tags = mutableListOf("part", "public", "product"),
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetUpdateRequest =
         DatasetUpdateRequest(
             name = "Shop Dataset",
             description = "Dataset for shop",
             tags = mutableListOf("dataset", "public", "shop"),
-            parts = mutableListOf(newDatasetPartCreateRequest))
+            parts = mutableListOf(newDatasetPartCreateRequest),
+        )
 
     val wrongTypeTestFile =
         resourceLoader.getResource("classpath:/$UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME").file
@@ -2768,7 +3208,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(wrongTypeFileToSend))
+            IOUtils.toByteArray(wrongTypeFileToSend),
+        )
 
     val exception =
         assertThrows<CsmAccessForbiddenException> {
@@ -2777,11 +3218,13 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               workspaceSaved.id,
               createdDataset.id,
               datasetUpdateRequest,
-              arrayOf(wrongTypeMockMultipartFile))
+              arrayOf(wrongTypeMockMultipartFile),
+          )
         }
     assertEquals(
         "MIME type text/x-yaml for file $UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME is not authorized.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -2794,7 +3237,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = "List of customers",
             tags = mutableListOf("part", "public", "customers"),
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
@@ -2808,7 +3252,10 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     accessControlList =
                         mutableListOf(
                             DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR))))
+                            DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR),
+                        ),
+                ),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -2819,14 +3266,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     // Create a DatasetUpdateRequest with new dataset part
     val newDatasetPartCreateRequest =
@@ -2835,21 +3284,24 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = WRONG_ORIGINAL_FILE_NAME,
             description = "List of Product",
             tags = mutableListOf("part", "public", "product"),
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetUpdateRequest =
         DatasetUpdateRequest(
             name = "Shop Dataset",
             description = "Dataset for shop",
             tags = mutableListOf("dataset", "public", "shop"),
-            parts = mutableListOf(newDatasetPartCreateRequest))
+            parts = mutableListOf(newDatasetPartCreateRequest),
+        )
 
     val wrongTypeMockMultipartFile =
         MockMultipartFile(
             "files",
             WRONG_ORIGINAL_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            InputStream.nullInputStream(),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -2858,11 +3310,13 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               workspaceSaved.id,
               createdDataset.id,
               datasetUpdateRequest,
-              arrayOf(wrongTypeMockMultipartFile))
+              arrayOf(wrongTypeMockMultipartFile),
+          )
         }
     assertEquals(
         "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. File name should neither contains '..' nor starts by '/'.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -2881,7 +3335,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             description = customerPartDescription,
             tags = customerPartTags,
             additionalData = customerPartAdditionalData,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Shop Dataset"
     val datasetDescription = "Dataset for shop"
@@ -2891,7 +3346,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
-            parts = mutableListOf(customerPartCreateRequest))
+            parts = mutableListOf(customerPartCreateRequest),
+        )
 
     val customerTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
     val customerFileToSend = FileInputStream(customerTestFile)
@@ -2901,14 +3357,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(customerFileToSend))
+            IOUtils.toByteArray(customerFileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(customerMockMultipartFile))
+            arrayOf(customerMockMultipartFile),
+        )
 
     val customerPartFilePath = constructFilePathForDatasetPart(createdDataset, 0)
     assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, customerPartFilePath))
@@ -2957,7 +3415,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             workspaceSaved.id,
             createdDataset.id,
             datasetPartToReplace.id,
-            datasetPartUpdateRequest)
+            datasetPartUpdateRequest,
+        )
 
     val datasetWithReplacedPart =
         datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createdDataset.id)
@@ -3000,7 +3459,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = customerPartDescription,
             tags = customerPartTags,
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetName = "Shop Dataset"
     val datasetDescription = "Dataset for shop"
@@ -3010,7 +3470,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
-            parts = mutableListOf(customerPartCreateRequest))
+            parts = mutableListOf(customerPartCreateRequest),
+        )
 
     val customerTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
     val customerFileToSend = FileInputStream(customerTestFile)
@@ -3020,14 +3481,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(customerFileToSend))
+            IOUtils.toByteArray(customerFileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(customerMockMultipartFile))
+            arrayOf(customerMockMultipartFile),
+        )
 
     val customerPartFilePath = constructFilePathForDatasetPart(createdDataset, 0)
     assertTrue(s3Template.objectExists(csmPlatformProperties.s3.bucketName, customerPartFilePath))
@@ -3076,7 +3539,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             INVENTORY_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(newDatasetPartFileToSend))
+            IOUtils.toByteArray(newDatasetPartFileToSend),
+        )
 
     val replacedDatasetPart =
         datasetApiService.replaceDatasetPart(
@@ -3085,7 +3549,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             createdDataset.id,
             datasetPartToReplace.id,
             newDatasetPartMockMultipartFile,
-            datasetPartUpdateRequest)
+            datasetPartUpdateRequest,
+        )
 
     val datasetWithReplacedPart =
         datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, createdDataset.id)
@@ -3127,14 +3592,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = "List of customers",
             tags = mutableListOf("part", "public", "customers"),
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
             name = "Customer Dataset",
             description = "Dataset for customers",
             tags = mutableListOf("dataset", "public", "customers"),
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -3145,21 +3612,24 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     // Create a DatasetUpdateRequest with new dataset part
     val datasetPartUpdateRequest =
         DatasetPartUpdateRequest(
             sourceName = "updatedResourceFile.csv",
             description = "Dataset for shop",
-            tags = mutableListOf("dataset", "public", "shop"))
+            tags = mutableListOf("dataset", "public", "shop"),
+        )
 
     val wrongTypeTestFile =
         resourceLoader.getResource("classpath:/$UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME").file
@@ -3171,7 +3641,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(wrongTypeFileToSend))
+            IOUtils.toByteArray(wrongTypeFileToSend),
+        )
 
     val exception =
         assertThrows<CsmAccessForbiddenException> {
@@ -3181,11 +3652,13 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               createdDataset.id,
               createdDataset.parts[0].id,
               wrongTypeMockMultipartFile,
-              datasetPartUpdateRequest)
+              datasetPartUpdateRequest,
+          )
         }
     assertEquals(
         "MIME type text/x-yaml for file $UNALLOWED_MIME_TYPE_SOURCE_FILE_NAME is not authorized.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -3198,14 +3671,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = "List of customers",
             tags = mutableListOf("part", "public", "customers"),
-            type = DatasetPartTypeEnum.DB)
+            type = DatasetPartTypeEnum.DB,
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
             name = "Customer Dataset",
             description = "Dataset for customers",
             tags = mutableListOf("dataset", "public", "customers"),
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -3216,21 +3691,24 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     // Create a DatasetUpdateRequest with new dataset part
     val datasetPartUpdateRequest =
         DatasetPartUpdateRequest(
             sourceName = CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
             description = "Dataset for shop",
-            tags = mutableListOf("dataset", "public", "shop"))
+            tags = mutableListOf("dataset", "public", "shop"),
+        )
 
     val wrongTypeTestFile =
         resourceLoader.getResource("classpath:/$CUSTOMER_ZIPPED_SOURCE_FILE_NAME").file
@@ -3242,7 +3720,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_ZIPPED_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(wrongTypeFileToSend))
+            IOUtils.toByteArray(wrongTypeFileToSend),
+        )
 
     val exception =
         assertThrows<CsmAccessForbiddenException> {
@@ -3252,11 +3731,13 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               createdDataset.id,
               createdDataset.parts[0].id,
               wrongTypeMockMultipartFile,
-              datasetPartUpdateRequest)
+              datasetPartUpdateRequest,
+          )
         }
     assertEquals(
         "MIME type application/zip for file $CUSTOMER_ZIPPED_SOURCE_FILE_NAME is not authorized.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -3269,14 +3750,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = "List of customers",
             tags = mutableListOf("part", "public", "customers"),
-            type = DatasetPartTypeEnum.File)
+            type = DatasetPartTypeEnum.File,
+        )
 
     val datasetCreateRequest =
         DatasetCreateRequest(
             name = "Customer Dataset",
             description = "Dataset for customers",
             tags = mutableListOf("dataset", "public", "customers"),
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -3287,14 +3770,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val createdDataset =
         datasetApiService.createDataset(
             organizationSaved.id,
             workspaceSaved.id,
             datasetCreateRequest,
-            arrayOf(mockMultipartFile))
+            arrayOf(mockMultipartFile),
+        )
 
     // Create a DatasetUpdateRequest with new dataset part
 
@@ -3302,14 +3787,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         DatasetPartUpdateRequest(
             sourceName = "updatedResourceFile.csv",
             description = "Dataset for shop",
-            tags = mutableListOf("dataset", "public", "shop"))
+            tags = mutableListOf("dataset", "public", "shop"),
+        )
 
     val wrongTypeMockMultipartFile =
         MockMultipartFile(
             "files",
             WRONG_ORIGINAL_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream())
+            InputStream.nullInputStream(),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -3319,11 +3806,13 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
               createdDataset.id,
               createdDataset.parts[0].id,
               wrongTypeMockMultipartFile,
-              datasetPartUpdateRequest)
+              datasetPartUpdateRequest,
+          )
         }
     assertEquals(
         "Invalid filename: '$WRONG_ORIGINAL_FILE_NAME'. File name should neither contains '..' nor starts by '/'.",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -3778,7 +4267,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             null,
             null,
             null,
-            mutableListOf("age"))
+            mutableListOf("age"),
+        )
 
     val expectedTestFile =
         resourceLoader.getResource("classpath:/query/customers_customerID_orderby_age_asc.csv").file
@@ -4016,7 +4506,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             sourceName = CUSTOMER_SOURCE_FILE_NAME,
             description = datasetPartDescription,
             tags = datasetPartTags,
-            type = DatasetPartTypeEnum.DB)
+            type = DatasetPartTypeEnum.DB,
+        )
 
     val datasetName = "Customer Dataset"
     val datasetDescription = "Dataset for customers"
@@ -4026,7 +4517,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = datasetName,
             description = datasetDescription,
             tags = datasetTags,
-            parts = mutableListOf(datasetPartCreateRequest))
+            parts = mutableListOf(datasetPartCreateRequest),
+        )
 
     val fileToSend = FileInputStream(resourceTestFile)
 
@@ -4035,10 +4527,15 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            IOUtils.toByteArray(fileToSend))
+            IOUtils.toByteArray(fileToSend),
+        )
 
     return datasetApiService.createDataset(
-        organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf(mockMultipartFile))
+        organizationSaved.id,
+        workspaceSaved.id,
+        datasetCreateRequest,
+        arrayOf(mockMultipartFile),
+    )
   }
 
   private fun testCreateDatasetPartWithSimpleFile(fileName: String, expectedFileName: String) {
@@ -4046,7 +4543,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val createDataset =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, datasetCreateRequest, arrayOf())
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
 
     assertTrue(createDataset.parts.isEmpty())
 
@@ -4056,7 +4557,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val mockMultipartFile =
         MockMultipartFile(
-            "file", fileName, MediaType.MULTIPART_FORM_DATA_VALUE, IOUtils.toByteArray(fileToSend))
+            "file",
+            fileName,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            IOUtils.toByteArray(fileToSend),
+        )
 
     val datasetPartName = "Customer list"
     val datasetPartDescription = "List of customers"
@@ -4073,7 +4578,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                 sourceName = fileName,
                 description = datasetPartDescription,
                 tags = datasetPartTags,
-                type = DatasetPartTypeEnum.DB))
+                type = DatasetPartTypeEnum.DB,
+            ),
+        )
 
     assertNotNull(createDatasetPart)
     assertEquals(datasetPartName, createDatasetPart.name)
@@ -4092,7 +4599,11 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     val datasetPartFile =
         datasetApiService.downloadDatasetPart(
-            organizationSaved.id, workspaceSaved.id, createDataset.id, createDatasetPart.id)
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+            createDatasetPart.id,
+        )
 
     val expectedTestFile = resourceLoader.getResource("classpath:/$expectedFileName").file
     val expectedText = FileInputStream(expectedTestFile).bufferedReader().use { it.readText() }
@@ -4106,7 +4617,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   fun makeOrganizationCreateRequest(
       name: String = "Organization Name",
       userName: String = CONNECTED_ADMIN_USER,
-      role: String = ROLE_ADMIN
+      role: String = ROLE_ADMIN,
   ) =
       OrganizationCreateRequest(
           name = name,
@@ -4116,7 +4627,10 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           OrganizationAccessControl(id = userName, role = role),
-                          OrganizationAccessControl("userLambda", "viewer"))))
+                          OrganizationAccessControl("userLambda", "viewer"),
+                      ),
+              ),
+      )
 
   fun makeSolution(userName: String = CONNECTED_DEFAULT_USER, role: String = ROLE_USER) =
       SolutionCreateRequest(
@@ -4133,13 +4647,16 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                          SolutionAccessControl(id = userName, role = role))))
+                          SolutionAccessControl(id = userName, role = role),
+                      ),
+              ),
+      )
 
   fun makeWorkspaceCreateRequest(
       solutionId: String = solutionSaved.id,
       name: String = "name",
       userName: String = CONNECTED_ADMIN_USER,
-      role: String = ROLE_ADMIN
+      role: String = ROLE_ADMIN,
   ) =
       WorkspaceCreateRequest(
           key = UUID.randomUUID().toString(),
@@ -4154,5 +4671,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           WorkspaceAccessControl(id = userName, role = role),
-                          WorkspaceAccessControl(CONNECTED_DEFAULT_USER, "viewer"))))
+                          WorkspaceAccessControl(CONNECTED_DEFAULT_USER, "viewer"),
+                      ),
+              ),
+      )
 }

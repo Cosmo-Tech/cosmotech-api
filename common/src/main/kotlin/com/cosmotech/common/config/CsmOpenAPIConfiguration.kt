@@ -23,19 +23,22 @@ open class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformPropert
     val openApiYamlInputStream =
         CsmOpenAPIConfiguration::class.java.getResourceAsStream("/static/openapi.yaml")
             ?: throw IllegalStateException(
-                "Unable to parse OpenAPI definition from 'classpath:/static/openapi.yaml'")
+                "Unable to parse OpenAPI definition from 'classpath:/static/openapi.yaml'"
+            )
     val openApiYamlContent =
         openApiYamlInputStream.use { it.bufferedReader().use(BufferedReader::readText) }
     val openApiYamlParseResult = OpenAPIV3Parser().readContents(openApiYamlContent)
     if (!openApiYamlParseResult.messages.isNullOrEmpty()) {
       throw IllegalStateException(
           "Unable to parse OpenAPI definition from 'classpath:/static/openapi.yaml' : " +
-              openApiYamlParseResult.messages)
+              openApiYamlParseResult.messages
+      )
     }
     val openAPI =
         openApiYamlParseResult.openAPI
             ?: throw IllegalStateException(
-                "Couldn't parse resource 'classpath:openapi.yaml' : ${openApiYamlParseResult.messages}")
+                "Couldn't parse resource 'classpath:openapi.yaml' : ${openApiYamlParseResult.messages}"
+            )
 
     openAPI.info.version = apiVersion
 
@@ -55,7 +58,8 @@ open class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformPropert
                 OAuthFlow()
                     .scopes(scopes)
                     .tokenUrl(csmPlatformProperties.identityProvider.tokenUrl)
-                    .authorizationUrl(csmPlatformProperties.identityProvider.authorizationUrl))
+                    .authorizationUrl(csmPlatformProperties.identityProvider.authorizationUrl)
+            )
 
     openAPI.components.securitySchemes["oAuth2AuthCode"]?.flows(authorizationCodeFlow)
 

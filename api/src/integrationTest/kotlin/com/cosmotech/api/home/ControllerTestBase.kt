@@ -80,7 +80,8 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
                     
                   ${response.contentAsString}
                 """
-                        .trimIndent())
+                        .trimIndent()
+                )
               }
             }
             .apply<DefaultMockMvcBuilder>(springSecurity())
@@ -91,7 +92,8 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
                         modifyHeaders().remove(HttpHeaders.CONTENT_LENGTH),
                         modifyHeaders().remove(PLATFORM_ADMIN_EMAIL),
                         modifyHeaders().remove(ORGANIZATION_USER_EMAIL),
-                        prettyPrint())
+                        prettyPrint(),
+                    )
                     .withResponseDefaults(
                         modifyHeaders()
                             .remove("X-Content-Type-Options")
@@ -99,7 +101,9 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
                             .remove("X-Frame-Options")
                             .remove(HttpHeaders.CONTENT_LENGTH)
                             .remove(HttpHeaders.CACHE_CONTROL),
-                        prettyPrint()))
+                        prettyPrint(),
+                    )
+            )
             .build()
   }
 
@@ -110,7 +114,9 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
     var postgres: PostgreSQLContainer<*> =
         PostgreSQLContainer("postgres:alpine3.19")
             .withCopyFileToContainer(
-                MountableFile.forClasspathResource("init-db.sql"), "/docker-entrypoint-initdb.d/")
+                MountableFile.forClasspathResource("init-db.sql"),
+                "/docker-entrypoint-initdb.d/",
+            )
 
     var redisStackServer = RedisStackContainer(RedisStackContainer.DEFAULT_IMAGE_NAME)
 
