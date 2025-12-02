@@ -71,7 +71,8 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
     into("${layout.buildDirectory.get()}/tmp/openapi")
   } else {
     logger.warn(
-        "Unable to find OpenAPI definitions in project dependencies => 'copySubProjectsOpenAPIFiles' not configured!")
+        "Unable to find OpenAPI definitions in project dependencies => 'copySubProjectsOpenAPIFiles' not configured!"
+    )
   }
 }
 
@@ -114,7 +115,8 @@ tasks.register<GenerateTask>("openApiTypescriptGenerate") {
   additionalProperties.set(
       mapOf(
           "npmName" to "@cosmotech/api-ts",
-      ))
+      )
+  )
 }
 
 tasks.register<Copy>("copyTypescriptGitPushScript") {
@@ -155,7 +157,9 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
       mapOf(
           "projectName" to "cosmotech-api",
           "packageName" to "cosmotech_api",
-          "pythonAttrNoneIfUnset" to true))
+          "pythonAttrNoneIfUnset" to true,
+      )
+  )
 }
 
 // PROD-14252: temporary fix waiting for upstream resolution of
@@ -233,7 +237,8 @@ tasks.register("generateClients") {
       "generateTypescriptClient",
       "generatePythonClient",
       "openApiUmlGenerate",
-      "openApiMarkdownGenerate")
+      "openApiMarkdownGenerate",
+  )
 }
 
 tasks.getByName<BootJar>("bootJar") { finalizedBy("generateClients") }
@@ -260,5 +265,7 @@ tasks.register<GenerateTask>("generateDocumentation") {
           "disallowAdditionalPropertiesIfNotPresent" to false,
           "infoEmail" to "platform@cosmotech.com",
           "snippetDir" to "${rootDir}/doc/generated-snippets/",
-          "infoUrl" to "https://github.com/Cosmo-Tech/cosmotech-api"))
+          "infoUrl" to "https://github.com/Cosmo-Tech/cosmotech-api",
+      )
+  )
 }

@@ -79,7 +79,7 @@ fun getCurrentAuthenticatedRoles(configuration: CsmPlatformProperties): List<Str
 
 fun <T> getValueFromAuthenticatedToken(
     configuration: CsmPlatformProperties,
-    actionLambda: (String) -> T
+    actionLambda: (String) -> T,
 ): T {
   if (getCurrentAuthentication() == null) {
     throw IllegalStateException("User Authentication not found in Security Context")
@@ -103,7 +103,8 @@ fun <T> getValueFromAuthenticatedToken(
                     configuration.authorization.rolesJwtClaim,
                     authentication.authorities
                         .map { (it as SimpleGrantedAuthority).authority }
-                        .toList())
+                        .toList(),
+                )
                 .build()
       }
     }

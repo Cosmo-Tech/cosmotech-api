@@ -25,7 +25,7 @@ interface DatasetApiServiceInterface : DatasetApiService {
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      requiredPermission: String = PERMISSION_READ
+      requiredPermission: String = PERMISSION_READ,
   ): Dataset
 
   /**
@@ -40,7 +40,7 @@ interface DatasetApiServiceInterface : DatasetApiService {
   fun findByOrganizationIdWorkspaceIdAndDatasetId(
       organizationId: String,
       workspaceId: String,
-      datasetId: String
+      datasetId: String,
   ): Dataset?
 
   /**
@@ -73,7 +73,7 @@ interface DatasetApiServiceInterface : DatasetApiService {
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      datasetPartCreateRequest: DatasetPartCreateRequest
+      datasetPartCreateRequest: DatasetPartCreateRequest,
   ): DatasetPart
 
   /**
@@ -94,6 +94,6 @@ interface DatasetApiServiceInterface : DatasetApiService {
       workspaceId: kotlin.String,
       datasetId: kotlin.String,
       file: Resource,
-      datasetPartCreateRequest: DatasetPartCreateRequest
+      datasetPartCreateRequest: DatasetPartCreateRequest,
   ): DatasetPart
 }

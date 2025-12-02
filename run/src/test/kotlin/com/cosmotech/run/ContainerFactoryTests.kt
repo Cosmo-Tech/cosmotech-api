@@ -86,7 +86,9 @@ class ContainerFactoryTests {
                 CsmPlatformProperties.CsmIdentityProvider.CsmIdentity(
                     tenantId = "my_tenant_id",
                     clientId = "my_client_id",
-                    clientSecret = "my_client_secret"))
+                    clientSecret = "my_client_secret",
+                ),
+        )
     every { csmPlatformProperties.databases.resources } returns
         CsmPlatformProperties.CsmDatabasesProperties.CsmResourcesProperties(
             host = "this_is_a_host",
@@ -99,7 +101,8 @@ class ContainerFactoryTests {
             host = "twinengines.azurecr.io",
             checkSolutionImage = true,
             password = "password",
-            username = "username")
+            username = "username",
+        )
 
     every { csmPlatformProperties.databases.data } returns
         CsmPlatformProperties.CsmDatabasesProperties.CsmDataIOProperties(
@@ -108,10 +111,15 @@ class ContainerFactoryTests {
             database = "cosmotech",
             reader =
                 CsmPlatformProperties.CsmDatabasesProperties.CsmDataIOProperties.CsmStorageUser(
-                    username = "username", password = "password"),
+                    username = "username",
+                    password = "password",
+                ),
             writer =
                 CsmPlatformProperties.CsmDatabasesProperties.CsmDataIOProperties.CsmStorageUser(
-                    username = "username", password = "password"))
+                    username = "username",
+                    password = "password",
+                ),
+        )
 
     factory =
         RunContainerFactory(
@@ -120,7 +128,8 @@ class ContainerFactoryTests {
             workspaceService,
             solutionService,
             organizationService,
-            containerRegistryService)
+            containerRegistryService,
+        )
   }
 
   @Test
@@ -139,7 +148,8 @@ class ContainerFactoryTests {
             solution = getSolution(),
             runId = CSM_SIMULATION_ID,
             csmSimulationId = CSM_SIMULATION_ID,
-            workflowType = WORKFLOW_TYPE_RUN)
+            workflowType = WORKFLOW_TYPE_RUN,
+        )
 
     val run_container =
         getRunContainer(solution, organization, workspace, runner, runTemplate, CSM_SIMULATION_ID)
@@ -155,7 +165,7 @@ class ContainerFactoryTests {
       workspace: Workspace,
       runner: Runner,
       runTemplate: RunTemplate,
-      runId: String
+      runId: String,
   ): RunContainer {
 
     return RunContainer(
@@ -182,14 +192,17 @@ class ContainerFactoryTests {
                 "CSM_WORKSPACE_ID" to workspace.id,
                 "CSM_RUNNER_ID" to runner.id,
                 "CSM_RUN_ID" to runId,
-                "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID),
+                "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
+            ),
         entrypoint = "entrypoint.py",
         nodeLabel = runTemplate.computeSize!!.removeSuffix("pool"),
         runSizing =
             ContainerResourceSizing(
                 requests = ContainerResourceSizeInfo(cpu = "70", memory = "130Gi"),
-                limits = ContainerResourceSizeInfo(cpu = "70", memory = "130Gi")),
-        solutionContainer = true)
+                limits = ContainerResourceSizeInfo(cpu = "70", memory = "130Gi"),
+            ),
+        solutionContainer = true,
+    )
   }
 
   private fun getRunner(): Runner {
@@ -206,11 +219,13 @@ class ContainerFactoryTests {
         parametersValues =
             mutableListOf(
                 RunnerRunTemplateParameterValue(parameterId = "param1", value = "value1"),
-                RunnerRunTemplateParameterValue(parameterId = "param2", value = "value2")),
+                RunnerRunTemplateParameterValue(parameterId = "param2", value = "value2"),
+            ),
         validationStatus = RunnerValidationStatus.Draft,
         lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
         security =
-            RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))))
+            RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))),
+    )
   }
 
   private fun getRunTemplate(): RunTemplate {
@@ -218,7 +233,8 @@ class ContainerFactoryTests {
         id = CSM_RUN_TEMPLATE_ID,
         name = "Test Run",
         computeSize = "highcpupool",
-        parameterGroups = mutableListOf())
+        parameterGroups = mutableListOf(),
+    )
   }
 
   private fun getSolution(): Solution {
@@ -234,7 +250,8 @@ class ContainerFactoryTests {
         parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
         parameterGroups =
             mutableListOf(
-                RunTemplateParameterGroup(id = "parameter", parameters = mutableListOf())),
+                RunTemplateParameterGroup(id = "parameter", parameters = mutableListOf())
+            ),
         organizationId = "Organizationid",
         security = SolutionSecurity(ROLE_ADMIN, mutableListOf()),
     )
@@ -254,7 +271,8 @@ class ContainerFactoryTests {
             WorkspaceSolution(
                 solutionId = "1",
             ),
-        security = WorkspaceSecurity(default = ROLE_ADMIN, accessControlList = mutableListOf()))
+        security = WorkspaceSecurity(default = ROLE_ADMIN, accessControlList = mutableListOf()),
+    )
   }
 
   private fun getOrganization(): Organization {
@@ -265,6 +283,9 @@ class ContainerFactoryTests {
         updateInfo = OrganizationEditInfo(0, ""),
         security =
             OrganizationSecurity(
-                ROLE_ADMIN, mutableListOf(OrganizationAccessControl("user", ROLE_ADMIN))))
+                ROLE_ADMIN,
+                mutableListOf(OrganizationAccessControl("user", ROLE_ADMIN)),
+            ),
+    )
   }
 }

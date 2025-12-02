@@ -16,12 +16,13 @@ import org.springframework.stereotype.Repository
 interface RunRepository : RedisDocumentRepository<Run, String> {
 
   @Query(
-      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @runnerId:{\$runnerId} @id:{\$runId}")
+      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @runnerId:{\$runnerId} @id:{\$runId}"
+  )
   fun findBy(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Sanitize @Param("runnerId") runnerId: String,
-      @Sanitize @Param("runId") runId: String
+      @Sanitize @Param("runId") runId: String,
   ): Optional<Run>
 
   @Query("@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @runnerId:{\$runnerId}")
@@ -29,6 +30,6 @@ interface RunRepository : RedisDocumentRepository<Run, String> {
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Sanitize @Param("runnerId") runnerId: String,
-      pageable: Pageable
+      pageable: Pageable,
   ): Page<Run>
 }

@@ -29,6 +29,7 @@ class MetaServiceImpl : CsmPhoenixService(), MetaApiServiceInterface {
                 patch = numbers[2].toInt(),
                 label = numbersAndLabel.getOrElse(1, { "" }),
                 build = aboutVersion.getString("build"),
-            ))
+            )
+    )
   }
 }

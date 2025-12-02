@@ -12,5 +12,5 @@ open class CsmServerException(override val message: String, override val cause: 
 @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
 class CsmServiceUnavailableException(
     override val message: String,
-    override val cause: Throwable? = null
+    override val cause: Throwable? = null,
 ) : CsmServerException(message, cause)

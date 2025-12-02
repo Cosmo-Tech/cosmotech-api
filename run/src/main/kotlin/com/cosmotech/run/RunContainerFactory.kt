@@ -81,7 +81,7 @@ class RunContainerFactory(
     private val workspaceService: WorkspaceApiService,
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
-    private val containerRegistryService: ContainerRegistryService
+    private val containerRegistryService: ContainerRegistryService,
 ) {
 
   fun getStartInfo(
@@ -89,7 +89,7 @@ class RunContainerFactory(
       workspaceId: String,
       runnerId: String,
       workflowType: String,
-      runId: String
+      runId: String,
   ): StartInfo {
     val organization = organizationService.getOrganization(organizationId)
     val workspace = workspaceService.getWorkspace(organizationId, workspaceId)
@@ -161,11 +161,20 @@ class RunContainerFactory(
 
     val imageName =
         getImageName(
-            csmPlatformProperties.containerRegistry.host, solution.repository, solution.version)
+            csmPlatformProperties.containerRegistry.host,
+            solution.repository,
+            solution.version,
+        )
 
     val envVars =
         getCommonEnvVars(
-            csmPlatformProperties, csmSimulationId, organization.id, workspace.id, runner.id, runId)
+            csmPlatformProperties,
+            csmSimulationId,
+            organization.id,
+            workspace.id,
+            runner.id,
+            runId,
+        )
 
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
 
@@ -180,7 +189,9 @@ class RunContainerFactory(
             entrypoint = ENTRYPOINT_NAME,
             solutionContainer = true,
             nodeLabel = nodeLabel,
-            runSizing = customSizing.toContainerResourceSizing()))
+            runSizing = customSizing.toContainerResourceSizing(),
+        )
+    )
 
     val generateName = "${runId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
 
@@ -196,7 +207,8 @@ class RunContainerFactory(
                 ORGANIZATION_ID_LABEL to organization.id,
                 WORKSPACE_ID_LABEL to workspace.id,
                 RUNNER_ID_LABEL to runner.id,
-            ))
+            ),
+    )
   }
 
   internal fun buildSingleContainerStart(
@@ -207,7 +219,7 @@ class RunContainerFactory(
       imageVersion: String = "latest",
       containerEnvVars: Map<String, String>,
       workflowType: String,
-      nodeLabel: String = NODE_LABEL_DEFAULT
+      nodeLabel: String = NODE_LABEL_DEFAULT,
   ): RunStartContainers {
 
     var defaultSizing = BASIC_SIZING
@@ -224,7 +236,8 @@ class RunContainerFactory(
             defaultSizing,
             containerName,
             containerEnvVars,
-            nodeLabel)
+            nodeLabel,
+        )
 
     val generateName = "${jobId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
 
@@ -240,7 +253,8 @@ class RunContainerFactory(
                 ORGANIZATION_ID_LABEL to "none",
                 WORKSPACE_ID_LABEL to "none",
                 RUNNER_ID_LABEL to "none",
-            ))
+            ),
+    )
   }
 
   internal fun buildSimpleContainer(
@@ -250,7 +264,7 @@ class RunContainerFactory(
       nodeSizing: Sizing,
       containerName: String,
       containerEnvVars: Map<String, String>,
-      nodeLabel: String
+      nodeLabel: String,
   ): RunContainer {
 
     val envVars = getMinimalCommonEnvVars(csmPlatformProperties).toMutableMap()
@@ -262,13 +276,15 @@ class RunContainerFactory(
         dependencies = listOf(CSM_DAG_ROOT),
         envVars = envVars,
         nodeLabel = nodeLabel,
-        runSizing = nodeSizing.toContainerResourceSizing())
+        runSizing = nodeSizing.toContainerResourceSizing(),
+    )
   }
 
   private fun getRunTemplate(solution: Solution, runTemplateId: String): RunTemplate {
     return solution.runTemplates.find { runTemplate -> runTemplate.id == runTemplateId }
         ?: throw IllegalStateException(
-            "runTemplateId $runTemplateId not found in Solution ${solution.id}")
+            "runTemplateId $runTemplateId not found in Solution ${solution.id}"
+        )
   }
 
   private fun getImageName(registry: String, repository: String, version: String? = null): String {
@@ -300,7 +316,8 @@ internal fun getMinimalCommonEnvVars(
           TWIN_CACHE_PORT to (twinCacheInfo.port),
           TWIN_CACHE_PASSWORD to (twinCacheInfo.password),
           TWIN_CACHE_USERNAME to (twinCacheInfo.username),
-      ))
+      )
+  )
   val containerScopes = getContainerScopes(csmPlatformProperties)
   val commonEnvVars =
       mapOf(
@@ -324,7 +341,7 @@ internal fun getCommonEnvVars(
     organizationId: String,
     workspaceId: String,
     runnerId: String,
-    runId: String
+    runId: String,
 ): MutableMap<String, String> {
 
   val minimalEnvVars = getMinimalCommonEnvVars(csmPlatformProperties)
@@ -335,6 +352,7 @@ internal fun getCommonEnvVars(
           PARAMETERS_ORGANIZATION_VAR to organizationId,
           PARAMETERS_WORKSPACE_VAR to workspaceId,
           PARAMETERS_RUNNER_VAR to runnerId,
-          PARAMETERS_RUN_VAR to runId)
+          PARAMETERS_RUN_VAR to runId,
+      )
   return (minimalEnvVars + commonEnvVars).toMutableMap()
 }

@@ -36,7 +36,8 @@ open class CsmApiConfiguration {
   open fun inProcessEventHandlerExecutor(): Executor =
       // TODO A better strategy could be with a limited core pool size off an unbounded queue ?
       Executors.newCachedThreadPool(
-          BasicThreadFactory.Builder().namingPattern("csm-event-handler-%d").build())
+          BasicThreadFactory.Builder().namingPattern("csm-event-handler-%d").build()
+      )
 
   @Bean open fun yamlHttpMessageConverter(): YamlMessageConverter = YamlMessageConverter()
 }
@@ -47,7 +48,7 @@ open class CsmPlatformEnvironmentPostProcessor : EnvironmentPostProcessor {
 
   override fun postProcessEnvironment(
       environment: ConfigurableEnvironment,
-      application: SpringApplication
+      application: SpringApplication,
   ) {
     addSpringProfile(environment)
   }
@@ -85,7 +86,8 @@ class YamlMessageConverter(objectMapper: ObjectMapper) :
         MediaType("application", "*+yaml", StandardCharsets.UTF_8),
         MediaType("application", "yml", StandardCharsets.UTF_8),
         MediaType("text", "yml", StandardCharsets.UTF_8),
-        MediaType("application", "*+yml", StandardCharsets.UTF_8)) {
+        MediaType("application", "*+yml", StandardCharsets.UTF_8),
+    ) {
 
   constructor() : this(yamlObjectMapper())
 

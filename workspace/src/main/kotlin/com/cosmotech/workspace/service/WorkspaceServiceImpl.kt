@@ -70,14 +70,16 @@ internal class WorkspaceServiceImpl(
     private val s3Template: S3Template,
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
-    private val workspaceRepository: WorkspaceRepository
+    private val workspaceRepository: WorkspaceRepository,
 ) : CsmPhoenixService(), WorkspaceApiServiceInterface {
 
   override fun listWorkspaces(organizationId: String, page: Int?, size: Int?): List<Workspace> {
     val organization = organizationService.getVerifiedOrganization(organizationId)
     val isAdmin =
         csmRbac.isAdmin(
-            organization.security.toGenericSecurity(organizationId), getCommonRolesDefinition())
+            organization.security.toGenericSecurity(organizationId),
+            getCommonRolesDefinition(),
+        )
     val defaultPageSize = csmPlatformProperties.databases.resources.workspace.defaultPageSize
     var result: List<Workspace>
     var pageable = constructPageRequest(page, size, defaultPageSize)
@@ -115,10 +117,12 @@ internal class WorkspaceServiceImpl(
 
   override fun createWorkspace(
       organizationId: String,
-      workspaceCreateRequest: WorkspaceCreateRequest
+      workspaceCreateRequest: WorkspaceCreateRequest,
   ): Workspace {
     organizationService.getVerifiedOrganization(
-        organizationId, listOf(PERMISSION_READ, PERMISSION_CREATE_CHILDREN))
+        organizationId,
+        listOf(PERMISSION_READ, PERMISSION_CREATE_CHILDREN),
+    )
 
     // Validate Solution ID
     workspaceCreateRequest.solution.solutionId.let {
@@ -137,10 +141,14 @@ internal class WorkspaceServiceImpl(
             organizationId = organizationId,
             createInfo =
                 WorkspaceEditInfo(
-                    timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                    timestamp = now,
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                ),
             updateInfo =
                 WorkspaceEditInfo(
-                    timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                    timestamp = now,
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                ),
             key = workspaceCreateRequest.key,
             name = workspaceCreateRequest.name,
             solution = workspaceCreateRequest.solution,
@@ -165,7 +173,7 @@ internal class WorkspaceServiceImpl(
   override fun updateWorkspace(
       organizationId: String,
       workspaceId: String,
-      workspaceUpdateRequest: WorkspaceUpdateRequest
+      workspaceUpdateRequest: WorkspaceUpdateRequest,
   ): Workspace {
     val existingWorkspace = this.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
 
@@ -183,7 +191,8 @@ internal class WorkspaceServiceImpl(
             additionalData =
                 workspaceUpdateRequest.additionalData ?: existingWorkspace.additionalData,
             datasetCopy = workspaceUpdateRequest.datasetCopy ?: existingWorkspace.datasetCopy,
-            security = existingWorkspace.security)
+            security = existingWorkspace.security,
+        )
 
     // Validate that solutionId refers to an existing one
     if (updatedWorkspace.solution.solutionId != existingWorkspace.solution.solutionId) {
@@ -193,7 +202,9 @@ internal class WorkspaceServiceImpl(
     val hasChanged =
         existingWorkspace
             .compareToAndMutateIfNeeded(
-                updatedWorkspace, excludedFields = arrayOf("ownerId", "security"))
+                updatedWorkspace,
+                excludedFields = arrayOf("ownerId", "security"),
+            )
             .isNotEmpty()
 
     return if (hasChanged) {
@@ -225,7 +236,7 @@ internal class WorkspaceServiceImpl(
   override fun getWorkspaceFile(
       organizationId: String,
       workspaceId: String,
-      fileName: String
+      fileName: String,
   ): Resource {
     require(".." !in fileName) { "Invalid filename: '$fileName'. '..' is not allowed" }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ)
@@ -233,7 +244,8 @@ internal class WorkspaceServiceImpl(
         "Downloading file resource from workspace #{} ({}): {}",
         workspace.id,
         workspace.name,
-        fileName)
+        fileName,
+    )
     var fileResource: Resource
     try {
       fileResource =
@@ -241,8 +253,10 @@ internal class WorkspaceServiceImpl(
               s3Template
                   .download(
                       csmPlatformProperties.s3.bucketName,
-                      "$organizationId/$workspaceId/$WORKSPACE_FILES_BASE_FOLDER/$fileName")
-                  .inputStream)
+                      "$organizationId/$workspaceId/$WORKSPACE_FILES_BASE_FOLDER/$fileName",
+                  )
+                  .inputStream
+          )
     } catch (exception: NoSuchKeyException) {
       throw CsmResourceNotFoundException("$fileName does not exist.", exception)
     }
@@ -255,7 +269,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       file: MultipartFile,
       overwrite: Boolean,
-      destination: String?
+      destination: String?,
   ): WorkspaceFile {
     require(destination?.contains("..") != true) {
       "Invalid destination: '$destination'. '..' is not allowed"
@@ -263,9 +277,10 @@ internal class WorkspaceServiceImpl(
     require(file.originalFilename?.isBlank() != true) { "File name must not be blank" }
     require(
         file.originalFilename?.contains("..") != true &&
-            file.originalFilename?.startsWith("/") != true) {
-          "Invalid filename: '${file.originalFilename}'. File name should neither contains '..' nor and starts by '/'."
-        }
+            file.originalFilename?.startsWith("/") != true
+    ) {
+      "Invalid filename: '${file.originalFilename}'. File name should neither contains '..' nor and starts by '/'."
+    }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
 
     logger.debug(
@@ -273,12 +288,14 @@ internal class WorkspaceServiceImpl(
         workspace.id,
         workspace.name,
         file.originalFilename,
-        destination)
+        destination,
+    )
 
     resourceScanner.scanMimeTypes(
         file.originalFilename!!,
         file.inputStream,
-        csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+        csmPlatformProperties.upload.authorizedMimeTypes.workspaces,
+    )
     val fileRelativeDestinationBuilder = StringBuilder()
     if (destination.isNullOrBlank()) {
       fileRelativeDestinationBuilder.append(file.originalFilename)
@@ -295,7 +312,8 @@ internal class WorkspaceServiceImpl(
 
     if (!overwrite && s3Template.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
       throw IllegalArgumentException(
-          "File '$fileRelativeDestinationBuilder' already exists, not overwriting it")
+          "File '$fileRelativeDestinationBuilder' already exists, not overwriting it"
+      )
     }
 
     s3Template.upload(csmPlatformProperties.s3.bucketName, objectKey, file.inputStream)
@@ -304,7 +322,7 @@ internal class WorkspaceServiceImpl(
 
   override fun listWorkspaceFiles(
       organizationId: String,
-      workspaceId: String
+      workspaceId: String,
   ): List<WorkspaceFile> {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId)
 
@@ -357,17 +375,19 @@ internal class WorkspaceServiceImpl(
   private fun deleteS3WorkspaceObject(
       organizationId: String,
       workspace: Workspace,
-      fileName: String
+      fileName: String,
   ) {
     logger.debug(
         "Deleting file resource from workspace #{} ({}): {}",
         workspace.id,
         workspace.name,
-        fileName)
+        fileName,
+    )
     try {
       s3Template.deleteObject(
           csmPlatformProperties.s3.bucketName,
-          "$organizationId/${workspace.id}/$WORKSPACE_FILES_BASE_FOLDER/$fileName")
+          "$organizationId/${workspace.id}/$WORKSPACE_FILES_BASE_FOLDER/$fileName",
+      )
     } catch (e: AwsServiceException) {
       logger.error("Something wrong happened during $fileName deletion", e)
     } catch (e: SdkClientException) {
@@ -392,7 +412,7 @@ internal class WorkspaceServiceImpl(
   override fun listWorkspaceRolePermissions(
       organizationId: String,
       workspaceId: String,
-      role: String
+      role: String,
   ): List<String> {
     getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
     return getPermissions(role, getCommonRolesDefinition())
@@ -400,7 +420,7 @@ internal class WorkspaceServiceImpl(
 
   override fun getWorkspaceSecurity(
       organizationId: String,
-      workspaceId: String
+      workspaceId: String,
   ): WorkspaceSecurity {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
     return workspace.security
@@ -409,7 +429,7 @@ internal class WorkspaceServiceImpl(
   override fun updateWorkspaceDefaultSecurity(
       organizationId: String,
       workspaceId: String,
-      workspaceRole: WorkspaceRole
+      workspaceRole: WorkspaceRole,
   ): WorkspaceSecurity {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
@@ -422,7 +442,7 @@ internal class WorkspaceServiceImpl(
   override fun getWorkspaceAccessControl(
       organizationId: String,
       workspaceId: String,
-      identityId: String
+      identityId: String,
   ): WorkspaceAccessControl {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
     val rbacAccessControl =
@@ -433,13 +453,14 @@ internal class WorkspaceServiceImpl(
   override fun getVerifiedWorkspace(
       organizationId: String,
       workspaceId: String,
-      requiredPermission: String
+      requiredPermission: String,
   ): Workspace {
     organizationService.getVerifiedOrganization(organizationId)
     val workspace =
         workspaceRepository.findBy(organizationId, workspaceId).orElseThrow {
           CsmResourceNotFoundException(
-              "Workspace $workspaceId not found in organization $organizationId")
+              "Workspace $workspaceId not found in organization $organizationId"
+          )
         }
     csmRbac.verify(workspace.security.toGenericSecurity(workspaceId), requiredPermission)
     return workspace
@@ -448,7 +469,7 @@ internal class WorkspaceServiceImpl(
   override fun createWorkspaceAccessControl(
       organizationId: String,
       workspaceId: String,
-      workspaceAccessControl: WorkspaceAccessControl
+      workspaceAccessControl: WorkspaceAccessControl,
   ): WorkspaceAccessControl {
     val organization = organizationService.getVerifiedOrganization(organizationId)
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
@@ -461,12 +482,15 @@ internal class WorkspaceServiceImpl(
             organization.security.toGenericSecurity(organizationId),
             workspace.security.toGenericSecurity(workspaceId),
             workspaceAccessControl.id,
-            workspaceAccessControl.role)
+            workspaceAccessControl.role,
+        )
     workspace.security = rbacSecurity.toResourceSecurity()
     save(workspace)
     val rbacAccessControl =
         csmRbac.getAccessControl(
-            workspace.security.toGenericSecurity(workspaceId), workspaceAccessControl.id)
+            workspace.security.toGenericSecurity(workspaceId),
+            workspaceAccessControl.id,
+        )
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
@@ -474,16 +498,20 @@ internal class WorkspaceServiceImpl(
       organizationId: String,
       workspaceId: String,
       identityId: String,
-      workspaceRole: WorkspaceRole
+      workspaceRole: WorkspaceRole,
   ): WorkspaceAccessControl {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
     csmRbac.checkEntityExists(
         workspace.security.toGenericSecurity(workspaceId),
         identityId,
-        "User '$identityId' not found in workspace $workspaceId")
+        "User '$identityId' not found in workspace $workspaceId",
+    )
     val rbacSecurity =
         csmRbac.setEntityRole(
-            workspace.security.toGenericSecurity(workspaceId), identityId, workspaceRole.role)
+            workspace.security.toGenericSecurity(workspaceId),
+            identityId,
+            workspaceRole.role,
+        )
     workspace.security = rbacSecurity.toResourceSecurity()
     save(workspace)
     val rbacAccessControl =
@@ -494,7 +522,7 @@ internal class WorkspaceServiceImpl(
   override fun deleteWorkspaceAccessControl(
       organizationId: String,
       workspaceId: String,
-      identityId: String
+      identityId: String,
   ) {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
@@ -505,16 +533,18 @@ internal class WorkspaceServiceImpl(
 
   override fun listWorkspaceSecurityUsers(
       organizationId: String,
-      workspaceId: String
+      workspaceId: String,
   ): List<String> {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
     return csmRbac.getEntities(workspace.security.toGenericSecurity(workspaceId))
   }
 
   fun updateSecurityVisibility(workspace: Workspace): Workspace {
-    if (csmRbac
-        .check(workspace.security.toGenericSecurity(workspace.id), PERMISSION_READ_SECURITY)
-        .not()) {
+    if (
+        csmRbac
+            .check(workspace.security.toGenericSecurity(workspace.id), PERMISSION_READ_SECURITY)
+            .not()
+    ) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = workspace.security.accessControlList.firstOrNull { it.id == username }
 
@@ -528,7 +558,10 @@ internal class WorkspaceServiceImpl(
       return workspace.copy(
           security =
               WorkspaceSecurity(
-                  default = workspace.security.default, accessControlList = accessControlList))
+                  default = workspace.security.default,
+                  accessControlList = accessControlList,
+              )
+      )
     }
     return workspace
   }
@@ -537,7 +570,8 @@ internal class WorkspaceServiceImpl(
     workspace.updateInfo =
         WorkspaceEditInfo(
             timestamp = Instant.now().toEpochMilli(),
-            userId = getCurrentAccountIdentifier(csmPlatformProperties))
+            userId = getCurrentAccountIdentifier(csmPlatformProperties),
+        )
     return workspaceRepository.save(workspace)
   }
 }
@@ -547,9 +581,11 @@ fun WorkspaceSecurity?.toGenericSecurity(workspaceId: String) =
         workspaceId,
         this?.default ?: ROLE_NONE,
         this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
-            ?: mutableListOf())
+            ?: mutableListOf(),
+    )
 
 fun RbacSecurity.toResourceSecurity() =
     WorkspaceSecurity(
         this.default,
-        this.accessControlList.map { WorkspaceAccessControl(it.id, it.role) }.toMutableList())
+        this.accessControlList.map { WorkspaceAccessControl(it.id, it.role) }.toMutableList(),
+    )

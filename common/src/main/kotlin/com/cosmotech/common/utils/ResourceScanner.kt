@@ -24,7 +24,7 @@ class ResourceScanner {
   fun scanMimeTypes(
       fileName: String = ENTRY_NAME_UNKNOWN,
       inputStream: InputStream,
-      authorizedMimeTypes: List<String>
+      authorizedMimeTypes: List<String>,
   ) {
     val tika = TikaConfig()
     this.scanStream(tika, inputStream, fileName, authorizedMimeTypes)
@@ -34,7 +34,7 @@ class ResourceScanner {
       tika: TikaConfig,
       inputStream: InputStream,
       name: String,
-      authorizedMimeTypes: List<String>
+      authorizedMimeTypes: List<String>,
   ) {
     val metadata = Metadata()
     metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name)
@@ -51,14 +51,16 @@ class ResourceScanner {
       tika: TikaConfig,
       zipInputStream: ZipInputStream,
       fileName: String,
-      authorizedMimeTypes: List<String>
+      authorizedMimeTypes: List<String>,
   ) {
     this.logger.info("Scanning Zip file $fileName")
     var entry: ZipEntry?
-    while (run {
-      entry = zipInputStream.nextEntry
-      entry
-    } != null) {
+    while (
+        run {
+          entry = zipInputStream.nextEntry
+          entry
+        } != null
+    ) {
       this.logger.debug("Zip entry ${entry?.name}")
       if (entry?.isDirectory == true) {
         this.logger.debug("Directory detected")
@@ -76,7 +78,7 @@ class ResourceScanner {
   private fun validateMimeType(
       mimetype: String,
       fileName: String,
-      authorizedMimeTypes: List<String>
+      authorizedMimeTypes: List<String>,
   ) {
     if (!authorizedMimeTypes.contains(mimetype)) {
       throw CsmAccessForbiddenException("MIME type $mimetype for file $fileName is not authorized.")

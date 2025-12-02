@@ -17,19 +17,19 @@ interface WorkspaceRepository : RedisDocumentRepository<Workspace, String> {
   @Query("@organizationId:{\$organizationId} @id:{\$workspaceId}")
   fun findBy(
       @Sanitize @Param("organizationId") organizationId: String,
-      @Sanitize @Param("workspaceId") workspaceId: String
+      @Sanitize @Param("workspaceId") workspaceId: String,
   ): Optional<Workspace>
 
   @Query("@organizationId:{\$organizationId}")
   fun findByOrganizationId(
       @Sanitize @Param("organizationId") organizationId: String,
-      pageable: Pageable
+      pageable: Pageable,
   ): Page<Workspace>
 
   @Query("(@organizationId:{\$organizationId})  \$securityConstraint")
   fun findByOrganizationIdAndSecurity(
       @Sanitize @Param("organizationId") organizationId: String,
       @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
-      pageable: Pageable
+      pageable: Pageable,
   ): Page<Workspace>
 }

@@ -7,5 +7,5 @@ class ConnectorRemoved(publisher: Any, val connectorId: String) : CsmEvent(publi
 class ConnectorRemovedForOrganization(
     publisher: Any,
     val organizationId: String,
-    val connectorId: String
+    val connectorId: String,
 ) : CsmEvent(publisher)

@@ -37,7 +37,7 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
       exception: HttpMessageNotReadableException,
       headers: HttpHeaders,
       status: HttpStatusCode,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<Any>? {
     val badRequestStatus = HttpStatus.BAD_REQUEST
     val problemDetail = ProblemDetail.forStatus(badRequestStatus)
@@ -53,7 +53,7 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
       exception: MethodArgumentNotValidException,
       headers: HttpHeaders,
       status: HttpStatusCode,
-      request: WebRequest
+      request: WebRequest,
   ): ResponseEntity<Any>? {
     val badRequestStatus = HttpStatus.BAD_REQUEST
     val problemDetail = ProblemDetail.forStatus(badRequestStatus)

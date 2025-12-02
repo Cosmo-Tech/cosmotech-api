@@ -11,14 +11,14 @@ class AskRunStatusEvent(
     val organizationId: String,
     val workspaceId: String,
     val runnerId: String,
-    val runId: String
+    val runId: String,
 ) : CsmRequestResponseEvent<String>(publisher)
 
 class HasRunningRuns(
     publisher: Any,
     val organizationId: String,
     val workspaceId: String,
-    val runnerId: String
+    val runnerId: String,
 ) : CsmRequestResponseEvent<Boolean>(publisher)
 
 class RunDeleted(
@@ -27,5 +27,5 @@ class RunDeleted(
     val workspaceId: String,
     val runnerId: String,
     val runId: String,
-    val lastRun: String?
+    val lastRun: String?,
 ) : CsmEvent(publisher)

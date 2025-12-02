@@ -81,7 +81,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
   fun setUp() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     ReflectionTestUtils.setField(
-        solutionApiService, "containerRegistryService", containerRegistryService)
+        solutionApiService,
+        "containerRegistryService",
+        containerRegistryService,
+    )
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
@@ -107,7 +110,9 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(id = "one", parameterGroups = mutableListOf()),
-                    RunTemplateCreateRequest(id = "two", parameterGroups = mutableListOf())))
+                    RunTemplateCreateRequest(id = "two", parameterGroups = mutableListOf()),
+                )
+        )
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
     val runTemplateUpdated =
@@ -115,7 +120,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             organizationSaved.id,
             solutionSaved.id,
             "one",
-            RunTemplateUpdateRequest(name = "name_one"))
+            RunTemplateUpdateRequest(name = "name_one"),
+        )
 
     val solutionUpdated = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
     // Assert that no runTemplate were deleted
@@ -137,7 +143,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals(solutionCreated, solutionFound)
 
     logger.info(
-        "should find all solutions for the organization and assert the list contains 2 elements")
+        "should find all solutions for the organization and assert the list contains 2 elements"
+    )
     val solutionsFound = solutionApiService.listSolutions(organizationSaved.id, null, null)
     assertTrue(solutionsFound.size == 2)
 
@@ -145,11 +152,15 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val solutionUpdateRequest = SolutionUpdateRequest(name = "My solution updated")
     val solutionUpdated =
         solutionApiService.updateSolution(
-            organizationSaved.id, solutionCreated.id, solutionUpdateRequest)
+            organizationSaved.id,
+            solutionCreated.id,
+            solutionUpdateRequest,
+        )
     assertEquals("My solution updated", solutionUpdated.name)
 
     logger.info(
-        "should delete the solution and assert that the list of solutions contains only 1 element")
+        "should delete the solution and assert that the list of solutions contains only 1 element"
+    )
     solutionApiService.deleteSolution(organizationSaved.id, solutionCreated.id)
     val solutionsFoundAfterDelete =
         solutionApiService.listSolutions(organizationSaved.id, null, null)
@@ -182,12 +193,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                ),
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
-                    accessControlList =
-                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+                    accessControlList = mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN)),
+                ),
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -195,7 +207,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
 
     val solutionUpdated =
         solutionApiService.updateSolution(
-            organizationSaved.id, newSolution.id, SolutionUpdateRequest())
+            organizationSaved.id,
+            newSolution.id,
+            SolutionUpdateRequest(),
+        )
     assertEquals(newSolution, solutionUpdated)
   }
 
@@ -212,14 +227,17 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
 
               val solutionCreated =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               assertEquals(imageLabel, solutionCreated.sdkVersion)
 
               assertEquals(
                   imageLabel,
                   solutionApiService
                       .getSolution(organizationSaved.id, solutionCreated.id)
-                      .sdkVersion)
+                      .sdkVersion,
+              )
 
               val solutions = solutionApiService.listSolutions(organizationSaved.id, null, null)
               assertFalse(solutions.isEmpty())
@@ -228,7 +246,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
               val solutionUpdateRequest = SolutionUpdateRequest(name = "New name")
               val solutionUpdated =
                   solutionApiService.updateSolution(
-                      organizationSaved.id, solutionCreated.id, solutionUpdateRequest)
+                      organizationSaved.id,
+                      solutionCreated.id,
+                      solutionUpdateRequest,
+                  )
               assertEquals(solutionUpdateRequest.name, solutionUpdated.name)
               assertEquals(imageLabel, solutionUpdated.sdkVersion)
             }
@@ -278,7 +299,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
 
     val updateSolution =
         solutionApiService.updateSolution(
-            organizationSaved.id, solutionCreated.id, solutionUpdateRequest)
+            organizationSaved.id,
+            solutionCreated.id,
+            solutionUpdateRequest,
+        )
 
     updateSolution.id.let { solutionApiService.getSolution(organizationSaved.id, it) }
 
@@ -298,7 +322,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
 
     assertThrows<CsmAccessForbiddenException> {
       solutionApiService.updateSolution(
-          organizationSaved.id, solutionCreated.id, solutionUpdateRequest)
+          organizationSaved.id,
+          solutionCreated.id,
+          solutionUpdateRequest,
+      )
     }
   }
 
@@ -314,11 +341,14 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val exception =
         assertThrows<CsmResourceNotFoundException> {
           solutionApiService.listSolutionParameters(
-              organizationSaved.id, "non-existing-solution-id")
+              organizationSaved.id,
+              "non-existing-solution-id",
+          )
         }
     assertEquals(
         "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -337,7 +367,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         maxValue = "100",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
-                        additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0)),
+                        additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
+                    ),
                     RunTemplateParameterCreateRequest(
                         id = "parameterName2",
                         varType = "int",
@@ -346,7 +377,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         maxValue = "1000",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
-                        additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))))
+                        additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8),
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameters)
@@ -393,7 +427,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         maxValue = "100",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
-                        additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0)),
+                        additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
+                    ),
                     RunTemplateParameterCreateRequest(
                         id = "parameterName2",
                         varType = "int",
@@ -402,14 +437,20 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         maxValue = "1000",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
-                        additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))))
+                        additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8),
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameters)
 
     val solutionParameter =
         solutionApiService.getSolutionParameter(
-            organizationSaved.id, newSolution.id, newSolution.parameters[0].id)
+            organizationSaved.id,
+            newSolution.id,
+            newSolution.parameters[0].id,
+        )
 
     assertNotNull(solutionParameter)
     assertEquals("parameterName", solutionParameter.id)
@@ -429,11 +470,15 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val exception =
         assertThrows<CsmResourceNotFoundException> {
           solutionApiService.getSolutionParameter(
-              organizationSaved.id, solutionSaved.id, "non-existing-solution-parameter-id")
+              organizationSaved.id,
+              solutionSaved.id,
+              "non-existing-solution-parameter-id",
+          )
         }
     assertEquals(
         "Solution parameter with id non-existing-solution-parameter-id does not exist",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -451,7 +496,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         maxValue = "100",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
-                        additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0)),
+                        additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
+                    ),
                     RunTemplateParameterCreateRequest(
                         id = "parameterName2",
                         varType = "int",
@@ -460,7 +506,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         maxValue = "1000",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
-                        additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))))
+                        additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8),
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameters)
@@ -478,7 +527,9 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                 maxValue = "",
                 description = "new_this_is_a_description2",
                 labels = mutableMapOf("en" to "new_this_is_a_label2"),
-                additionalData = mutableMapOf("option1" to "newValue1")))
+                additionalData = mutableMapOf("option1" to "newValue1"),
+            ),
+        )
     assertNotNull(solutionParameter)
     assertEquals(parameterId, solutionParameter.id)
     assertEquals("string", solutionParameter.varType)
@@ -499,11 +550,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
               organizationSaved.id,
               solutionSaved.id,
               "non-existing-solution-parameter-id",
-              RunTemplateParameterUpdateRequest())
+              RunTemplateParameterUpdateRequest(),
+          )
         }
     assertEquals(
         "Solution parameter with id non-existing-solution-parameter-id does not exist",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -522,7 +575,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         maxValue = "100",
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
-                        additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0)),
+                        additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
+                    ),
                     RunTemplateParameterCreateRequest(
                         id = "parameterName2",
                         varType = "int",
@@ -531,7 +585,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         maxValue = "1000",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
-                        additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))))
+                        additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8),
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameters)
@@ -542,7 +599,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val parameterIdToDelete = listSolutionParameters[0].id
     val parameterIdToKeep = listSolutionParameters[1].id
     solutionApiService.deleteSolutionParameter(
-        organizationSaved.id, newSolution.id, parameterIdToDelete)
+        organizationSaved.id,
+        newSolution.id,
+        parameterIdToDelete,
+    )
 
     listSolutionParameters =
         solutionApiService.listSolutionParameters(organizationSaved.id, newSolution.id)
@@ -557,11 +617,15 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val exception =
         assertThrows<CsmResourceNotFoundException> {
           solutionApiService.deleteSolutionParameter(
-              organizationSaved.id, solutionSaved.id, "non-existing-solution-parameter-id")
+              organizationSaved.id,
+              solutionSaved.id,
+              "non-existing-solution-parameter-id",
+          )
         }
     assertEquals(
         "Solution parameter with id non-existing-solution-parameter-id does not exist",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -572,11 +636,15 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
               organizationSaved.id,
               "non-existing-solution-id",
               RunTemplateParameterCreateRequest(
-                  id = "my_parameter_name", varType = "my_varType_parameter"))
+                  id = "my_parameter_name",
+                  varType = "my_varType_parameter",
+              ),
+          )
         }
     assertEquals(
         "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -597,10 +665,14 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             maxValue = "1000",
             description = "this_is_a_description2",
             labels = mutableMapOf("fr" to "this_is_a_label2"),
-            additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))
+            additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8),
+        )
 
     solutionApiService.createSolutionParameter(
-        organizationSaved.id, newSolutionWithEmptyParameters.id, parameterCreateRequest)
+        organizationSaved.id,
+        newSolutionWithEmptyParameters.id,
+        parameterCreateRequest,
+    )
 
     val newSolutionWithNewParameter =
         solutionApiService.getSolution(organizationSaved.id, newSolutionWithEmptyParameters.id)
@@ -630,7 +702,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             maxValue = "1000",
             description = "this_is_a_description2",
             labels = mutableMapOf("fr" to "this_is_a_label2"),
-            additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8))
+            additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8),
+        )
     val newSolutionWithParameter =
         makeSolution(parameter = mutableListOf(solutionParameterCreateRequest))
 
@@ -644,7 +717,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
           solutionApiService.createSolutionParameter(
               organizationSaved.id,
               newSolutionWithEmptyParameters.id,
-              solutionParameterCreateRequest)
+              solutionParameterCreateRequest,
+          )
         }
 
     assertEquals("Parameter with id 'pAramEterName' already exists", exception.message)
@@ -663,7 +737,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                 maxValue = "1000",
                 description = "this_is_a_description2",
                 labels = mutableMapOf("fr" to "this_is_a_label2"),
-                additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8)),
+                additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8),
+            ),
             RunTemplateParameterCreateRequest(
                 id = "ParaMeterName",
                 varType = "int",
@@ -672,7 +747,9 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                 maxValue = "1000",
                 description = "this_is_a_description2",
                 labels = mutableMapOf("fr" to "this_is_a_label2"),
-                additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8)))
+                additionalData = mutableMapOf("option1" to "value1", "option2" to 100.8),
+            ),
+        )
 
     val newSolutionWithoutParameters = makeSolution(parameter = parametersCreateRequest)
 
@@ -692,7 +769,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     IntRange(1, numberOfSolutions - 1).forEach {
       solutionApiService.createSolution(
           organizationId = organizationSaved.id,
-          solutionCreateRequest = makeSolution(organizationSaved.id))
+          solutionCreateRequest = makeSolution(organizationSaved.id),
+      )
     }
     logger.info("should find all solutions and assert there are $numberOfSolutions")
     var solutions = solutionApiService.listSolutions(organizationSaved.id, null, null)
@@ -764,10 +842,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
               organizationSaved.id,
               baseSolutionSaved.id,
               "WrongRunTemplateId",
-              RunTemplateUpdateRequest())
+              RunTemplateUpdateRequest(),
+          )
         }
     assertEquals(
-        "Solution run template with id WrongRunTemplateId does not exist", assertThrows.message)
+        "Solution run template with id WrongRunTemplateId does not exist",
+        assertThrows.message,
+    )
   }
 
   @Test
@@ -783,7 +864,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     // should update the default security and assert it worked
     val solutionDefaultSecurity =
         solutionApiService.updateSolutionDefaultSecurity(
-            organizationSaved.id, solutionSaved.id, SolutionRole(ROLE_VIEWER))
+            organizationSaved.id,
+            solutionSaved.id,
+            SolutionRole(ROLE_VIEWER),
+        )
     solutionSaved = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
     assertEquals(solutionSaved.security, solutionDefaultSecurity)
   }
@@ -808,7 +892,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                     accessControlList =
                         mutableListOf(
                             SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                            SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
+                            SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR),
+                        ),
+                ),
+        )
     assertThrows<IllegalArgumentException> {
       solutionApiService.createSolution(organizationSaved.id, brokenSolution)
     }
@@ -825,7 +912,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
       solutionApiService.createSolutionAccessControl(
           organizationSaved.id,
           solutionSaved.id,
-          SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
+          SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR),
+      )
     }
   }
 
@@ -838,8 +926,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals(
         SolutionSecurity(
             default = ROLE_NONE,
-            mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER))),
-        solutionSaved.security)
+            mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER)),
+        ),
+        solutionSaved.security,
+    )
     assertEquals(1, solutionSaved.security.accessControlList.size)
   }
 
@@ -853,8 +943,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
       assertEquals(
           SolutionSecurity(
               default = ROLE_NONE,
-              mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER))),
-          it.security)
+              mutableListOf(SolutionAccessControl(CONNECTED_READER_USER, ROLE_VIEWER)),
+          ),
+          it.security,
+      )
       assertEquals(1, it.security.accessControlList.size)
     }
   }
@@ -884,12 +976,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                ),
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
-                    accessControlList =
-                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+                    accessControlList = mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN)),
+                ),
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -942,12 +1035,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                ),
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
-                    accessControlList =
-                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+                    accessControlList = mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN)),
+                ),
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -971,14 +1065,18 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             runTemplates = solutionRunTemplates,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(
-                        id = "parameterNameUpdated", varType = "int")),
+                    RunTemplateParameterCreateRequest(id = "parameterNameUpdated", varType = "int")
+                ),
             url = newUrl,
-            version = newVersion)
+            version = newVersion,
+        )
 
     solutionSaved =
         solutionApiService.updateSolution(
-            organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
+            organizationSaved.id,
+            solutionSaved.id,
+            solutionUpdateRequest,
+        )
 
     assertEquals(updatedKey, solutionSaved.key)
     assertEquals(updatedName, solutionSaved.name)
@@ -1024,12 +1122,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                ),
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
-                    accessControlList =
-                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+                    accessControlList = mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN)),
+                ),
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -1053,11 +1152,15 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             repository = updatedRepository,
             url = newUrl,
             version = newVersion,
-            parameters = mutableListOf())
+            parameters = mutableListOf(),
+        )
 
     solutionSaved =
         solutionApiService.updateSolution(
-            organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
+            organizationSaved.id,
+            solutionSaved.id,
+            solutionUpdateRequest,
+        )
 
     assertEquals(updatedKey, solutionSaved.key)
     assertEquals(updatedName, solutionSaved.name)
@@ -1101,12 +1204,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                ),
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
-                    accessControlList =
-                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+                    accessControlList = mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN)),
+                ),
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -1130,14 +1234,19 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(id = "PaRaMeTeRnAmE", varType = "string"),
-                    RunTemplateParameterCreateRequest(id = "pArAmEtErNaMe", varType = "string")),
+                    RunTemplateParameterCreateRequest(id = "pArAmEtErNaMe", varType = "string"),
+                ),
             url = newUrl,
-            version = newVersion)
+            version = newVersion,
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
           solutionApiService.updateSolution(
-              organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
+              organizationSaved.id,
+              solutionSaved.id,
+              solutionUpdateRequest,
+          )
         }
 
     assertEquals("One or several solution items have same id : parameters", exception.message)
@@ -1168,12 +1277,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                ),
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
-                    accessControlList =
-                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+                    accessControlList = mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN)),
+                ),
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -1202,7 +1312,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
 
     solutionSaved =
         solutionApiService.updateSolution(
-            organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
+            organizationSaved.id,
+            solutionSaved.id,
+            solutionUpdateRequest,
+        )
 
     assertEquals(updatedKey, solutionSaved.key)
     assertEquals(updatedName, solutionSaved.name)
@@ -1245,12 +1358,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")),
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                ),
             security =
                 SolutionSecurity(
                     default = ROLE_ADMIN,
-                    accessControlList =
-                        mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN))),
+                    accessControlList = mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN)),
+                ),
             url = solutionUrl,
             alwaysPull = true,
         )
@@ -1275,14 +1389,19 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(id = "PaRaMeTeRnAmE"),
-                    RunTemplateCreateRequest(id = "pArAmEtErNaMe")),
+                    RunTemplateCreateRequest(id = "pArAmEtErNaMe"),
+                ),
             url = newUrl,
-            version = newVersion)
+            version = newVersion,
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
           solutionApiService.updateSolution(
-              organizationSaved.id, solutionSaved.id, solutionUpdateRequest)
+              organizationSaved.id,
+              solutionSaved.id,
+              solutionUpdateRequest,
+          )
         }
 
     assertEquals("One or several solution items have same id : runTemplates", exception.message)
@@ -1300,11 +1419,14 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val exception =
         assertThrows<CsmResourceNotFoundException> {
           solutionApiService.listSolutionParameterGroups(
-              organizationSaved.id, "non-existing-solution-id")
+              organizationSaved.id,
+              "non-existing-solution-id",
+          )
         }
     assertEquals(
         "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1320,13 +1442,17 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-                        parameters = mutableListOf("parameterId1", "parameterId2")),
+                        parameters = mutableListOf("parameterId1", "parameterId2"),
+                    ),
                     RunTemplateParameterGroupCreateRequest(
                         id = "parameterGroupId2",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
                         additionalData = mutableMapOf("option2" to "value2", "option3" to 20.0),
-                        parameters = mutableListOf("parameterId3", "parameterId4"))))
+                        parameters = mutableListOf("parameterId3", "parameterId4"),
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameterGroups)
@@ -1362,20 +1488,27 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-                        parameters = mutableListOf("parameterId1", "parameterId2")),
+                        parameters = mutableListOf("parameterId1", "parameterId2"),
+                    ),
                     RunTemplateParameterGroupCreateRequest(
                         id = "parameterGroupId2",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
                         additionalData = mutableMapOf("option2" to "value2", "option3" to 20.0),
-                        parameters = mutableListOf("parameterId3", "parameterId4"))))
+                        parameters = mutableListOf("parameterId3", "parameterId4"),
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameterGroups)
 
     val solutionParameterGroup =
         solutionApiService.getSolutionParameterGroup(
-            organizationSaved.id, newSolution.id, newSolution.parameterGroups[0].id)
+            organizationSaved.id,
+            newSolution.id,
+            newSolution.parameterGroups[0].id,
+        )
 
     assertNotNull(solutionParameterGroup)
     assertEquals("parameterGroupId", solutionParameterGroup.id)
@@ -1392,11 +1525,15 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val exception =
         assertThrows<CsmResourceNotFoundException> {
           solutionApiService.getSolutionParameterGroup(
-              organizationSaved.id, solutionSaved.id, "non-existing-solution-parameter-group-id")
+              organizationSaved.id,
+              solutionSaved.id,
+              "non-existing-solution-parameter-group-id",
+          )
         }
     assertEquals(
         "Solution parameter group with id non-existing-solution-parameter-group-id does not exist",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1411,13 +1548,17 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-                        parameters = mutableListOf("parameterId1", "parameterId2")),
+                        parameters = mutableListOf("parameterId1", "parameterId2"),
+                    ),
                     RunTemplateParameterGroupCreateRequest(
                         id = "parameterGroupId2",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
                         additionalData = mutableMapOf("option2" to "value2", "option3" to 20.0),
-                        parameters = mutableListOf("parameterId3", "parameterId4"))))
+                        parameters = mutableListOf("parameterId3", "parameterId4"),
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameterGroups)
@@ -1432,7 +1573,9 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                 description = "this_is_a_description3",
                 labels = mutableMapOf("fr" to "this_is_a_label3"),
                 additionalData = mutableMapOf("option3" to "value1"),
-                parameters = mutableListOf("parameterId13", "parameterId23")))
+                parameters = mutableListOf("parameterId13", "parameterId23"),
+            ),
+        )
     assertNotNull(solutionParameterGroup)
     assertEquals(parameterGroupId, solutionParameterGroup.id)
     assertEquals("this_is_a_description3", solutionParameterGroup.description)
@@ -1450,11 +1593,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
               organizationSaved.id,
               solutionSaved.id,
               "non-existing-solution-parameter-group-id",
-              RunTemplateParameterGroupUpdateRequest())
+              RunTemplateParameterGroupUpdateRequest(),
+          )
         }
     assertEquals(
         "Solution parameter group with id non-existing-solution-parameter-group-id does not exist",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1470,13 +1615,17 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-                        parameters = mutableListOf("parameterId1", "parameterId2")),
+                        parameters = mutableListOf("parameterId1", "parameterId2"),
+                    ),
                     RunTemplateParameterGroupCreateRequest(
                         id = "parameterGroupId2",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
                         additionalData = mutableMapOf("option2" to "value2", "option3" to 20.0),
-                        parameters = mutableListOf("parameterId3", "parameterId4"))))
+                        parameters = mutableListOf("parameterId3", "parameterId4"),
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithParameterGroups)
@@ -1487,7 +1636,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val parameterGroupIdToDelete = listSolutionParameterGroups[0].id
     val parameterGroupIdToKeep = listSolutionParameterGroups[1].id
     solutionApiService.deleteSolutionParameterGroup(
-        organizationSaved.id, newSolution.id, parameterGroupIdToDelete)
+        organizationSaved.id,
+        newSolution.id,
+        parameterGroupIdToDelete,
+    )
 
     listSolutionParameterGroups =
         solutionApiService.listSolutionParameterGroups(organizationSaved.id, newSolution.id)
@@ -1502,11 +1654,15 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val exception =
         assertThrows<CsmResourceNotFoundException> {
           solutionApiService.deleteSolutionParameterGroup(
-              organizationSaved.id, solutionSaved.id, "non-existing-solution-parameter-group-id")
+              organizationSaved.id,
+              solutionSaved.id,
+              "non-existing-solution-parameter-group-id",
+          )
         }
     assertEquals(
         "Solution parameter group with id non-existing-solution-parameter-group-id does not exist",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1516,11 +1672,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
           solutionApiService.createSolutionParameterGroup(
               organizationSaved.id,
               "non-existing-solution-id",
-              RunTemplateParameterGroupCreateRequest(id = "my_parameter_group_name"))
+              RunTemplateParameterGroupCreateRequest(id = "my_parameter_group_name"),
+          )
         }
     assertEquals(
         "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1538,10 +1696,14 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             description = "this_is_a_description",
             labels = mutableMapOf("fr" to "this_is_a_label"),
             additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-            parameters = mutableListOf("parameterId1", "parameterId2"))
+            parameters = mutableListOf("parameterId1", "parameterId2"),
+        )
 
     solutionApiService.createSolutionParameterGroup(
-        organizationSaved.id, newSolutionWithEmptyParameterGroups.id, parameterGroupCreateRequest)
+        organizationSaved.id,
+        newSolutionWithEmptyParameterGroups.id,
+        parameterGroupCreateRequest,
+    )
 
     val newSolutionWithNewParameter =
         solutionApiService.getSolution(organizationSaved.id, newSolutionWithEmptyParameterGroups.id)
@@ -1566,19 +1728,24 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             description = "this_is_a_description",
             labels = mutableMapOf("fr" to "this_is_a_label"),
             additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-            parameters = mutableListOf("parameterId1", "parameterId2"))
+            parameters = mutableListOf("parameterId1", "parameterId2"),
+        )
 
     val newSolutionWithParameterGroup =
         solutionApiService.createSolution(
             organizationSaved.id,
-            makeSolution(parameterGroup = mutableListOf(parameterGroupCreateRequest)))
+            makeSolution(parameterGroup = mutableListOf(parameterGroupCreateRequest)),
+        )
 
     assertEquals(1, newSolutionWithParameterGroup.parameterGroups.size)
 
     val exception =
         assertThrows<IllegalArgumentException> {
           solutionApiService.createSolutionParameterGroup(
-              organizationSaved.id, newSolutionWithParameterGroup.id, parameterGroupCreateRequest)
+              organizationSaved.id,
+              newSolutionWithParameterGroup.id,
+              parameterGroupCreateRequest,
+          )
         }
 
     assertEquals("Parameter Group with id 'parameterGroupId' already exists", exception.message)
@@ -1597,18 +1764,24 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         description = "this_is_a_description",
                         labels = mutableMapOf("fr" to "this_is_a_label"),
                         additionalData = mutableMapOf("option1" to "value1", "option2" to 10.0),
-                        parameters = mutableListOf("parameterId1", "parameterId2")),
+                        parameters = mutableListOf("parameterId1", "parameterId2"),
+                    ),
                     RunTemplateParameterGroupCreateRequest(
                         id = "pArAmEtErGrOuPId",
                         description = "this_is_a_description2",
                         labels = mutableMapOf("fr" to "this_is_a_label2"),
                         additionalData = mutableMapOf("option2" to "value2", "option3" to 20.0),
-                        parameters = mutableListOf("parameterId3", "parameterId4"))))
+                        parameters = mutableListOf("parameterId3", "parameterId4"),
+                    ),
+                ),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
           solutionApiService.createSolution(
-              organizationSaved.id, newSolutionWithParameterGroupsDuplicateIds)
+              organizationSaved.id,
+              newSolutionWithParameterGroupsDuplicateIds,
+          )
         }
 
     assertEquals("One or several solution items have same id : parameterGroups", exception.message)
@@ -1629,7 +1802,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
         }
     assertEquals(
         "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1653,7 +1827,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                 limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
-                        executionTimeout = 10),
+                        executionTimeout = 10,
+                    ),
                     RunTemplateCreateRequest(
                         id = "runTemplateId2",
                         description = "this_is_a_description2",
@@ -1667,7 +1842,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                 limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
-                        executionTimeout = 20)))
+                        executionTimeout = 20,
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithRunTemplates)
@@ -1682,7 +1860,9 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals(mutableListOf("runTemplateTag1", "runTemplateTag2"), firstRunTemplate.tags)
     assertEquals("this_is_a_computeSize", firstRunTemplate.computeSize)
     assertEquals(
-        mutableListOf("parameterGroup1", "parameterGroup2"), firstRunTemplate.parameterGroups)
+        mutableListOf("parameterGroup1", "parameterGroup2"),
+        firstRunTemplate.parameterGroups,
+    )
     assertEquals(10, firstRunTemplate.executionTimeout!!)
     assertEquals("1Go", firstRunTemplate.runSizing?.requests?.cpu)
     assertEquals("1Go", firstRunTemplate.runSizing?.requests?.memory)
@@ -1696,7 +1876,9 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals(mutableListOf("runTemplateTag3", "runTemplateTag4"), secondRunTemplate.tags)
     assertEquals("this_is_a_computeSize2", secondRunTemplate.computeSize)
     assertEquals(
-        mutableListOf("parameterGroup3", "parameterGroup4"), secondRunTemplate.parameterGroups)
+        mutableListOf("parameterGroup3", "parameterGroup4"),
+        secondRunTemplate.parameterGroups,
+    )
     assertEquals(20, secondRunTemplate.executionTimeout!!)
     assertEquals("3Go", secondRunTemplate.runSizing?.requests?.cpu)
     assertEquals("3Go", secondRunTemplate.runSizing?.requests?.memory)
@@ -1724,7 +1906,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                 limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
-                        executionTimeout = 10),
+                        executionTimeout = 10,
+                    ),
                     RunTemplateCreateRequest(
                         id = "runTemplateId2",
                         description = "this_is_a_description2",
@@ -1738,14 +1921,20 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                 limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
-                        executionTimeout = 20)))
+                        executionTimeout = 20,
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithRunTemplates)
 
     val runTemplate =
         solutionApiService.getRunTemplate(
-            organizationSaved.id, newSolution.id, newSolution.runTemplates[0].id)
+            organizationSaved.id,
+            newSolution.id,
+            newSolution.runTemplates[0].id,
+        )
 
     assertNotNull(runTemplate)
     assertEquals("runTemplateId", runTemplate.id)
@@ -1767,11 +1956,15 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val exception =
         assertThrows<CsmResourceNotFoundException> {
           solutionApiService.getRunTemplate(
-              organizationSaved.id, solutionSaved.id, "non-existing-solution-run-template-id")
+              organizationSaved.id,
+              solutionSaved.id,
+              "non-existing-solution-run-template-id",
+          )
         }
     assertEquals(
         "Solution run template with id non-existing-solution-run-template-id does not exist",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1794,7 +1987,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                 limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
-                        executionTimeout = 10),
+                        executionTimeout = 10,
+                    ),
                     RunTemplateCreateRequest(
                         id = "runTemplateId2",
                         description = "this_is_a_description2",
@@ -1808,7 +2002,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                 limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
-                        executionTimeout = 20)))
+                        executionTimeout = 20,
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithRunTemplates)
@@ -1831,7 +2028,9 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         limits = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
                     ),
                 parameterGroups = mutableListOf("parameterGroup5"),
-                executionTimeout = 5))
+                executionTimeout = 5,
+            ),
+        )
     assertNotNull(runTemplate)
     assertEquals("runTemplateId", runTemplate.id)
     assertEquals("this_is_a_description3", runTemplate.description)
@@ -1855,11 +2054,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
               organizationSaved.id,
               solutionSaved.id,
               "non-existing-solution-run-template-id",
-              RunTemplateUpdateRequest())
+              RunTemplateUpdateRequest(),
+          )
         }
     assertEquals(
         "Solution run template with id non-existing-solution-run-template-id does not exist",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1883,7 +2084,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                 limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
-                        executionTimeout = 10),
+                        executionTimeout = 10,
+                    ),
                     RunTemplateCreateRequest(
                         id = "runTemplateId2",
                         description = "this_is_a_description2",
@@ -1897,7 +2099,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                 limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
-                        executionTimeout = 20)))
+                        executionTimeout = 20,
+                    ),
+                ),
+        )
 
     val newSolution =
         solutionApiService.createSolution(organizationSaved.id, newSolutionWithRunTemplates)
@@ -1907,7 +2112,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val runTemplateIdToDelete = listRunTemplates[0].id
     val runTemplateIdToKeep = listRunTemplates[1].id
     solutionApiService.deleteSolutionRunTemplate(
-        organizationSaved.id, newSolution.id, runTemplateIdToDelete)
+        organizationSaved.id,
+        newSolution.id,
+        runTemplateIdToDelete,
+    )
 
     listRunTemplates = solutionApiService.listRunTemplates(organizationSaved.id, newSolution.id)
 
@@ -1921,11 +2129,15 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val exception =
         assertThrows<CsmResourceNotFoundException> {
           solutionApiService.deleteSolutionRunTemplate(
-              organizationSaved.id, solutionSaved.id, "non-existing-solution-run-template-id")
+              organizationSaved.id,
+              solutionSaved.id,
+              "non-existing-solution-run-template-id",
+          )
         }
     assertEquals(
         "Solution run template with id non-existing-solution-run-template-id does not exist",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1935,11 +2147,13 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
           solutionApiService.createSolutionRunTemplate(
               organizationSaved.id,
               "non-existing-solution-id",
-              RunTemplateCreateRequest(id = "my_run_template_id"))
+              RunTemplateCreateRequest(id = "my_run_template_id"),
+          )
         }
     assertEquals(
         "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
-        exception.message)
+        exception.message,
+    )
   }
 
   @Test
@@ -1965,10 +2179,14 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                     limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
                 ),
             parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
-            executionTimeout = 10)
+            executionTimeout = 10,
+        )
 
     solutionApiService.createSolutionRunTemplate(
-        organizationSaved.id, newSolutionWithEmptyRunTemplates.id, runTemplateCreateRequest)
+        organizationSaved.id,
+        newSolutionWithEmptyRunTemplates.id,
+        runTemplateCreateRequest,
+    )
 
     val newSolutionWithNewRunTemplate =
         solutionApiService.getSolution(organizationSaved.id, newSolutionWithEmptyRunTemplates.id)
@@ -1983,7 +2201,9 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals(mutableListOf("runTemplateTag1", "runTemplateTag2"), newRunTemplate.tags)
     assertEquals("this_is_a_computeSize", newRunTemplate.computeSize)
     assertEquals(
-        mutableListOf("parameterGroup1", "parameterGroup2"), newRunTemplate.parameterGroups)
+        mutableListOf("parameterGroup1", "parameterGroup2"),
+        newRunTemplate.parameterGroups,
+    )
     assertEquals(10, newRunTemplate.executionTimeout!!)
     assertEquals("1Go", newRunTemplate.runSizing?.requests?.cpu)
     assertEquals("1Go", newRunTemplate.runSizing?.requests?.memory)
@@ -2007,19 +2227,24 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                     limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
                 ),
             parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
-            executionTimeout = 10)
+            executionTimeout = 10,
+        )
 
     val newSolutionWithRunTemplate =
         solutionApiService.createSolution(
             organizationSaved.id,
-            makeSolution(runTemplates = mutableListOf(runTemplateCreateRequest)))
+            makeSolution(runTemplates = mutableListOf(runTemplateCreateRequest)),
+        )
 
     assertEquals(1, newSolutionWithRunTemplate.runTemplates.size)
 
     val exception =
         assertThrows<IllegalArgumentException> {
           solutionApiService.createSolutionRunTemplate(
-              organizationSaved.id, newSolutionWithRunTemplate.id, runTemplateCreateRequest)
+              organizationSaved.id,
+              newSolutionWithRunTemplate.id,
+              runTemplateCreateRequest,
+          )
         }
 
     assertEquals("Run template with id 'runTemplateId' already exists", exception.message)
@@ -2046,7 +2271,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                 limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
-                        executionTimeout = 10),
+                        executionTimeout = 10,
+                    ),
                     RunTemplateCreateRequest(
                         id = "RuNtEmPlAtEId",
                         description = "this_is_a_description2",
@@ -2060,7 +2286,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                 limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
-                        executionTimeout = 20)))
+                        executionTimeout = 20,
+                    ),
+                ),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
@@ -2079,7 +2308,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     val updateTime = Instant.now().toEpochMilli()
     val solutionUpdated =
         solutionApiService.updateSolution(
-            organizationSaved.id, solutionSaved.id, SolutionUpdateRequest("solutionUpdated"))
+            organizationSaved.id,
+            solutionSaved.id,
+            SolutionUpdateRequest("solutionUpdated"),
+        )
 
     assertTrue { updateTime < solutionUpdated.updateInfo.timestamp }
     assertEquals(solutionSaved.createInfo, solutionUpdated.createInfo)
@@ -2098,7 +2330,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     solutionApiService.createSolutionParameter(
         organizationSaved.id,
         solutionSaved.id,
-        RunTemplateParameterCreateRequest(id = "id", varType = "varType"))
+        RunTemplateParameterCreateRequest(id = "id", varType = "varType"),
+    )
     val parameterAdded = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
 
     assertEquals(solutionSaved.createInfo, parameterAdded.createInfo)
@@ -2114,7 +2347,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
         organizationSaved.id,
         solutionSaved.id,
         "id",
-        RunTemplateParameterUpdateRequest("description"))
+        RunTemplateParameterUpdateRequest("description"),
+    )
     val parameterUpdated = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
 
     assertEquals(parameterFetched.createInfo, parameterUpdated.createInfo)
@@ -2131,7 +2365,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
   fun `assert timestamps are functional for parameterGroups CRUD`() {
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
     solutionApiService.createSolutionParameterGroup(
-        organizationSaved.id, solutionSaved.id, RunTemplateParameterGroupCreateRequest("id"))
+        organizationSaved.id,
+        solutionSaved.id,
+        RunTemplateParameterGroupCreateRequest("id"),
+    )
     val parameterGroupAdded = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
 
     assertEquals(solutionSaved.createInfo, parameterGroupAdded.createInfo)
@@ -2148,7 +2385,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
         organizationSaved.id,
         solutionSaved.id,
         "id",
-        RunTemplateParameterGroupUpdateRequest("description"))
+        RunTemplateParameterGroupUpdateRequest("description"),
+    )
     val parameterGroupUpdated =
         solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
 
@@ -2171,7 +2409,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
   fun `assert timestamps are functional for runTemplates CRUD`() {
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
     solutionApiService.createSolutionRunTemplate(
-        organizationSaved.id, solutionSaved.id, RunTemplateCreateRequest("id"))
+        organizationSaved.id,
+        solutionSaved.id,
+        RunTemplateCreateRequest("id"),
+    )
     val runTemplatedAdded = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
 
     assertEquals(solutionSaved.createInfo, runTemplatedAdded.createInfo)
@@ -2184,7 +2425,11 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals(runTemplatedAdded.updateInfo, runTemplateFetched.updateInfo)
 
     solutionApiService.updateSolutionRunTemplate(
-        organizationSaved.id, solutionSaved.id, "id", RunTemplateUpdateRequest("description"))
+        organizationSaved.id,
+        solutionSaved.id,
+        "id",
+        RunTemplateUpdateRequest("description"),
+    )
     val runTemplateUpdated = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
 
     assertEquals(runTemplateFetched.createInfo, runTemplateUpdated.createInfo)
@@ -2201,7 +2446,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
   fun `assert timestamps are functional for RBAC CRUD`() {
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, makeSolution())
     solutionApiService.createSolutionAccessControl(
-        organizationSaved.id, solutionSaved.id, SolutionAccessControl("newUser", ROLE_USER))
+        organizationSaved.id,
+        solutionSaved.id,
+        SolutionAccessControl("newUser", ROLE_USER),
+    )
     val rbacAdded = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
 
     assertEquals(solutionSaved.createInfo, rbacAdded.createInfo)
@@ -2214,14 +2462,21 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals(rbacAdded.updateInfo, rbacFetched.updateInfo)
 
     solutionApiService.updateSolutionAccessControl(
-        organizationSaved.id, solutionSaved.id, "newUser", SolutionRole(ROLE_VIEWER))
+        organizationSaved.id,
+        solutionSaved.id,
+        "newUser",
+        SolutionRole(ROLE_VIEWER),
+    )
     val rbacUpdated = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
 
     assertEquals(rbacFetched.createInfo, rbacUpdated.createInfo)
     assertTrue { rbacFetched.updateInfo.timestamp < rbacUpdated.updateInfo.timestamp }
 
     solutionApiService.deleteSolutionAccessControl(
-        organizationSaved.id, solutionSaved.id, "newUser")
+        organizationSaved.id,
+        solutionSaved.id,
+        "newUser",
+    )
     val rbacDeleted = solutionApiService.getSolution(organizationSaved.id, solutionSaved.id)
 
     assertEquals(rbacUpdated.createInfo, rbacDeleted.createInfo)
@@ -2237,7 +2492,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_READER_USER, role = ROLE_VIEWER),
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                    ),
+            ),
+    )
   }
 
   fun makeSolution(
@@ -2248,7 +2506,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
       parameter: MutableList<RunTemplateParameterCreateRequest> = mutableListOf(),
       parameterGroup: MutableList<RunTemplateParameterGroupCreateRequest> = mutableListOf(),
       userName: String = CONNECTED_READER_USER,
-      role: String = ROLE_VIEWER
+      role: String = ROLE_VIEWER,
   ) =
       SolutionCreateRequest(
           key = UUID.randomUUID().toString(),
@@ -2264,5 +2522,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           SolutionAccessControl(id = userName, role = role),
-                          SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+                          SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                      ),
+              ),
+      )
 }

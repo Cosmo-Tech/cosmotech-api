@@ -83,7 +83,8 @@ class OrganizationServiceImplTests {
         RbacSecurity(
             organization.id,
             organization.security.default,
-            mutableListOf(RbacAccessControl("ID", ROLE_VIEWER)))
+            mutableListOf(RbacAccessControl("ID", ROLE_VIEWER)),
+        )
     val rbacAccessControl = RbacAccessControl(USER_ID, ROLE_ADMIN)
     every { organizationRepository.findByIdOrNull(any()) } returns organization
     every { csmRbac.verify(any(), any()) } returns Unit
@@ -92,15 +93,22 @@ class OrganizationServiceImplTests {
 
     assertEquals(organization.security.default, rbacSecurity.default)
     assertEquals(
-        organization.security.accessControlList[0].id, rbacSecurity.accessControlList[0].id)
+        organization.security.accessControlList[0].id,
+        rbacSecurity.accessControlList[0].id,
+    )
     assertEquals(
-        organization.security.accessControlList[0].role, rbacSecurity.accessControlList[0].role)
+        organization.security.accessControlList[0].role,
+        rbacSecurity.accessControlList[0].role,
+    )
 
     every { organizationRepository.save(any()) } returns organization
     every { csmRbac.getAccessControl(any(), any()) } returns rbacAccessControl
     val organizationAccessControl =
         organizationApiService.updateOrganizationAccessControl(
-            ORGANIZATION_ID, USER_ID, organizationRole)
+            ORGANIZATION_ID,
+            USER_ID,
+            organizationRole,
+        )
     assertEquals(organizationAccessControl.id, rbacAccessControl.id)
     assertEquals(organizationAccessControl.role, rbacAccessControl.role)
   }
@@ -115,7 +123,10 @@ class OrganizationServiceImplTests {
     val organizationRole = OrganizationRole(role = ROLE_VIEWER)
     assertThrows<CsmResourceNotFoundException> {
       organizationApiService.updateOrganizationAccessControl(
-          ORGANIZATION_ID, USER_ID, organizationRole)
+          ORGANIZATION_ID,
+          USER_ID,
+          organizationRole,
+      )
     }
   }
 
@@ -127,7 +138,8 @@ class OrganizationServiceImplTests {
         RbacSecurity(
             id = organization.id,
             default = ROLE_VIEWER,
-            accessControlList = mutableListOf(RbacAccessControl(id = "ID", role = ROLE_VIEWER)))
+            accessControlList = mutableListOf(RbacAccessControl(id = "ID", role = ROLE_VIEWER)),
+        )
     assertEquals(expectedRbac, rbacExtension)
   }
 
@@ -138,13 +150,16 @@ class OrganizationServiceImplTests {
         RbacSecurity(
             id = organization.id,
             default = ROLE_VIEWER,
-            accessControlList = mutableListOf(RbacAccessControl(id = "ID2", role = ROLE_ADMIN)))
+            accessControlList = mutableListOf(RbacAccessControl(id = "ID2", role = ROLE_ADMIN)),
+        )
     organization.security = newRbacSecurity.toResourceSecurity()
     assertEquals(newRbacSecurity, organization.security.toGenericSecurity(organization.id))
 
     val expectedOrganizationSecurity =
         OrganizationSecurity(
-            ROLE_VIEWER, mutableListOf(OrganizationAccessControl("ID2", ROLE_ADMIN)))
+            ROLE_VIEWER,
+            mutableListOf(OrganizationAccessControl("ID2", ROLE_ADMIN)),
+        )
 
     assertEquals(expectedOrganizationSecurity, organization.security)
   }
@@ -157,7 +172,8 @@ class OrganizationServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC read: $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -173,7 +189,8 @@ class OrganizationServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC unregister : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -190,7 +207,8 @@ class OrganizationServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC update : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -207,7 +225,8 @@ class OrganizationServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC getOrganizationSecurity : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -223,13 +242,16 @@ class OrganizationServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC setOrganizationDefaultSecurity : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
               organizationApiService.updateOrganizationDefaultSecurity(
-                  it.id, OrganizationRole(role))
+                  it.id,
+                  OrganizationRole(role),
+              )
             }
           }
 
@@ -241,7 +263,8 @@ class OrganizationServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC getOrganizationAccessControl : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -257,13 +280,16 @@ class OrganizationServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC addOrganizationAccessControl : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
               organizationApiService.createOrganizationAccessControl(
-                  it.id, OrganizationAccessControl("id", "viewer"))
+                  it.id,
+                  OrganizationAccessControl("id", "viewer"),
+              )
             }
           }
 
@@ -275,13 +301,17 @@ class OrganizationServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC updateOrganizationAccessControl : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
               every { organizationRepository.save(any()) } returns it
               organizationApiService.updateOrganizationAccessControl(
-                  it.id, "2$USER_ID", OrganizationRole("user"))
+                  it.id,
+                  "2$USER_ID",
+                  OrganizationRole("user"),
+              )
             }
           }
 
@@ -293,7 +323,8 @@ class OrganizationServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC removeOrganizationAccessControl  : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -310,7 +341,8 @@ class OrganizationServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get users with role : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -322,7 +354,7 @@ class OrganizationServiceImplTests {
       name: String,
       role: String,
       shouldThrow: Boolean,
-      testLambda: (organization: Organization) -> Unit
+      testLambda: (organization: Organization) -> Unit,
   ): DynamicTest? {
     val organization = makeOrganizationRequestWithRole(USER_ID, role)
     return DynamicTest.dynamicTest(name) {
@@ -347,20 +379,26 @@ class OrganizationServiceImplTests {
                     mutableListOf(
                         OrganizationAccessControl(name, role),
                         OrganizationAccessControl("2$name", "viewer"),
-                        OrganizationAccessControl("admin", ROLE_ADMIN))))
+                        OrganizationAccessControl("admin", ROLE_ADMIN),
+                    ),
+            ),
+    )
   }
 
   fun getMockOrganization(): Organization {
     val security =
         OrganizationSecurity(
-            ROLE_VIEWER, mutableListOf(OrganizationAccessControl("ID", ROLE_VIEWER)))
+            ROLE_VIEWER,
+            mutableListOf(OrganizationAccessControl("ID", ROLE_VIEWER)),
+        )
     val organization =
         Organization(
             id = ORGANIZATION_ID,
             name = "name",
             createInfo = OrganizationEditInfo(0, ""),
             updateInfo = OrganizationEditInfo(0, ""),
-            security = security)
+            security = security,
+        )
     return organization
   }
 }

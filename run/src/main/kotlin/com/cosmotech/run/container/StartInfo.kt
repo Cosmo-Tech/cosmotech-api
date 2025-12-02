@@ -29,34 +29,40 @@ data class Sizing(val requests: SizingInfo, val limits: SizingInfo)
 fun Sizing.toContainerResourceSizing(): ContainerResourceSizing {
   return ContainerResourceSizing(
       requests = ContainerResourceSizeInfo(cpu = this.requests.cpu, memory = this.requests.memory),
-      limits = ContainerResourceSizeInfo(cpu = this.limits.cpu, memory = this.limits.memory))
+      limits = ContainerResourceSizeInfo(cpu = this.limits.cpu, memory = this.limits.memory),
+  )
 }
 
 internal val BASIC_SIZING =
     Sizing(
         requests = SizingInfo(cpu = "3", memory = "4Gi"),
-        limits = SizingInfo(cpu = "3", memory = "4Gi"))
+        limits = SizingInfo(cpu = "3", memory = "4Gi"),
+    )
 
 internal val HIGH_MEMORY_SIZING =
     Sizing(
         requests = SizingInfo(cpu = "7", memory = "57Gi"),
-        limits = SizingInfo(cpu = "7", memory = "57Gi"))
+        limits = SizingInfo(cpu = "7", memory = "57Gi"),
+    )
 
 internal val HIGH_CPU_SIZING =
     Sizing(
         requests = SizingInfo(cpu = "70", memory = "130Gi"),
-        limits = SizingInfo(cpu = "70", memory = "130Gi"))
+        limits = SizingInfo(cpu = "70", memory = "130Gi"),
+    )
 
 fun RunnerResourceSizing.toSizing(): Sizing {
   return Sizing(
       requests = SizingInfo(cpu = this.requests.cpu, memory = this.requests.memory),
-      limits = SizingInfo(cpu = this.limits.cpu, memory = this.limits.memory))
+      limits = SizingInfo(cpu = this.limits.cpu, memory = this.limits.memory),
+  )
 }
 
 fun RunTemplateResourceSizing.toSizing(): Sizing {
   return Sizing(
       requests = SizingInfo(cpu = this.requests.cpu, memory = this.requests.memory),
-      limits = SizingInfo(cpu = this.limits.cpu, memory = this.limits.memory))
+      limits = SizingInfo(cpu = this.limits.cpu, memory = this.limits.memory),
+  )
 }
 
 fun ContainerResourceSizing.getRequestsMap(): Map<String, Quantity> {

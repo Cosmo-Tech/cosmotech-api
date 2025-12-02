@@ -191,7 +191,12 @@ class WorkspaceServiceImplTests {
 
     val workspaceFile =
         workspaceServiceImpl.createWorkspaceFile(
-            ORGANIZATION_ID, WORKSPACE_ID, file, false, "my/destination/")
+            ORGANIZATION_ID,
+            WORKSPACE_ID,
+            file,
+            false,
+            "my/destination/",
+        )
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/destination/my_file.txt", workspaceFile.fileName)
   }
@@ -209,7 +214,12 @@ class WorkspaceServiceImplTests {
 
     val workspaceFile =
         workspaceServiceImpl.createWorkspaceFile(
-            ORGANIZATION_ID, WORKSPACE_ID, file, false, "my/destination/file")
+            ORGANIZATION_ID,
+            WORKSPACE_ID,
+            file,
+            false,
+            "my/destination/file",
+        )
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/destination/file", workspaceFile.fileName)
   }
@@ -227,7 +237,12 @@ class WorkspaceServiceImplTests {
 
     val workspaceFile =
         workspaceServiceImpl.createWorkspaceFile(
-            ORGANIZATION_ID, WORKSPACE_ID, file, false, "my//other/destination////////file")
+            ORGANIZATION_ID,
+            WORKSPACE_ID,
+            file,
+            false,
+            "my//other/destination////////file",
+        )
     assertNotNull(workspaceFile.fileName)
     assertEquals("my/other/destination/file", workspaceFile.fileName)
   }
@@ -236,7 +251,12 @@ class WorkspaceServiceImplTests {
   fun `Calling uploadWorkspaceFile is not allowed when destination contains double-dot`() {
     assertThrows<IllegalArgumentException> {
       workspaceServiceImpl.createWorkspaceFile(
-          ORGANIZATION_ID, WORKSPACE_ID, mockk(), false, "my/../other/destination/../../file")
+          ORGANIZATION_ID,
+          WORKSPACE_ID,
+          mockk(),
+          false,
+          "my/../other/destination/../../file",
+      )
     }
   }
 
@@ -244,7 +264,10 @@ class WorkspaceServiceImplTests {
   fun `Calling downloadWorkspaceFile is not allowed when filename contains double-dot`() {
     assertThrows<IllegalArgumentException> {
       workspaceServiceImpl.getWorkspaceFile(
-          ORGANIZATION_ID, WORKSPACE_ID, "my/../../other/destination/file")
+          ORGANIZATION_ID,
+          WORKSPACE_ID,
+          "my/../../other/destination/file",
+      )
     }
   }
 
@@ -257,7 +280,8 @@ class WorkspaceServiceImplTests {
             solutionId = "SOL-my-solution-id",
             workspaceName = "my workspace name",
             roleName = "",
-            role = "")
+            role = "",
+        )
     workspace.security = WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
     every { solutionService.getSolution(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
@@ -276,7 +300,8 @@ class WorkspaceServiceImplTests {
             organizationId = ORGANIZATION_ID,
             workspaceName = "my workspace name",
             roleName = CONNECTED_DEFAULT_USER,
-            role = ROLE_ADMIN)
+            role = ROLE_ADMIN,
+        )
     every { workspaceRepository.findBy(any(), WORKSPACE_ID) } returns Optional.of(workspace)
     every { solutionService.getSolution(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
@@ -287,7 +312,9 @@ class WorkspaceServiceImplTests {
           WorkspaceUpdateRequest(
               key = "my-workspace-key-renamed",
               name = "my workspace name (renamed)",
-              solution = WorkspaceSolution(solutionId = "SOL-my-new-solution-id")))
+              solution = WorkspaceSolution(solutionId = "SOL-my-new-solution-id"),
+          ),
+      )
     }
 
     verify(exactly = 0) { workspaceRepository.save(ofType(Workspace::class)) }
@@ -301,7 +328,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC read workspace: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
@@ -317,20 +345,26 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC create workspace: $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it.organization
               listOf(PERMISSION_READ, PERMISSION_CREATE_CHILDREN).forEach { permission ->
                 csmRbac.verify(
-                    it.organization.security.toGenericSecurity(it.organization.id), permission)
+                    it.organization.security.toGenericSecurity(it.organization.id),
+                    permission,
+                )
               }
               every { workspaceRepository.save(any()) } returns it.workspace
               every { solutionService.getSolution(any(), any()) } returns it.solution
               workspaceServiceImpl.createWorkspace(
                   it.organization.id,
                   mockWorkspaceCreateRequest(
-                      solutionId = it.solution.id, workspaceName = "workspace"))
+                      solutionId = it.solution.id,
+                      workspaceName = "workspace",
+                  ),
+              )
             }
           }
 
@@ -342,7 +376,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete all workspace files: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
@@ -358,7 +393,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC update workspace: $role", role, shouldThrow) {
               every { solutionService.getSolution(any(), any()) } returns it.solution
@@ -367,7 +403,8 @@ class WorkspaceServiceImplTests {
               workspaceServiceImpl.updateWorkspace(
                   it.organization.id,
                   it.workspace.id,
-                  WorkspaceUpdateRequest(key = it.workspace.key, name = "new name"))
+                  WorkspaceUpdateRequest(key = it.workspace.key, name = "new name"),
+              )
             }
           }
 
@@ -379,7 +416,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete workspace: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
@@ -395,7 +433,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
@@ -411,7 +450,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC download workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
@@ -427,13 +467,19 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC upload workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
               every { workspaceFile.originalFilename } returns "fakeName"
               workspaceServiceImpl.createWorkspaceFile(
-                  it.organization.id, it.workspace.id, workspaceFile, true, "name")
+                  it.organization.id,
+                  it.workspace.id,
+                  workspaceFile,
+                  true,
+                  "name",
+              )
             }
           }
 
@@ -445,7 +491,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC findAllWorkspaceFiles: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
@@ -461,7 +508,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get workspace security: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
@@ -477,13 +525,17 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC set workspace default security: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.updateWorkspaceDefaultSecurity(
-                  it.organization.id, it.workspace.id, WorkspaceRole(ROLE_NONE))
+                  it.organization.id,
+                  it.workspace.id,
+                  WorkspaceRole(ROLE_NONE),
+              )
             }
           }
 
@@ -495,12 +547,16 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC get workspace access control: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
               workspaceServiceImpl.getWorkspaceAccessControl(
-                  it.organization.id, it.workspace.id, CONNECTED_DEFAULT_USER)
+                  it.organization.id,
+                  it.workspace.id,
+                  CONNECTED_DEFAULT_USER,
+              )
             }
           }
 
@@ -512,7 +568,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC add workspace access control: $role", role, shouldThrow) {
               every { workspaceRepository.save(any()) } returns it.workspace
@@ -520,7 +577,8 @@ class WorkspaceServiceImplTests {
               workspaceServiceImpl.createWorkspaceAccessControl(
                   it.organization.id,
                   it.workspace.id,
-                  WorkspaceAccessControl("3$CONNECTED_DEFAULT_USER", ROLE_USER))
+                  WorkspaceAccessControl("3$CONNECTED_DEFAULT_USER", ROLE_USER),
+              )
             }
           }
 
@@ -532,7 +590,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC update workspace access control: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
@@ -541,7 +600,8 @@ class WorkspaceServiceImplTests {
                   it.organization.id,
                   it.workspace.id,
                   "2$CONNECTED_DEFAULT_USER",
-                  WorkspaceRole(ROLE_USER))
+                  WorkspaceRole(ROLE_USER),
+              )
             }
           }
 
@@ -553,13 +613,17 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to true,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC remove workspace access control: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.deleteWorkspaceAccessControl(
-                  it.organization.id, it.workspace.id, "2$CONNECTED_DEFAULT_USER")
+                  it.organization.id,
+                  it.workspace.id,
+                  "2$CONNECTED_DEFAULT_USER",
+              )
             }
           }
 
@@ -571,7 +635,8 @@ class WorkspaceServiceImplTests {
               ROLE_ADMIN to false,
               ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to true,
+          )
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC get workspace security users: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
@@ -584,7 +649,7 @@ class WorkspaceServiceImplTests {
       testName: String,
       role: String,
       shouldThrow: Boolean,
-      testLambda: (ctx: WorkspaceTestContext) -> Unit
+      testLambda: (ctx: WorkspaceTestContext) -> Unit,
   ): DynamicTest? {
     val organization = mockOrganization(username = CONNECTED_DEFAULT_USER, role = role)
     val solution = mockSolution(organization.id)
@@ -604,12 +669,12 @@ class WorkspaceServiceImplTests {
   data class WorkspaceTestContext(
       val organization: Organization,
       val solution: Solution,
-      val workspace: Workspace
+      val workspace: Workspace,
   )
 
   fun mockOrganization(
       username: String = CONNECTED_DEFAULT_USER,
-      role: String = ROLE_ADMIN
+      role: String = ROLE_ADMIN,
   ): Organization {
     return Organization(
         id = "organizationId",
@@ -622,7 +687,10 @@ class WorkspaceServiceImplTests {
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(id = username, role = role),
-                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                    ),
+            ),
+    )
   }
 
   fun mockSolution(organizationId: String): Solution {
@@ -642,14 +710,17 @@ class WorkspaceServiceImplTests {
             mutableListOf(RunTemplate(id = "template", parameterGroups = mutableListOf())),
         security =
             SolutionSecurity(
-                ROLE_ADMIN, mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+                ROLE_ADMIN,
+                mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN)),
+            ),
+    )
   }
 
   private fun mockWorkspaceCreateRequest(
       solutionId: String,
       workspaceName: String,
       roleName: String = CONNECTED_ADMIN_USER,
-      role: String = ROLE_ADMIN
+      role: String = ROLE_ADMIN,
   ) =
       WorkspaceCreateRequest(
           key = UUID.randomUUID().toString(),
@@ -661,14 +732,17 @@ class WorkspaceServiceImplTests {
                   accessControlList =
                       mutableListOf(
                           WorkspaceAccessControl(id = roleName, role = role),
-                          WorkspaceAccessControl("2$roleName", "viewer"))))
+                          WorkspaceAccessControl("2$roleName", "viewer"),
+                      ),
+              ),
+      )
 
   private fun mockWorkspace(
       organizationId: String,
       solutionId: String,
       workspaceName: String,
       roleName: String = CONNECTED_ADMIN_USER,
-      role: String = ROLE_ADMIN
+      role: String = ROLE_ADMIN,
   ): Workspace {
     return Workspace(
         id = UUID.randomUUID().toString(),
@@ -687,6 +761,9 @@ class WorkspaceServiceImplTests {
                 accessControlList =
                     mutableListOf(
                         WorkspaceAccessControl(id = roleName, role = role),
-                        WorkspaceAccessControl("2$roleName", "viewer"))))
+                        WorkspaceAccessControl("2$roleName", "viewer"),
+                    ),
+            ),
+    )
   }
 }

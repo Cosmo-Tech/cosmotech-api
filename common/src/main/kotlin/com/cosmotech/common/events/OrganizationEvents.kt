@@ -11,7 +11,7 @@ class UserAddedToOrganization(
     val organizationId: String,
     val organizationName: String,
     val userId: String,
-    val roles: List<String>? = null
+    val roles: List<String>? = null,
 ) : CsmEvent(publisher)
 
 class UserRemovedFromOrganization(publisher: Any, val organizationId: String, val userId: String) :
@@ -20,5 +20,5 @@ class UserRemovedFromOrganization(publisher: Any, val organizationId: String, va
 class UserUnregisteredForOrganization(
     publisher: Any,
     val organizationId: String,
-    val userId: String
+    val userId: String,
 ) : CsmEvent(publisher)

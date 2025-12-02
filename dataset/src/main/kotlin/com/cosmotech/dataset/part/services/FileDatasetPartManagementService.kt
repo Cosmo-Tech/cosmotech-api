@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile
 @Service("File")
 class FileDatasetPartManagementService(
     private val csmPlatformProperties: CsmPlatformProperties,
-    private val s3Template: S3Template
+    private val s3Template: S3Template,
 ) : DatasetPartManagementService {
 
   private val logger = LoggerFactory.getLogger(FileDatasetPartManagementService::class.java)
@@ -49,9 +49,13 @@ class FileDatasetPartManagementService(
             datasetPart.organizationId,
             datasetPart.workspaceId,
             datasetPart.datasetId,
-            datasetPart.id)
+            datasetPart.id,
+        )
     logger.debug(
-        "Downloading file resource for dataset part #{} from path {}", datasetPart.id, filePath)
+        "Downloading file resource for dataset part #{} from path {}",
+        datasetPart.id,
+        filePath,
+    )
     return s3Template.download(csmPlatformProperties.s3.bucketName, filePath)
   }
 
@@ -61,7 +65,8 @@ class FileDatasetPartManagementService(
             datasetPart.organizationId,
             datasetPart.workspaceId,
             datasetPart.datasetId,
-            datasetPart.id)
+            datasetPart.id,
+        )
     logger.debug("Deleting file resource from workspace #{} from path {}", datasetPart.id, filePath)
 
     s3Template.deleteObject(csmPlatformProperties.s3.bucketName, filePath)
@@ -71,7 +76,7 @@ class FileDatasetPartManagementService(
       organizationId: String,
       workspaceId: String,
       datasetId: String,
-      datasetPartId: String
+      datasetPartId: String,
   ) = "$organizationId/$workspaceId/$datasetId/$datasetPartId"
 
   private fun uploadFile(
@@ -79,7 +84,7 @@ class FileDatasetPartManagementService(
       overwrite: Boolean,
       fileName: String,
       fileSize: Long,
-      file: InputStream
+      file: InputStream,
   ) {
     val fileAlreadyExists = s3Template.objectExists(csmPlatformProperties.s3.bucketName, filePath)
 

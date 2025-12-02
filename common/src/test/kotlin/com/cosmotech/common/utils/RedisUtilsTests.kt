@@ -18,7 +18,8 @@ class RedisUtilsTests {
             Pair(1, 10) to PageRequest.of(1, 10),
             Pair(null, 10) to PageRequest.of(0, 10),
             Pair(1, null) to PageRequest.of(1, DEFAULT_MAX_PAGE_SIZE),
-            Pair(null, null) to null)
+            Pair(null, null) to null,
+        )
         .forEach { (input, expected) ->
           val actual = constructPageRequest(input.first, input.second, DEFAULT_MAX_PAGE_SIZE)
           assertEquals(expected, actual)

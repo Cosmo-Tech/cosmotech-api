@@ -49,7 +49,8 @@ val RUNNER_ROLE_VALIDATOR_PERMISSIONS =
         PERMISSION_READ_SECURITY,
         PERMISSION_LAUNCH,
         PERMISSION_WRITE,
-        PERMISSION_VALIDATE)
+        PERMISSION_VALIDATE,
+    )
 val RUNNER_ROLE_ADMIN_PERMISSIONS =
     listOf(
         PERMISSION_READ,
@@ -64,7 +65,7 @@ val RUNNER_ROLE_ADMIN_PERMISSIONS =
 @Component
 data class RolesDefinition(
     val permissions: MutableMap<String, List<String>> = mutableMapOf(),
-    val adminRole: String = ROLE_ADMIN
+    val adminRole: String = ROLE_ADMIN,
 )
 
 fun getAllRolesDefinition(): Map<String, MutableMap<String, MutableList<String>>> {
@@ -83,7 +84,8 @@ fun getAllRolesDefinition(): Map<String, MutableMap<String, MutableList<String>>
           getRunnerRolesDefinition()
               .permissions
               .mapValues { it.value.toMutableList() }
-              .toMutableMap())
+              .toMutableMap(),
+  )
 }
 
 fun getPermissions(role: String, rolesDefinition: RolesDefinition): List<String> {
@@ -100,7 +102,8 @@ fun getCommonRolesDefinition(): RolesDefinition {
               ROLE_EDITOR to COMMON_ROLE_EDITOR_PERMISSIONS,
               ROLE_ADMIN to COMMON_ROLE_ADMIN_PERMISSIONS,
           ),
-      adminRole = ROLE_ADMIN)
+      adminRole = ROLE_ADMIN,
+  )
 }
 
 fun getRunnerRolesDefinition(): RolesDefinition {
@@ -113,5 +116,6 @@ fun getRunnerRolesDefinition(): RolesDefinition {
               ROLE_VALIDATOR to RUNNER_ROLE_VALIDATOR_PERMISSIONS,
               ROLE_ADMIN to RUNNER_ROLE_ADMIN_PERMISSIONS,
           ),
-      adminRole = ROLE_ADMIN)
+      adminRole = ROLE_ADMIN,
+  )
 }

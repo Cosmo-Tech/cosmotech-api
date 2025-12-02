@@ -51,7 +51,7 @@ fun <T> T.convertToMap(): Map<String, Any> =
 inline fun <reified T> T.compareToAndMutateIfNeeded(
     new: T,
     mutateIfChanged: Boolean = true,
-    excludedFields: Array<String> = emptyArray()
+    excludedFields: Array<String> = emptyArray(),
 ): Set<String> {
   if (!T::class.isData) {
     throw UnsupportedOperationException("${T::class} is not a data class")
@@ -85,7 +85,8 @@ inline fun <reified T> T.compareToAndMutateIfNeeded(
                         "this object because property ${member.name} " +
                         "(on class ${T::class}) is not mutable. " +
                         "Either exclude this field or call this function with " +
-                        "mutateIfChanged=false to view the changes detected")
+                        "mutateIfChanged=false to view the changes detected"
+                )
               }
               member.setter.call(this, newValue)
             }

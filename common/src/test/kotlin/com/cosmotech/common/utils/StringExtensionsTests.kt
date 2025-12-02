@@ -48,7 +48,8 @@ class StringExtensionsTests {
             "name" to "Joe Doe",
             "id" to "100",
             "object" to "{id:\"id\"}",
-            "array" to "{id:['one', 'two']}")
+            "array" to "{id:['one', 'two']}",
+        )
     val actual = "CREATE (:Person {name: \$name, id: \$id, object: \$object, array: \$array)"
     val expected =
         "CREATE (:Person {name: \"Joe Doe\", id: \"100\", object: \"{id:\\\"id\\\"}\", " +

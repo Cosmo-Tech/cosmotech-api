@@ -55,7 +55,7 @@ class SolutionServiceImpl(
     private val organizationApiService: OrganizationApiServiceInterface,
     private val csmRbac: CsmRbac,
     private val csmAdmin: CsmAdmin,
-    private val containerRegistryService: ContainerRegistryService
+    private val containerRegistryService: ContainerRegistryService,
 ) : CsmPhoenixService(), SolutionApiServiceInterface {
 
   override fun listSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
@@ -102,7 +102,7 @@ class SolutionServiceImpl(
       organizationId: String,
       workspaceId: String,
       solutionId: String,
-      runTemplateId: String
+      runTemplateId: String,
   ): Boolean {
     val solution = getSolution(organizationId, solutionId)
 
@@ -111,7 +111,7 @@ class SolutionServiceImpl(
 
   override fun createSolution(
       organizationId: String,
-      solutionCreateRequest: SolutionCreateRequest
+      solutionCreateRequest: SolutionCreateRequest,
   ): Solution {
     organizationApiService.getVerifiedOrganization(organizationId, PERMISSION_CREATE_CHILDREN)
 
@@ -125,7 +125,8 @@ class SolutionServiceImpl(
     checkParametersAndRunTemplateUnicity(
         solutionCreateRequest.parameters,
         solutionCreateRequest.parameterGroups,
-        solutionCreateRequest.runTemplates)
+        solutionCreateRequest.runTemplates,
+    )
 
     val solutionRunTemplateParameters =
         solutionCreateRequest.parameters?.map { convertToRunTemplateParameter(it) }?.toMutableList()
@@ -147,10 +148,14 @@ class SolutionServiceImpl(
             name = solutionCreateRequest.name,
             createInfo =
                 SolutionEditInfo(
-                    timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                    timestamp = now,
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                ),
             updateInfo =
                 SolutionEditInfo(
-                    timestamp = now, userId = getCurrentAccountIdentifier(csmPlatformProperties)),
+                    timestamp = now,
+                    userId = getCurrentAccountIdentifier(csmPlatformProperties),
+                ),
             description = solutionCreateRequest.description,
             repository = solutionCreateRequest.repository,
             version = solutionCreateRequest.version,
@@ -161,7 +166,8 @@ class SolutionServiceImpl(
             parameterGroups = solutionRunTemplateParameterGroups,
             url = solutionCreateRequest.url,
             alwaysPull = solutionCreateRequest.alwaysPull,
-            security = security)
+            security = security,
+        )
 
     return fillSdkVersion(solutionRepository.save(createdSolution))
   }
@@ -179,7 +185,7 @@ class SolutionServiceImpl(
   override fun createSolutionRunTemplate(
       organizationId: String,
       solutionId: String,
-      runTemplateCreateRequest: RunTemplateCreateRequest
+      runTemplateCreateRequest: RunTemplateCreateRequest,
   ): RunTemplate {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     val runTemplateIdAlreadyExist =
@@ -201,13 +207,14 @@ class SolutionServiceImpl(
   override fun getRunTemplate(
       organizationId: String,
       solutionId: String,
-      runTemplateId: String
+      runTemplateId: String,
   ): RunTemplate {
     val solution = getVerifiedSolution(organizationId, solutionId)
     val solutionRunTemplate =
         solution.runTemplates.firstOrNull { it.id == runTemplateId }
             ?: throw CsmResourceNotFoundException(
-                "Solution run template with id $runTemplateId does not exist")
+                "Solution run template with id $runTemplateId does not exist"
+            )
     return solutionRunTemplate
   }
 
@@ -215,7 +222,7 @@ class SolutionServiceImpl(
       organizationId: String,
       solutionId: String,
       runTemplateId: String,
-      runTemplateUpdateRequest: RunTemplateUpdateRequest
+      runTemplateUpdateRequest: RunTemplateUpdateRequest,
   ): RunTemplate {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     existingSolution.runTemplates
@@ -231,7 +238,8 @@ class SolutionServiceImpl(
           executionTimeout = runTemplateUpdateRequest.executionTimeout ?: this.executionTimeout
         }
         ?: throw CsmResourceNotFoundException(
-            "Solution run template with id $runTemplateId does not exist")
+            "Solution run template with id $runTemplateId does not exist"
+        )
 
     val solutionSaved = save(existingSolution)
 
@@ -241,13 +249,14 @@ class SolutionServiceImpl(
   override fun deleteSolutionRunTemplate(
       organizationId: String,
       solutionId: String,
-      runTemplateId: String
+      runTemplateId: String,
   ) {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
     if (!existingSolution.runTemplates.removeIf { it.id == runTemplateId }) {
       throw CsmResourceNotFoundException(
-          "Solution run template with id $runTemplateId does not exist")
+          "Solution run template with id $runTemplateId does not exist"
+      )
     }
     save(existingSolution)
   }
@@ -255,14 +264,15 @@ class SolutionServiceImpl(
   override fun updateSolution(
       organizationId: String,
       solutionId: String,
-      solutionUpdateRequest: SolutionUpdateRequest
+      solutionUpdateRequest: SolutionUpdateRequest,
   ): Solution {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
     checkParametersAndRunTemplateUnicity(
         solutionUpdateRequest.parameters,
         solutionUpdateRequest.parameterGroups,
-        solutionUpdateRequest.runTemplates)
+        solutionUpdateRequest.runTemplates,
+    )
 
     val solutionRunTemplateParameters =
         solutionUpdateRequest.parameters?.map { convertToRunTemplateParameter(it) }?.toMutableList()
@@ -294,7 +304,8 @@ class SolutionServiceImpl(
             parameters = solutionRunTemplateParameters,
             parameterGroups = solutionRunTemplateParameterGroups,
             runTemplates = solutionRunTemplates,
-            security = existingSolution.security)
+            security = existingSolution.security,
+        )
 
     val hasChanged =
         existingSolution
@@ -324,7 +335,7 @@ class SolutionServiceImpl(
 
   override fun listSolutionParameters(
       organizationId: String,
-      solutionId: String
+      solutionId: String,
   ): List<RunTemplateParameter> {
     val solution = getVerifiedSolution(organizationId, solutionId)
     return solution.parameters
@@ -333,7 +344,7 @@ class SolutionServiceImpl(
   override fun updateSolutionDefaultSecurity(
       organizationId: String,
       solutionId: String,
-      solutionRole: SolutionRole
+      solutionRole: SolutionRole,
   ): SolutionSecurity {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
@@ -346,7 +357,7 @@ class SolutionServiceImpl(
   override fun createSolutionAccessControl(
       organizationId: String,
       solutionId: String,
-      solutionAccessControl: SolutionAccessControl
+      solutionAccessControl: SolutionAccessControl,
   ): SolutionAccessControl {
     val organization = organizationApiService.getVerifiedOrganization(organizationId)
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
@@ -361,18 +372,21 @@ class SolutionServiceImpl(
             organization.security.toGenericSecurity(organizationId),
             solution.security.toGenericSecurity(solutionId),
             solutionAccessControl.id,
-            solutionAccessControl.role)
+            solutionAccessControl.role,
+        )
     solution.security = rbacSecurity.toResourceSecurity()
     save(solution)
     val rbacAccessControl =
         csmRbac.getAccessControl(
-            solution.security.toGenericSecurity(solutionId), solutionAccessControl.id)
+            solution.security.toGenericSecurity(solutionId),
+            solutionAccessControl.id,
+        )
     return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
   override fun listSolutionParameterGroups(
       organizationId: String,
-      solutionId: String
+      solutionId: String,
   ): List<RunTemplateParameterGroup> {
     val solution = getVerifiedSolution(organizationId, solutionId)
     return solution.parameterGroups
@@ -381,7 +395,7 @@ class SolutionServiceImpl(
   override fun createSolutionParameterGroup(
       organizationId: String,
       solutionId: String,
-      runTemplateParameterGroupCreateRequest: RunTemplateParameterGroupCreateRequest
+      runTemplateParameterGroupCreateRequest: RunTemplateParameterGroupCreateRequest,
   ): RunTemplateParameterGroup {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     val parameterIdAlreadyExist =
@@ -404,13 +418,14 @@ class SolutionServiceImpl(
   override fun getSolutionParameterGroup(
       organizationId: String,
       solutionId: String,
-      parameterGroupId: String
+      parameterGroupId: String,
   ): RunTemplateParameterGroup {
     val solution = getVerifiedSolution(organizationId, solutionId)
     val solutionParameterGroup =
         solution.parameterGroups.firstOrNull { it.id == parameterGroupId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter group with id $parameterGroupId does not exist")
+                "Solution parameter group with id $parameterGroupId does not exist"
+            )
     return solutionParameterGroup
   }
 
@@ -418,7 +433,7 @@ class SolutionServiceImpl(
       organizationId: String,
       solutionId: String,
       parameterGroupId: String,
-      runTemplateParameterGroupUpdateRequest: RunTemplateParameterGroupUpdateRequest
+      runTemplateParameterGroupUpdateRequest: RunTemplateParameterGroupUpdateRequest,
   ): RunTemplateParameterGroup {
 
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
@@ -432,7 +447,8 @@ class SolutionServiceImpl(
           parameters = runTemplateParameterGroupUpdateRequest.parameters ?: this.parameters
         }
         ?: throw CsmResourceNotFoundException(
-            "Solution parameter group with id $parameterGroupId does not exist")
+            "Solution parameter group with id $parameterGroupId does not exist"
+        )
 
     val solutionSaved = save(existingSolution)
 
@@ -442,13 +458,14 @@ class SolutionServiceImpl(
   override fun deleteSolutionParameterGroup(
       organizationId: String,
       solutionId: String,
-      parameterGroupId: String
+      parameterGroupId: String,
   ) {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     val solutionParameterGroup =
         solution.parameterGroups.firstOrNull { it.id == parameterGroupId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter group with id $parameterGroupId does not exist")
+                "Solution parameter group with id $parameterGroupId does not exist"
+            )
     solution.parameterGroups.remove(solutionParameterGroup)
     save(solution)
   }
@@ -456,7 +473,7 @@ class SolutionServiceImpl(
   override fun getSolutionAccessControl(
       organizationId: String,
       solutionId: String,
-      identityId: String
+      identityId: String,
   ): SolutionAccessControl {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ_SECURITY)
     val rbacAccessControl =
@@ -467,7 +484,7 @@ class SolutionServiceImpl(
   override fun createSolutionParameter(
       organizationId: String,
       solutionId: String,
-      runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest
+      runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest,
   ): RunTemplateParameter {
 
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
@@ -493,7 +510,7 @@ class SolutionServiceImpl(
       organizationId: String,
       solutionId: String,
       parameterId: String,
-      runTemplateParameterUpdateRequest: RunTemplateParameterUpdateRequest
+      runTemplateParameterUpdateRequest: RunTemplateParameterUpdateRequest,
   ): RunTemplateParameter {
 
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
@@ -509,7 +526,8 @@ class SolutionServiceImpl(
           additionalData = runTemplateParameterUpdateRequest.additionalData ?: this.additionalData
         }
         ?: throw CsmResourceNotFoundException(
-            "Solution parameter with id $parameterId does not exist")
+            "Solution parameter with id $parameterId does not exist"
+        )
 
     val solutionSaved = save(existingSolution)
 
@@ -519,26 +537,28 @@ class SolutionServiceImpl(
   override fun getSolutionParameter(
       organizationId: String,
       solutionId: String,
-      parameterId: String
+      parameterId: String,
   ): RunTemplateParameter {
     val solution = getVerifiedSolution(organizationId, solutionId)
     val solutionParameter =
         solution.parameters.firstOrNull { it.id == parameterId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter with id $parameterId does not exist")
+                "Solution parameter with id $parameterId does not exist"
+            )
     return solutionParameter
   }
 
   override fun deleteSolutionParameter(
       organizationId: String,
       solutionId: String,
-      parameterId: String
+      parameterId: String,
   ) {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     val solutionParameter =
         solution.parameters.firstOrNull { it.id == parameterId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter with id $parameterId does not exist")
+                "Solution parameter with id $parameterId does not exist"
+            )
 
     solution.parameters.remove(solutionParameter)
     save(solution)
@@ -548,16 +568,20 @@ class SolutionServiceImpl(
       organizationId: String,
       solutionId: String,
       identityId: String,
-      solutionRole: SolutionRole
+      solutionRole: SolutionRole,
   ): SolutionAccessControl {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
     csmRbac.checkEntityExists(
         solution.security.toGenericSecurity(solutionId),
         identityId,
-        "User '$identityId' not found in solution $solutionId")
+        "User '$identityId' not found in solution $solutionId",
+    )
     val rbacSecurity =
         csmRbac.setEntityRole(
-            solution.security.toGenericSecurity(solutionId), identityId, solutionRole.role)
+            solution.security.toGenericSecurity(solutionId),
+            identityId,
+            solutionRole.role,
+        )
     solution.security = rbacSecurity.toResourceSecurity()
     save(solution)
     val rbacAccessControl =
@@ -568,7 +592,7 @@ class SolutionServiceImpl(
   override fun deleteSolutionAccessControl(
       organizationId: String,
       solutionId: String,
-      identityId: String
+      identityId: String,
   ) {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
@@ -585,22 +609,25 @@ class SolutionServiceImpl(
   override fun getVerifiedSolution(
       organizationId: String,
       solutionId: String,
-      requiredPermission: String
+      requiredPermission: String,
   ): Solution {
     organizationApiService.getVerifiedOrganization(organizationId)
     val solution =
         solutionRepository.findBy(organizationId, solutionId).orElseThrow {
           CsmResourceNotFoundException(
-              "Solution $solutionId not found in organization $organizationId")
+              "Solution $solutionId not found in organization $organizationId"
+          )
         }
     csmRbac.verify(solution.security.toGenericSecurity(solutionId), requiredPermission)
     return solution
   }
 
   fun updateSecurityVisibility(solution: Solution): Solution {
-    if (csmRbac
-        .check(solution.security.toGenericSecurity(solution.id), PERMISSION_READ_SECURITY)
-        .not()) {
+    if (
+        csmRbac
+            .check(solution.security.toGenericSecurity(solution.id), PERMISSION_READ_SECURITY)
+            .not()
+    ) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
       val retrievedAC = solution.security.accessControlList.firstOrNull { it.id == username }
 
@@ -614,7 +641,10 @@ class SolutionServiceImpl(
       return solution.copy(
           security =
               SolutionSecurity(
-                  default = solution.security.default, accessControlList = accessControlList))
+                  default = solution.security.default,
+                  accessControlList = accessControlList,
+              )
+      )
     }
     return solution
   }
@@ -623,7 +653,11 @@ class SolutionServiceImpl(
       solution.copy(
           sdkVersion =
               containerRegistryService.getImageLabel(
-                  solution.repository, solution.version, "com.cosmotech.sdk-version"))
+                  solution.repository,
+                  solution.version,
+                  "com.cosmotech.sdk-version",
+              )
+      )
 
   fun convertToRunTemplateParameter(
       runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest
@@ -636,7 +670,8 @@ class SolutionServiceImpl(
         defaultValue = runTemplateParameterCreateRequest.defaultValue,
         minValue = runTemplateParameterCreateRequest.minValue,
         maxValue = runTemplateParameterCreateRequest.maxValue,
-        additionalData = runTemplateParameterCreateRequest.additionalData)
+        additionalData = runTemplateParameterCreateRequest.additionalData,
+    )
   }
 
   fun convertToRunTemplateParameterGroup(
@@ -647,7 +682,8 @@ class SolutionServiceImpl(
         description = runTemplateParameterGroupCreateRequest.description,
         labels = runTemplateParameterGroupCreateRequest.labels,
         additionalData = runTemplateParameterGroupCreateRequest.additionalData,
-        parameters = runTemplateParameterGroupCreateRequest.parameters!!)
+        parameters = runTemplateParameterGroupCreateRequest.parameters!!,
+    )
   }
 
   fun convertToRunTemplate(runTemplateCreateRequest: RunTemplateCreateRequest): RunTemplate {
@@ -660,31 +696,38 @@ class SolutionServiceImpl(
         tags = runTemplateCreateRequest.tags,
         computeSize = runTemplateCreateRequest.computeSize,
         runSizing = runTemplateCreateRequest.runSizing,
-        executionTimeout = runTemplateCreateRequest.executionTimeout)
+        executionTimeout = runTemplateCreateRequest.executionTimeout,
+    )
   }
 
   private fun checkParametersAndRunTemplateUnicity(
       parameters: MutableList<RunTemplateParameterCreateRequest>?,
       parameterGroups: MutableList<RunTemplateParameterGroupCreateRequest>?,
-      runTemplates: MutableList<RunTemplateCreateRequest>?
+      runTemplates: MutableList<RunTemplateCreateRequest>?,
   ) {
 
     val duplicatedFieldIds = mutableListOf<String>()
 
-    if (parameters?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty() ==
-        true) {
+    if (
+        parameters?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty() ==
+            true
+    ) {
       duplicatedFieldIds.add("parameters")
     }
 
-    if (parameterGroups
-        ?.groupBy { it.id.lowercase() }
-        ?.filterValues { it.size > 1 }
-        ?.isNotEmpty() == true) {
+    if (
+        parameterGroups
+            ?.groupBy { it.id.lowercase() }
+            ?.filterValues { it.size > 1 }
+            ?.isNotEmpty() == true
+    ) {
       duplicatedFieldIds.add("parameterGroups")
     }
 
-    if (runTemplates?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty() ==
-        true) {
+    if (
+        runTemplates?.groupBy { it.id.lowercase() }?.filterValues { it.size > 1 }?.isNotEmpty() ==
+            true
+    ) {
       duplicatedFieldIds.add("runTemplates")
     }
 
@@ -697,7 +740,8 @@ class SolutionServiceImpl(
     solution.updateInfo =
         SolutionEditInfo(
             timestamp = Instant.now().toEpochMilli(),
-            userId = getCurrentAccountIdentifier(csmPlatformProperties))
+            userId = getCurrentAccountIdentifier(csmPlatformProperties),
+        )
 
     return solutionRepository.save(solution)
   }
@@ -708,9 +752,11 @@ fun SolutionSecurity?.toGenericSecurity(solutionId: String) =
         solutionId,
         this?.default ?: ROLE_NONE,
         this?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
-            ?: mutableListOf())
+            ?: mutableListOf(),
+    )
 
 fun RbacSecurity.toResourceSecurity() =
     SolutionSecurity(
         this.default,
-        this.accessControlList.map { SolutionAccessControl(it.id, it.role) }.toMutableList())
+        this.accessControlList.map { SolutionAccessControl(it.id, it.role) }.toMutableList(),
+    )

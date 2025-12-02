@@ -12,5 +12,6 @@ fun Runner.getRbac(): RbacSecurity {
   return RbacSecurity(
       this.id,
       this.security.default,
-      this.security.accessControlList.map { RbacAccessControl(it.id, it.role) }.toMutableList())
+      this.security.accessControlList.map { RbacAccessControl(it.id, it.role) }.toMutableList(),
+  )
 }

@@ -125,7 +125,9 @@ class DatasetServiceRBACTest : CsmTestBase() {
                 "files",
                 CUSTOMER_SOURCE_FILE_NAME,
                 MediaType.MULTIPART_FORM_DATA_VALUE,
-                IOUtils.toByteArray(fileToSend)))
+                IOUtils.toByteArray(fileToSend),
+            )
+        )
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
@@ -145,7 +147,11 @@ class DatasetServiceRBACTest : CsmTestBase() {
     dataset = makeDatasetCreateRequest()
     datasetSaved =
         datasetApiService.createDataset(
-            organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+            organizationSaved.id,
+            workspaceSaved.id,
+            dataset,
+            mockMultipartFiles,
+        )
   }
 
   @TestFactory
@@ -172,22 +178,35 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                       mutableListOf(
                                           DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                           DatasetAccessControl(
-                                              id = CONNECTED_DEFAULT_USER, role = role)))),
-                      mockMultipartFiles)
+                                              id = CONNECTED_DEFAULT_USER,
+                                              role = role,
+                                          ),
+                                      ),
+                              )
+                      ),
+                      mockMultipartFiles,
+                  )
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.getDataset(
-                          organizationSaved.id, workspaceSaved.id, datasetCreated.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetCreated.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetCreated.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDataset(
-                      organizationSaved.id, workspaceSaved.id, datasetCreated.id)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetCreated.id,
+                  )
                 }
               }
             }
@@ -215,10 +234,19 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               if (shouldThrow) {
                 val exception =
@@ -227,18 +255,21 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           datasetSaved.id,
-                          DatasetAccessControl("NewUser", role))
+                          DatasetAccessControl("NewUser", role),
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.createDatasetAccessControl(
                       organizationSaved.id,
                       workspaceSaved.id,
                       datasetSaved.id,
-                      DatasetAccessControl("NewUser", role))
+                      DatasetAccessControl("NewUser", role),
+                  )
                 }
               }
             }
@@ -271,15 +302,26 @@ class DatasetServiceRBACTest : CsmTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.searchDatasets(
-                          organizationSaved.id, workspaceSaved.id, listOf(), null, null)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          listOf(),
+                          null,
+                          null,
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.searchDatasets(
-                      organizationSaved.id, workspaceSaved.id, listOf(), null, null)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      listOf(),
+                      null,
+                      null,
+                  )
                 }
               }
             }
@@ -307,24 +349,40 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.deleteDataset(
-                          organizationSaved.id, workspaceSaved.id, datasetSaved.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetSaved.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_DELETE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.deleteDataset(
-                      organizationSaved.id, workspaceSaved.id, datasetSaved.id)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetSaved.id,
+                  )
                 }
               }
             }
@@ -352,10 +410,19 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               if (shouldThrow) {
                 val exception =
@@ -364,18 +431,21 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           datasetSaved.id,
-                          CONNECTED_DEFAULT_USER)
+                          CONNECTED_DEFAULT_USER,
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.deleteDatasetAccessControl(
                       organizationSaved.id,
                       workspaceSaved.id,
                       datasetSaved.id,
-                      CONNECTED_DEFAULT_USER)
+                      CONNECTED_DEFAULT_USER,
+                  )
                 }
               }
             }
@@ -398,7 +468,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   makeOrganizationCreateRequest(
                       name = "Organization test",
                       userName = CONNECTED_DEFAULT_USER,
-                      role = ROLE_USER)
+                      role = ROLE_USER,
+                  )
               organizationSaved = organizationApiService.createOrganization(organization)
 
               solution = makeSolution()
@@ -416,23 +487,37 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetSaved =
                           datasetApiService.createDataset(
-                              organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                              organizationSaved.id,
+                              workspaceSaved.id,
+                              dataset,
+                              mockMultipartFiles,
+                          )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_CREATE_CHILDREN",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetSaved =
                       datasetApiService.createDataset(
-                          organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          dataset,
+                          mockMultipartFiles,
+                      )
                 }
               }
             }
@@ -460,10 +545,19 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               if (shouldThrow) {
                 val exception =
@@ -472,18 +566,21 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           datasetSaved.id,
-                          CONNECTED_DEFAULT_USER)
+                          CONNECTED_DEFAULT_USER,
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetAccessControl(
                       organizationSaved.id,
                       workspaceSaved.id,
                       datasetSaved.id,
-                      CONNECTED_DEFAULT_USER)
+                      CONNECTED_DEFAULT_USER,
+                  )
                 }
               }
             }
@@ -511,24 +608,40 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.listDatasetSecurityUsers(
-                          organizationSaved.id, workspaceSaved.id, datasetSaved.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetSaved.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.listDatasetSecurityUsers(
-                      organizationSaved.id, workspaceSaved.id, datasetSaved.id)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetSaved.id,
+                  )
                 }
               }
             }
@@ -551,7 +664,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   makeOrganizationCreateRequest(
                       name = "Organization test",
                       userName = CONNECTED_DEFAULT_USER,
-                      role = ROLE_USER)
+                      role = ROLE_USER,
+                  )
               organizationSaved = organizationApiService.createOrganization(organization)
 
               solution = makeSolution()
@@ -564,15 +678,24 @@ class DatasetServiceRBACTest : CsmTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.listDatasets(
-                          organizationSaved.id, workspaceSaved.id, null, null)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          null,
+                          null,
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.listDatasets(
-                      organizationSaved.id, workspaceSaved.id, null, null)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      null,
+                      null,
+                  )
                 }
               }
             }
@@ -595,7 +718,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   makeOrganizationCreateRequest(
                       name = "Organization test",
                       userName = CONNECTED_DEFAULT_USER,
-                      role = ROLE_USER)
+                      role = ROLE_USER,
+                  )
               organizationSaved = organizationApiService.createOrganization(organization)
 
               solution = makeSolution()
@@ -613,12 +737,21 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
 
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
@@ -630,11 +763,13 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           workspaceSaved.id,
                           datasetSaved.id,
                           DatasetUpdateRequest(),
-                          arrayOf())
+                          arrayOf(),
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.updateDataset(
@@ -642,7 +777,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       workspaceSaved.id,
                       datasetSaved.id,
                       DatasetUpdateRequest(),
-                      arrayOf())
+                      arrayOf(),
+                  )
                 }
               }
             }
@@ -670,10 +806,19 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               if (shouldThrow) {
                 val exception =
@@ -684,11 +829,13 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           datasetSaved.id,
                           listOf(),
                           null,
-                          null)
+                          null,
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.searchDatasetParts(
@@ -697,7 +844,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       datasetSaved.id,
                       listOf(),
                       null,
-                      null)
+                      null,
+                  )
                 }
               }
             }
@@ -725,10 +873,19 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               if (shouldThrow) {
                 val exception =
@@ -738,11 +895,13 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           workspaceSaved.id,
                           datasetSaved.id,
                           CONNECTED_DEFAULT_USER,
-                          DatasetRole(role))
+                          DatasetRole(role),
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.updateDatasetAccessControl(
@@ -750,7 +909,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       workspaceSaved.id,
                       datasetSaved.id,
                       CONNECTED_DEFAULT_USER,
-                      DatasetRole(role))
+                      DatasetRole(role),
+                  )
                 }
               }
             }
@@ -778,10 +938,19 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               if (shouldThrow) {
                 val exception =
@@ -790,15 +959,21 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           datasetSaved.id,
-                          DatasetRole(role))
+                          DatasetRole(role),
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.updateDatasetDefaultSecurity(
-                      organizationSaved.id, workspaceSaved.id, datasetSaved.id, DatasetRole(role))
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetSaved.id,
+                      DatasetRole(role),
+                  )
                 }
               }
             }
@@ -819,7 +994,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   makeOrganizationCreateRequest(
                       name = "Organization test",
                       userName = CONNECTED_DEFAULT_USER,
-                      role = ROLE_USER)
+                      role = ROLE_USER,
+                  )
               organizationSaved = organizationApiService.createOrganization(organization)
 
               solution = makeSolution()
@@ -838,11 +1014,20 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
 
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
@@ -854,11 +1039,13 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           workspaceSaved.id,
                           datasetSaved.id,
                           mockMultipartFiles[0],
-                          makeDatasetPartCreateRequest())
+                          makeDatasetPartCreateRequest(),
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.createDatasetPart(
@@ -866,7 +1053,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       workspaceSaved.id,
                       datasetSaved.id,
                       mockMultipartFiles[0],
-                      makeDatasetPartCreateRequest())
+                      makeDatasetPartCreateRequest(),
+                  )
                 }
               }
             }
@@ -887,7 +1075,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   makeOrganizationCreateRequest(
                       name = "Organization test",
                       userName = CONNECTED_DEFAULT_USER,
-                      role = ROLE_USER)
+                      role = ROLE_USER,
+                  )
               organizationSaved = organizationApiService.createOrganization(organization)
 
               solution = makeSolution()
@@ -906,11 +1095,20 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
 
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
@@ -921,18 +1119,21 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           datasetSaved.id,
-                          datasetSaved.parts[0].id)
+                          datasetSaved.parts[0].id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.deleteDatasetPart(
                       organizationSaved.id,
                       workspaceSaved.id,
                       datasetSaved.id,
-                      datasetSaved.parts[0].id)
+                      datasetSaved.parts[0].id,
+                  )
                 }
               }
             }
@@ -953,7 +1154,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   makeOrganizationCreateRequest(
                       name = "Organization test",
                       userName = CONNECTED_DEFAULT_USER,
-                      role = ROLE_USER)
+                      role = ROLE_USER,
+                  )
               organizationSaved = organizationApiService.createOrganization(organization)
 
               solution = makeSolution()
@@ -972,11 +1174,20 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
 
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
@@ -987,18 +1198,21 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           datasetSaved.id,
-                          datasetSaved.parts[0].id)
+                          datasetSaved.parts[0].id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.downloadDatasetPart(
                       organizationSaved.id,
                       workspaceSaved.id,
                       datasetSaved.id,
-                      datasetSaved.parts[0].id)
+                      datasetSaved.parts[0].id,
+                  )
                 }
               }
             }
@@ -1019,7 +1233,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   makeOrganizationCreateRequest(
                       name = "Organization test",
                       userName = CONNECTED_DEFAULT_USER,
-                      role = ROLE_USER)
+                      role = ROLE_USER,
+                  )
               organizationSaved = organizationApiService.createOrganization(organization)
 
               solution = makeSolution()
@@ -1038,11 +1253,20 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
 
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
@@ -1053,18 +1277,21 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           datasetSaved.id,
-                          datasetSaved.parts[0].id)
+                          datasetSaved.parts[0].id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetPart(
                       organizationSaved.id,
                       workspaceSaved.id,
                       datasetSaved.id,
-                      datasetSaved.parts[0].id)
+                      datasetSaved.parts[0].id,
+                  )
                 }
               }
             }
@@ -1085,7 +1312,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   makeOrganizationCreateRequest(
                       name = "Organization test",
                       userName = CONNECTED_DEFAULT_USER,
-                      role = ROLE_USER)
+                      role = ROLE_USER,
+                  )
               organizationSaved = organizationApiService.createOrganization(organization)
 
               solution = makeSolution()
@@ -1104,11 +1332,20 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
 
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
@@ -1116,15 +1353,26 @@ class DatasetServiceRBACTest : CsmTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.listDatasetParts(
-                          organizationSaved.id, workspaceSaved.id, datasetSaved.id, null, null)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetSaved.id,
+                          null,
+                          null,
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.listDatasetParts(
-                      organizationSaved.id, workspaceSaved.id, datasetSaved.id, null, null)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      datasetSaved.id,
+                      null,
+                      null,
+                  )
                 }
               }
             }
@@ -1145,7 +1393,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   makeOrganizationCreateRequest(
                       name = "Organization test",
                       userName = CONNECTED_DEFAULT_USER,
-                      role = ROLE_USER)
+                      role = ROLE_USER,
+                  )
               organizationSaved = organizationApiService.createOrganization(organization)
 
               solution = makeSolution()
@@ -1164,11 +1413,20 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
 
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
@@ -1181,11 +1439,13 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           datasetSaved.id,
                           datasetSaved.parts[0].id,
                           mockMultipartFiles[0],
-                          makeDatasetPartUpdateRequest())
+                          makeDatasetPartUpdateRequest(),
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.replaceDatasetPart(
@@ -1194,7 +1454,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       datasetSaved.id,
                       datasetSaved.parts[0].id,
                       mockMultipartFiles[0],
-                      makeDatasetPartUpdateRequest())
+                      makeDatasetPartUpdateRequest(),
+                  )
                 }
               }
             }
@@ -1215,7 +1476,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   makeOrganizationCreateRequest(
                       name = "Organization test",
                       userName = CONNECTED_DEFAULT_USER,
-                      role = ROLE_USER)
+                      role = ROLE_USER,
+                  )
               organizationSaved = organizationApiService.createOrganization(organization)
 
               solution = makeSolution()
@@ -1234,11 +1496,20 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                   mutableListOf(
                                       DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                                       DatasetAccessControl(
-                                          id = CONNECTED_DEFAULT_USER, role = role))))
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
 
               datasetSaved =
                   datasetApiService.createDataset(
-                      organizationSaved.id, workspaceSaved.id, dataset, mockMultipartFiles)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
 
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
@@ -1250,11 +1521,13 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           workspaceSaved.id,
                           datasetSaved.id,
                           datasetSaved.parts[0].id,
-                          makeDatasetPartUpdateRequest())
+                          makeDatasetPartUpdateRequest(),
+                      )
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   datasetApiService.updateDatasetPart(
@@ -1262,7 +1535,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       workspaceSaved.id,
                       datasetSaved.id,
                       datasetSaved.parts[0].id,
-                      makeDatasetPartUpdateRequest())
+                      makeDatasetPartUpdateRequest(),
+                  )
                 }
               }
             }
@@ -1288,14 +1562,15 @@ class DatasetServiceRBACTest : CsmTestBase() {
       datasetPartDescription: String = "Test dataset part description",
       datasetPartTags: MutableList<String> = mutableListOf("part", "public", "test"),
       datasetPartSourceName: String = CUSTOMER_SOURCE_FILE_NAME,
-      datasetPartType: DatasetPartTypeEnum = DatasetPartTypeEnum.File
+      datasetPartType: DatasetPartTypeEnum = DatasetPartTypeEnum.File,
   ): DatasetPartCreateRequest {
     return DatasetPartCreateRequest(
         name = datasetPartName,
         sourceName = datasetPartSourceName,
         description = datasetPartDescription,
         tags = datasetPartTags,
-        type = datasetPartType)
+        type = datasetPartType,
+    )
   }
 
   fun makeDatasetCreateRequest(
@@ -1307,7 +1582,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
       datasetPartDescription: String = "Test dataset part description",
       datasetPartTags: MutableList<String> = mutableListOf("part", "public", "test"),
       datasetPartSourceName: String = CUSTOMER_SOURCE_FILE_NAME,
-      datasetPartType: DatasetPartTypeEnum = DatasetPartTypeEnum.File
+      datasetPartType: DatasetPartTypeEnum = DatasetPartTypeEnum.File,
   ): DatasetCreateRequest {
     val datasetPartCreateRequest =
         DatasetPartCreateRequest(
@@ -1315,20 +1590,22 @@ class DatasetServiceRBACTest : CsmTestBase() {
             sourceName = datasetPartSourceName,
             description = datasetPartDescription,
             tags = datasetPartTags,
-            type = datasetPartType)
+            type = datasetPartType,
+        )
 
     return DatasetCreateRequest(
         name = datasetName,
         description = datasetDescription,
         tags = datasetTags,
         parts = mutableListOf(datasetPartCreateRequest),
-        security = datasetSecurity)
+        security = datasetSecurity,
+    )
   }
 
   fun makeOrganizationCreateRequest(
       name: String = "Organization Name",
       userName: String = CONNECTED_DEFAULT_USER,
-      role: String = ROLE_VIEWER
+      role: String = ROLE_VIEWER,
   ) =
       OrganizationCreateRequest(
           name = name,
@@ -1338,7 +1615,10 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                          OrganizationAccessControl(userName, role))))
+                          OrganizationAccessControl(userName, role),
+                      ),
+              ),
+      )
 
   fun makeSolution(userName: String = CONNECTED_DEFAULT_USER, role: String = ROLE_USER) =
       SolutionCreateRequest(
@@ -1355,13 +1635,16 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                          SolutionAccessControl(id = userName, role = role))))
+                          SolutionAccessControl(id = userName, role = role),
+                      ),
+              ),
+      )
 
   fun makeWorkspaceCreateRequest(
       solutionId: String = solutionSaved.id,
       name: String = "name",
       userName: String = CONNECTED_DEFAULT_USER,
-      role: String = ROLE_USER
+      role: String = ROLE_USER,
   ) =
       WorkspaceCreateRequest(
           key = UUID.randomUUID().toString(),
@@ -1376,5 +1659,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           WorkspaceAccessControl(id = userName, role = role),
-                          WorkspaceAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+                          WorkspaceAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                      ),
+              ),
+      )
 }

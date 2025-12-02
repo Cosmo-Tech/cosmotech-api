@@ -92,7 +92,10 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
   fun beforeEach() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     ReflectionTestUtils.setField(
-        solutionApiService, "containerRegistryService", containerRegistryService)
+        solutionApiService,
+        "containerRegistryService",
+        containerRegistryService,
+    )
     ReflectionTestUtils.setField(workspaceApiService, "s3Client", s3Client)
     ReflectionTestUtils.setField(workspaceApiService, "s3Template", s3Template)
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
@@ -122,17 +125,22 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               workspaceApiService.createWorkspace(
                   organizationSaved.id,
                   makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id,
                       id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN))
+                      role = ROLE_ADMIN,
+                  ),
+              )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -142,7 +150,8 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaces(organizationSaved.id, null, null)
@@ -165,17 +174,22 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               workspaceApiService.createWorkspace(
                   organizationSaved.id,
                   makeWorkspaceCreateRequest(
                       organizationSaved.id,
                       solutionSaved.id,
                       id = TEST_USER_MAIL,
-                      role = ROLE_ADMIN))
+                      role = ROLE_ADMIN,
+                  ),
+              )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -187,16 +201,20 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                               organizationSaved.id,
                               solutionSaved.id,
                               id = TEST_USER_MAIL,
-                              role = ROLE_ADMIN))
+                              role = ROLE_ADMIN,
+                          ),
+                      )
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                      exception.message)
+                      exception.message,
+                  )
                 } else {
                   assertEquals(
                       "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_CREATE_CHILDREN",
-                      exception.message)
+                      exception.message,
+                  )
                 }
               } else {
                 assertDoesNotThrow {
@@ -206,7 +224,9 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
                 }
               }
             }
@@ -226,10 +246,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -237,7 +260,9 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -248,11 +273,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                 if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                      exception.message)
+                      exception.message,
+                  )
                 } else {
                   assertEquals(
                       "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
-                      exception.message)
+                      exception.message,
+                  )
                 }
               } else {
                 assertDoesNotThrow {
@@ -276,15 +303,23 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -294,7 +329,8 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspace(organizationSaved.id, workspaceSaved.id)
@@ -317,10 +353,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -328,7 +367,9 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -338,7 +379,8 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id)
@@ -361,15 +403,23 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -379,7 +429,8 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_DELETE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspace(organizationSaved.id, workspaceSaved.id)
@@ -402,10 +453,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -413,7 +467,9 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -422,17 +478,20 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                       workspaceApiService.updateWorkspace(
                           organizationSaved.id,
                           workspaceSaved.id,
-                          WorkspaceUpdateRequest(key = "key", "new name"))
+                          WorkspaceUpdateRequest(key = "key", "new name"),
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspace(
                       organizationSaved.id,
                       workspaceSaved.id,
-                      WorkspaceUpdateRequest("key", "new name"))
+                      WorkspaceUpdateRequest("key", "new name"),
+                  )
                 }
               }
             }
@@ -452,15 +511,23 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -469,17 +536,20 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                       workspaceApiService.updateWorkspace(
                           organizationSaved.id,
                           workspaceSaved.id,
-                          WorkspaceUpdateRequest("key", "new name"))
+                          WorkspaceUpdateRequest("key", "new name"),
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspace(
                       organizationSaved.id,
                       workspaceSaved.id,
-                      WorkspaceUpdateRequest("key", "new name"))
+                      WorkspaceUpdateRequest("key", "new name"),
+                  )
                 }
               }
             }
@@ -499,10 +569,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -510,18 +583,23 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceFiles(
-                          organizationSaved.id, workspaceSaved.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
@@ -544,26 +622,37 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceFiles(
-                          organizationSaved.id, workspaceSaved.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
@@ -586,10 +675,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -597,28 +689,44 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               ReflectionTestUtils.setField(workspaceApiService, "resourceScanner", resourceScanner)
               every { resource.originalFilename } returns "fakeName"
               every {
                 resourceScanner.scanMimeTypes(
-                    "fakeName", any(), csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+                    "fakeName",
+                    any(),
+                    csmPlatformProperties.upload.authorizedMimeTypes.workspaces,
+                )
               } returns Unit
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.createWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id, resource, true, "")
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          resource,
+                          true,
+                          "",
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.createWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id, resource, true, "name")
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      resource,
+                      true,
+                      "name",
+                  )
                 }
               }
             }
@@ -638,36 +746,58 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               ReflectionTestUtils.setField(workspaceApiService, "resourceScanner", resourceScanner)
               every { resource.originalFilename } returns "fakeName"
               every {
                 resourceScanner.scanMimeTypes(
-                    "fakeName", any(), csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
+                    "fakeName",
+                    any(),
+                    csmPlatformProperties.upload.authorizedMimeTypes.workspaces,
+                )
               } returns Unit
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.createWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id, resource, true, "")
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          resource,
+                          true,
+                          "",
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.createWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id, resource, true, "name")
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      resource,
+                      true,
+                      "name",
+                  )
                 }
               }
             }
@@ -687,10 +817,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -698,18 +831,23 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceFiles(
-                          organizationSaved.id, workspaceSaved.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
@@ -732,26 +870,37 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceFiles(
-                          organizationSaved.id, workspaceSaved.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceFiles(organizationSaved.id, workspaceSaved.id)
@@ -774,10 +923,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -785,22 +937,31 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id, "")
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          "",
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id, "name")
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      "name",
+                  )
                 }
               }
             }
@@ -820,30 +981,45 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id, "")
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          "",
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id, "name")
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      "name",
+                  )
                 }
               }
             }
@@ -863,10 +1039,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -874,22 +1053,31 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id, "")
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          "",
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id, "")
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      "",
+                  )
                 }
               }
             }
@@ -909,30 +1097,45 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceFile(
-                          organizationSaved.id, workspaceSaved.id, "")
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          "",
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceFile(
-                      organizationSaved.id, workspaceSaved.id, "")
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      "",
+                  )
                 }
               }
             }
@@ -952,10 +1155,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -963,22 +1169,31 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceRolePermissions(
-                          organizationSaved.id, workspaceSaved.id, ROLE_USER)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          ROLE_USER,
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceRolePermissions(
-                      organizationSaved.id, workspaceSaved.id, ROLE_USER)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      ROLE_USER,
+                  )
                 }
               }
             }
@@ -998,30 +1213,45 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceRolePermissions(
-                          organizationSaved.id, workspaceSaved.id, ROLE_USER)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          ROLE_USER,
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceRolePermissions(
-                      organizationSaved.id, workspaceSaved.id, ROLE_USER)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      ROLE_USER,
+                  )
                 }
               }
             }
@@ -1041,10 +1271,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -1052,18 +1285,23 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceSecurity(
-                          organizationSaved.id, workspaceSaved.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceSecurity(organizationSaved.id, workspaceSaved.id)
@@ -1086,26 +1324,37 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceSecurity(
-                          organizationSaved.id, workspaceSaved.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceSecurity(organizationSaved.id, workspaceSaved.id)
@@ -1128,10 +1377,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -1139,22 +1391,31 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.updateWorkspaceDefaultSecurity(
-                          organizationSaved.id, workspaceSaved.id, WorkspaceRole(ROLE_USER))
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          WorkspaceRole(ROLE_USER),
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspaceDefaultSecurity(
-                      organizationSaved.id, workspaceSaved.id, WorkspaceRole(ROLE_USER))
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      WorkspaceRole(ROLE_USER),
+                  )
                 }
               }
             }
@@ -1174,30 +1435,45 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.updateWorkspaceDefaultSecurity(
-                          organizationSaved.id, workspaceSaved.id, WorkspaceRole(ROLE_USER))
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          WorkspaceRole(ROLE_USER),
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspaceDefaultSecurity(
-                      organizationSaved.id, workspaceSaved.id, WorkspaceRole(ROLE_USER))
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      WorkspaceRole(ROLE_USER),
+                  )
                 }
               }
             }
@@ -1217,10 +1493,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -1228,7 +1507,9 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -1237,17 +1518,20 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                       workspaceApiService.createWorkspaceAccessControl(
                           organizationSaved.id,
                           workspaceSaved.id,
-                          WorkspaceAccessControl("id", ROLE_USER))
+                          WorkspaceAccessControl("id", ROLE_USER),
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.createWorkspaceAccessControl(
                       organizationSaved.id,
                       workspaceSaved.id,
-                      WorkspaceAccessControl("id", ROLE_USER))
+                      WorkspaceAccessControl("id", ROLE_USER),
+                  )
                 }
               }
             }
@@ -1267,15 +1551,23 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -1284,17 +1576,20 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                       workspaceApiService.createWorkspaceAccessControl(
                           organizationSaved.id,
                           workspaceSaved.id,
-                          WorkspaceAccessControl("id", ROLE_USER))
+                          WorkspaceAccessControl("id", ROLE_USER),
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.createWorkspaceAccessControl(
                       organizationSaved.id,
                       workspaceSaved.id,
-                      WorkspaceAccessControl("id", ROLE_USER))
+                      WorkspaceAccessControl("id", ROLE_USER),
+                  )
                 }
               }
             }
@@ -1314,10 +1609,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -1325,22 +1623,31 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceAccessControl(
-                          organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          TEST_USER_MAIL,
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceAccessControl(
-                      organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      TEST_USER_MAIL,
+                  )
                 }
               }
             }
@@ -1360,30 +1667,45 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspaceAccessControl(
-                          organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          TEST_USER_MAIL,
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.getWorkspaceAccessControl(
-                      organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      TEST_USER_MAIL,
+                  )
                 }
               }
             }
@@ -1403,10 +1725,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -1414,22 +1739,31 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceAccessControl(
-                          organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          TEST_USER_MAIL,
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceAccessControl(
-                      organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      TEST_USER_MAIL,
+                  )
                 }
               }
             }
@@ -1449,30 +1783,45 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.deleteWorkspaceAccessControl(
-                          organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          TEST_USER_MAIL,
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.deleteWorkspaceAccessControl(
-                      organizationSaved.id, workspaceSaved.id, TEST_USER_MAIL)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      TEST_USER_MAIL,
+                  )
                 }
               }
             }
@@ -1492,10 +1841,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -1503,7 +1855,9 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -1513,18 +1867,21 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           TEST_USER_MAIL,
-                          WorkspaceRole(ROLE_ADMIN))
+                          WorkspaceRole(ROLE_ADMIN),
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspaceAccessControl(
                       organizationSaved.id,
                       workspaceSaved.id,
                       TEST_USER_MAIL,
-                      WorkspaceRole(ROLE_ADMIN))
+                      WorkspaceRole(ROLE_ADMIN),
+                  )
                 }
               }
             }
@@ -1544,15 +1901,23 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -1562,18 +1927,21 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           workspaceSaved.id,
                           TEST_USER_MAIL,
-                          WorkspaceRole(ROLE_ADMIN))
+                          WorkspaceRole(ROLE_ADMIN),
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspaceAccessControl(
                       organizationSaved.id,
                       workspaceSaved.id,
                       TEST_USER_MAIL,
-                      WorkspaceRole(ROLE_ADMIN))
+                      WorkspaceRole(ROLE_ADMIN),
+                  )
                 }
               }
             }
@@ -1593,10 +1961,13 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
@@ -1604,22 +1975,29 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                           organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                          role = ROLE_ADMIN,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceSecurityUsers(
-                          organizationSaved.id, workspaceSaved.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id} - User does not have permission $PERMISSION_READ",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceSecurityUsers(
-                      organizationSaved.id, workspaceSaved.id)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                  )
                 }
               }
             }
@@ -1639,30 +2017,43 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN))
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
               val solutionSaved =
                   solutionApiService.createSolution(
-                      organizationSaved.id, makeSolution(organizationSaved.id))
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
               val workspaceSaved =
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id, solutionSaved.id, id = TEST_USER_MAIL, role = role))
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.listWorkspaceSecurityUsers(
-                          organizationSaved.id, workspaceSaved.id)
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                      )
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
-                    exception.message)
+                    exception.message,
+                )
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.listWorkspaceSecurityUsers(
-                      organizationSaved.id, workspaceSaved.id)
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                  )
                 }
               }
             }
@@ -1677,7 +2068,10 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                          OrganizationAccessControl(id = id, role = role))))
+                          OrganizationAccessControl(id = id, role = role),
+                      ),
+              ),
+      )
 
   fun makeSolution(organizationId: String) =
       SolutionCreateRequest(
@@ -1693,13 +2087,16 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   default = ROLE_NONE,
                   mutableListOf(
                       SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                      SolutionAccessControl(id = TEST_USER_MAIL, role = ROLE_ADMIN))))
+                      SolutionAccessControl(id = TEST_USER_MAIL, role = ROLE_ADMIN),
+                  ),
+              ),
+      )
 
   fun makeWorkspaceCreateRequest(
       organizationId: String,
       solutionId: String,
       id: String,
-      role: String
+      role: String,
   ) =
       WorkspaceCreateRequest(
           key = UUID.randomUUID().toString(),
@@ -1714,5 +2111,8 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   accessControlList =
                       mutableListOf(
                           WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                          WorkspaceAccessControl(id = id, role = role))))
+                          WorkspaceAccessControl(id = id, role = role),
+                      ),
+              ),
+      )
 }

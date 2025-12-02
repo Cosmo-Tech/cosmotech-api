@@ -17,7 +17,11 @@ import org.springframework.scheduling.annotation.EnableScheduling
     excludeFilters =
         [
             ComponentScan.Filter(
-                type = FilterType.REGEX, pattern = ["com\\.cosmotech\\.\\w+\\.Application"])])
+                type = FilterType.REGEX,
+                pattern = ["com\\.cosmotech\\.\\w+\\.Application"],
+            )
+        ],
+)
 class CsmApiApplication
 
 fun main(args: Array<String>) {

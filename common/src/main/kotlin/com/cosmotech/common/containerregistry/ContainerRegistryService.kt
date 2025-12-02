@@ -41,7 +41,9 @@ class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformPro
           .baseUrl(baseUrl)
           .requestFactory(
               HttpComponentsClientHttpRequestFactory(
-                  HttpClientBuilder.create().disableRedirectHandling().build()))
+                  HttpClientBuilder.create().disableRedirectHandling().build()
+              )
+          )
           .build()
 
   private fun getHeaderAuthorization(): String {
@@ -67,7 +69,9 @@ class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformPro
       }
     } catch (e: RestClientException) {
       throw CsmClientException(
-          "Solution docker image $repository:$tag check error: ${e.message}", e)
+          "Solution docker image $repository:$tag check error: ${e.message}",
+          e,
+      )
     }
   }
 

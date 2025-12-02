@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(
-    name = ["csm.platform.event-publisher.type"], havingValue = "in_process", matchIfMissing = true)
+    name = ["csm.platform.event-publisher.type"],
+    havingValue = "in_process",
+    matchIfMissing = true,
+)
 internal class InProcessEventPublisher(private val eventPublisher: ApplicationEventPublisher) :
     CsmEventPublisher {
 

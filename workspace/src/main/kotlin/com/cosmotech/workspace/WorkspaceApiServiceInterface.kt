@@ -11,6 +11,6 @@ interface WorkspaceApiServiceInterface : WorkspaceApiService {
   fun getVerifiedWorkspace(
       organizationId: String,
       workspaceId: String,
-      requiredPermission: String = PERMISSION_READ
+      requiredPermission: String = PERMISSION_READ,
   ): Workspace
 }

@@ -11,13 +11,13 @@ interface SolutionApiServiceInterface : SolutionApiService {
   fun getVerifiedSolution(
       organizationId: String,
       solutionId: String,
-      requiredPermission: String = PERMISSION_READ
+      requiredPermission: String = PERMISSION_READ,
   ): Solution
 
   fun isRunTemplateExist(
       organizationId: String,
       workspaceId: String,
       solutionId: String,
-      runTemplateId: String
+      runTemplateId: String,
   ): Boolean
 }

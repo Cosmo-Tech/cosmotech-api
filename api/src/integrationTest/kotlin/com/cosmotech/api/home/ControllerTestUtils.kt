@@ -46,7 +46,7 @@ class ControllerTestUtils {
     @JvmStatic
     fun createOrganizationAndReturnId(
         mvc: MockMvc,
-        organizationCreateRequest: OrganizationCreateRequest
+        organizationCreateRequest: OrganizationCreateRequest,
     ): String =
         JSONObject(
                 mvc.perform(
@@ -55,16 +55,18 @@ class ControllerTestUtils {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(organizationCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf()))
+                            .with(csrf())
+                    )
                     .andReturn()
                     .response
-                    .contentAsString)
+                    .contentAsString
+            )
             .getString("id")
 
     @JvmStatic
     fun constructOrganizationCreateRequest(
         name: String = ORGANIZATION_NAME,
-        security: OrganizationSecurity? = null
+        security: OrganizationSecurity? = null,
     ): OrganizationCreateRequest {
       return OrganizationCreateRequest(name = name, security = security)
     }
@@ -76,7 +78,7 @@ class ControllerTestUtils {
     fun createSolutionAndReturnId(
         mvc: MockMvc,
         organizationId: String,
-        solutionCreateRequest: SolutionCreateRequest
+        solutionCreateRequest: SolutionCreateRequest,
     ): String =
         JSONObject(
                 mvc.perform(
@@ -85,10 +87,12 @@ class ControllerTestUtils {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(solutionCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf()))
+                            .with(csrf())
+                    )
                     .andReturn()
                     .response
-                    .contentAsString)
+                    .contentAsString
+            )
             .getString("id")
 
     @JvmStatic
@@ -104,7 +108,7 @@ class ControllerTestUtils {
         parameterGroups: MutableList<RunTemplateParameterGroupCreateRequest> = mutableListOf(),
         runTemplates: MutableList<RunTemplateCreateRequest> = mutableListOf(),
         url: String = "",
-        security: SolutionSecurity? = null
+        security: SolutionSecurity? = null,
     ): SolutionCreateRequest {
       return SolutionCreateRequest(
           key = key,
@@ -141,7 +145,8 @@ class ControllerTestUtils {
           description = description,
           alwaysPull = alwaysPull,
           tags = tags,
-          url = url)
+          url = url,
+      )
     }
   }
 
@@ -152,7 +157,7 @@ class ControllerTestUtils {
         mvc: MockMvc,
         organizationId: String,
         workspaceId: String,
-        runnerCreateRequest: RunnerCreateRequest
+        runnerCreateRequest: RunnerCreateRequest,
     ): String =
         JSONObject(
                 mvc.perform(
@@ -161,10 +166,12 @@ class ControllerTestUtils {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(runnerCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf()))
+                            .with(csrf())
+                    )
                     .andReturn()
                     .response
-                    .contentAsString)
+                    .contentAsString
+            )
             .getString("id")
 
     @JvmStatic
@@ -197,7 +204,8 @@ class ControllerTestUtils {
           runTemplateName = runTemplateName,
           security = security,
           runSizing = runSizing,
-          parametersValues = parametersValues)
+          parametersValues = parametersValues,
+      )
     }
 
     @JvmStatic
@@ -224,7 +232,8 @@ class ControllerTestUtils {
           parametersValues = parametersValues,
           additionalData = additionalData,
           solutionName = solutionName,
-          runTemplateName = runTemplateName)
+          runTemplateName = runTemplateName,
+      )
     }
   }
 
@@ -236,7 +245,7 @@ class ControllerTestUtils {
         organizationId: String,
         workspaceKey: String,
         workspaceName: String,
-        solutionId: String
+        solutionId: String,
     ): String =
         JSONObject(
                 mvc.perform(
@@ -248,20 +257,25 @@ class ControllerTestUtils {
                                         constructWorkspaceCreateRequest(
                                             key = workspaceKey,
                                             name = workspaceName,
-                                            solutionId = solutionId))
-                                    .toString())
+                                            solutionId = solutionId,
+                                        )
+                                    )
+                                    .toString()
+                            )
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf()))
+                            .with(csrf())
+                    )
                     .andReturn()
                     .response
-                    .contentAsString)
+                    .contentAsString
+            )
             .getString("id")
 
     @JvmStatic
     fun createWorkspaceAndReturnId(
         mvc: MockMvc,
         organizationId: String,
-        workspaceCreateRequest: WorkspaceCreateRequest
+        workspaceCreateRequest: WorkspaceCreateRequest,
     ): String =
         JSONObject(
                 mvc.perform(
@@ -270,10 +284,12 @@ class ControllerTestUtils {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(workspaceCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf()))
+                            .with(csrf())
+                    )
                     .andReturn()
                     .response
-                    .contentAsString)
+                    .contentAsString
+            )
             .getString("id")
 
     @JvmStatic
@@ -288,7 +304,7 @@ class ControllerTestUtils {
         datasetCopy: Boolean? = null,
         security: WorkspaceSecurity? = null,
         additionalData: MutableMap<String, Any> = mutableMapOf(),
-        tags: MutableList<String> = mutableListOf()
+        tags: MutableList<String> = mutableListOf(),
     ): WorkspaceCreateRequest {
       return WorkspaceCreateRequest(
           key = key,
@@ -297,13 +313,15 @@ class ControllerTestUtils {
               WorkspaceSolution(
                   solutionId = solutionId,
                   datasetId = datasetId,
-                  defaultParameterValues = defaultParameterValues),
+                  defaultParameterValues = defaultParameterValues,
+              ),
           description = description,
           version = version,
           datasetCopy = datasetCopy,
           security = security,
           tags = tags,
-          additionalData = additionalData)
+          additionalData = additionalData,
+      )
     }
 
     @JvmStatic
@@ -316,7 +334,7 @@ class ControllerTestUtils {
         description: String = "",
         datasetCopy: Boolean? = null,
         additionalData: MutableMap<String, Any> = mutableMapOf(),
-        tags: MutableList<String> = mutableListOf()
+        tags: MutableList<String> = mutableListOf(),
     ): WorkspaceUpdateRequest {
 
       return WorkspaceUpdateRequest(
@@ -326,11 +344,13 @@ class ControllerTestUtils {
               WorkspaceSolution(
                   solutionId = solutionId,
                   datasetId = datasetId,
-                  defaultParameterValues = defaultParameterValues),
+                  defaultParameterValues = defaultParameterValues,
+              ),
           description = description,
           datasetCopy = datasetCopy,
           tags = tags,
-          additionalData = additionalData)
+          additionalData = additionalData,
+      )
     }
   }
 
@@ -347,20 +367,23 @@ class ControllerTestUtils {
       val fileToUpload =
           this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
               ?: throw IllegalStateException(
-                  "$TEST_FILE_NAME file used for endpoints test documentation cannot be null")
+                  "$TEST_FILE_NAME file used for endpoints test documentation cannot be null"
+              )
 
       val datasetCreateRequestFile =
           MockMultipartFile(
               "datasetCreateRequest",
               null,
               MediaType.APPLICATION_JSON_VALUE,
-              JSONObject(datasetCreateRequest).toString().byteInputStream())
+              JSONObject(datasetCreateRequest).toString().byteInputStream(),
+          )
       val files =
           MockMultipartFile(
               "files",
               TEST_FILE_NAME,
               MediaType.MULTIPART_FORM_DATA_VALUE,
-              IOUtils.toByteArray(fileToUpload))
+              IOUtils.toByteArray(fileToUpload),
+          )
       return JSONObject(
               mvc.perform(
                       multipart("/organizations/$organizationId/workspaces/$workspaceId/datasets")
@@ -368,10 +391,12 @@ class ControllerTestUtils {
                           .file(files)
                           .withPlatformAdminHeader()
                           .accept(MediaType.APPLICATION_JSON)
-                          .with(csrf()))
+                          .with(csrf())
+                  )
                   .andReturn()
                   .response
-                  .contentAsString)
+                  .contentAsString
+          )
           .getString("id")
     }
 
@@ -386,13 +411,16 @@ class ControllerTestUtils {
           JSONObject(
                   mvc.perform(
                           get(
-                                  "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
+                                  "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId"
+                              )
                               .withPlatformAdminHeader()
                               .accept(MediaType.APPLICATION_JSON)
-                              .with(csrf()))
+                              .with(csrf())
+                      )
                       .andReturn()
                       .response
-                      .contentAsString)
+                      .contentAsString
+              )
               .getJSONArray("parts")
 
       return Array(parts.length()) { i -> parts.getJSONObject(i).getString("id") }
@@ -410,32 +438,38 @@ class ControllerTestUtils {
       val fileToUpload =
           this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
               ?: throw IllegalStateException(
-                  "$TEST_FILE_NAME file used for endpoints test documentation cannot be null")
+                  "$TEST_FILE_NAME file used for endpoints test documentation cannot be null"
+              )
 
       val datasetPartCreateRequestFile =
           MockMultipartFile(
               "datasetPartCreateRequest",
               null,
               MediaType.APPLICATION_JSON_VALUE,
-              JSONObject(datasetPartCreateRequest).toString().byteInputStream())
+              JSONObject(datasetPartCreateRequest).toString().byteInputStream(),
+          )
       val file =
           MockMultipartFile(
               "file",
               TEST_FILE_NAME,
               MediaType.MULTIPART_FORM_DATA_VALUE,
-              IOUtils.toByteArray(fileToUpload))
+              IOUtils.toByteArray(fileToUpload),
+          )
       return JSONObject(
               mvc.perform(
                       multipart(
-                              "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts")
+                              "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts"
+                          )
                           .file(datasetPartCreateRequestFile)
                           .file(file)
                           .withPlatformAdminHeader()
                           .accept(MediaType.APPLICATION_JSON)
-                          .with(csrf()))
+                          .with(csrf())
+                  )
                   .andReturn()
                   .response
-                  .contentAsString)
+                  .contentAsString
+          )
           .getString("id")
     }
 
@@ -459,13 +493,16 @@ class ControllerTestUtils {
                       tags = mutableListOf("tag_part1", "tag_part2"),
                       additionalData = mutableMapOf("customClient" to "customDatasetPartData"),
                       type = type,
-                      sourceName = sourceName)),
-          security = security)
+                      sourceName = sourceName,
+                  )
+              ),
+          security = security,
+      )
     }
 
     fun constructDatasetPartCreateRequest(
         name: String = DATASET_PART_NAME,
-        type: DatasetPartTypeEnum = DatasetPartTypeEnum.File
+        type: DatasetPartTypeEnum = DatasetPartTypeEnum.File,
     ): DatasetPartCreateRequest {
       return DatasetPartCreateRequest(
           name = name,
@@ -473,7 +510,8 @@ class ControllerTestUtils {
           tags = mutableListOf("tag_part1", "tag_part3"),
           additionalData = mutableMapOf("customClient" to "customDatasetPartData"),
           type = type,
-          sourceName = TEST_FILE_NAME)
+          sourceName = TEST_FILE_NAME,
+      )
     }
   }
 }

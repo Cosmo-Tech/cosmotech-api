@@ -14,6 +14,6 @@ interface OrganizationRepository : RedisDocumentRepository<Organization, String>
   @Query("\$securityConstraint")
   fun findOrganizationsBySecurity(
       @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
-      pageable: Pageable
+      pageable: Pageable,
   ): Page<Organization>
 }
