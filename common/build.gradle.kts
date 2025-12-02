@@ -17,7 +17,9 @@ dependencies {
   implementation("org.hashids:hashids:${hashidsVersion}")
   implementation(
       "com.redis.testcontainers:testcontainers-redis-junit:${testContainersRedisVersion}"
-  )
+  ) {
+    constraints { implementation("com.redis:lettucemod:4.5.0") }
+  }
   implementation("org.testcontainers:postgresql:${testContainersPostgreSQLVersion}")
   implementation("org.testcontainers:localstack:${testContainersLocalStackVersion}")
   implementation("org.apache.tika:tika-core:${tikaVersion}")
