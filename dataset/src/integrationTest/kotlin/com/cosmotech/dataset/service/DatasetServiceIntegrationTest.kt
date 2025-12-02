@@ -2533,7 +2533,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             CUSTOMER_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream(),
+            " ".toByteArray(),
         )
 
     val emptyInventoryMockMultipartFile =
@@ -2541,7 +2541,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             "files",
             INVENTORY_SOURCE_FILE_NAME,
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream(),
+            " ".toByteArray(),
         )
 
     val createdDataset =
@@ -2908,15 +2908,6 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     val newDatasetDescription = "Dataset for shop"
     val newDatasetTags = mutableListOf("dataset", "public", "shop")
     val newDatasetAdditionalData = mutableMapOf<String, Any>("dataset" to "new data")
-    val newDatasetSecurity =
-        DatasetSecurity(
-            default = ROLE_NONE,
-            accessControlList =
-                mutableListOf(
-                    DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                    DatasetAccessControl(CONNECTED_DEFAULT_USER, ROLE_EDITOR),
-                ),
-        )
     val datasetUpdateRequest =
         DatasetUpdateRequest(
             name = newDatasetName,

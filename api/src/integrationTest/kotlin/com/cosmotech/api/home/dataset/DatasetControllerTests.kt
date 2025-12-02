@@ -44,7 +44,6 @@ import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetUpdateRequest
 import com.cosmotech.solution.domain.RunTemplateCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
-import java.io.InputStream
 import kotlin.test.assertEquals
 import org.apache.commons.io.IOUtils
 import org.hamcrest.Matchers.empty
@@ -1063,7 +1062,7 @@ class DatasetControllerTests : ControllerTestBase() {
             "file",
             "test.csv",
             MediaType.MULTIPART_FORM_DATA_VALUE,
-            InputStream.nullInputStream(),
+            " ".toByteArray(),
         )
 
     mvc.perform(

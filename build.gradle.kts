@@ -65,11 +65,11 @@ val springSecurityJwtVersion = "1.1.1.RELEASE"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
 val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
-val redisOmSpringVersion = "0.9.7"
+val redisOmSpringVersion = "1.1.1"
 val kotlinCoroutinesVersion = "1.10.2"
 val oktaSpringBootVersion = "3.0.7"
-val springDocVersion = "2.8.8"
-val swaggerParserVersion = "2.1.31"
+val springDocVersion = "2.8.14"
+val swaggerParserVersion = "2.1.36"
 val commonsCsvVersion = "1.14.0"
 val apiValidationVersion = "3.0.2"
 val kubernetesClientVersion = "22.0.0"
@@ -77,10 +77,10 @@ val orgJsonVersion = "20240303"
 val jacksonModuleKotlinVersion = "2.18.3"
 val testNgVersion = "7.8.0"
 val testContainersRedisVersion = "1.6.4"
-val testContainersPostgreSQLVersion = "1.20.6"
-val testContainersLocalStackVersion = "1.20.6"
+val testContainersPostgreSQLVersion = "1.21.3"
+val testContainersLocalStackVersion = "1.21.3"
 val commonCompressVersion = "1.27.1"
-val awsSpringVersion = "3.3.0"
+val awsSpringVersion = "3.4.2"
 
 // Checks
 val detektVersion = "1.23.8"
@@ -132,7 +132,6 @@ allprojects {
     sourceCompatibility = JavaVersion.VERSION_21
     toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
   }
-  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.10") } } }
 
   repositories {
     maven {
@@ -201,10 +200,13 @@ subprojects {
   val testWorkingDirPath = "${layout.buildDirectory.get()}/run"
 
   sourceSets {
-    create("integrationTest") {
-      compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-      runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-    }
+    create(
+        "integrationTest",
+        Action {
+          compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+          runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+        },
+    )
     if (openApiDefinitionFile.exists()) {
       main { java.srcDirs("$openApiServerSourcesGenerationDir/src/main/kotlin") }
       test { java.srcDirs("$openApiServerSourcesGenerationDir/src/test/kotlin") }
