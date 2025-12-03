@@ -57,29 +57,28 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 // Dependencies version
-val jacksonVersion = "2.18.3"
-val springWebVersion = "6.2.9"
-val bouncyCastleJdk18Version = "1.81"
-val springBootVersion = "3.4.4"
+val jacksonAnnotationVersion = "2.20"
+val jacksonDatabindVersion = "2.20.1"
+val jacksonModuleKotlinVersion = "2.20.1"
+val springWebVersion = "6.2.14"
+val bouncyCastleJdk18Version = "1.83"
+val springBootVersion = "3.5.8"
 val springSecurityJwtVersion = "1.1.1.RELEASE"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "2.1.1-SNAPSHOT"
 val redisOmSpringVersion = "1.1.1"
 val kotlinCoroutinesVersion = "1.10.2"
-val oktaSpringBootVersion = "3.0.7"
 val springDocVersion = "2.8.14"
 val swaggerParserVersion = "2.1.36"
-val commonsCsvVersion = "1.14.0"
-val apiValidationVersion = "3.0.2"
+val commonsCsvVersion = "1.14.1"
+val apiValidationVersion = "3.1.1"
 val kubernetesClientVersion = "22.0.0"
-val orgJsonVersion = "20240303"
-val jacksonModuleKotlinVersion = "2.18.3"
+val orgJsonVersion = "20250517"
 val testNgVersion = "7.8.0"
 val testContainersRedisVersion = "1.6.4"
 val testContainersPostgreSQLVersion = "1.21.3"
 val testContainersLocalStackVersion = "1.21.3"
-val commonCompressVersion = "1.27.1"
+val commonCompressVersion = "1.28.0"
 val awsSpringVersion = "3.4.2"
 
 // Checks
@@ -288,8 +287,8 @@ subprojects {
     }
     implementation("org.springframework.boot:spring-boot-starter-undertow") {
       constraints {
-        implementation("org.jboss.xnio:xnio-api:3.8.16.Final")
-        implementation("io.undertow:undertow-core:2.3.18.Final")
+        implementation("org.jboss.xnio:xnio-api:3.8.17.Final")
+        implementation("io.undertow:undertow-core:2.3.20.Final")
       }
     }
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
@@ -304,8 +303,8 @@ subprojects {
         "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springOauthAutoConfigureVersion}"
     ) {
       constraints {
-        implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
-        implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+        implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationVersion")
+        implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")
         implementation("org.springframework:spring-web:$springWebVersion")
         implementation("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
         implementation(
@@ -320,8 +319,6 @@ subprojects {
     }
     implementation("org.springframework.security:spring-security-oauth2-jose")
     implementation("org.springframework.security:spring-security-oauth2-resource-server")
-    implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
-
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
     implementation("org.springframework.data:spring-data-redis")
@@ -354,7 +351,6 @@ subprojects {
       exclude(module = "mockito-core")
     }
     integrationTestImplementation("com.ninja-squad:springmockk:$springMockkVersion")
-    // developmentOnly("org.springframework.boot:spring-boot-devtools")
     integrationTestImplementation(
         "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
     )
