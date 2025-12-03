@@ -9,7 +9,8 @@ import com.google.cloud.tools.jib.gradle.JibExtension
 import io.gitlab.arturbosch.detekt.Detekt
 import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.apache.tools.ant.filters.ReplaceTokens
-import org.cyclonedx.gradle.CycloneDxTask
+import org.cyclonedx.gradle.CyclonedxDirectTask
+import org.cyclonedx.model.Component.Type.APPLICATION
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -47,7 +48,7 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   id("org.openapi.generator") version "7.13.0" apply false
   id("com.google.cloud.tools.jib") version "3.5.1" apply false
-  id("org.cyclonedx.bom") version "2.3.1"
+  id("org.cyclonedx.bom") version "3.1.0"
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -145,13 +146,6 @@ allprojects {
     mavenCentral()
   }
 
-  tasks.cyclonedxBom {
-    includeConfigs = listOf("runtimeClasspath")
-    outputFormat = "xml" // by default it would also generate json
-    projectType = "application"
-    outputName = "cosmotech-api-bom"
-  }
-
   tasks.withType<HtmlDependencyReportTask>().configureEach { projects = project.allprojects }
 
   configure<SpotlessExtension> {
@@ -182,6 +176,13 @@ allprojects {
   }
 
   tasks.withType<JavaCompile>() { options.compilerArgs.add("-parameters") }
+
+  tasks.cyclonedxBom {
+    componentName = "cosmotech-api"
+    projectType = APPLICATION
+    jsonOutput.set(file("build/reports/cosmotech-api-bom.json"))
+    xmlOutput.set(file("build/reports/cosmotech-api-bom.xml"))
+  }
 }
 
 subprojects {
@@ -189,6 +190,14 @@ subprojects {
   apply(plugin = "org.springframework.boot")
   apply(plugin = "org.openapi.generator")
   apply(plugin = "com.google.cloud.tools.jib")
+
+  tasks.cyclonedxDirectBom {
+    includeConfigs = listOf("runtimeClasspath")
+    projectType = APPLICATION
+    componentName = project.name
+    jsonOutput.set(file("build/reports/sbom/${project.name}-bom.json"))
+    xmlOutput.set(file("build/reports/sbom/${project.name}-bom.xml"))
+  }
 
   val projectDirName = projectDir.relativeTo(rootDir).name
   val openApiDefinitionFile = file("${projectDir}/src/main/openapi/${projectDirName}.yaml")
@@ -635,7 +644,7 @@ val copySubProjectsDetektReportsTasks =
               into("${subProject.parent!!.layout.projectDirectory}/build/reports/detekt/$format")
             }
         subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
-        subProject.tasks.withType<CycloneDxTask> { finalizedBy(copyTask) }
+        subProject.tasks.withType<CyclonedxDirectTask> { finalizedBy(copyTask) }
         copyTask
       }
     }
