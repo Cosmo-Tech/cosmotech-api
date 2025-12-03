@@ -21,10 +21,10 @@ open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
 
   companion object {
     private const val DEFAULT_REDIS_PORT = 6379
-    private const val LOCALSTACK_FULL_IMAGE_NAME = "localstack/localstack:3.5.0"
+    private const val LOCALSTACK_FULL_IMAGE_NAME = "localstack/localstack:latest"
 
     var postgres: PostgreSQLContainer<*> =
-        PostgreSQLContainer("postgres:alpine3.19")
+        PostgreSQLContainer("postgres:latest")
             .withCopyFileToContainer(
                 MountableFile.forClasspathResource("init-db.sql"),
                 "/docker-entrypoint-initdb.d/",
