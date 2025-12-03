@@ -3545,7 +3545,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
               val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset =
-                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role)
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, role, false)
               var datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               datasetSaved =
                   datasetRepository.save(
@@ -4545,7 +4545,13 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
         ioTypes = listOf(IoTypesEnum.read))
   }
 
-  fun makeDataset(organizationId: String, connector: Connector, id: String, role: String): Dataset {
+  fun makeDataset(
+      organizationId: String,
+      connector: Connector,
+      id: String,
+      role: String,
+      isMain: Boolean = true
+  ): Dataset {
     return Dataset(
         name = "Dataset",
         organizationId = organizationId,
@@ -4557,6 +4563,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                 name = connector.name,
                 version = connector.version,
             ),
+        main = isMain,
         security =
             DatasetSecurity(
                 default = ROLE_NONE,
