@@ -581,6 +581,39 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test AccessControls management on Runner as ressource Admin`() {
+    dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved, false)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    materializeTwingraph()
+
+    solution = makeSolution(organizationSaved.id!!)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+    workspace = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace")
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+
+    parentRunner =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "RunnerParent",
+            mutableListOf(datasetSaved.id!!),
+            parametersValues = mutableListOf(runTemplateParameterValue1))
+
+    parentRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, parentRunner)
+
+    runner =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            name = "Runner",
+            parentId = parentRunnerSaved.id!!,
+            datasetList = mutableListOf(datasetSaved.id!!),
+            parametersValues = mutableListOf(runTemplateParameterValue2))
+
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
     logger.info("should add an Access Control and assert it has been added")
     val runnerAccessControl = RunnerAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     var runnerAccessControlRegistered =
@@ -647,6 +680,41 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test AccessControls management on Runner as Unauthorized User`() {
+
+    dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved, isMain = false)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    materializeTwingraph()
+
+    solution = makeSolution(organizationSaved.id!!)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+    workspace = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace")
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+
+    parentRunner =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "RunnerParent",
+            mutableListOf(datasetSaved.id!!),
+            parametersValues = mutableListOf(runTemplateParameterValue1))
+
+    parentRunnerSaved =
+        runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, parentRunner)
+
+    runner =
+        makeRunner(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            name = "Runner",
+            parentId = parentRunnerSaved.id!!,
+            datasetList = mutableListOf(datasetSaved.id!!),
+            parametersValues = mutableListOf(runTemplateParameterValue2))
+
+    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
 
     logger.info("should throw CsmAccessForbiddenException when trying to add RunnerAccessControl")
