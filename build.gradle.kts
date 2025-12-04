@@ -585,7 +585,7 @@ subprojects {
   }
 
   configure<JibExtension> {
-    from { image = "eclipse-temurin:21-alpine" }
+    from { image = "eclipse-temurin:21-alpine-3.22" }
     to { image = "${project.group}/${project.name}:${project.version}" }
     container {
       format = OCI
