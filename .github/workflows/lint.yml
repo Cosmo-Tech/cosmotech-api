@@ -21,10 +21,10 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Set up JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '23'
@@ -49,10 +49,10 @@ jobs:
       categories: ${{ steps.report-list.outputs.categories }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '23'
@@ -93,13 +93,13 @@ jobs:
 
     steps:
       - name: Retrieve reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: sarif-reports
           path: sarif
 
       - name: Upload SARIF reports to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'sarif/cosmotech-${{ matrix.category }}-detekt.sarif'
           category: ${{ matrix.category }}
