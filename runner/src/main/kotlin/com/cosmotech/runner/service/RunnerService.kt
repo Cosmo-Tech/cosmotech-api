@@ -213,13 +213,12 @@ class RunnerService(
               "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}"
           )
         }
-    if (runner.lastRunInfo.lastRunId != null) {
-      if (
-          runner.lastRunInfo.lastRunStatus != LastRunStatus.Failed ||
-              runner.lastRunInfo.lastRunStatus != LastRunStatus.Successful
-      ) {
-        runner = updateRunnerStatus(runner)
-      }
+    if (
+        runner.lastRunInfo.lastRunId != null &&
+            (runner.lastRunInfo.lastRunStatus != LastRunStatus.Failed ||
+                runner.lastRunInfo.lastRunStatus != LastRunStatus.Successful)
+    ) {
+      runner = updateRunnerStatus(runner)
     }
     updateSecurityVisibility(runner)
     return RunnerInstance().initializeFrom(runner).userHasPermission(PERMISSION_READ)

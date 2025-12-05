@@ -29,10 +29,8 @@ open class CsmRbac(
     // Check for duplicate identities
     val accessControls = mutableListOf<String>()
     objectSecurity.accessControlList.forEach {
-      if (accessControls.contains(it.id)) {
-        throw IllegalArgumentException(
-            "Entity ${it.id} is referenced multiple times in the security"
-        )
+      require(!(accessControls.contains(it.id))) {
+        "Entity ${it.id} is referenced multiple times in the security"
       }
       accessControls.add(it.id)
     }

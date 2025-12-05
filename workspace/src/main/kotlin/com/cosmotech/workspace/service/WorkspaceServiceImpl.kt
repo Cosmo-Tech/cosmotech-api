@@ -59,6 +59,8 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 
 private const val WORKSPACE_FILES_BASE_FOLDER = "workspace-files"
+private const val S3_LISTING_WORKSPACE_FILES_ERROR_MESSAGE =
+    "Something wrong happened when listing workspace files"
 
 @Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -310,10 +312,8 @@ internal class WorkspaceServiceImpl(
     val objectKey =
         "$organizationId/$workspaceId/$WORKSPACE_FILES_BASE_FOLDER/$fileRelativeDestinationBuilder"
 
-    if (!overwrite && s3Template.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
-      throw IllegalArgumentException(
-          "File '$fileRelativeDestinationBuilder' already exists, not overwriting it"
-      )
+    require(overwrite || !s3Template.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
+      "File '$fileRelativeDestinationBuilder' already exists, not overwriting it"
     }
 
     s3Template.upload(csmPlatformProperties.s3.bucketName, objectKey, file.inputStream)
@@ -364,11 +364,11 @@ internal class WorkspaceServiceImpl(
           }
           .toList()
     } catch (e: AwsServiceException) {
-      throw S3Exception("Something wrong happened when listing workspace files", e)
+      throw S3Exception(S3_LISTING_WORKSPACE_FILES_ERROR_MESSAGE, e)
     } catch (e: SdkClientException) {
-      throw S3Exception("Something wrong happened when listing workspace files", e)
+      throw S3Exception(S3_LISTING_WORKSPACE_FILES_ERROR_MESSAGE, e)
     } catch (e: S3Exception) {
-      throw S3Exception("Something wrong happened when listing workspace files", e)
+      throw S3Exception(S3_LISTING_WORKSPACE_FILES_ERROR_MESSAGE, e)
     }
   }
 

@@ -56,35 +56,34 @@ fun getCurrentAccountIdentifier(configuration: CsmPlatformProperties): String {
 }
 
 fun getCurrentAccountGroups(configuration: CsmPlatformProperties): List<String> {
-  return (getValueFromAuthenticatedToken(configuration) {
+  return getValueFromAuthenticatedToken(configuration) {
     try {
       val jwt = JWTParser.parse(it)
       jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.groupJwtClaim)
     } catch (e: ParseException) {
       JSONObjectUtils.parse(it)[configuration.authorization.groupJwtClaim] as List<String>
     }
-  } ?: emptyList())
+  }
 }
 
 fun getCurrentAuthenticatedRoles(configuration: CsmPlatformProperties): List<String> {
-  return (getValueFromAuthenticatedToken(configuration) {
+  return getValueFromAuthenticatedToken(configuration) {
     try {
       val jwt = JWTParser.parse(it)
       jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.rolesJwtClaim)
     } catch (e: ParseException) {
       JSONObjectUtils.parse(it)[configuration.authorization.rolesJwtClaim] as List<String>
     }
-  } ?: emptyList())
+  }
 }
 
 fun <T> getValueFromAuthenticatedToken(
     configuration: CsmPlatformProperties,
     actionLambda: (String) -> T,
 ): T {
-  if (getCurrentAuthentication() == null) {
-    throw IllegalStateException("User Authentication not found in Security Context")
-  }
   val authentication = getCurrentAuthentication()
+  checkNotNull(authentication) { "User Authentication not found in Security Context" }
+
   if (authentication is JwtAuthenticationToken) {
     return authentication.token.tokenValue.let { actionLambda(it) }
   }
