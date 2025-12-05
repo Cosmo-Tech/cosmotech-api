@@ -490,9 +490,10 @@ class RunnerService(
     private fun removeAccessControlToDatasets(userId: String) {
       val organizationId = this.runner.organizationId!!
       this.runner.datasetList?.forEach { datasetId ->
-        val datasetACL =
-            datasetApiService.findDatasetById(organizationId, datasetId).getRbac().accessControlList
+        val dataset = datasetApiService.findDatasetById(organizationId, datasetId)
+        if (dataset.main!!) return@forEach
 
+        val datasetACL = dataset.getRbac().accessControlList
         if (datasetACL.any { it.id == userId })
             datasetApiService.removeDatasetAccessControl(organizationId, datasetId, userId)
       }
