@@ -79,7 +79,7 @@ val detektVersion = "1.23.8"
 // Tests
 val jUnitBomVersion = "6.0.1"
 val mockkVersion = "1.14.0"
-val awaitilityKVersion = "4.2.0"
+val awaitilityKVersion = "4.3.0"
 val springMockkVersion = "4.0.2"
 
 val configBuildDir = "${layout.buildDirectory.get()}/config"
