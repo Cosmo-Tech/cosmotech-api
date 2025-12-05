@@ -1003,6 +1003,7 @@ components:
 
     DatasetPartFiles:
       type: array
+      nullable: true
       description: |
         Notes:
           - Each parts defined in dataset should have a file defined in this list
