@@ -44,8 +44,6 @@ import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.service.toGenericSecurity
 import java.io.ByteArrayOutputStream
 import java.time.Instant
-import kotlin.String
-import kotlin.use
 import org.apache.commons.lang3.StringUtils
 import org.postgresql.copy.CopyManager
 import org.postgresql.core.BaseConnection
@@ -671,16 +669,18 @@ class DatasetServiceImpl(
     val query =
         constructQuery(
             datasetPartId,
-            selects,
-            sums,
-            avgs,
-            counts,
-            mins,
-            maxs,
-            offset,
-            limit,
-            groupBys,
-            orderBys,
+            QueryParams(
+                selects,
+                sums,
+                avgs,
+                counts,
+                mins,
+                maxs,
+                offset,
+                limit,
+                groupBys,
+                orderBys,
+            ),
         )
 
     val outputStream = ByteArrayOutputStream()
@@ -715,28 +715,15 @@ class DatasetServiceImpl(
     }
   }
 
-  @Suppress("LongParameterList")
-  private fun constructQuery(
-      datasetPartId: String,
-      selects: List<String>?,
-      sums: List<String>?,
-      avgs: List<String>?,
-      counts: List<String>?,
-      mins: List<String>?,
-      maxs: List<String>?,
-      offset: Int?,
-      limit: Int?,
-      groupBys: List<String>?,
-      orderBys: List<String>?,
-  ): String {
+  private fun constructQuery(datasetPartId: String, queryParams: QueryParams): String {
     val tableName = "${DATASET_INPUTS_SCHEMA}.${datasetPartId.sanitizeDatasetPartId()}"
 
-    val selectClauses = constructClause(selects, null, null)
-    val sumClauses = constructClause(sums, AggregationType.Sum, "float8")
-    val avgClauses = constructClause(avgs, AggregationType.Avg, "float8")
-    val countClauses = constructClause(counts, AggregationType.Count, null)
-    val minClauses = constructClause(mins, AggregationType.Min, "float8")
-    val maxClauses = constructClause(maxs, AggregationType.Max, "float8")
+    val selectClauses = constructClause(queryParams.selects, null, null)
+    val sumClauses = constructClause(queryParams.sums, AggregationType.Sum, "float8")
+    val avgClauses = constructClause(queryParams.avgs, AggregationType.Avg, "float8")
+    val countClauses = constructClause(queryParams.counts, AggregationType.Count, null)
+    val minClauses = constructClause(queryParams.mins, AggregationType.Min, "float8")
+    val maxClauses = constructClause(queryParams.maxs, AggregationType.Max, "float8")
 
     val allSelectClauses =
         mutableListOf(selectClauses, sumClauses, avgClauses, countClauses, minClauses, maxClauses)
@@ -746,17 +733,17 @@ class DatasetServiceImpl(
     val query =
         StringBuilder("SELECT %s FROM %s ".format(allSelectClauses.ifBlank { "*" }, tableName))
 
-    val groupByClauses = constructClause(groupBys, null, null)
+    val groupByClauses = constructClause(queryParams.groupBys, null, null)
     if (groupByClauses.isNotBlank()) {
       query.append("GROUP BY $groupByClauses ")
     }
 
-    val orderByClauses = constructClause(orderBys, null, null, true)
+    val orderByClauses = constructClause(queryParams.orderBys, null, null, true)
     if (orderByClauses.isNotBlank()) {
       query.append("ORDER BY $orderByClauses ")
     }
 
-    addLimitOffset(limit, offset, query)
+    addLimitOffset(queryParams.limit, queryParams.offset, query)
 
     logger.debug(query.toString())
     return query.toString()
@@ -1138,6 +1125,19 @@ class DatasetServiceImpl(
     }
   }
 }
+
+class QueryParams(
+    val selects: List<String>?,
+    val sums: List<String>?,
+    val avgs: List<String>?,
+    val counts: List<String>?,
+    val mins: List<String>?,
+    val maxs: List<String>?,
+    val offset: Int?,
+    val limit: Int?,
+    val groupBys: List<String>?,
+    val orderBys: List<String>?,
+)
 
 enum class AggregationType {
   Sum,

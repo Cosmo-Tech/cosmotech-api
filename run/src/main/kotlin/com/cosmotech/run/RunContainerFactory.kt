@@ -10,7 +10,6 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.run.container.BASIC_SIZING
 import com.cosmotech.run.container.HIGH_CPU_SIZING
 import com.cosmotech.run.container.HIGH_MEMORY_SIZING
-import com.cosmotech.run.container.Sizing
 import com.cosmotech.run.container.StartInfo
 import com.cosmotech.run.container.toContainerResourceSizing
 import com.cosmotech.run.container.toSizing
@@ -208,75 +207,6 @@ class RunContainerFactory(
                 WORKSPACE_ID_LABEL to workspace.id,
                 RUNNER_ID_LABEL to runner.id,
             ),
-    )
-  }
-
-  internal fun buildSingleContainerStart(
-      containerName: String,
-      imageName: String,
-      jobId: String,
-      imageRegistry: String = "",
-      imageVersion: String = "latest",
-      containerEnvVars: Map<String, String>,
-      workflowType: String,
-      nodeLabel: String = NODE_LABEL_DEFAULT,
-  ): RunStartContainers {
-
-    var defaultSizing = BASIC_SIZING
-
-    if (nodeLabel.isNotBlank()) {
-      defaultSizing = LABEL_SIZING[nodeLabel] ?: BASIC_SIZING
-    }
-
-    val container =
-        buildSimpleContainer(
-            imageRegistry,
-            imageName,
-            imageVersion,
-            defaultSizing,
-            containerName,
-            containerEnvVars,
-            nodeLabel,
-        )
-
-    val generateName = "${jobId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
-
-    return RunStartContainers(
-        generateName = generateName,
-        nodeLabel = nodeLabel.plus(NODE_LABEL_SUFFIX),
-        containers = listOf(container),
-        csmSimulationId = jobId,
-        labels =
-            mapOf(
-                CSM_JOB_ID_LABEL_KEY to jobId,
-                WORKFLOW_TYPE_LABEL to workflowType,
-                ORGANIZATION_ID_LABEL to "none",
-                WORKSPACE_ID_LABEL to "none",
-                RUNNER_ID_LABEL to "none",
-            ),
-    )
-  }
-
-  internal fun buildSimpleContainer(
-      imageRegistry: String,
-      imageName: String,
-      imageVersion: String,
-      nodeSizing: Sizing,
-      containerName: String,
-      containerEnvVars: Map<String, String>,
-      nodeLabel: String,
-  ): RunContainer {
-
-    val envVars = getMinimalCommonEnvVars(csmPlatformProperties).toMutableMap()
-    envVars.putAll(containerEnvVars)
-
-    return RunContainer(
-        name = containerName,
-        image = getImageName(imageRegistry, imageName, imageVersion),
-        dependencies = listOf(CSM_DAG_ROOT),
-        envVars = envVars,
-        nodeLabel = nodeLabel,
-        runSizing = nodeSizing.toContainerResourceSizing(),
     )
   }
 

@@ -79,15 +79,13 @@ inline fun <reified T> T.compareToAndMutateIfNeeded(
           if (changed) {
             membersChanged.add(member.name)
             if (mutateIfChanged) {
-              if (member !is KMutableProperty) {
-                throw IllegalArgumentException(
-                    "Detected change but cannot mutate " +
-                        "this object because property ${member.name} " +
-                        "(on class ${T::class}) is not mutable. " +
-                        "Either exclude this field or call this function with " +
-                        "mutateIfChanged=false to view the changes detected"
-                )
+              require(member is KMutableProperty) {
+                """Detected change but cannot mutate this object 
+                    because property ${member.name} (on class ${T::class}) is not mutable.
+                    Either exclude this field or call this function with mutateIfChanged=false 
+                    to view the changes detected"""
               }
+
               member.setter.call(this, newValue)
             }
           }

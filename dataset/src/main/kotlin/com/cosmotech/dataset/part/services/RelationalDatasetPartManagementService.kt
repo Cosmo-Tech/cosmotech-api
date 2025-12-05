@@ -11,7 +11,6 @@ import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.sql.SQLException
-import kotlin.use
 import org.apache.commons.lang3.StringUtils
 import org.postgresql.copy.CopyManager
 import org.postgresql.core.BaseConnection
@@ -50,10 +49,8 @@ class RelationalDatasetPartManagementService(
 
     val tableExists = writerJdbcTemplate.existTable(datasetPart.id)
 
-    if (tableExists && !overwrite) {
-      throw IllegalArgumentException(
-          "Table ${datasetPart.id} already exists and overwrite is set to false."
-      )
+    require(!tableExists || overwrite) {
+      "Table ${datasetPart.id} already exists and overwrite is set to false."
     }
 
     inputStream.bufferedReader().use { reader ->
