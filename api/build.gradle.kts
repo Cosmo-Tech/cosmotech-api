@@ -162,17 +162,6 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
   )
 }
 
-// PROD-14252: temporary fix waiting for upstream resolution of
-// https://github.com/OpenAPITools/openapi-generator/pull/20701
-tasks.register<Copy>("overwriteGeneratedPythonFile") {
-  group = "openapi-python"
-  description =
-      "Patch OpenAPI Python client (temporary fix OpenAPITools/openapi-generator/pull/20701)"
-  dependsOn("openApiPythonGenerate")
-  from("${rootDir}/scripts/clients/patches/python.yml")
-  into("${layout.buildDirectory.get()}/generated-sources/openapi/python/.github/workflows/")
-}
-
 tasks.register<Copy>("copyPythonGitPushScript") {
   group = "openapi-python"
   description =
@@ -191,12 +180,10 @@ tasks.register<Copy>("copyPythonLicense") {
   into("${layout.buildDirectory.get()}/generated-sources/openapi/python")
 }
 
-// PROD-14252: temporary fix waiting for upstream resolution
-// of https://github.com/OpenAPITools/openapi-generator/pull/20701
 tasks.register("generatePythonClient") {
   group = "openapi-python"
   description = "Push generated Python client project to dedicated github repository"
-  dependsOn("copyPythonGitPushScript", "copyPythonLicense", "overwriteGeneratedPythonFile")
+  dependsOn("copyPythonGitPushScript", "copyPythonLicense")
 }
 
 tasks.register<GenerateTask>("openApiUmlGenerate") {
