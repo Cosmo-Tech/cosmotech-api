@@ -4,7 +4,7 @@ package com.cosmotech.metrics
 
 import com.cosmotech.common.metrics.PersistentMetric
 
-interface MetricsService {
+fun interface MetricsService {
   /**
    * Store a metric in the persistent database.
    *

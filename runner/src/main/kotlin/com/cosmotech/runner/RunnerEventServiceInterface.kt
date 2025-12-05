@@ -5,7 +5,7 @@ package com.cosmotech.runner
 import com.cosmotech.common.events.TriggerRunnerEvent
 import org.springframework.context.event.EventListener
 
-interface RunnerEventServiceInterface {
+fun interface RunnerEventServiceInterface {
 
   @EventListener(TriggerRunnerEvent::class) fun startNewRun(triggerEvent: TriggerRunnerEvent)
 }

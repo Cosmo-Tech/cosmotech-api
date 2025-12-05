@@ -34,7 +34,6 @@ open class CsmApiConfiguration {
 
   @Bean(name = ["csm-in-process-event-executor"])
   open fun inProcessEventHandlerExecutor(): Executor =
-      // TODO A better strategy could be with a limited core pool size off an unbounded queue ?
       Executors.newCachedThreadPool(
           BasicThreadFactory.builder().namingPattern("csm-event-handler-%d").build()
       )
@@ -92,8 +91,8 @@ class YamlMessageConverter(objectMapper: ObjectMapper) :
   constructor() : this(yamlObjectMapper())
 
   override fun setObjectMapper(objectMapper: ObjectMapper) {
-    if (objectMapper.factory !is YAMLFactory) {
-      throw IllegalArgumentException("ObjectMapper must be configured with YAMLFactory")
+    require(objectMapper.factory is YAMLFactory) {
+      "ObjectMapper must be configured with YAMLFactory"
     }
     super.setObjectMapper(objectMapper)
   }

@@ -50,8 +50,9 @@ class MonitorServiceAspect(
   @Pointcut(
       "within(@org.springframework.web.bind.annotation.RestController *) && within(com.cosmotech..*Controller)"
   )
-  @Suppress("EmptyFunctionBlock")
-  fun cosmotechPointcut() {}
+  fun cosmotechPointcut() {
+    // Empty function block to define a pointcut
+  }
 
   @Before("cosmotechPointcut()")
   fun monitorBefore(joinPoint: JoinPoint) {
