@@ -465,8 +465,6 @@ subprojects {
     tasks.withType<GenerateTask> {
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
       outputDir.set(openApiServerSourcesGenerationDir)
-      // Templates here were enabled due to an open PR in OpenAPITools/openapi-generator
-      // https://github.com/OpenAPITools/openapi-generator/pull/21994
       templateDir.set("${rootDir}/openapi/templates")
       generatorName.set("kotlin-spring")
       apiPackage.set("com.cosmotech.${projectDirName}.api")
