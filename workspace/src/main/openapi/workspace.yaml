@@ -28,14 +28,14 @@ paths:
             schema:
               $ref: '#/components/schemas/WorkspaceCreateRequest'
             examples:
-              Workspace:
-                $ref: '#/components/examples/BreweryWorkspaceCreateIn'
+              BreweryWorkspaceCreate:
+                $ref: '#/components/examples/BreweryWorkspaceCreate'
           application/yaml:
             schema:
               $ref: '#/components/schemas/WorkspaceCreateRequest'
             examples:
-              Workspace:
-                $ref: '#/components/examples/BreweryWorkspaceCreateIn'
+              BreweryWorkspaceCreate:
+                $ref: '#/components/examples/BreweryWorkspaceCreate'
       responses:
         "201":
           description: The workspace details
@@ -44,13 +44,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Workspace'
               examples:
-                Workspace:
+                BreweryWorkspace:
                   $ref: '#/components/examples/BreweryWorkspace'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/Workspace'
               examples:
-                Workspace:
+                BreweryWorkspace:
                   $ref: '#/components/examples/BreweryWorkspace'
         "400":
           description: Bad request
@@ -99,13 +99,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Workspace'
               examples:
-                Workspace:
+                BreweryWorkspace:
                   $ref: '#/components/examples/BreweryWorkspace'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/Workspace'
               examples:
-                Workspace:
+                BreweryWorkspace:
                   $ref: '#/components/examples/BreweryWorkspace'
         "404":
           description: The Workspace specified is unknown or you don't have access to it
@@ -122,13 +122,13 @@ paths:
             schema:
               $ref: '#/components/schemas/WorkspaceUpdateRequest'
             examples:
-              BreweryUpdate:
+              BreweryWorkspaceUpdate:
                 $ref: '#/components/examples/BreweryWorkspaceUpdate'
           application/yaml:
             schema:
               $ref: '#/components/schemas/WorkspaceUpdateRequest'
             examples:
-              BreweryUpdate:
+              BreweryWorkspaceUpdate:
                 $ref: '#/components/examples/BreweryWorkspaceUpdate'
       responses:
         "200":
@@ -138,13 +138,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Workspace'
               examples:
-                BreweryUpdated:
+                BreweryWorkspaceUpdated:
                   $ref: '#/components/examples/BreweryWorkspaceUpdated'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/Workspace'
               examples:
-                BreweryUpdated:
+                BreweryWorkspaceUpdated:
                   $ref: '#/components/examples/BreweryWorkspaceUpdated'
         "400":
           description: Bad request
@@ -213,14 +213,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceFile'
               examples:
-                BreweryWorkspaceFile:
-                  $ref: '#/components/examples/BreweryWorkspaceFile'
+                WorkspaceFile:
+                  $ref: '#/components/examples/WorkspaceFile'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceFile'
               examples:
-                BreweryWorkspaceFile:
-                  $ref: '#/components/examples/BreweryWorkspaceFile'
+                WorkspaceFile:
+                  $ref: '#/components/examples/WorkspaceFile'
         "400":
           description: Bad request
     get:
@@ -238,16 +238,16 @@ paths:
                 items:
                   $ref: '#/components/schemas/WorkspaceFile'
               examples:
-                WorkspaceFiles:
-                  $ref: '#/components/examples/WorkspaceFiles'
+                WorkspaceFileList:
+                  $ref: '#/components/examples/WorkspaceFileList'
             application/yaml:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/WorkspaceFile'
               examples:
-                WorkspaceFiles:
-                  $ref: '#/components/examples/WorkspaceFiles'
+                WorkspaceFileList:
+                  $ref: '#/components/examples/WorkspaceFileList'
         "404":
           description: The Workspace specified is unknown or you don't have access to it
     delete:
@@ -330,9 +330,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkspacePermissionsList'
+              examples:
+                WorkspacePermissions:
+                  $ref: '#/components/examples/WorkspacePermissions'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspacePermissionsList'
+              examples:
+                WorkspacePermissions:
+                  $ref: '#/components/examples/WorkspacePermissions'
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security:
     parameters:
@@ -351,13 +357,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceSecurity'
               examples:
-                WorkspaceSecurity:
+                BreweryWorkspaceSecurity:
                   $ref: '#/components/examples/BreweryWorkspaceSecurity'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceSecurity'
               examples:
-                WorkspaceSecurity:
+                BreweryWorkspaceSecurity:
                   $ref: '#/components/examples/BreweryWorkspaceSecurity'
         "404":
           description: The Workspace specified is unknown or you don't have access to it
@@ -397,13 +403,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceSecurity'
               examples:
-                WriterWorkspaceSecurity:
+                BreweryWorkspaceSecurity:
                   $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceSecurity'
               examples:
-                WriterWorkspaceSecurity:
+                BreweryWorkspaceSecurity:
                   $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
         "404":
           description: The Workspace specified is unknown or you don't have access to it
@@ -425,13 +431,13 @@ paths:
             schema:
               $ref: '#/components/schemas/WorkspaceAccessControl'
             examples:
-              WorkspaceAccess:
+              BreweryWorkspaceAccessControl:
                 $ref: '#/components/examples/BreweryWorkspaceAccessControl'
           application/yaml:
             schema:
               $ref: '#/components/schemas/WorkspaceAccessControl'
             examples:
-              WorkspaceAccess:
+              BreweryWorkspaceAccessControl:
                 $ref: '#/components/examples/BreweryWorkspaceAccessControl'
       responses:
         "201":
@@ -441,13 +447,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
-                WorkspaceAccessControl:
+                BreweryWorkspaceAccessControl:
                   $ref: '#/components/examples/BreweryWorkspaceAccessControl'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
-                WorkspaceAccessControl:
+                BreweryWorkspaceAccessControl:
                   $ref: '#/components/examples/BreweryWorkspaceAccessControl'
         "404":
           description: The Workspace specified is unknown or you don't have access to it
@@ -475,13 +481,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
-                WorkspaceAccessControl:
+                BreweryWorkspaceAccessControl:
                   $ref: '#/components/examples/BreweryWorkspaceAccessControl'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
-                WorkspaceAccessControl:
+                BreweryWorkspaceAccessControl:
                   $ref: '#/components/examples/BreweryWorkspaceAccessControl'
         "404":
           description: The Workspace or user specified is unknown or you don't have access to it
@@ -514,13 +520,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
-                WorkspaceAccessControl:
+                BreweryWorkspaceAccessControl:
                   $ref: '#/components/examples/BreweryWorkspaceAccessControl'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
-                WorkspaceAccessControl:
+                BreweryWorkspaceAccessControl:
                   $ref: '#/components/examples/BreweryWorkspaceAccessControl'
         "404":
           description: The Workspace specified is unknown or you don't have access to it
@@ -551,9 +557,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WorkspaceUsersList'
+              examples:
+                WorkspaceUsers:
+                  $ref: '#/components/examples/WorkspaceUsers'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/WorkspaceUsersList'
+              examples:
+                WorkspaceUsers:
+                  $ref: '#/components/examples/WorkspaceUsers'
         "404":
           description: The Workspace or the User specified is unknown or you don't have access to them
 
@@ -887,87 +899,94 @@ components:
       summary: Brewery Workspace
       description: Brewery Workspace example
       value:
+        id: w-1AbCdEfGhIj
+        organizationId: o-gZVQqV8B4pR7
         key: brewery
         name: Brewery Analysis
         description: Brewery analysis for stock, production, transport and customer satisfaction
-        version: "1.0.0"
+        version: 1.0.0
         tags:
           - Brewery
         solution:
-          solutionId: "sol-feo16eua48o"
+          solutionId: sol-feo16eua48o
         datasetCopy: true
         createInfo:
-          timestamp: 123456789
-          userId: admin
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
         updateInfo:
-          timestamp: 123456789
-          userId: admin
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
         security:
-          default: "viewer"
+          default: viewer
           accessControlList:
-            - id: "alice.doe@cosmotech.com"
-              role: "admin"
-    BreweryWorkspaceCreateIn:
+            - id: alice.doe@cosmotech.com
+              role: admin
+    BreweryWorkspaceCreate:
       summary: Brewery Workspace Create input parameters example
       description: Example of required parameters for creating a workspace
       value:
         key: brewery
         name: Brewery Analysis
         description: Brewery analysis for stock, production, transport and customer satisfaction
-        version: "1.0.0"
+        version: 1.0.0
         tags:
           - Brewery
         solution:
-          solutionId: "sol-feo16eua48o"
+          solutionId: sol-feo16eua48o
+        datasetCopy: true
         security:
-          default: "viewer"
+          default: viewer
           accessControlList:
-            - id: "alice.doe@cosmotech.com"
-              role: "admin"
+            - id: alice.doe@cosmotech.com
+              role: admin
     WorkspaceList:
       summary: Workspace list
       description: Example list of workspaces with required fields
       value:
-        - key: brewery
+        - id: w-1AbCdEfGhIj
+          organizationId: o-gZVQqV8B4pR7
+          key: brewery
           name: Brewery Analysis
           description: Brewery analysis for stock, production, transport and customer satisfaction
-          version: "1.0.0"
+          version: 1.0.0
           tags:
             - Brewery
           solution:
-            solutionId: "sol-feo16eua48o"
+            solutionId: sol-feo16eua48o
           datasetCopy: true
           createInfo:
-            timestamp: 123456789
-            userId: admin
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
           updateInfo:
-            timestamp: 123456789
-            userId: admin
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
           security:
-            default: "viewer"
+            default: viewer
             accessControlList:
-              - id: "alice.doe@cosmotech.com"
-                role: "admin"
-        - key: breweryPlus
+              - id: alice.doe@cosmotech.com
+                role: admin
+        - id: w-2XyZaBcDeFg
+          organizationId: o-gZVQqV8B4pR7
+          key: breweryPlus
           name: Brewery Analysis Plus
           description: Brewery analysis for stock, production, transport and customer satisfaction with a plus
-          version: "1.0.0"
+          version: 1.0.0
           tags:
             - Brewery
           solution:
-            solutionId: "sol-ojd96oz14pz"
+            solutionId: sol-ojd96oz14pz
           datasetCopy: true
           createInfo:
-            timestamp: 123456789
-            userId: admin
+            timestamp: 1621353329000
+            userId: bob.doe@cosmotech.com
           updateInfo:
-            timestamp: 123456789
-            userId: admin
+            timestamp: 1621353329000
+            userId: bob.doe@cosmotech.com
           security:
-            default: "viewer"
+            default: viewer
             accessControlList:
-              - id: "bob.doe@cosmotech.com"
-                role: "admin"
+              - id: bob.doe@cosmotech.com
+                role: admin
     BreweryWorkspaceUpdate:
       summary: Update the Brewery Workspace
       description: Update the Brewery Workspace by changing its name
@@ -977,59 +996,80 @@ components:
       summary: Updated Brewery Workspace
       description: Example of updated workspace with required fields
       value:
+        id: w-1AbCdEfGhIj
+        organizationId: o-gZVQqV8B4pR7
         key: brewery
         name: Brewery Analysis 2021
         description: Brewery analysis for stock, production, transport and customer satisfaction
-        version: "1.0.0"
+        version: 1.0.0
         tags:
           - Brewery
         solution:
-          solutionId: "sol-feo16eua48o"
+          solutionId: sol-feo16eua48o
         datasetCopy: true
         createInfo:
-          timestamp: 123456789
-          userId: admin
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
         updateInfo:
-          timestamp: 123456789
-          userId: admin
+          timestamp: 1621440000000
+          userId: john.doe@cosmotech.com
         security:
-          default: "viewer"
+          default: viewer
           accessControlList:
-            - id: "alice.doe@cosmotech.com"
-              role: "admin"
+            - id: alice.doe@cosmotech.com
+              role: admin
     BreweryWorkspaceSecurity:
       summary: Brewery Workspace security
       description: Brewery Workspace security example
       value:
-        default: "viewer"
+        default: viewer
         accessControlList:
-          - id: "alice.doe@cosmotech.com"
-            role: "editor"
+          - id: alice.doe@cosmotech.com
+            role: editor
     BreweryWorkspaceAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a workspace.
       value:
-        id: "bob.doe@cosmotech.com"
-        role: "editor"
+        id: bob.doe@cosmotech.com
+        role: editor
     BreweryWorkspaceRole:
       summary: Set a Workspace Role.
       description: Set a Role for a user to a workspace.
       value:
-        role: "editor"
+        role: editor
     BreweryDefaultSecurityRoleWriter:
       summary: Brewery Workspace Writer default security
-      description: Brewery Workspace example
+      description: Brewery Workspace example with updated default security
       value:
-        default: "editor"
-    BreweryWorkspaceFile:
-      summary: Brewery Workspace file example
-      description: Brewery Workspace file uploaded return example
+        default: editor
+        accessControlList:
+          - id: alice.doe@cosmotech.com
+            role: admin
+    WorkspaceFile:
+      summary: Workspace file example
+      description: Workspace file uploaded return example
       value:
         fileName: myData.csv
-    WorkspaceFiles:
-      summary: Brewery Workspace files example
-      description: Brewery Workspace files example
+    WorkspaceFileList:
+      summary: Workspace files example
+      description: Workspace files example
       value:
         - fileName: myData.csv
         - fileName: myData2.csv
         - fileName: myData3.csv
+    WorkspacePermissions:
+      summary: Workspace permissions example
+      description: Example of workspace role permissions
+      value:
+        - read
+        - read_security
+        - create_children
+        - write
+        - delete
+    WorkspaceUsers:
+      summary: Workspace users list example
+      description: Example of users with access to the workspace
+      value:
+        - alice.doe@cosmotech.com
+        - bob.doe@cosmotech.com
+        - charlie.smith@cosmotech.com
