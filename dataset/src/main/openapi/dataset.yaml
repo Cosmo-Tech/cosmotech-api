@@ -38,6 +38,9 @@ paths:
                   $ref: "#/components/schemas/DatasetCreateRequest"
               required:
                 - datasetCreateRequest
+            examples:
+              DatasetCreateExample:
+                $ref: '#/components/examples/DatasetCreateExample'
 
       responses:
         "201":
@@ -46,9 +49,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dataset"
+              examples:
+                DatasetExample:
+                  $ref: '#/components/examples/DatasetExample'
             application/yaml:
               schema:
                 $ref: "#/components/schemas/Dataset"
+              examples:
+                DatasetExample:
+                  $ref: '#/components/examples/DatasetExample'
         "400":
           description: Bad request
         "403":
@@ -73,11 +82,17 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Dataset"
+              examples:
+                DatasetListExample:
+                  $ref: '#/components/examples/DatasetListExample'
             application/yaml:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/Dataset"
+              examples:
+                DatasetListExample:
+                  $ref: '#/components/examples/DatasetListExample'
         "403":
           description: Insufficient permissions on organization, workspace or dataset
         "404":
@@ -105,12 +120,18 @@ paths:
               description: List of tags
               items:
                 type: string
+            examples:
+              DatasetTagsSearchExample:
+                $ref: '#/components/examples/DatasetTagsSearchExample'
           application/yaml:
             schema:
               type: array
               description: List of tags
               items:
                 type: string
+            examples:
+              DatasetTagsSearchExample:
+                $ref: '#/components/examples/DatasetTagsSearchExample'
       responses:
         "200":
           description: Dataset list containing tags
@@ -120,6 +141,17 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Dataset'
+              examples:
+                DatasetListExample:
+                  $ref: '#/components/examples/DatasetListExample'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dataset'
+              examples:
+                DatasetListExample:
+                  $ref: '#/components/examples/DatasetListExample'
         "403":
           description: Insufficient permissions on organization, workspace or dataset
         "404":
@@ -143,9 +175,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dataset"
+              examples:
+                DatasetExample:
+                  $ref: '#/components/examples/DatasetExample'
             application/yaml:
               schema:
                 $ref: "#/components/schemas/Dataset"
+              examples:
+                DatasetExample:
+                  $ref: '#/components/examples/DatasetExample'
         "403":
           description: Insufficient permissions on organization, workspace or dataset
         "404":
@@ -168,6 +206,9 @@ paths:
                   $ref: "#/components/schemas/DatasetUpdateRequest"
               required:
                 - datasetUpdateRequest
+            examples:
+              DatasetUpdateExample:
+                $ref: '#/components/examples/DatasetUpdateExample'
       responses:
         "200":
           description: Dataset successfully updated
@@ -175,9 +216,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dataset"
+              examples:
+                DatasetExample:
+                  $ref: '#/components/examples/DatasetExample'
             application/yaml:
               schema:
                 $ref: "#/components/schemas/Dataset"
+              examples:
+                DatasetExample:
+                  $ref: '#/components/examples/DatasetExample'
         "400":
           description: Bad request
         "403":
@@ -216,9 +263,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DatasetRole'
+            examples:
+              DatasetRoleExample:
+                $ref: '#/components/examples/DatasetRoleExample'
           application/yaml:
             schema:
               $ref: '#/components/schemas/DatasetRole'
+            examples:
+              DatasetRoleExample:
+                $ref: '#/components/examples/DatasetRoleExample'
       responses:
         "201":
           description: The Dataset default visibility
@@ -226,6 +279,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetSecurity'
+              examples:
+                DatasetSecurityExample:
+                  $ref: '#/components/examples/DatasetSecurityExample'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/DatasetSecurity'
+              examples:
+                DatasetSecurityExample:
+                  $ref: '#/components/examples/DatasetSecurityExample'
         "404":
           description: the Dataset specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access:
@@ -245,9 +307,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DatasetAccessControl'
+            examples:
+              DatasetAccessControlExample:
+                $ref: '#/components/examples/DatasetAccessControlExample'
           application/yaml:
             schema:
               $ref: '#/components/schemas/DatasetAccessControl'
+            examples:
+              DatasetAccessControlExample:
+                $ref: '#/components/examples/DatasetAccessControlExample'
       responses:
         "201":
           description: The Dataset access
@@ -255,9 +323,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
+              examples:
+                DatasetAccessControlExample:
+                  $ref: '#/components/examples/DatasetAccessControlExample'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
+              examples:
+                DatasetAccessControlExample:
+                  $ref: '#/components/examples/DatasetAccessControlExample'
         "404":
           description: the Dataset specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}:
@@ -283,9 +357,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
+              examples:
+                DatasetAccessControlExample:
+                  $ref: '#/components/examples/DatasetAccessControlExample'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
+              examples:
+                DatasetAccessControlExample:
+                  $ref: '#/components/examples/DatasetAccessControlExample'
         "404":
           description: The Dataset or user specified is unknown or you don't have access to it
     patch:
@@ -300,9 +380,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DatasetRole'
+            examples:
+              DatasetRoleExample:
+                $ref: '#/components/examples/DatasetRoleExample'
           application/yaml:
             schema:
               $ref: '#/components/schemas/DatasetRole'
+            examples:
+              DatasetRoleExample:
+                $ref: '#/components/examples/DatasetRoleExample'
       responses:
         "200":
           description: The Dataset access
@@ -310,9 +396,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
+              examples:
+                DatasetAccessControlExample:
+                  $ref: '#/components/examples/DatasetAccessControlExample'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetAccessControl'
+              examples:
+                DatasetAccessControlExample:
+                  $ref: '#/components/examples/DatasetAccessControlExample'
         "404":
           description: The Dataset specified is unknown or you don't have access to it
     delete:
@@ -348,6 +440,14 @@ paths:
                 example:
                   - alice@mycompany.com
                   - bob@mycompany.com
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  type: string
+              example:
+                - alice@mycompany.com
+                - bob@mycompany.com
         "404":
           description: the Dataset or the User specified is unknown or you don't have access to them
 
@@ -375,6 +475,9 @@ paths:
               required:
                 - datasetPartCreateRequest
                 - file
+            examples:
+              DatasetPartCreateExample:
+                $ref: '#/components/examples/DatasetPartCreateExample'
       responses:
         "201":
           description: Dataset part successfully created
@@ -382,9 +485,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetPart'
+              examples:
+                DatasetPartExample:
+                  $ref: '#/components/examples/DatasetPartExample'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetPart'
+              examples:
+                DatasetPartExample:
+                  $ref: '#/components/examples/DatasetPartExample'
         "400":
           description: Bad request - Dataset part cannot be created
         "403":
@@ -408,11 +517,17 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/DatasetPart"
+              examples:
+                DatasetPartListExample:
+                  $ref: '#/components/examples/DatasetPartListExample'
             application/yaml:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/DatasetPart"
+              examples:
+                DatasetPartListExample:
+                  $ref: '#/components/examples/DatasetPartListExample'
         "403":
           description: Insufficient permissions on organization, workspace or dataset
         "404":
@@ -435,9 +550,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetPart'
+              examples:
+                DatasetPartExample:
+                  $ref: '#/components/examples/DatasetPartExample'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/DatasetPart'
+              examples:
+                DatasetPartExample:
+                  $ref: '#/components/examples/DatasetPartExample'
         "403":
           description: Insufficient permissions on organization, workspace or dataset
         "404":
@@ -460,6 +581,9 @@ paths:
                   $ref: '#/components/schemas/DatasetPartUpdateRequest'
               required:
                 - file
+            examples:
+              DatasetPartUpdateExample:
+                $ref: '#/components/examples/DatasetPartUpdateExample'
       responses:
         "200":
           description: Dataset part successfully replaced
@@ -467,9 +591,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DatasetPart"
+              examples:
+                DatasetPartExample:
+                  $ref: '#/components/examples/DatasetPartExample'
             application/yaml:
               schema:
                 $ref: "#/components/schemas/DatasetPart"
+              examples:
+                DatasetPartExample:
+                  $ref: '#/components/examples/DatasetPartExample'
         "400":
           description: Bad request
         "403":
@@ -488,9 +618,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DatasetPartUpdateRequest'
+            examples:
+              DatasetPartUpdateExample:
+                $ref: '#/components/examples/DatasetPartUpdateExample'
           application/yaml:
             schema:
               $ref: '#/components/schemas/DatasetPartUpdateRequest'
+            examples:
+              DatasetPartUpdateExample:
+                $ref: '#/components/examples/DatasetPartUpdateExample'
       responses:
         "200":
           description: Dataset part information successfully updated
@@ -498,9 +634,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DatasetPart"
+              examples:
+                DatasetPartExample:
+                  $ref: '#/components/examples/DatasetPartExample'
             application/yaml:
               schema:
                 $ref: "#/components/schemas/DatasetPart"
+              examples:
+                DatasetPartExample:
+                  $ref: '#/components/examples/DatasetPartExample'
         "400":
           description: Bad request
         "403":
@@ -685,12 +827,18 @@ paths:
               description: List of tags
               items:
                 type: string
+            examples:
+              DatasetTagsSearchExample:
+                $ref: '#/components/examples/DatasetTagsSearchExample'
           application/yaml:
             schema:
               type: array
               description: List of tags
               items:
                 type: string
+            examples:
+              DatasetTagsSearchExample:
+                $ref: '#/components/examples/DatasetTagsSearchExample'
       responses:
         "200":
           description: Dataset part list containing tags
@@ -700,6 +848,17 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DatasetPart'
+              examples:
+                DatasetPartListExample:
+                  $ref: '#/components/examples/DatasetPartListExample'
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DatasetPart'
+              examples:
+                DatasetPartListExample:
+                  $ref: '#/components/examples/DatasetPartListExample'
         "400":
           description: Bad request
         "403":
@@ -1081,3 +1240,276 @@ components:
       required:
         - timestamp
         - userId
+
+  examples:
+    DatasetExample:
+      summary: Dataset example
+      description: Complete dataset example with parts
+      value:
+        id: d-1AbCdEfGhIj
+        name: Sales Data 2024
+        description: Annual sales data for 2024
+        organizationId: o-gZVQqV8B4pR7
+        workspaceId: w-OGNQqJ7wP0
+        tags:
+          - sales
+          - 2024
+          - annual
+        additionalData:
+          region: Europe
+          currency: EUR
+        parts:
+          - id: dp-1XyZaBcDeFg
+            name: Q1 Sales
+            sourceName: q1-sales-2024.csv
+            description: First quarter sales data
+            tags:
+              - Q1
+              - sales
+            additionalData:
+              quarter: 1
+              year: 2024
+            type: File
+            organizationId: o-gZVQqV8B4pR7
+            workspaceId: w-OGNQqJ7wP0
+            datasetId: d-1AbCdEfGhIj
+            createInfo:
+              timestamp: 1621353329000
+              userId: john.doe@cosmotech.com
+            updateInfo:
+              timestamp: 1621353329000
+              userId: john.doe@cosmotech.com
+        createInfo:
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
+        updateInfo:
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
+        security:
+          default: viewer
+          accessControlList:
+            - id: user-xyz789ghi012
+              role: editor
+            - id: user-jkl345mno678
+              role: viewer
+
+    DatasetCreateExample:
+      summary: Dataset creation example
+      description: Example of creating a new dataset
+      value:
+        name: Customer Database
+        description: Customer information and purchase history
+        tags:
+          - customers
+          - database
+        additionalData:
+          source: CRM
+          version: "2.0"
+        parts:
+          - name: Customer Info
+            sourceName: customers.csv
+            description: Basic customer information
+            tags:
+              - customer-info
+            additionalData:
+              format: CSV
+            type: File
+          - name: Purchase History
+            sourceName: purchases.db
+            description: Historical purchase data
+            tags:
+              - purchases
+            additionalData:
+              format: SQLite
+            type: DB
+        security:
+          default: none
+          accessControlList:
+            - id: user-abc123def456
+              role: admin
+
+    DatasetUpdateExample:
+      summary: Dataset update example
+      description: Example of updating dataset information
+      value:
+        name: Customer Database - Updated
+        description: Updated customer information and purchase history
+        tags:
+          - customers
+          - database
+          - updated
+        additionalData:
+          source: CRM
+          version: "2.1"
+
+    DatasetListExample:
+      summary: Dataset list example
+      description: Example of multiple datasets
+      value:
+        - id: d-1AbCdEfGhIj
+          name: Sales Data 2024
+          description: Annual sales data
+          organizationId: o-gZVQqV8B4pR7
+          workspaceId: w-OGNQqJ7wP0
+          tags:
+            - sales
+            - 2024
+          additionalData: {}
+          parts: []
+          createInfo:
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
+          updateInfo:
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
+          security:
+            default: viewer
+            accessControlList: []
+        - id: d-2XyZaBcDeFg
+          name: Inventory Data
+          description: Current inventory levels
+          organizationId: o-gZVQqV8B4pR7
+          workspaceId: w-OGNQqJ7wP0
+          tags:
+            - inventory
+            - stock
+          additionalData: {}
+          parts: []
+          createInfo:
+            timestamp: 1621353400000
+            userId: john.doe@cosmotech.com
+          updateInfo:
+            timestamp: 1621353400000
+            userId: john.doe@cosmotech.com
+          security:
+            default: none
+            accessControlList:
+              - id: john.doe@cosmotech.com
+                role: admin
+
+    DatasetPartExample:
+      summary: Dataset part example
+      description: Example of a dataset part
+      value:
+        id: dp-1XyZaBcDeFg
+        name: Q2 Sales
+        sourceName: q2-sales-2024.csv
+        description: Second quarter sales data
+        tags:
+          - Q2
+          - sales
+        additionalData:
+          quarter: 2
+          year: 2024
+        type: File
+        organizationId: o-gZVQqV8B4pR7
+        workspaceId: w-OGNQqJ7wP0
+        datasetId: d-1AbCdEfGhIj
+        createInfo:
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
+        updateInfo:
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
+
+    DatasetPartCreateExample:
+      summary: Dataset part creation example
+      description: Example of creating a dataset part
+      value:
+        name: Q3 Sales
+        sourceName: q3-sales-2024.csv
+        description: Third quarter sales data
+        tags:
+          - Q3
+          - sales
+        additionalData:
+          quarter: 3
+          year: 2024
+        type: File
+
+    DatasetPartUpdateExample:
+      summary: Dataset part update example
+      description: Example of updating a dataset part
+      value:
+        sourceName: q3-sales-2024-updated.csv
+        description: Third quarter sales data - updated
+        tags:
+          - Q3
+          - sales
+          - updated
+        additionalData:
+          quarter: 3
+          year: 2024
+          version: "1.1"
+
+    DatasetPartListExample:
+      summary: Dataset part list example
+      description: Example of multiple dataset parts
+      value:
+        - id: dp-1XyZaBcDeFg
+          name: Q1 Sales
+          sourceName: q1-sales-2024.csv
+          description: First quarter sales
+          tags:
+            - Q1
+          additionalData: {}
+          type: File
+          organizationId: o-gZVQqV8B4pR7
+          workspaceId: w-OGNQqJ7wP0
+          datasetId: d-1AbCdEfGhIj
+          createInfo:
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
+          updateInfo:
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
+        - id: dp-2AbCdEfGhIj
+          name: Q2 Sales
+          sourceName: q2-sales-2024.csv
+          description: Second quarter sales
+          tags:
+            - Q2
+          additionalData: {}
+          type: File
+          organizationId: o-gZVQqV8B4pR7
+          workspaceId: w-OGNQqJ7wP0
+          datasetId: d-1AbCdEfGhIj
+          createInfo:
+            timestamp: 1621360000000
+            userId: john.doe@cosmotech.com
+          updateInfo:
+            timestamp: 1621360000000
+            userId: john.doe@cosmotech.com
+
+    DatasetSecurityExample:
+      summary: Dataset security example
+      description: Example of dataset security configuration
+      value:
+        default: viewer
+        accessControlList:
+          - id: john.doe@cosmotech.com
+            role: admin
+          - id: john.doe@cosmotech.com
+            role: editor
+          - id: john.doe@cosmotech.com
+            role: viewer
+
+    DatasetAccessControlExample:
+      summary: Dataset access control example
+      description: Example of adding access control
+      value:
+        id: john.doe@cosmotech.com
+        role: editor
+
+    DatasetRoleExample:
+      summary: Dataset role example
+      description: Example of updating a role
+      value:
+        role: admin
+
+    DatasetTagsSearchExample:
+      summary: Dataset tags search example
+      description: Example of searching datasets by tags
+      value:
+        - sales
+        - 2024
