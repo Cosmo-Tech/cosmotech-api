@@ -516,59 +516,119 @@ components:
       description: Brewery Run example
       value:
         id: run-bDMr5lM9Vp
-        organizationId: O-x2QOMVXpjX
-        workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
-        csmSimulationRun: a2880d46-a60d-4215-a593-783452e0df8f
-        generateName: workflow-s-eeypwem0kw-
-        workflowName: workflow-s-eeypwem0kw-lsczk
-        workspaceId: W-OGNQqJ7wP0
+        state: Running
+        organizationId: o-gZVQqV8B4pR7
+        createInfo:
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
+        workflowId: workflow-a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        csmSimulationRun: sim-a2b3c4d5-e6f7-8901-bcde-f12345678901
+        generateName: workflow-brewery-
+        workflowName: workflow-brewery-lsczk
+        workspaceId: w-OGNQqJ7wP0
         workspaceKey: Brewery
         runnerId: r-EEYpWeM0kW
-        solutionId: SOL-w4Kn79JXKz
+        solutionId: sol-w4Kn79JXKz
         runTemplateId: hundred
-        computeSize: '%NONE%'
-        datasetList: null
-        parametersValues: null
-        sendDatasetsToDataWarehouse: false
-        sendInputParametersToDataWarehouse: false
-        nodeLabel: null
+        computeSize: basic
+        datasetList:
+          - d-1AbCdEfGhIj
+          - d-2XyZaBcDeFg
+        parametersValues:
+          - parameterId: stock
+            varType: int
+            value: "100"
+          - parameterId: restock
+            varType: int
+            value: "50"
+        nodeLabel: basicpool
     BreweryRunContainer:
-      summary: Brewery Run Containers example
-      description: Brewery Run ran with containers information example
+      summary: Brewery Run with containers example
+      description: Brewery Run example with container definitions
       value:
-        id: "1"
-        workflowId: "1"
-        workflowName: "w1"
+        id: run-cXyZaBcDeFg
         state: Running
-        startTime: 4/15/2021, 10:52:18.593 AM
+        organizationId: o-gZVQqV8B4pR7
+        createInfo:
+          timestamp: 1618481538593
+          userId: user-xyz789ghi012
+        workflowId: b2c3d4e5-f6a7-8901-bcde-f23456789012
+        csmSimulationRun: b3c4d5e6-f7a8-9012-cdef-g34567890123
+        generateName: workflow-container-
+        workflowName: workflow-container-abc123
+        workspaceId: w-OGNQqJ7wP0
+        workspaceKey: Brewery
+        runnerId: r-EEYpWeM0kW
+        solutionId: sol-w4Kn79JXKz
+        runTemplateId: simulation
+        computeSize: highcpu
+        datasetList:
+          - d-1AbCdEfGhIj
+        parametersValues: []
         nodeLabel: highcpupool
+        containers:
+          - name: fetch-dataset
+            image: ghcr.io/cosmotech/fetch-dataset:latest
+            labels:
+              app: brewery
+            envVars:
+              DATASET_ID: d-1AbCdEfGhIj
+            runArgs:
+              - --fetch
+              - --validate
+            dependencies: []
+            nodeLabel: highcpupool
+          - name: run-simulation
+            image: ghcr.io/cosmotech/brewery-sim:latest
+            labels:
+              app: brewery
+            envVars:
+              SIM_MODE: batch
+            runArgs:
+              - --run
+            dependencies:
+              - fetch-dataset
+            nodeLabel: highcpupool
+            runSizing:
+              requests:
+                cpu: "2"
+                memory: "4Gi"
+              limits:
+                cpu: "4"
+                memory: "8Gi"
     OneRun:
       summary: Brewery Run list example
       description: Brewery Run list example
       value:
-        - id: run-bDMr5lM9Vp
-          organizationId: O-x2QOMVXpjX
-          workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
-          csmSimulationRun: a2880d46-a60d-4215-a593-783452e0df8f
-          generateName: workflow-s-eeypwem0kw-
-          workflowName: workflow-s-eeypwem0kw-lsczk
-          workspaceId: W-OGNQqJ7wP0
+        - id: run-dEfGhIjKlMn
+          state: Successful
+          organizationId: o-gZVQqV8B4pR7
+          createInfo:
+            timestamp: 1621353329000
+            userId: user-jkl345mno678
+          workflowId: c3d4e5f6-a7b8-9012-cdef-a34567890123
+          csmSimulationRun: c4d5e6f7-b8a9-0123-defg-b45678901234
+          generateName: workflow-list-
+          workflowName: workflow-list-xyz789
+          workspaceId: w-OGNQqJ7wP0
           workspaceKey: Brewery
           runnerId: r-EEYpWeM0kW
-          solutionId: SOL-w4Kn79JXKz
+          solutionId: sol-w4Kn79JXKz
           runTemplateId: hundred
-          computeSize: '%NONE%'
-          datasetList: null
-          parametersValues: null
-          sendDatasetsToDataWarehouse: false
-          sendInputParametersToDataWarehouse: false
-          nodeLabel: null
+          computeSize: basic
+          datasetList:
+            - d-1AbCdEfGhIj
+          parametersValues:
+            - parameterId: stock
+              varType: int
+              value: "100"
+          nodeLabel: basicpool
     BrewerySearch:
       summary: Brewery search Run example
-      description: Brewery search Run of Workspace 1 in Running state example
+      description: Brewery search Run of Workspace in Running state example
       value:
-        workspaceId: "1"
-        state: "Running"
+        workspaceId: w-OGNQqJ7wP0
+        state: Running
     BreweryRunStartContainers:
       summary: Brewery start Run directly with containers example
       description: Brewery start Run directly with containers example
@@ -576,88 +636,101 @@ components:
         generateName: workflow-
         nodeLabel: highcpupool
     BreweryRunLogs:
-      summary: Brewery Run logs  example
+      summary: Brewery Run logs example
       description: Brewery Run logs with plain text example
-      value:
-        runId: "1"
-        logs:
-          - line: Start run
-          - line: Running brewery simulation...
-          - line: Run done
+      value: |
+        [2021-05-18T16:15:29Z] INFO: Starting run execution
+        [2021-05-18T16:15:30Z] INFO: Fetching datasets...
+        [2021-05-18T16:15:43Z] INFO: Datasets fetched successfully
+        [2021-05-18T16:15:43Z] INFO: Applying parameters...
+        [2021-05-18T16:15:53Z] INFO: Parameters applied successfully
+        [2021-05-18T16:15:53Z] INFO: Validating data...
+        [2021-05-18T16:16:03Z] INFO: Data validated successfully
+        [2021-05-18T16:16:03Z] INFO: Starting pre-run container...
+        [2021-05-18T16:16:25Z] INFO: Pre-run completed
+        [2021-05-18T16:16:25Z] INFO: Starting main simulation...
+        [2021-05-18T16:16:42Z] INFO: Simulation completed
+        [2021-05-18T16:16:42Z] INFO: Starting post-run container...
+        [2021-05-18T16:16:57Z] INFO: Post-run completed
+        [2021-05-18T16:16:57Z] INFO: Run completed successfully
     BreweryRunStatus:
       summary: Brewery status example
       description: Brewery Runner Run status example
       value:
         id: run-bDMr5lM9Vp
-        organizationId: O-x2QOMVXpjX
-        workspaceId: W-x2QOMVXpjX
-        runnerId: r-x2QOMVXpjX
-        workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
-        workflowName: workflow-s-eeypwem0kw-lsczk
+        organizationId: o-gZVQqV8B4pR7
+        workspaceId: w-OGNQqJ7wP0
+        runnerId: r-EEYpWeM0kW
+        workflowId: workflow-a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        workflowName: workflow-brewery-lsczk
+        createInfo:
+          timestamp: 1621353329000
+          userId: user-abc123def456
         startTime: "2021-05-18T16:15:29.000Z"
         endTime: "2021-05-18T16:17:07.000Z"
         phase: Succeeded
         progress: 5/5
         message: null
-        estimatedDuration: null
+        estimatedDuration: 98
+        state: Successful
         nodes:
-          - id: workflow-s-eeypwem0kw-lsczk
-            name: workflow-s-eeypwem0kw-lsczk
-            displayName: workflow-s-eeypwem0kw-lsczk
-            estimatedDuration: null
+          - id: node-main-1
+            name: workflow-brewery-lsczk
+            containerName: main
+            estimatedDuration: 98
             hostNodeName: null
             message: null
             phase: Succeeded
             progress: 5/5
             startTime: "2021-05-18T16:15:29.000Z"
             endTime: "2021-05-18T16:17:07.000Z"
-          - id: workflow-s-eeypwem0kw-lsczk-1050490228
-            name: workflow-s-eeypwem0kw-lsczk.applyParametersContainer
-            displayName: applyParametersContainer
-            estimatedDuration: null
-            hostNodeName: phoenix-worker
+          - id: node-apply-params-1
+            name: workflow-brewery-lsczk.applyParametersContainer
+            containerName: applyParametersContainer
+            estimatedDuration: 14
+            hostNodeName: worker-node-1
             message: null
             phase: Succeeded
             progress: 1/1
             startTime: "2021-05-18T16:15:29.000Z"
             endTime: "2021-05-18T16:15:43.000Z"
-          - id: workflow-s-eeypwem0kw-lsczk-1339592929
-            name: workflow-s-eeypwem0kw-lsczk.postRunContainer
-            displayName: postRunContainer
-            estimatedDuration: null
-            hostNodeName: phoenix-worker
-            message: null
-            phase: Succeeded
-            progress: 1/1
-            startTime: "2021-05-18T16:16:45.000Z"
-            endTime: "2021-05-18T16:16:57.000Z"
-          - id: workflow-s-eeypwem0kw-lsczk-2556449795
-            name: workflow-s-eeypwem0kw-lsczk.runContainer
-            displayName: runContainer
-            estimatedDuration: null
-            hostNodeName: null
-            message: null
-            phase: Succeeded
-            progress: 1/1
-            startTime: "2021-05-18T16:16:35.000Z"
-            endTime: "2021-05-18T16:16:42.000Z"
-          - id: workflow-s-eeypwem0kw-lsczk-545137412
-            name: workflow-s-eeypwem0kw-lsczk.preRunContainer
-            displayName: preRunContainer
-            estimatedDuration: null
-            hostNodeName: phoenix-worker
-            message: null
-            phase: Succeeded
-            progress: 1/1
-            startTime: "2021-05-18T16:16:13.000Z"
-            endTime: "2021-05-18T16:16:25.000Z"
-          - id: workflow-s-eeypwem0kw-lsczk-996178104
-            name: workflow-s-eeypwem0kw-lsczk.validateDataContainer
-            displayName: validateDataContainer
-            estimatedDuration: null
-            hostNodeName: phoenix-worker
+          - id: node-validate-data-1
+            name: workflow-brewery-lsczk.validateDataContainer
+            containerName: validateDataContainer
+            estimatedDuration: 10
+            hostNodeName: worker-node-1
             message: null
             phase: Succeeded
             progress: 1/1
             startTime: "2021-05-18T16:15:53.000Z"
             endTime: "2021-05-18T16:16:03.000Z"
+          - id: node-prerun-1
+            name: workflow-brewery-lsczk.preRunContainer
+            containerName: preRunContainer
+            estimatedDuration: 12
+            hostNodeName: worker-node-1
+            message: null
+            phase: Succeeded
+            progress: 1/1
+            startTime: "2021-05-18T16:16:13.000Z"
+            endTime: "2021-05-18T16:16:25.000Z"
+          - id: node-run-1
+            name: workflow-brewery-lsczk.runContainer
+            containerName: runContainer
+            estimatedDuration: 7
+            hostNodeName: worker-node-2
+            message: null
+            phase: Succeeded
+            progress: 1/1
+            startTime: "2021-05-18T16:16:35.000Z"
+            endTime: "2021-05-18T16:16:42.000Z"
+          - id: node-postrun-1
+            name: workflow-brewery-lsczk.postRunContainer
+            containerName: postRunContainer
+            estimatedDuration: 12
+            hostNodeName: worker-node-1
+            message: null
+            phase: Succeeded
+            progress: 1/1
+            startTime: "2021-05-18T16:16:45.000Z"
+            endTime: "2021-05-18T16:16:57.000Z"
