@@ -29,14 +29,14 @@ paths:
             schema:
               $ref: '#/components/schemas/SolutionCreateRequest'
             examples:
-              Brewery:
-                $ref: '#/components/examples/Brewery'
+              BreweryCreate:
+                $ref: '#/components/examples/BreweryCreate'
           application/yaml:
             schema:
               $ref: '#/components/schemas/SolutionCreateRequest'
             examples:
-              Brewery:
-                $ref: '#/components/examples/Brewery'
+              BreweryCreate:
+                $ref: '#/components/examples/BreweryCreate'
       responses:
         "201":
           description: Solution successfully created
@@ -73,16 +73,16 @@ paths:
                 items:
                   $ref: '#/components/schemas/Solution'
               examples:
-                Two:
-                  $ref: '#/components/examples/OneSolution'
+                SolutionList:
+                  $ref: '#/components/examples/SolutionList'
             application/yaml:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Solution'
               examples:
-                Two:
-                  $ref: '#/components/examples/OneSolution'
+                SolutionList:
+                  $ref: '#/components/examples/SolutionList'
 
   /organizations/{organization_id}/solutions/{solution_id}:
     parameters:
@@ -181,11 +181,17 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/RunTemplateParameter'
+                examples:
+                  ParameterList:
+                    $ref: '#/components/examples/ParameterList'
             application/yaml:
                 schema:
                   type: array
                   items:
                     $ref: '#/components/schemas/RunTemplateParameter'
+                examples:
+                  ParameterList:
+                    $ref: '#/components/examples/ParameterList'
         "400":
           description: Bad Request
         "404":
@@ -202,9 +208,15 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RunTemplateParameterCreateRequest"
+            examples:
+              ParameterCreate:
+                $ref: '#/components/examples/ParameterCreate'
           application/yaml:
             schema:
               $ref: "#/components/schemas/RunTemplateParameterCreateRequest"
+            examples:
+              ParameterCreate:
+                $ref: '#/components/examples/ParameterCreate'
       responses:
         "200":
           description: Parameters successfully created
@@ -212,9 +224,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameter'
+              examples:
+                ParameterCreate:
+                  $ref: '#/components/examples/ParameterCreate'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameter'
+              examples:
+                ParameterCreate:
+                  $ref: '#/components/examples/ParameterCreate'
         "400":
           description: Bad request
         "404":
@@ -237,9 +255,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameter'
+              examples:
+                ParameterCreate:
+                  $ref: '#/components/examples/ParameterCreate'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameter'
+              examples:
+                ParameterCreate:
+                  $ref: '#/components/examples/ParameterCreate'
         "400":
           description: Bad Request
         "404":
@@ -256,9 +280,15 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RunTemplateParameterUpdateRequest"
+            examples:
+              ParameterUpdate:
+                $ref: '#/components/examples/ParameterUpdate'
           application/yaml:
             schema:
               $ref: "#/components/schemas/RunTemplateParameterUpdateRequest"
+            examples:
+              ParameterUpdate:
+                $ref: '#/components/examples/ParameterUpdate'
       responses:
         "201":
           description: Parameters successfully updated
@@ -266,9 +296,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameter'
+              examples:
+                ParameterCreate:
+                  $ref: '#/components/examples/ParameterCreate'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameter'
+              examples:
+                ParameterCreate:
+                  $ref: '#/components/examples/ParameterCreate'
         "400":
           description: Bad request
         "404":
@@ -300,9 +336,15 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RunTemplateParameterGroupCreateRequest"
+            examples:
+              ParameterGroupCreate:
+                $ref: '#/components/examples/ParameterGroupCreate'
           application/yaml:
             schema:
               $ref: "#/components/schemas/RunTemplateParameterGroupCreateRequest"
+            examples:
+              ParameterGroupCreate:
+                $ref: '#/components/examples/ParameterGroupCreate'
       responses:
         "201":
           description: Parameter group successfully created
@@ -310,9 +352,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameterGroup'
+              examples:
+                ParameterGroupCreate:
+                  $ref: '#/components/examples/ParameterGroupCreate'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameterGroup'
+              examples:
+                ParameterGroupCreate:
+                  $ref: '#/components/examples/ParameterGroupCreate'
         "400":
           description: Bad request - Invalid parameter group
         "404":
@@ -331,11 +379,17 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunTemplateParameterGroup'
+              examples:
+                ParameterGroupList:
+                  $ref: '#/components/examples/ParameterGroupList'
             application/yaml:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunTemplateParameterGroup'
+              examples:
+                ParameterGroupList:
+                  $ref: '#/components/examples/ParameterGroupList'
         "404":
           description: Solution not found or insufficient access rights
 
@@ -357,9 +411,15 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RunTemplateParameterGroupUpdateRequest"
+            examples:
+              ParameterGroupUpdate:
+                $ref: '#/components/examples/ParameterGroupUpdate'
           application/yaml:
             schema:
               $ref: "#/components/schemas/RunTemplateParameterGroupUpdateRequest"
+            examples:
+              ParameterGroupUpdate:
+                $ref: '#/components/examples/ParameterGroupUpdate'
       responses:
         "200":
           description: Parameter groups successfully updated
@@ -367,9 +427,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameterGroup'
+              examples:
+                ParameterGroupCreate:
+                  $ref: '#/components/examples/ParameterGroupCreate'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameterGroup'
+              examples:
+                ParameterGroupCreate:
+                  $ref: '#/components/examples/ParameterGroupCreate'
         "400":
           description: Bad request - Invalid parameter group
         "404":
@@ -386,9 +452,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameterGroup'
+              examples:
+                ParameterGroupCreate:
+                  $ref: '#/components/examples/ParameterGroupCreate'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplateParameterGroup'
+              examples:
+                ParameterGroupCreate:
+                  $ref: '#/components/examples/ParameterGroupCreate'
         "404":
           description: Solution or parameter group not found or insufficient access rights
     delete:
@@ -420,11 +492,17 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunTemplate'
+              examples:
+                RunTemplateList:
+                  $ref: '#/components/examples/RunTemplateList'
             application/yaml:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunTemplate'
+              examples:
+                RunTemplateList:
+                  $ref: '#/components/examples/RunTemplateList'
         "404":
           description: Solution not found or insufficient access rights
     post:
@@ -439,9 +517,15 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RunTemplateCreateRequest"
+            examples:
+              RunTemplateCreate:
+                $ref: '#/components/examples/RunTemplateCreate'
           application/yaml:
             schema:
               $ref: "#/components/schemas/RunTemplateCreateRequest"
+            examples:
+              RunTemplateCreate:
+                $ref: '#/components/examples/RunTemplateCreate'
       responses:
         "201":
           description: Run template successfully created
@@ -449,9 +533,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplate'
+              examples:
+                RunTemplate:
+                  $ref: '#/components/examples/RunTemplate'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplate'
+              examples:
+                RunTemplate:
+                  $ref: '#/components/examples/RunTemplate'
         "400":
           description: Bad request - Invalid run template
         "404":
@@ -475,9 +565,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplate'
+              examples:
+                RunTemplate:
+                  $ref: '#/components/examples/RunTemplate'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplate'
+              examples:
+                RunTemplate:
+                  $ref: '#/components/examples/RunTemplate'
         "404":
           description: Solution not found or insufficient access rights
     patch:
@@ -492,9 +588,15 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RunTemplateUpdateRequest"
+            examples:
+              RunTemplateUpdate:
+                $ref: '#/components/examples/RunTemplateUpdate'
           application/yaml:
             schema:
               $ref: "#/components/schemas/RunTemplateUpdateRequest"
+            examples:
+              RunTemplateUpdate:
+                $ref: '#/components/examples/RunTemplateUpdate'
       responses:
         "200":
           description: Run template successfully updated
@@ -502,9 +604,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RunTemplate'
+              examples:
+                RunTemplate:
+                  $ref: '#/components/examples/RunTemplate'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/RunTemplate'
+              examples:
+                RunTemplate:
+                  $ref: '#/components/examples/RunTemplate'
         "400":
           description: Bad request - Invalid run template updates
         "404":
@@ -536,9 +644,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SolutionSecurity'
+              examples:
+                SolutionSecurity:
+                  $ref: '#/components/examples/SolutionSecurity'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/SolutionSecurity'
+              examples:
+                SolutionSecurity:
+                  $ref: '#/components/examples/SolutionSecurity'
         "404":
           description: Solution not found or insufficient access rights
 
@@ -576,9 +690,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SolutionSecurity'
+              examples:
+                SolutionSecurity:
+                  $ref: '#/components/examples/SolutionSecurity'
             application/yaml:
               schema:
                 $ref: '#/components/schemas/SolutionSecurity'
+              examples:
+                SolutionSecurity:
+                  $ref: '#/components/examples/SolutionSecurity'
         "404":
           description: Solution not found or insufficient access rights
 
@@ -1421,25 +1541,20 @@ components:
         - userId
 
   examples:
-    Brewery:
-      summary: Brewery Solution
-      description: Brewery Solution example
+    BreweryCreate:
+      summary: Brewery Solution creation request
+      description: Request example for creating a brewery solution
       value:
-        id: "1"
-        key: Brewery Solution
-        name:  Brewery Solution
+        key: brewery-solution
+        name: Brewery Solution
         description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
-        repository: brewery_solution
+        repository: cosmotech/brewery_solution
+        alwaysPull: false
         version: "1.0.0"
-        createInfo:
-          timestamp: 123456789
-          userId: admin
-        updateInfo:
-          timestamp: 123456789
-          userId: admin
         url: https://github.com/Cosmo-Tech/brewery_sample_solution
         tags:
-          - Brewery
+          - brewery
+          - optimization
         parameters:
           - id: prefix
             labels:
@@ -1457,46 +1572,40 @@ components:
           - id: hundred
             name: Full simulation 100 steps
             description: Run a full simulation with 100 steps
-            csmSimulation: DeployedSimulation
             tags:
-              - Full
-              - Supply
+              - full
+              - supply
             computeSize: highcpu
             parameterGroups:
               - consumers
         security:
           default: none
           accessControlList:
-            - id: "jane.doe@cosmotech.com"
-              role: "editor"
-            - id: "john.doe@cosmotech.com"
-              role: "viewer"
-
-    BreweryUpdate:
-      summary: Brewery Solution update
-      description: Brewery Solution update example
-      value:
-        name: Brewery Solution 2021
-
-    BreweryUpdated:
+            - id: jane.doe@cosmotech.com
+              role: admin
+    Brewery:
       summary: Brewery Solution
       description: Brewery Solution example
       value:
-        id: "1"
-        key: Brewery Solution
-        name:  Brewery Solution 2021
+        id: "sol-1AbCdEfGhIj"
+        organizationId: "o-gZVQqV8B4pR7"
+        key: brewery-solution
+        name: Brewery Solution
         description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
-        repository: brewery_solution
+        repository: cosmotech/brewery_solution
+        alwaysPull: false
         version: "1.0.0"
         createInfo:
-          timestamp: 123456789
-          userId: admin
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
         updateInfo:
-          timestamp: 123456789
-          userId: admin
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
+        sdkVersion: "11.3.0-39929.27365ede"
         url: https://github.com/Cosmo-Tech/brewery_sample_solution
         tags:
-          - Brewery
+          - brewery
+          - optimization
         parameters:
           - id: prefix
             labels:
@@ -1514,44 +1623,115 @@ components:
           - id: hundred
             name: Full simulation 100 steps
             description: Run a full simulation with 100 steps
-            csmSimulation: DeployedSimulation
             tags:
-              - Full
-              - Supply
+              - full
+              - supply
             computeSize: highcpu
             parameterGroups:
               - consumers
+        security:
+          default: none
+          accessControlList:
+            - id: jane.doe@cosmotech.com
+              role: admin
+            - id: john.doe@cosmotech.com
+              role: viewer
+
+    BreweryUpdate:
+      summary: Brewery Solution update
+      description: Brewery Solution update example
+      value:
+        name: Brewery Solution 2024
+        description: Updated brewery solution with enhanced features
+
+    BreweryUpdated:
+      summary: Updated Brewery Solution
+      description: Brewery Solution after update
+      value:
+        id: "sol-1AbCdEfGhIj"
+        organizationId: "o-gZVQqV8B4pR7"
+        key: brewery-solution
+        name: Brewery Solution 2024
+        description: Updated brewery solution with enhanced features
+        repository: cosmotech/brewery_solution
+        alwaysPull: false
+        version: "1.0.0"
+        createInfo:
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
+        updateInfo:
+          timestamp: 1621440000000
+          userId: john.doe@cosmotech.com
+        sdkVersion: "11.3.0-39929.27365ede"
+        url: https://github.com/Cosmo-Tech/brewery_sample_solution
+        tags:
+          - brewery
+          - optimization
+        parameters:
+          - id: prefix
+            labels:
+              fr: Prefix des noms
+              en: Names prefix
+            varType: string
+        parameterGroups:
+          - id: consumers
+            labels:
+              fr: Consommateurs
+              en: Consumers
+            parameters:
+              - prefix
+        runTemplates:
+          - id: hundred
+            name: Full simulation 100 steps
+            description: Run a full simulation with 100 steps
+            tags:
+              - full
+              - supply
+            computeSize: highcpu
+            parameterGroups:
+              - consumers
+        security:
+          default: none
+          accessControlList:
+            - id: jane.doe@cosmotech.com
+              role: admin
+            - id: john.doe@cosmotech.com
+              role: viewer
 
     BrewerySolutionAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a solution.
       value:
-        id: "bob.doe@cosmotech.com"
-        role: "editor"
+        id: bob.doe@cosmotech.com
+        role: editor
     BrewerySolutionRole:
       summary: Set a Solution Role.
       description: Set a Role for a user to a solution.
       value:
-        role: "editor"
-    OneSolution:
-      summary: Brewery Solution
-      description: Brewery Solution example
+        role: editor
+    SolutionList:
+      summary: Solution list example
+      description: Example of a solution list
       value:
-        - id: "1"
-          key: Brewery Solution
-          name:  Brewery Solution
+        - id: "sol-1AbCdEfGhIj"
+          organizationId: "o-gZVQqV8B4pR7"
+          key: brewery-solution
+          name: Brewery Solution
           description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
-          repository: brewery_solution
+          repository: cosmotech/brewery_solution
+          alwaysPull: false
           version: "1.0.0"
           createInfo:
-            timestamp: 123456789
-            userId: admin
+            timestamp: 1621353329000
+            userId: user-abc123def456
           updateInfo:
-            timestamp: 123456789
-            userId: admin
+            timestamp: 1621353329000
+            userId: user-abc123def456
+          sdkVersion: "11.3.0-39929.27365ede"
           url: https://github.com/Cosmo-Tech/brewery_sample_solution
           tags:
-            - Brewery
+            - brewery
+            - optimization
           parameters:
             - id: prefix
               labels:
@@ -1559,66 +1739,139 @@ components:
                 en: Names prefix
               varType: string
           parameterGroups:
-          - id: consumers
-            labels:
-              fr: Consommateurs
-              en: Consumers
-            parameters:
-              - prefix
+            - id: consumers
+              labels:
+                fr: Consommateurs
+                en: Consumers
+              parameters:
+                - prefix
           runTemplates:
             - id: hundred
               name: Full simulation 100 steps
               description: Run a full simulation with 100 steps
-              csmSimulation: DeployedSimulation
               tags:
-                - Full
-                - Supply
+                - full
+                - supply
               computeSize: highcpu
               parameterGroups:
                 - consumers
-            - id: standard
-              name: Standard Simulation
-              description: Run the standard Simulation
-              csmSimulation: DeployedSimulation
-              tags:
-                - Full
-                - Supply
-              computeSize: basic
-    Parameters:
+          security:
+            default: none
+            accessControlList:
+              - id: jane.doe@cosmotech.com
+                role: admin
+    ParameterList:
+      summary: Parameter list example
+      description: Example of run template parameters
       value:
-        - id: "param1"
+        - id: prefix
+          description: Names prefix parameter
           labels:
-            en: "Parameter 1"
-            fr: "Paramètre 1"
-          varType: "string"
-          defaultValue: "default"
-    ParameterGroups:
+            en: Parameter 1
+            fr: Paramètre 1
+          varType: string
+          defaultValue: default
+    ParameterCreate:
+      summary: Parameter create example
+      description: Example of creating a run template parameter
       value:
-        - id: "group1"
-          labels:
-            en: "Group 1"
-            fr: "Groupe 1"
-          parameters:
-            - "param1"
-    RunTemplates:
+        id: stock_level
+        description: Initial stock level
+        labels:
+          en: Stock Level
+          fr: Niveau de stock
+        varType: int
+        defaultValue: "100"
+        minValue: "0"
+        maxValue: "1000"
+    ParameterUpdate:
+      summary: Parameter update example
+      description: Example of updating a run template parameter
       value:
-        - id: "template1"
-          name: "Template 1"
-          description: "Example template"
-          csmSimulation: "ExampleSimulation"
-          tags:
-            - "example"
-          computeSize: "small"
-          parameterGroups:
-            - "group1"
-    RunTemplate:
+        description: Updated stock level parameter
+        defaultValue: "150"
+        maxValue: "2000"
+    ParameterGroupCreate:
+      summary: Parameter group create example
+      description: Example of creating a parameter group
       value:
-        id: "template1"
-        name: "Template 1"
-        description: "Example template"
-        csmSimulation: "ExampleSimulation"
+        id: inventory
+        description: Inventory parameters
+        labels:
+          en: Inventory
+          fr: Inventaire
+        parameters:
+          - stock_level
+    ParameterGroupUpdate:
+      summary: Parameter group update example
+      description: Example of updating a parameter group
+      value:
+        description: Updated inventory parameters
+        parameters:
+          - stock_level
+          - reorder_point
+    RunTemplateCreate:
+      summary: Run template create example
+      description: Example of creating a run template
+      value:
+        id: standard
+        name: Standard Simulation
+        description: Run the standard simulation
         tags:
-          - "example"
-        computeSize: "small"
+          - standard
+          - simulation
+        computeSize: medium
         parameterGroups:
-          - "group1"
+          - inventory
+    RunTemplateUpdate:
+      summary: Run template update example
+      description: Example of updating a run template
+      value:
+        name: Updated Standard Simulation
+        description: Run the updated standard simulation
+        computeSize: large
+    SolutionSecurity:
+      summary: Solution security example
+      description: Example of solution security configuration
+      value:
+        default: none
+        accessControlList:
+          - id: jane.doe@cosmotech.com
+            role: admin
+          - id: john.doe@cosmotech.com
+            role: viewer
+    ParameterGroupList:
+      summary: Parameter group list example
+      description: Example of parameter groups
+      value:
+        - id: group1
+          description: First parameter group
+          labels:
+            en: Group 1
+            fr: Groupe 1
+          parameters:
+            - param1
+    RunTemplateList:
+      summary: Run template list example
+      description: Example of run templates
+      value:
+        - id: template1
+          name: Template 1
+          description: Example template
+          tags:
+            - example
+          computeSize: small
+          parameterGroups:
+            - group1
+    RunTemplate:
+      summary: Run template example
+      description: Single run template example
+      value:
+        id: template1
+        name: Template 1
+        description: Example template
+        tags:
+          - example
+        computeSize: small
+        parameterGroups:
+          - group1
