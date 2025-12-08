@@ -10,7 +10,7 @@
 | **parentId** | **String** | the Runner parent id | [optional] [default to null] |
 | **runTemplateId** | **String** | the Solution Run Template Id associated with this Runner | [default to null] |
 | **datasetList** | **List** | the list of Dataset Id associated to this Runner Run Template | [optional] [default to []] |
-| **runSizing** | [**RunnerResourceSizing**](RunnerResourceSizing.md) |  | [optional] [default to null] |
+| **runSizing** | [**RunnerResourceSizing**](RunnerResourceSizing.md) | definition of resources needed for the runner run | [optional] [default to null] |
 | **parametersValues** | [**List**](RunnerRunTemplateParameterValue.md) | the list of Solution Run Template parameters values | [optional] [default to []] |
 | **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
 | **solutionName** | **String** | the Solution name | [optional] [default to null] |

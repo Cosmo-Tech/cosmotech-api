@@ -366,7 +366,7 @@ Get the Dataset security users list
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="listDatasets"></a>
 # **listDatasets**
@@ -494,7 +494,7 @@ Search Dataset parts by tags
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="searchDatasets"></a>
 # **searchDatasets**
@@ -523,7 +523,7 @@ Search Datasets by tags
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateDataset"></a>
 # **updateDataset**
@@ -611,7 +611,7 @@ Set the Dataset default security
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
 
 <a name="updateDatasetPart"></a>
 # **updateDatasetPart**

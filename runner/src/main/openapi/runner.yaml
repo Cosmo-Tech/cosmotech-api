@@ -232,17 +232,17 @@ paths:
                 type: array
                 items:
                   type: string
-                example:
-                  RunnerRolePermissions:
-                    $ref: '#/components/examples/RunnerRolePermissions'
+              examples:
+                RunnerRolePermissions:
+                  $ref: '#/components/examples/RunnerRolePermissions'
             application/yaml:
               schema:
                 type: array
                 items:
                   type: string
-                example:
-                  RunnerRolePermissions:
-                    $ref: '#/components/examples/RunnerRolePermissions'
+              examples:
+                RunnerRolePermissions:
+                  $ref: '#/components/examples/RunnerRolePermissions'
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security:
     parameters:
@@ -607,13 +607,14 @@ components:
           description: Free form additional data
           additionalProperties: true
         datasets:
+          allOf:
+            - $ref: "#/components/schemas/RunnerDatasets"
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: definition of datasets used by the runner
-          allOf:
-           - $ref: "#/components/schemas/RunnerDatasets"
         runSizing:
+          allOf:
+            - $ref: "#/components/schemas/RunnerResourceSizing"
           description: definition of resources needed for the runner run
-          $ref: "#/components/schemas/RunnerResourceSizing"
         parametersValues:
           type: array
           description: the list of Solution Run Template parameters values
@@ -622,14 +623,15 @@ components:
         lastRunInfo:
           allOf:
             - $ref: '#/components/schemas/LastRunInfo'
+          description: last run info from current runner
         validationStatus:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           allOf:
             - $ref: '#/components/schemas/RunnerValidationStatus'
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
         security:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
             - $ref: '#/components/schemas/RunnerSecurity'
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
       required:
         - id
         - name
@@ -683,8 +685,9 @@ components:
             type: string
           default: []
         runSizing:
+          allOf:
+            - $ref: "#/components/schemas/RunnerResourceSizing"
           description: definition of resources needed for the runner run
-          $ref: "#/components/schemas/RunnerResourceSizing"
         parametersValues:
           type: array
           description: the list of Solution Run Template parameters values
@@ -736,8 +739,9 @@ components:
           items:
             type: string
         runSizing:
+          allOf:
+            - $ref: "#/components/schemas/RunnerResourceSizing"
           description: definition of resources needed for the runner run
-          $ref: "#/components/schemas/RunnerResourceSizing"
         parametersValues:
           type: array
           description: the list of Solution Run Template parameters values
@@ -919,18 +923,19 @@ components:
         tags:
           - Brewery
           - reference
-        runTemplateId: "hundred"
+        solutionId: sol-feo16eua48o
+        runTemplateId: hundred
         datasetList:
-          - "1"
+          - d-1AbCdEfGhIj
         parametersValues:
           - parameterId: prefix
             varType: string
             value: ""
         security:
-          default: "viewer"
+          default: viewer
           accessControlList:
-            - id: "alice.doe@cosmotech.com"
-              role: "admin"
+            - id: alice.doe@cosmotech.com
+              role: admin
     BreweryChildRunnerIn:
       summary: Brewery Child Runner input example
       description: Brewery Child Runner input example
@@ -939,133 +944,159 @@ components:
         description: Brewery child reference analysis
         tags:
           - Brewery
-        runTemplateId: "hundred"
-        parentId: "1"
+        runTemplateId: hundred
+        parentId: r-1AbCdEfGhIj
+        solutionId: sol-feo16eua48o
     BreweryRunner:
       summary: Brewery Runner
       description: Brewery Runner example
       value:
-        id: "1"
+        id: r-1AbCdEfGhIj
+        organizationId: o-gZVQqV8B4pR7
+        workspaceId: w-1AbCdEfGhIj
         name: Brewery Master Analysis
         description: Brewery master reference analysis
         tags:
           - Brewery
           - reference
-        worskspaceId: "1"
-        solutionId: "1"
+        solutionId: sol-feo16eua48o
         solutionName: Brewery Solution
-        runTemplateId: "hundred"
+        runTemplateId: hundred
         runTemplateName: Full simulation 100 steps
         createInfo:
-          timestamp: 123456789
-          userId: admin
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
         updateInfo:
-          timestamp: 123456789
-          userId: admin
-        datasetList:
-          - "1"
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
+        datasets:
+          bases:
+            - d-1AbCdEfGhIj
+          parameter: d-1AbCdEfGhIj
         parametersValues:
           - parameterId: prefix
             varType: string
             value: ""
-        lastRunId: "run-bDMr5lM9Vp"
+        lastRunInfo:
+          lastRunId: run-bDMr5lM9Vp
+          lastRunStatus: Successful
+        validationStatus: Validated
         security:
-          default: "viewer"
+          default: viewer
           accessControlList:
-            - id: "alice.doe@cosmotech.com"
-              role: "admin"
+            - id: alice.doe@cosmotech.com
+              role: admin
     ThreeRunners:
       summary: Three Runners with parent and children
       description: Three Runners with parent master Runner and two children Runners
       value:
-        - id: "1"
+        - id: r-1AbCdEfGhIj
+          organizationId: o-gZVQqV8B4pR7
+          workspaceId: w-1AbCdEfGhIj
           name: Brewery Master Analysis
           description: Brewery master reference analysis
           tags:
             - Brewery
             - reference
-          worskspaceId: "1"
-          solutionId: "1"
+          solutionId: sol-feo16eua48o
           solutionName: Brewery Solution
-          runTemplateId: "hundred"
+          runTemplateId: hundred
           runTemplateName: Full simulation 100 steps
           createInfo:
-            timestamp: 123456789
-            userId: admin
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
           updateInfo:
-            timestamp: 123456789
-            userId: admin
-          datasetList:
-            - "1"
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
+          datasets:
+            bases:
+              - d-1AbCdEfGhIj
+            parameter: d-1AbCdEfGhIj
           parametersValues:
             - parameterId: prefix
               varType: string
               value: ""
+          lastRunInfo:
+            lastRunId: run-bDMr5lM9Vp
+            lastRunStatus: Successful
+          validationStatus: Validated
           security:
-            default: "viewer"
+            default: viewer
             accessControlList:
-              - id: "alice.doe@cosmotech.com"
-                role: "admin"
-        - id: "2"
+              - id: alice.doe@cosmotech.com
+                role: admin
+        - id: r-2XyZaBcDeFg
+          organizationId: o-gZVQqV8B4pR7
+          workspaceId: w-1AbCdEfGhIj
+          parentId: r-1AbCdEfGhIj
           name: Brewery Analysis name example
           description: Brewery analysis with example as name prefix
           tags:
             - Brewery
             - example
-          parentId: "1"
-          worskspaceId: "1"
-          solutionId: "1"
+          solutionId: sol-feo16eua48o
           solutionName: Brewery Solution
-          runTemplateId: "hundred"
+          runTemplateId: hundred
           runTemplateName: Full simulation 100 steps
           createInfo:
-            timestamp: 123456789
-            userId: admin
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
           updateInfo:
-            timestamp: 123456789
-            userId: admin
-          datasetList:
-            - "1"
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
+          datasets:
+            bases:
+              - d-1AbCdEfGhIj
+            parameter: d-1AbCdEfGhIj
           parametersValues:
             - parameterId: prefix
               varType: string
               value: example
-          lastRunId: "run-bDMr5lM9Vp"
+          lastRunInfo:
+            lastRunId: run-bDMr5lM9Vp
+            lastRunStatus: Successful
+          validationStatus: Validated
           security:
-            default: "viewer"
+            default: viewer
             accessControlList:
-              - id: "alice.doe@cosmotech.com"
-                role: "admin"
-        - id: "3"
+              - id: alice.doe@cosmotech.com
+                role: admin
+        - id: r-3MnOpQrStUv
+          organizationId: o-gZVQqV8B4pR7
+          workspaceId: w-1AbCdEfGhIj
+          parentId: r-1AbCdEfGhIj
           name: Brewery Analysis name no change
           description: Brewery analysis with no change on name prefix
           tags:
             - Brewery
-          parentId: "1"
-          worskspaceId: "1"
-          solutionId: "1"
+          solutionId: sol-feo16eua48o
           solutionName: Brewery Solution
-          runTemplateId: "hundred"
+          runTemplateId: hundred
           runTemplateName: Full simulation 100 steps
           createInfo:
-            timestamp: 123456789
-            userId: admin
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
           updateInfo:
-            timestamp: 123456789
-            userId: admin
-          datasetList:
-            - "1"
+            timestamp: 1621353329000
+            userId: john.doe@cosmotech.com
+          datasets:
+            bases:
+              - d-1AbCdEfGhIj
+            parameter: d-1AbCdEfGhIj
           parametersValues:
             - parameterId: prefix
               varType: string
               value: ""
-              inherited: true
-          lastRunId: "run-bDMr5lM9Vp"
+              isInherited: true
+          lastRunInfo:
+            lastRunId: run-bDMr5lM9Vp
+            lastRunStatus: Successful
+          validationStatus: Validated
           security:
-            default: "viewer"
+            default: viewer
             accessControlList:
-              - id: "alice.doe@cosmotech.com"
-                role: "admin"
+              - id: alice.doe@cosmotech.com
+                role: admin
     BreweryRunnerUpdate:
       summary: Update the Brewery Runner
       description: Update the Brewery Runner by changing its name
@@ -1075,184 +1106,96 @@ components:
       summary: Brewery updated Runner
       description: Brewery updated Runner example
       value:
-        id: "1"
+        id: r-1AbCdEfGhIj
+        organizationId: o-gZVQqV8B4pR7
+        workspaceId: w-1AbCdEfGhIj
         name: Brewery Master Analysis 2021
         description: Brewery master reference analysis
         tags:
           - Brewery
           - reference
-        worskspaceId: "1"
-        solutionId: "1"
+        solutionId: sol-feo16eua48o
         solutionName: Brewery Solution
-        runTemplateId: "hundred"
+        runTemplateId: hundred
         runTemplateName: Full simulation 100 steps
         createInfo:
-          timestamp: 123456789
-          userId: admin
+          timestamp: 1621353329000
+          userId: john.doe@cosmotech.com
         updateInfo:
-          timestamp: 123456789
-          userId: admin
-        datasetList:
-          - "1"
+          timestamp: 1621440000000
+          userId: john.doe@cosmotech.com
+        datasets:
+          bases:
+            - d-1AbCdEfGhIj
+          parameter: d-1AbCdEfGhIj
         parametersValues:
           - parameterId: prefix
             varType: string
             value: ""
+        lastRunInfo:
+          lastRunId: run-bDMr5lM9Vp
+          lastRunStatus: Successful
+        validationStatus: Validated
         security:
-          default: "viewer"
+          default: viewer
           accessControlList:
-            - id: "alice.doe@cosmotech.com"
-              role: "admin"
+            - id: alice.doe@cosmotech.com
+              role: admin
     BreweryRunnerComparison:
       summary: Brewery comparison result
       description: Brewery comparison result between a parent Runner and its child
       value:
-        runnerId: "1"
-        comparedRunnerId: "2"
+        runnerId: r-1AbCdEfGhIj
+        comparedRunnerId: r-2XyZaBcDeFg
         changedValues:
           - parameterId: prefix
             varType: string
-            value: Brewery Master Analysis
-            comparedValue: Brewery Master Analysis 2021
-    RunnersTree:
-      summary: Runners Tree example
-      description: Runners Tree example with 1 master Runner and 2 children
-      value:
-        - id: "1"
-          name: Brewery Master Analysis
-          description: Brewery master reference analysis
-          version: "1.0.0"
-          tags:
-            - Brewery
-            - reference
-          worskspaceId: "1"
-          createInfo:
-            timestamp: 123456789
-            userId: admin
-          updateInfo:
-            timestamp: 123456789
-            userId: admin
-          runTemplateName: Full simulation 100 steps
-          solutionName: Brewery Solution
-          datasetList:
-            - "1"
-          parametersValues:
-            - parameterId: prefix
-              varType: string
-              value: ""
-              inherited: true
-          security:
-            default: "viewer"
-            accessControlList:
-              - id: "alice.doe@cosmotech.com"
-                role: "admin"
-        - id: "2"
-          name: Brewery Analysis name example
-          description: Brewery analysis with example as name prefix
-          tags:
-            - Brewery
-            - example
-          parentId: "1"
-          worskspaceId: "1"
-          createInfo:
-            timestamp: 123456789
-            userId: admin
-          updateInfo:
-            timestamp: 123456789
-            userId: admin
-          runTemplateName: Full simulation 100 steps
-          solutionName: Brewery Solution
-          datasetList:
-            - "1"
-          parametersValues:
-            - parameterId: prefix
-              varType: string
-              value: ""
-              inherited: true
-          lastRunId: "run-bDMr5lM9Vp"
-          security:
-            default: "viewer"
-            accessControlList:
-              - id: "alice.doe@cosmotech.com"
-                role: "admin"
-        - id: "3"
-          name: Brewery Analysis name no change
-          description: Brewery analysis with no change on name prefix
-          tags:
-            - Brewery
-          parentId: "1"
-          worskspaceId: "1"
-          createInfo:
-            timestamp: 123456789
-            userId: admin
-          updateInfo:
-            timestamp: 123456789
-            userId: admin
-          runTemplateName: Full simulation 100 steps
-          solutionName: Brewery Solution
-          datasetList:
-            - "1"
-          parametersValues:
-            - parameterId: prefix
-              varType: string
-              value: ""
-              inherited: true
-          lastRunId: "run-bDMr5lM9Vp"
-          security:
-            default: "viewer"
-            accessControlList:
-              - id: "alice.doe@cosmotech.com"
-                role: "admin"
-    TwoRunnerRunTemplateParameterValueToAddOrReplace:
-      summary: Runners Run Templates added
-      description: Runners Run Templates added
-      value:
-        - parameterId: prefix
-          varType: string
-          value: ""
-          inherited: true
-        - parameterId: prefix2
-          varType: string
-          value: ""
-          inherited: true
+            value: ""
+            comparedValue: example
     BreweryRunnerDataDownloadJob:
       summary: Example of a runner data download job
       description: Brewery Runner Data Download Job
       value:
-        id: "sdl-abc123defghi"
+        id: sdl-abc123defghi
     BreweryRunnerSecurity:
       summary: Brewery Runner security
       description: Brewery Runner security example
       value:
-        default: "viewer"
+        default: viewer
         accessControlList:
-          - id: "alice.doe@cosmotech.com"
-            role: "editor"
+          - id: alice.doe@cosmotech.com
+            role: editor
     BreweryRunnerRole:
       summary: Set a Runner Role.
       description: Set a Role for a User to a Runner.
       value:
-        role: "editor"
+        role: editor
     BreweryDefaultSecurityRoleNone:
       summary: Brewery Runner Writer default security
       description: Brewery Runner example
       value:
-        default: "none"
+        default: none
+        accessControlList:
+          - id: alice.doe@cosmotech.com
+            role: admin
     BreweryDefaultSecurityRoleWriter:
       summary: Brewery Runner Writer default security
       description: Brewery Runner example
       value:
-        default: "editor"
+        default: editor
+        accessControlList:
+          - id: alice.doe@cosmotech.com
+            role: admin
     BreweryRunnerAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a workspace.
       value:
-        id: "bob.doe@cosmotech.com"
-        role: "editor"
+        id: bob.doe@cosmotech.com
+        role: editor
     RunnerRolePermissions:
       summary: List of permissions for a role
       description: Example of permissions for a given role
       value:
-        - "delete"
-        - "write"
-        - "createchildren"
+        - delete
+        - write
+        - createchildren
