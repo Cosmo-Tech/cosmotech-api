@@ -780,6 +780,7 @@ components:
         name:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+          x-size-message: "cannot be empty"
           minLength: 1
         description:
           type: string
@@ -837,6 +838,7 @@ components:
         name:
           type: string
           minLength: 1
+          x-size-message: "cannot be empty"
         description:
           type: string
         tags:
@@ -865,6 +867,7 @@ components:
         name:
           type: string
           minLength: 1
+          x-size-message: "cannot be empty"
         description:
           type: string
         tags:
@@ -894,10 +897,12 @@ components:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           minLength: 1
+          x-size-message: "cannot be empty"
         sourceName:
           type: string
           description: the source data name (e.g. filename associated to the dataset part)
           minLength: 1
+          x-size-message: "cannot be empty"
         description:
           type: string
         tags:
@@ -953,10 +958,12 @@ components:
         name:
           type: string
           minLength: 1
+          x-size-message: "cannot be empty"
         sourceName:
           description: the source data name (e.g. filename associated to the dataset part)
           type: string
           minLength: 1
+          x-size-message: "cannot be empty"
         description:
           type: string
         tags:
@@ -982,6 +989,7 @@ components:
           description: the source data name (e.g. filename associated to the dataset part)
           type: string
           minLength: 1
+          x-size-message: "cannot be empty"
         description:
           type: string
         tags:
