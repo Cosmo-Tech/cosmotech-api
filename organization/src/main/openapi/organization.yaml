@@ -435,16 +435,16 @@ paths:
                 items:
                   type: string
                 example:
-                  - "alice@mycompany.com"
-                  - "bob@mycompany.com"
+                  - "alice@cosmotech.com"
+                  - "bob@cosmotech.com"
             application/yaml:
               schema:
                 type: array
                 items:
                   type: string
                 example:
-                  - "alice@mycompany.com"
-                  - "bob@mycompany.com"
+                  - "alice@cosmotech.com"
+                  - "bob@cosmotech.com"
         "404":
           description: The Organization specified is unknown or you don't have access to it
 
@@ -624,25 +624,29 @@ components:
         security:
           default: "viewer"
           accessControlList:
-            - id: "admin@company.com"
+            - id: "admin@cosmotech.com"
               role: "admin"
-            - id: "editor@company.com"
+            - id: "editor@cosmotech.com"
               role: "editor"
 
     CosmoOrganization:
       summary: Organization response example
       description: Example of an organization response with full details
       value:
-        id: "org-123"
+        id: "o-gZVQqV8B4pR7"
         name: "Digital Twin Solutions"
-        creationDate: 1713096000000
-        lastUpdate: 1713096000000
+        createInfo:
+          timestamp: 1713096000000
+          userId: "john.doe@cosmotech.com"
+        updateInfo:
+          timestamp: 1713096000000
+          userId: "john.doe@cosmotech.com"
         security:
           default: "viewer"
           accessControlList:
-            - id: "admin@company.com"
+            - id: "admin@cosmotech.com"
               role: "admin"
-            - id: "editor@company.com"
+            - id: "editor@cosmotech.com"
               role: "editor"
 
     ChangeOrganizationName:
@@ -655,39 +659,51 @@ components:
       summary: Updated organization example
       description: Example of an organization after update
       value:
-        id: "org-123"
+        id: "o-gZVQqV8B4pR7"
         name: "Updated Digital Twin Solutions"
-        creationDate: 1713096000000
-        lastUpdate: 1713182400000
+        createInfo:
+          timestamp: 1713096000000
+          userId: "john.doe@cosmotech.com"
+        updateInfo:
+          timestamp: 1713182400000
+          userId: "john.doe@cosmotech.com"
         security:
           default: "viewer"
           accessControlList:
-            - id: "admin@company.com"
+            - id: "admin@cosmotech.com"
               role: "admin"
-            - id: "editor@company.com"
+            - id: "editor@cosmotech.com"
               role: "editor"
 
     TwoOrganizations:
       summary: Multiple organizations example
       description: Example of multiple organizations in a list
       value:
-        - id: "org-123"
+        - id: "o-gZVQqV8B4pR7"
           name: "Digital Twin Solutions"
-          creationDate: 1713096000000
-          lastUpdate: 1713096000000
+          createInfo:
+            timestamp: 1713096000000
+            userId: "john.doe@cosmotech.com"
+          updateInfo:
+            timestamp: 1713096000000
+            userId: "john.doe@cosmotech.com"
           security:
             default: "viewer"
             accessControlList:
-              - id: "admin@company.com"
+              - id: "admin@cosmotech.com"
                 role: "admin"
-        - id: "org-456"
+        - id: "o-hWzRbW9C5qS8"
           name: "Supply Chain Analytics"
-          creationDate: 1712923200000
-          lastUpdate: 1713009600000
+          createInfo:
+            timestamp: 1712923200000
+            userId: "john.doe@cosmotech.com"
+          updateInfo:
+            timestamp: 1713009600000
+            userId: "john.doe@cosmotech.com"
           security:
             default: "viewer"
             accessControlList:
-              - id: "manager@company.com"
+              - id: "admin@cosmotech.com"
                 role: "admin"
 
     OrganizationRolePermissions:
@@ -704,23 +720,23 @@ components:
       value:
         default: "viewer"
         accessControlList:
-          - id: "admin@company.com"
+          - id: "admin@cosmotech.com"
             role: "admin"
-          - id: "editor@company.com"
+          - id: "editor@cosmotech.com"
             role: "editor"
 
     OrganizationAccess:
       summary: Organization access control example
       description: Example of adding a new access control
       value:
-        id: "new.user@company.com"
+        id: "new.user@cosmotech.com"
         role: "editor"
 
     OrganizationAccessControl:
       summary: Organization access control response
       description: Example of access control response
       value:
-        id: "user@company.com"
+        id: "user@cosmotech.com"
         role: "editor"
 
     DefaultRole:
@@ -739,7 +755,7 @@ components:
       summary: Updated access control
       description: Example of updated access control
       value:
-        id: "user@company.com"
+        id: "user@cosmotech.com"
         role: "editor"
 
     UpdatedSecurity:
@@ -748,9 +764,9 @@ components:
       value:
         default: "viewer"
         accessControlList:
-          - id: "admin@company.com"
+          - id: "admin@cosmotech.com"
             role: "admin"
-          - id: "editor@company.com"
+          - id: "editor@cosmotech.com"
             role: "editor"
 
     Permissions:
