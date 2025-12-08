@@ -654,6 +654,7 @@ components:
           type: string
           description: the Runner name
           minLength: 1
+          x-size-message: "cannot be empty"
         description:
           type: string
           description: the Runner description
@@ -676,6 +677,7 @@ components:
           type: string
           description: the Solution Run Template Id associated with this Runner
           minLength: 1
+          x-size-message: "cannot be empty"
         datasetList:
           type: array
           description: the list of Dataset Id associated to this Runner Run Template
@@ -699,10 +701,12 @@ components:
           type: string
           description: the Solution name
           minLength: 1
+          x-size-message: "cannot be empty"
         runTemplateName:
           type: string
           description: the Solution Run Template name associated with this Runner
           minLength: 1
+          x-size-message: "cannot be empty"
         security:
           $ref: '#/components/schemas/RunnerSecurity'
       required:
@@ -718,6 +722,7 @@ components:
           type: string
           description: the Runner name
           minLength: 1
+          x-size-message: "cannot be empty"
         description:
           type: string
           description: the Runner description
@@ -730,6 +735,7 @@ components:
           type: string
           description: the Solution Run Template Id associated with this Runner
           minLength: 1
+          x-size-message: "cannot be empty"
         datasetList:
           type: array
           description: the list of Dataset Id associated to this Runner Run Template
@@ -751,10 +757,12 @@ components:
           type: string
           description: the Solution name
           minLength: 1
+          x-size-message: "cannot be empty"
         runTemplateName:
           type: string
           description: the Solution Run Template name associated with this Runner
           minLength: 1
+          x-size-message: "cannot be empty"
     RunnerSecurity:
       type: object
       description: the Runner security information

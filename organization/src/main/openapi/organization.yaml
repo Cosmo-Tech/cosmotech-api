@@ -526,6 +526,7 @@ components:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: The Organization name
           minLength: 1
+          x-size-message: "cannot be empty"
         security:
           $ref: '#/components/schemas/OrganizationSecurity'
       required:
@@ -539,6 +540,7 @@ components:
           type: string
           description: The Organization name
           minLength: 1
+          x-size-message: "cannot be empty"
 
     # Security Operation Schemas
     OrganizationSecurity:

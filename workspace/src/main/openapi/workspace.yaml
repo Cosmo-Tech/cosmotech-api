@@ -623,12 +623,14 @@ components:
           type: string
           description: Technical key for resource name convention and version grouping. Must be unique
           minLength: 1
+          x-size-message: "cannot be empty"
           example: "MyKey"
         name:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: Workspace name. This name is display in the sample webApp
           minLength: 1
+          x-size-message: "cannot be empty"
           example: "FranceOffice"
         description:
           type: string
@@ -684,11 +686,13 @@ components:
           type: string
           description: Technical key for resource name convention and version grouping. Must be unique
           minLength: 1
+          x-size-message: "cannot be empty"
         name:
           type: string
           description: Workspace name. This name is displayed in the sample webApp
           example: "FranceOffice"
           minLength: 1
+          x-size-message: "cannot be empty"
         description:
           type: string
           description: The Workspace description
@@ -726,10 +730,12 @@ components:
           type: string
           description: Technical key for resource name convention and version grouping. Must be unique
           minLength: 1
+          x-size-message: "cannot be empty"
         name:
           type: string
           description: Workspace name
           minLength: 1
+          x-size-message: "cannot be empty"
         description:
           type: string
           description: The Workspace description
