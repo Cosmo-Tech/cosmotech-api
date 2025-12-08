@@ -455,24 +455,9 @@ paths:
 
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/users:
     parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: runner_id
-        in: path
-        description: the Runner identifier
-        required: true
-        schema:
-          type: string
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
     get:
       operationId: listRunnerSecurityUsers
       tags:
