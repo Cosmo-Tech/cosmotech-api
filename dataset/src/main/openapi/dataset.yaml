@@ -1280,9 +1280,9 @@ components:
         security:
           default: viewer
           accessControlList:
-            - id: user-xyz789ghi012
-              role: editor
-            - id: user-jkl345mno678
+            - id: jane.doe@cosmotech.com
+              role: admin
+            - id: john.doe@cosmotech.com
               role: viewer
 
     DatasetCreateExample:
@@ -1307,17 +1307,17 @@ components:
               format: CSV
             type: File
           - name: Purchase History
-            sourceName: purchases.db
+            sourceName: purchases.csv
             description: Historical purchase data
             tags:
               - purchases
             additionalData:
-              format: SQLite
+              format: CSV
             type: DB
         security:
           default: none
           accessControlList:
-            - id: user-abc123def456
+            - id: john.doe@cosmotech.com
               role: admin
 
     DatasetUpdateExample:
