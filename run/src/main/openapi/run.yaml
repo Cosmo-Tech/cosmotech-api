@@ -551,7 +551,7 @@ components:
         organizationId: o-gZVQqV8B4pR7
         createInfo:
           timestamp: 1618481538593
-          userId: user-xyz789ghi012
+          userId: john.doe@cosmotech.com
         workflowId: b2c3d4e5-f6a7-8901-bcde-f23456789012
         csmSimulationRun: b3c4d5e6-f7a8-9012-cdef-g34567890123
         generateName: workflow-container-
@@ -567,17 +567,6 @@ components:
         parametersValues: []
         nodeLabel: highcpupool
         containers:
-          - name: fetch-dataset
-            image: ghcr.io/cosmotech/fetch-dataset:latest
-            labels:
-              app: brewery
-            envVars:
-              DATASET_ID: d-1AbCdEfGhIj
-            runArgs:
-              - --fetch
-              - --validate
-            dependencies: []
-            nodeLabel: highcpupool
           - name: run-simulation
             image: ghcr.io/cosmotech/brewery-sim:latest
             labels:
@@ -605,7 +594,7 @@ components:
           organizationId: o-gZVQqV8B4pR7
           createInfo:
             timestamp: 1621353329000
-            userId: user-jkl345mno678
+            userId: john.doe@cosmotech.com
           workflowId: c3d4e5f6-a7b8-9012-cdef-a34567890123
           csmSimulationRun: c4d5e6f7-b8a9-0123-defg-b45678901234
           generateName: workflow-list-
@@ -665,7 +654,7 @@ components:
         workflowName: workflow-brewery-lsczk
         createInfo:
           timestamp: 1621353329000
-          userId: user-abc123def456
+          userId: john.doe@cosmotech.com
         startTime: "2021-05-18T16:15:29.000Z"
         endTime: "2021-05-18T16:17:07.000Z"
         phase: Succeeded

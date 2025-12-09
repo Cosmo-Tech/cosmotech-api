@@ -1748,10 +1748,10 @@ components:
           version: "1.0.0"
           createInfo:
             timestamp: 1621353329000
-            userId: user-abc123def456
+            userId: john.doe@cosmotech.com
           updateInfo:
             timestamp: 1621353329000
-            userId: user-abc123def456
+            userId: john.doe@cosmotech.com
           sdkVersion: "11.3.0-39929.27365ede"
           url: https://github.com/Cosmo-Tech/brewery_sample_solution
           tags:
