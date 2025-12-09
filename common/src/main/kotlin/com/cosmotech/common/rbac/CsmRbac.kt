@@ -270,7 +270,7 @@ open class CsmRbac(
 
   internal fun getRolePermissions(
       role: String?,
-      rolesDefinition: MutableMap<String, List<String>>,
+      rolesDefinition: Map<String, List<String>>,
   ): List<String> {
     return rolesDefinition[role] ?: listOf()
   }
