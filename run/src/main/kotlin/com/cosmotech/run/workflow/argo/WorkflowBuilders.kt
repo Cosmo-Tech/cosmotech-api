@@ -54,6 +54,7 @@ private const val VOLUME_TEMP_PATH = "/usr/tmp"
 internal const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
 internal const val ALWAYS_PULL_POLICY = "Always"
 
+@Suppress("LongMethod")
 internal fun buildTemplate(
     organizationId: String,
     workspaceId: String?,
@@ -74,8 +75,8 @@ internal fun buildTemplate(
       listOf(
           V1VolumeMount()
               .name("coal-config")
-              .mountPath(VOLUME_COAL_PATH)
-              .subPath(VOLUME_COAL_PATH + "/" + "${organizationId}-${workspaceId}-coal-config")
+              .mountPath(VOLUME_COAL_PATH + "/coal-config.toml")
+              .subPath("coal-config.toml")
       )
   val secretVolumeMount =
       csmPlatformProperties.argo.workflows.secrets.map { secret ->
@@ -100,14 +101,11 @@ internal fun buildTemplate(
               .mountPath(VOLUME_TEMP_PATH)
               .subPath(VOLUME_CLAIM_TEMP_SUBPATH),
       )
-
   val volumeMounts = normalVolumeMount + secretVolumeMount + configMapMount
 
   val sizingInfo = runContainer.runSizing ?: BASIC_SIZING.toContainerResourceSizing()
-
   val imagePullPolicy =
       if (alwaysPull) ALWAYS_PULL_POLICY else csmPlatformProperties.argo.imagePullPolicy
-
   val container =
       buildContainer(
           runContainer,
@@ -118,7 +116,6 @@ internal fun buildTemplate(
           organizationId,
           workspaceId,
       )
-
   if (runContainer.entrypoint != null) {
     container.command(listOf(runContainer.entrypoint))
   }
@@ -128,7 +125,6 @@ internal fun buildTemplate(
           .name(runContainer.name.lowercase())
           .metadata(IoArgoprojWorkflowV1alpha1Metadata().labels(runContainer.labels))
           .container(container)
-
   if (csmPlatformProperties.argo.workflows.ignoreNodeSelector == false) {
     template = template.nodeSelector(runContainer.getNodeLabelSize())
   }
@@ -173,6 +169,7 @@ private fun buildContainer(
   )
 }
 
+@Suppress("LongMethod")
 internal fun buildWorkflowSpec(
     organizationId: String,
     workspaceId: String?,
@@ -208,8 +205,11 @@ internal fun buildWorkflowSpec(
                   .name("coal-config")
                   .configMap(
                       V1ConfigMapVolumeSource()
-                          .name("${organizationId}-${workspaceId}-coal-config")
                           .optional(true)
+                          .name("${organizationId}-${workspaceId}-coal-config")
+                          .addItemsItem(
+                              V1KeyToPath().key("coal-config.toml").path("coal-config.toml")
+                          )
                   )
           )
 
