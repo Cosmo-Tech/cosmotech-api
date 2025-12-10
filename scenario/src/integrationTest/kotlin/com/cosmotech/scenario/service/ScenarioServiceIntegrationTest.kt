@@ -1261,7 +1261,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `when sharing a scenario, the linked dataset default security should be set to at least viewer if the dataset isn't main`() {
+  fun `when sharing a scenario, the linked dataset default security should be set to viewer if the dataset default security is none`() {
     scenarioSaved.datasetList!!.removeLast()
     val linkedDatasets = mutableListOf<Dataset>()
     listOf(ROLE_NONE, ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).forEach { role ->
@@ -1283,8 +1283,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     scenarioApiService.setScenarioDefaultSecurity(
         organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, ScenarioRole(ROLE_EDITOR))
 
-    // Only one result correspond, the dataset with default security none and main=false
-    verify(exactly = 1) { datasetApiService.updateDefaultSecurity(any(), any(), ROLE_VIEWER) }
+    // Only two result correspond, the datasets with default security none
+    verify(exactly = 2) { datasetApiService.updateDefaultSecurity(any(), any(), ROLE_VIEWER) }
   }
 
   @Test

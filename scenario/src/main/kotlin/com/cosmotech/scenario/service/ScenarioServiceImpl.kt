@@ -1169,13 +1169,13 @@ internal class ScenarioServiceImpl(
     if (scenarioRole == ROLE_NONE) datasetRole = ROLE_NONE
     scenario.datasetList!!.forEach { datasetId ->
       val dataset = datasetService.findByOrganizationIdAndDatasetId(organizationId, datasetId)
-      if (dataset!!.main == true) return@forEach
+      if (datasetRole == ROLE_NONE && dataset!!.main == true) return@forEach
       // We do not want to lower the default security if it's higher than viewer
-      if (datasetRole == ROLE_VIEWER && dataset.security!!.default != ROLE_NONE) return@forEach
-      if (datasetRole == ROLE_NONE && dataset.security!!.default != ROLE_VIEWER) return@forEach
+      if (datasetRole == ROLE_VIEWER && dataset!!.security!!.default != ROLE_NONE) return@forEach
+      if (datasetRole == ROLE_NONE && dataset!!.security!!.default != ROLE_VIEWER) return@forEach
       // Filter on dataset copy (because we do not want to update main dataset as it can be shared
       // between scenarios)
-      datasetService.updateDefaultSecurity(organizationId, dataset, datasetRole)
+      datasetService.updateDefaultSecurity(organizationId, dataset!!, datasetRole)
     }
   }
 

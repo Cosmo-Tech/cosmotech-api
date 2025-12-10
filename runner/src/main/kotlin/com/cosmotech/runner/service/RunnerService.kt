@@ -518,19 +518,19 @@ class RunnerService(
         val linkedDataset =
             datasetApiService.findByOrganizationIdAndDatasetId(
                 this.runner.organizationId!!, datasetId)
-        if (linkedDataset!!.main == true) return@forEach
+        if (datasetRole == ROLE_NONE && linkedDataset!!.main == true) return@forEach
         // If the dataset default security is different from none,
         // Then it's already viewer or higher and doesn't need to change
-        if (datasetRole == ROLE_VIEWER && linkedDataset.security!!.default != ROLE_NONE)
+        if (datasetRole == ROLE_VIEWER && linkedDataset!!.security!!.default != ROLE_NONE)
             return@forEach
         // If the dataset default security is different from viewer,
         // Then it's either already none or higher than viewer and doesn't need to change
-        if (datasetRole == ROLE_NONE && linkedDataset.security!!.default != ROLE_VIEWER)
+        if (datasetRole == ROLE_NONE && linkedDataset!!.security!!.default != ROLE_VIEWER)
             return@forEach
         // Filter on dataset copy (because we do not want to update main dataset as it can be shared
         // between runners)
         datasetApiService.updateDefaultSecurity(
-            this.runner.organizationId!!, linkedDataset, datasetRole)
+            this.runner.organizationId!!, linkedDataset!!, datasetRole)
       }
     }
   }
