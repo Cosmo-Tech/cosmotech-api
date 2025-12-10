@@ -35,7 +35,7 @@ plugins {
   id("project-report")
   id("org.owasp.dependencycheck") version "12.1.9"
   id("com.github.jk1.dependency-license-report") version "3.0.1"
-  id("org.jetbrains.kotlinx.kover") version "0.9.3"
+  id("org.jetbrains.kotlinx.kover") version "0.9.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   id("org.openapi.generator") version "7.17.0" apply false
   id("com.google.cloud.tools.jib") version "3.5.1" apply false
