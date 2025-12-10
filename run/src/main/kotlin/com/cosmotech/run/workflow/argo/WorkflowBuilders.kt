@@ -19,6 +19,7 @@ import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Template
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Workflow
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowSpec
 import io.kubernetes.client.custom.Quantity
+import io.kubernetes.client.openapi.models.V1ConfigMapVolumeSource
 import io.kubernetes.client.openapi.models.V1Container
 import io.kubernetes.client.openapi.models.V1EnvFromSource
 import io.kubernetes.client.openapi.models.V1EnvVar
@@ -43,6 +44,8 @@ internal const val VOLUME_CLAIM_DATASETS_SUBPATH = "datasetsdir"
 internal const val VOLUME_CLAIM_PARAMETERS_SUBPATH = "parametersdir"
 internal const val VOLUME_CLAIM_OUTPUT_SUBPATH = "outputdir"
 internal const val VOLUME_CLAIM_TEMP_SUBPATH = "tempdir"
+
+private const val VOLUME_COAL_PATH = "/mnt/coal"
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 private const val VOLUME_OUTPUT_PATH = "/pkg/share/Simulation/Output"
@@ -67,6 +70,13 @@ internal fun buildTemplate(
     }
   }
 
+  val configMapMount =
+      listOf(
+          V1VolumeMount()
+              .name("coal-config")
+              .mountPath(VOLUME_COAL_PATH)
+              .subPath(VOLUME_COAL_PATH + "/" + "${organizationId}-${workspaceId}-coal-config")
+      )
   val secretVolumeMount =
       csmPlatformProperties.argo.workflows.secrets.map { secret ->
         V1VolumeMount().name(secret.name).mountPath(VOLUME_SECRETS_PATH + "/" + secret.name)
@@ -91,7 +101,7 @@ internal fun buildTemplate(
               .subPath(VOLUME_CLAIM_TEMP_SUBPATH),
       )
 
-  val volumeMounts = normalVolumeMount + secretVolumeMount
+  val volumeMounts = normalVolumeMount + secretVolumeMount + configMapMount
 
   val sizingInfo = runContainer.runSizing ?: BASIC_SIZING.toContainerResourceSizing()
 
@@ -193,6 +203,15 @@ internal fun buildWorkflowSpec(
           .entrypoint(CSM_DAG_ENTRYPOINT)
           .templates(templates)
           .volumeClaimTemplates(buildVolumeClaims(csmPlatformProperties))
+          .addVolumesItem(
+              V1Volume()
+                  .name("coal-config")
+                  .configMap(
+                      V1ConfigMapVolumeSource()
+                          .name("${organizationId}-${workspaceId}-coal-config")
+                          .optional(true)
+                  )
+          )
 
   if (csmPlatformProperties.argo.workflows.secrets.isNotEmpty()) {
     val argoSecrets = csmPlatformProperties.argo.workflows.secrets
