@@ -482,9 +482,9 @@ class WorkflowBuildersTests {
                 .mountPath("/usr/tmp")
                 .subPath(VOLUME_CLAIM_TEMP_SUBPATH),
             V1VolumeMount()
-                .name("coal-config")
-                .mountPath(VOLUME_COAL_PATH + "/coal-config.toml")
-                .subPath("coal-config.toml"),
+                .name(VOLUME_CLAIM_COAL)
+                .mountPath(VOLUME_COAL_PATH + "/" + VOLUME_COAL_FILE_NAME)
+                .subPath(VOLUME_COAL_FILE_NAME),
         )
     assertEquals(expected, template.container?.volumeMounts)
   }
