@@ -39,12 +39,14 @@ import io.kubernetes.client.openapi.models.V1VolumeResourceRequirements
 private const val CSM_DAG_ENTRYPOINT = "entrypoint"
 private const val CSM_DEFAULT_WORKFLOW_NAME = "default-workflow-"
 internal const val VOLUME_SECRET_NAME = "secrets"
+internal const val VOLUME_CLAIM_COAL = "coal-config"
 internal const val VOLUME_CLAIM = "datadir"
 internal const val VOLUME_CLAIM_DATASETS_SUBPATH = "datasetsdir"
 internal const val VOLUME_CLAIM_PARAMETERS_SUBPATH = "parametersdir"
 internal const val VOLUME_CLAIM_OUTPUT_SUBPATH = "outputdir"
 internal const val VOLUME_CLAIM_TEMP_SUBPATH = "tempdir"
 internal const val VOLUME_COAL_PATH = "/mnt/coal"
+internal const val VOLUME_COAL_FILE_NAME = "coal-config.toml"
 
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
@@ -74,9 +76,9 @@ internal fun buildTemplate(
   val configMapMount =
       listOf(
           V1VolumeMount()
-              .name("coal-config")
-              .mountPath(VOLUME_COAL_PATH + "/coal-config.toml")
-              .subPath("coal-config.toml")
+              .name(VOLUME_CLAIM_COAL)
+              .mountPath(VOLUME_COAL_PATH + "/" + VOLUME_COAL_FILE_NAME)
+              .subPath(VOLUME_COAL_FILE_NAME)
       )
   val secretVolumeMount =
       csmPlatformProperties.argo.workflows.secrets.map { secret ->
@@ -202,13 +204,13 @@ internal fun buildWorkflowSpec(
           .volumeClaimTemplates(buildVolumeClaims(csmPlatformProperties))
           .addVolumesItem(
               V1Volume()
-                  .name("coal-config")
+                  .name(VOLUME_CLAIM_COAL)
                   .configMap(
                       V1ConfigMapVolumeSource()
                           .optional(true)
                           .name("${organizationId}-${workspaceId}-coal-config")
                           .addItemsItem(
-                              V1KeyToPath().key("coal-config.toml").path("coal-config.toml")
+                              V1KeyToPath().key(VOLUME_COAL_FILE_NAME).path(VOLUME_COAL_FILE_NAME)
                           )
                   )
           )
