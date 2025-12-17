@@ -2811,6 +2811,79 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(newRunnerSaved.id, getAttachedRunnerToDataset.response)
   }
 
+  @Test
+  fun `test default security on dataset parameter is changed when default security is changed on runner`() {
+    val existingRunnerDefaultSecurity = runnerSaved.security.default
+    assertEquals(ROLE_NONE, existingRunnerDefaultSecurity)
+
+    val datasetParameterDefaultSecurity =
+        datasetApiService
+            .getDataset(organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.parameter)
+            .security
+            .default
+    assertEquals(ROLE_NONE, datasetParameterDefaultSecurity)
+
+    listOf(ROLE_VIEWER, ROLE_EDITOR, ROLE_VALIDATOR, ROLE_ADMIN, ROLE_NONE).forEach {
+        runnerDefaultRole ->
+      logger.info("Test update default security runner to:$runnerDefaultRole")
+      runnerApiService.updateRunnerDefaultSecurity(
+          organizationSaved.id,
+          workspaceSaved.id,
+          runnerSaved.id,
+          RunnerRole(runnerDefaultRole),
+      )
+
+      val runnerWithDefaultSecurityUpdated =
+          runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+      assertEquals(runnerDefaultRole, runnerWithDefaultSecurityUpdated.security.default)
+
+      val datasetParameterWithExpectedDefaultSecurityUpdated =
+          datasetApiService.getDataset(
+              organizationSaved.id,
+              workspaceSaved.id,
+              runnerSaved.datasets.parameter,
+          )
+      if (runnerDefaultRole == ROLE_VALIDATOR) {
+        assertEquals(ROLE_USER, datasetParameterWithExpectedDefaultSecurityUpdated.security.default)
+      } else {
+        assertEquals(
+            runnerDefaultRole,
+            datasetParameterWithExpectedDefaultSecurityUpdated.security.default,
+        )
+      }
+    }
+  }
+
+  @Test
+  fun `PROD-15152 - listAllRunners when default security has changed on a runner`() {
+    val existingRunnerDefaultSecurity = runnerSaved.security.default
+    assertEquals(ROLE_NONE, existingRunnerDefaultSecurity)
+
+    val datasetParameterDefaultSecurity =
+        datasetApiService
+            .getDataset(organizationSaved.id, workspaceSaved.id, runnerSaved.datasets.parameter)
+            .security
+            .default
+    assertEquals(ROLE_NONE, datasetParameterDefaultSecurity)
+
+    assertDoesNotThrow {
+      runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id, null, null)
+    }
+
+    runnerApiService.updateRunnerDefaultSecurity(
+        organizationSaved.id,
+        workspaceSaved.id,
+        runnerSaved.id,
+        RunnerRole(ROLE_VIEWER),
+    )
+
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
+
+    assertDoesNotThrow {
+      runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id, null, null)
+    }
+  }
+
   fun makeDataset(
       name: String = "name",
       parts: MutableList<DatasetPartCreateRequest> = mutableListOf(),
@@ -2872,8 +2945,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                   default = ROLE_NONE,
                   accessControlList =
                       mutableListOf(
-                          OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                          OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
+                          OrganizationAccessControl(id = CONNECTED_READER_USER, role = ROLE_VIEWER),
+                          OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                           OrganizationAccessControl(id = userName, role = role),
                       ),
               ),
@@ -2895,6 +2968,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                   mutableListOf(
                       WorkspaceAccessControl(id = userName, role = role),
                       WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                      WorkspaceAccessControl(id = CONNECTED_READER_USER, role = ROLE_VIEWER),
                   ),
               ),
       )
