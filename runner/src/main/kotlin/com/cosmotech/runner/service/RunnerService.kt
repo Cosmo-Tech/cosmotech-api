@@ -31,6 +31,7 @@ import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.domain.DatasetPartCreateRequest
+import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
@@ -985,6 +986,20 @@ class RunnerService(
       // create a rbacSecurity object from runner Rbac by changing default value
       val rbacSecurity = csmRbac.setDefault(this.getRbacSecurity(), role, this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
+      this.propagateDefaultSecurityToDatasetParameter(role)
+    }
+
+    private fun propagateDefaultSecurityToDatasetParameter(defaultRole: String) {
+      val organizationId = this.runner.organizationId
+      val workspaceId = this.runner.workspaceId
+      val datasetId = this.runner.datasets.parameter
+      val newDatasetRole = if (defaultRole == ROLE_VALIDATOR) ROLE_USER else defaultRole
+      datasetApiService.updateDatasetDefaultSecurity(
+          organizationId,
+          workspaceId,
+          datasetId,
+          DatasetRole(newDatasetRole),
+      )
     }
   }
 
