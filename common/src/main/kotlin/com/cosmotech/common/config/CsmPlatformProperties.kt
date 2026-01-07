@@ -118,6 +118,8 @@ data class CsmPlatformProperties(
       val secretAccessKey: String = "",
       /** Storage region */
       val region: String = "",
+      /** Checksum Validation */
+      val checksumValidationEnabled: Boolean = false,
   )
 
   data class Argo(
