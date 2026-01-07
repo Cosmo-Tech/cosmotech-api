@@ -225,7 +225,7 @@ an html report will be generated under `/build/reports`
 
 ## License
 
-    Copyright 2025 Cosmo Tech
+    Copyright 2026 Cosmo Tech
 
     Permission is hereby granted, free of charge, to any person obtaining a copy of this software
     and associated documentation files (the "Software"), to deal in the Software without
