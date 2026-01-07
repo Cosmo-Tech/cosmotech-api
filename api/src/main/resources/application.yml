@@ -40,6 +40,7 @@ spring:
         # '<bucket_name>.<endpoint>/<object_key>' DNS vs Path '<endpoint>/<bucket_name>/<object_key>'
         path-style-access-enabled: true
         endpoint: ${csm.platform.s3.endpointUrl}
+        checksum-validation-enabled: ${csm.platform.s3.checksumValidationEnabled}
 
 management:
   endpoints:
@@ -105,6 +106,7 @@ csm:
       bucketName: "cosmotech-api"
       accessKeyId: "s3_username"
       secretAccessKey: "s3_password"
+      checksumValidationEnabled: false
     argo:
       base-uri: "https://localhost:2746"
       image-pull-secrets: []
