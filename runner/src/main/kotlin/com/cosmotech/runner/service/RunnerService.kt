@@ -227,16 +227,7 @@ class RunnerService(
   }
 
   fun updateRunnerStatus(runner: Runner): Runner {
-    val updateRunnerStatusEvent =
-        UpdateRunnerStatus(
-            this,
-            runner.organizationId,
-            runner.workspaceId,
-            runner.id,
-            runner.lastRunInfo.lastRunId ?: "",
-        )
-    eventPublisher.publishEvent(updateRunnerStatusEvent)
-    val runStatus = LastRunStatus.forValue(updateRunnerStatusEvent.response!!)
+    val runStatus = getUpdatedLastRunStatus(runner)
     return runnerRepository.save(runner.apply { lastRunInfo.lastRunStatus = runStatus })
   }
 
@@ -259,7 +250,6 @@ class RunnerService(
               )
               .toList()
         }
-    runners.forEach { it.security = updateSecurityVisibility(it).security }
     runners.forEach { runner ->
       val listDatasetParts =
           datasetApiService.listDatasetParts(
@@ -269,7 +259,22 @@ class RunnerService(
               null,
               null,
           )
-      runner.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
+
+      val lastRunStatus =
+          if (
+              runner.lastRunInfo.lastRunId != null &&
+                  (runner.lastRunInfo.lastRunStatus != LastRunStatus.Failed ||
+                      runner.lastRunInfo.lastRunStatus != LastRunStatus.Successful)
+          ) {
+            getUpdatedLastRunStatus(runner)
+          } else {
+            runner.lastRunInfo.lastRunStatus
+          }
+      runner.apply {
+        lastRunInfo.lastRunStatus = lastRunStatus
+        datasets.parameters = listDatasetParts as MutableList<Any>?
+        security = updateSecurityVisibility(this).security
+      }
     }
     return runners
   }
@@ -1034,6 +1039,19 @@ class RunnerService(
           DatasetAccessControl(roleDefinition.id, roleDefinition.role),
       )
     }
+  }
+
+  private fun getUpdatedLastRunStatus(runner: Runner): LastRunStatus {
+    val updateRunnerStatusEvent =
+        UpdateRunnerStatus(
+            this,
+            runner.organizationId,
+            runner.workspaceId,
+            runner.id,
+            runner.lastRunInfo.lastRunId ?: "",
+        )
+    eventPublisher.publishEvent(updateRunnerStatusEvent)
+    return LastRunStatus.forValue(updateRunnerStatusEvent.response!!)
   }
 }
 
