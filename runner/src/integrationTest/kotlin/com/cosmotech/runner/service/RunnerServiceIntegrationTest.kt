@@ -38,6 +38,7 @@ import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.*
+import com.cosmotech.runner.domain.ResourceSizeInfo
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.*
@@ -284,6 +285,33 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals("param1", updateRunnerSaved.parametersValues[0].parameterId)
     assertEquals("10", updateRunnerSaved.parametersValues[0].value)
     assertEquals("integer", updateRunnerSaved.parametersValues[0].varType)
+  }
+
+  @Test
+  fun `test updateRunner with wrong runSizing`() {
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          runnerApiService.updateRunner(
+              organizationSaved.id,
+              workspaceSaved.id,
+              runnerSaved.id,
+              RunnerUpdateRequest(
+                  runSizing =
+                      RunnerResourceSizing(
+                          requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                          limits = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                      )
+              ),
+          )
+        }
+
+    assertEquals(
+        "Invalid quantity format. " +
+            "Please check runSizing values " +
+            "{requests.cpu=1Go, requests.memory=1Go, limits.cpu=1Go, limits.memory=1Go}",
+        exception.message,
+    )
   }
 
   @Test
@@ -1318,6 +1346,38 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(ROLE_NONE, newRunnerCreated.security.default)
     assertEquals(userId, newRunnerCreated.security.accessControlList[0].id)
     assertEquals(ROLE_ADMIN, newRunnerCreated.security.accessControlList[0].role)
+  }
+
+  @Test
+  fun `test create Runner with wrong runSizing`() {
+    val userId = "random_user_with_patform_admin_role"
+    every { getCurrentAccountIdentifier(any()) } returns userId
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+
+    val name = "new_runner"
+    val runTemplateId = "runTemplateId"
+    val newRunner =
+        RunnerCreateRequest(
+            name = name,
+            solutionId = solutionSaved.id,
+            runTemplateId = runTemplateId,
+            runSizing =
+                RunnerResourceSizing(
+                    requests = ResourceSizeInfo(cpu = "lot", memory = "high"),
+                    limits = ResourceSizeInfo(cpu = "even_more", memory = "higher"),
+                ),
+        )
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
+        }
+    assertEquals(
+        "Invalid quantity format. " +
+            "Please check runSizing values " +
+            "{requests.cpu=lot, requests.memory=high, limits.cpu=even_more, limits.memory=higher}",
+        exception.message,
+    )
   }
 
   @Test
@@ -2989,6 +3049,19 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
           parentId = parentId,
           parametersValues = parametersValues,
           solutionId = solutionSaved.id,
+          runSizing =
+              RunnerResourceSizing(
+                  requests =
+                      ResourceSizeInfo(
+                          cpu = "1G",
+                          memory = "1Gi",
+                      ),
+                  limits =
+                      ResourceSizeInfo(
+                          cpu = "1",
+                          memory = "1Gi",
+                      ),
+              ),
           additionalData =
               mutableMapOf(
                   "you_can_put" to "whatever_you_want_here",

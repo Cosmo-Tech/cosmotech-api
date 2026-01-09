@@ -21,6 +21,7 @@ import com.cosmotech.common.utils.compareToAndMutateIfNeeded
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.utils.validateResourceSizing
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.toGenericSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
@@ -225,6 +226,16 @@ class SolutionServiceImpl(
       runTemplateUpdateRequest: RunTemplateUpdateRequest,
   ): RunTemplate {
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
+    runTemplateUpdateRequest.runSizing?.let {
+      validateResourceSizing(
+          RunTemplateUpdateRequest::runSizing.name,
+          it.requests.cpu,
+          it.requests.memory,
+          it.limits.cpu,
+          it.limits.memory,
+      )
+    }
+
     existingSolution.runTemplates
         .find { it.id == runTemplateId }
         ?.apply {
@@ -687,6 +698,16 @@ class SolutionServiceImpl(
   }
 
   fun convertToRunTemplate(runTemplateCreateRequest: RunTemplateCreateRequest): RunTemplate {
+    runTemplateCreateRequest.runSizing?.let {
+      validateResourceSizing(
+          RunTemplateCreateRequest::runSizing.name,
+          it.requests.cpu,
+          it.requests.memory,
+          it.limits.cpu,
+          it.limits.memory,
+      )
+    }
+
     return RunTemplate(
         id = runTemplateCreateRequest.id,
         parameterGroups = runTemplateCreateRequest.parameterGroups!!,

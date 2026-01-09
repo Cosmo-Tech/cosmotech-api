@@ -313,11 +313,11 @@ components:
         cpu:
           type: integer
           format: int64
-          description: the cpu requested
+          description: Define cpu needs
         memory:
           type: integer
           format: int64
-          description: the memory requested
+          description: Define memory needs
     Run:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
@@ -485,14 +485,14 @@ components:
         - limits
     ContainerResourceSizeInfo:
       type: object
-      description: define cpus and memory needs
+      description: Define cpus and memory needs
       properties:
         cpu:
           type: string
-          description: define cpu needs
+          description: Define cpu needs
         memory:
           type: string
-          description: define memory needs
+          description: Define memory needs
       required:
         - cpu
         - memory

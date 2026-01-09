@@ -810,7 +810,11 @@ components:
         - role
     RunnerResourceSizing:
       type: object
-      description: a description object for resource requests and limits (default same configuration as basic sizing)
+      description: |
+        A description object for resource requests and limits.
+        Values must follow the Kubernetes resource requirements/limits syntax: 
+        See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes
+        Default configuration is basic sizing
       properties:
         requests:
           $ref: '#/components/schemas/ResourceSizeInfo'
@@ -821,14 +825,17 @@ components:
         - limits
     ResourceSizeInfo:
       type: object
-      description: define cpus and memory needs
+      description: |
+        Define CPUs and memory needs.
+        Values must follow the Kubernetes resource requirements/limits syntax: 
+        See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes
       properties:
         cpu:
           type: string
-          description: define cpu needs
+          description: Define cpu needs
         memory:
           type: string
-          description: define memory needs
+          description: Define memory needs
       required:
         - cpu
         - memory

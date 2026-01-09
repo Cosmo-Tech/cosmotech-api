@@ -3,6 +3,7 @@
 package com.cosmotech.common.exceptions
 
 import io.awspring.cloud.s3.S3Exception
+import io.kubernetes.client.custom.QuantityFormatException
 import jakarta.validation.ConstraintViolationException
 import java.net.URI
 import org.apache.commons.lang3.NotImplementedException
@@ -194,6 +195,17 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
     val response = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     val internalServerErrorStatus = HttpStatus.INTERNAL_SERVER_ERROR
     response.type = URI.create(httpStatusCodeTypePrefix + internalServerErrorStatus.value())
+    if (exception.message != null) {
+      response.detail = exception.message
+    }
+    return response
+  }
+
+  @ExceptionHandler
+  fun handleQuantityFormatException(exception: QuantityFormatException): ProblemDetail {
+    val badRequestStatus = HttpStatus.BAD_REQUEST
+    val response = ProblemDetail.forStatus(badRequestStatus)
+    response.type = URI.create(httpStatusCodeTypePrefix + badRequestStatus.value())
     if (exception.message != null) {
       response.detail = exception.message
     }

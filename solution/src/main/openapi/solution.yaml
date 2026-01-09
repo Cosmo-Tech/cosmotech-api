@@ -1344,7 +1344,10 @@ components:
 
     RunTemplateResourceSizing:
       type: object
-      description: A description object for resource requests and limits
+      description: |
+        A description object for resource requests and limits
+        Values must follow the Kubernetes resource requirements/limits syntax: 
+        See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes
       properties:
         requests:
           $ref: '#/components/schemas/ResourceSizeInfo'
@@ -1356,7 +1359,10 @@ components:
 
     ResourceSizeInfo:
       type: object
-      description: Define CPUs and memory needs
+      description: |
+        Define CPUs and memory needs.
+        Values must follow the Kubernetes resource requirements/limits syntax: 
+        See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes
       properties:
         cpu:
           type: string

@@ -25,6 +25,7 @@ import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.common.utils.compareToAndMutateIfNeeded
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
+import com.cosmotech.common.utils.validateResourceSizing
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
@@ -369,6 +370,16 @@ class RunnerService(
     @Suppress("LongMethod")
     fun setValueFrom(runnerCreateRequest: RunnerCreateRequest): RunnerInstance {
 
+      runnerCreateRequest.runSizing?.let {
+        validateResourceSizing(
+            RunnerCreateRequest::runSizing.name,
+            it.requests.cpu,
+            it.requests.memory,
+            it.limits.cpu,
+            it.limits.memory,
+        )
+      }
+
       val runnerSecurity = runnerCreateRequest.security
       val security = csmRbac.initSecurity(runnerSecurity.toGenericSecurity(this.runner.id))
 
@@ -441,6 +452,16 @@ class RunnerService(
     }
 
     fun setValueFrom(runnerUpdateRequest: RunnerUpdateRequest): RunnerInstance {
+
+      runnerUpdateRequest.runSizing?.let {
+        validateResourceSizing(
+            RunnerUpdateRequest::runSizing.name,
+            it.requests.cpu,
+            it.requests.memory,
+            it.limits.cpu,
+            it.limits.memory,
+        )
+      }
 
       val runTemplateId = runnerUpdateRequest.runTemplateId ?: this.runner.runTemplateId
 
