@@ -86,8 +86,8 @@ class RunnerControllerTests : ControllerTestBase() {
     val parameterLabels = mutableMapOf("fr" to "this_is_a_label")
     val runTemplateRunSizing =
         RunTemplateResourceSizing(
-            com.cosmotech.solution.domain.ResourceSizeInfo("cpu_requests", "memory_requests"),
-            com.cosmotech.solution.domain.ResourceSizeInfo("cpu_limits", "memory_limits"),
+            com.cosmotech.solution.domain.ResourceSizeInfo("1", "2G"),
+            com.cosmotech.solution.domain.ResourceSizeInfo("1", "2G"),
         )
 
     val parametersList =
@@ -288,13 +288,13 @@ class RunnerControllerTests : ControllerTestBase() {
                 RunnerResourceSizing(
                     requests =
                         ResourceSizeInfo(
-                            cpu = "cpu_requests",
-                            memory = "memory_requests",
+                            cpu = "1",
+                            memory = "2G",
                         ),
                     limits =
                         ResourceSizeInfo(
-                            cpu = "cpu_limits",
-                            memory = "memory_limits",
+                            cpu = "1",
+                            memory = "2G",
                         ),
                 ),
             additionalData = additionalData,
@@ -335,10 +335,10 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.datasets.parameters[0].sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$.datasets.parameters[0].type").value(DatasetPartTypeEnum.File.name))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
-        .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
-        .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
-        .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits"))
-        .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$.runSizing.requests.cpu").value("1"))
+        .andExpect(jsonPath("$.runSizing.requests.memory").value("2G"))
+        .andExpect(jsonPath("$.runSizing.limits.cpu").value("1"))
+        .andExpect(jsonPath("$.runSizing.limits.memory").value("2G"))
         .andExpect(jsonPath("$.parametersValues[0].parameterId").value(solutionParameterId1))
         .andExpect(jsonPath("$.parametersValues[0].value").value(runnerParameterValue))
         .andExpect(jsonPath("$.parametersValues[0].varType").value(solutionParameterVarType1))
@@ -399,13 +399,13 @@ class RunnerControllerTests : ControllerTestBase() {
                     RunnerResourceSizing(
                         requests =
                             ResourceSizeInfo(
-                                cpu = "cpu_requests",
-                                memory = "memory_requests",
+                                cpu = "1",
+                                memory = "2G",
                             ),
                         limits =
                             ResourceSizeInfo(
-                                cpu = "cpu_limits",
-                                memory = "memory_limits",
+                                cpu = "1",
+                                memory = "2G",
                             ),
                     ),
                 additionalData = additionalData,
@@ -446,10 +446,10 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.datasets.parameters[0].type").value(DatasetPartTypeEnum.File.name))
         .andExpect(jsonPath("$.datasets.parameters[0].sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
-        .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
-        .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
-        .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits"))
-        .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$.runSizing.requests.cpu").value("1"))
+        .andExpect(jsonPath("$.runSizing.requests.memory").value("2G"))
+        .andExpect(jsonPath("$.runSizing.limits.cpu").value("1"))
+        .andExpect(jsonPath("$.runSizing.limits.memory").value("2G"))
         .andExpect(jsonPath("$.parametersValues[0].parameterId").value(solutionParameterId1))
         .andExpect(jsonPath("$.parametersValues[0].value").value(solutionParameterDefaultValue1))
         .andExpect(jsonPath("$.parametersValues[0].varType").value(solutionParameterVarType1))
@@ -499,13 +499,13 @@ class RunnerControllerTests : ControllerTestBase() {
                 RunnerResourceSizing(
                     requests =
                         ResourceSizeInfo(
-                            cpu = "cpu_requests",
-                            memory = "memory_requests",
+                            cpu = "1",
+                            memory = "2G",
                         ),
                     limits =
                         ResourceSizeInfo(
-                            cpu = "cpu_limits",
-                            memory = "memory_limits",
+                            cpu = "1",
+                            memory = "2G",
                         ),
                 ),
             additionalData = additionalData,
@@ -547,10 +547,10 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.datasets.parameters[0].sourceName").value(TEST_FILE_NAME))
         .andExpect(jsonPath("$.datasets.parameters[0].type").value(DatasetPartTypeEnum.File.name))
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
-        .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
-        .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
-        .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits"))
-        .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$.runSizing.requests.cpu").value("1"))
+        .andExpect(jsonPath("$.runSizing.requests.memory").value("2G"))
+        .andExpect(jsonPath("$.runSizing.limits.cpu").value("1"))
+        .andExpect(jsonPath("$.runSizing.limits.memory").value("2G"))
         .andExpect(jsonPath("$.parametersValues[0].parameterId").value(solutionParameterId1))
         .andExpect(jsonPath("$.parametersValues[0].value").value(runnerParameterValue))
         .andExpect(jsonPath("$.parametersValues[0].varType").value(solutionParameterVarType1))

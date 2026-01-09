@@ -200,8 +200,8 @@ class SolutionControllerTests : ControllerTestBase() {
     val runTemplateComputeSize = "this_is_a_compute_size"
     val runTemplateRunSizing =
         RunTemplateResourceSizing(
-            ResourceSizeInfo("cpu_requests", "memory_requests"),
-            ResourceSizeInfo("cpu_limits", "memory_limits"),
+            ResourceSizeInfo("1", "2G"),
+            ResourceSizeInfo("1", "2G"),
         )
     val runTemplates =
         mutableListOf(
@@ -275,10 +275,10 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.runTemplates[0].description").value(description))
         .andExpect(jsonPath("$.runTemplates[0].tags").value(tags))
         .andExpect(jsonPath("$.runTemplates[0].computeSize").value(runTemplateComputeSize))
-        .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.cpu").value("cpu_requests"))
-        .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.memory").value("memory_requests"))
-        .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.cpu").value("cpu_limits"))
-        .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.cpu").value("1"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.memory").value("2G"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.cpu").value("1"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.memory").value("2G"))
         .andExpect(
             jsonPath("$.runTemplates[0].parameterGroups").value(mutableListOf(parameterGroupId))
         )
@@ -343,8 +343,8 @@ class SolutionControllerTests : ControllerTestBase() {
     val runTemplateComputeSize = "this_is_a_compute_size"
     val runTemplateRunSizing =
         RunTemplateResourceSizing(
-            ResourceSizeInfo("cpu_requests", "memory_requests"),
-            ResourceSizeInfo("cpu_limits", "memory_limits"),
+            ResourceSizeInfo("1", "2G"),
+            ResourceSizeInfo("1", "2G"),
         )
     val runTemplates =
         mutableListOf(
@@ -434,10 +434,10 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.runTemplates[0].description").value(description))
         .andExpect(jsonPath("$.runTemplates[0].tags").value(tags))
         .andExpect(jsonPath("$.runTemplates[0].computeSize").value(runTemplateComputeSize))
-        .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.cpu").value("cpu_requests"))
-        .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.memory").value("memory_requests"))
-        .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.cpu").value("cpu_limits"))
-        .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.cpu").value("1"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.requests.memory").value("2G"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.cpu").value("1"))
+        .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.memory").value("2G"))
         .andExpect(
             jsonPath("$.runTemplates[0].parameterGroups").value(mutableListOf(parameterGroupId))
         )
@@ -1087,8 +1087,8 @@ class SolutionControllerTests : ControllerTestBase() {
                 runTemplateTags,
                 runTemplateComputeSize,
                 RunTemplateResourceSizing(
-                    ResourceSizeInfo("cpu_requests", "memory_requests"),
-                    ResourceSizeInfo("cpu_limits", "memory_limits"),
+                    ResourceSizeInfo("1", "2G"),
+                    ResourceSizeInfo("1", "2G"),
                 ),
                 runTemplateParameterGroups,
                 10,
@@ -1114,10 +1114,10 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].description").value(runTemplateDescription))
         .andExpect(jsonPath("$[0].tags").value(runTemplateTags))
         .andExpect(jsonPath("$[0].computeSize").value(runTemplateComputeSize))
-        .andExpect(jsonPath("$[0].runSizing.requests.cpu").value("cpu_requests"))
-        .andExpect(jsonPath("$[0].runSizing.requests.memory").value("memory_requests"))
-        .andExpect(jsonPath("$[0].runSizing.limits.cpu").value("cpu_limits"))
-        .andExpect(jsonPath("$[0].runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$[0].runSizing.requests.cpu").value("1"))
+        .andExpect(jsonPath("$[0].runSizing.requests.memory").value("2G"))
+        .andExpect(jsonPath("$[0].runSizing.limits.cpu").value("1"))
+        .andExpect(jsonPath("$[0].runSizing.limits.memory").value("2G"))
         .andExpect(jsonPath("$[0].parameterGroups").value(runTemplateParameterGroups))
         .andExpect(jsonPath("$[0].executionTimeout").value(10))
         .andDo(MockMvcResultHandlers.print())
@@ -1136,8 +1136,8 @@ class SolutionControllerTests : ControllerTestBase() {
     val runTemplateComputeSize = "this_is_a_compute_size"
     val runTemplateRunSizing =
         RunTemplateResourceSizing(
-            ResourceSizeInfo("cpu_requests", "memory_requests"),
-            ResourceSizeInfo("cpu_limits", "memory_limits"),
+            ResourceSizeInfo("1", "2G"),
+            ResourceSizeInfo("1", "2G"),
         )
     val runTemplate =
         RunTemplateCreateRequest(
@@ -1169,10 +1169,10 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.description").value(description))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.computeSize").value(runTemplateComputeSize))
-        .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
-        .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
-        .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits"))
-        .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$.runSizing.requests.cpu").value("1"))
+        .andExpect(jsonPath("$.runSizing.requests.memory").value("2G"))
+        .andExpect(jsonPath("$.runSizing.limits.cpu").value("1"))
+        .andExpect(jsonPath("$.runSizing.limits.memory").value("2G"))
         .andExpect(jsonPath("$.parameterGroups").value(mutableListOf(parameterGroupId)))
         .andExpect(jsonPath("$.executionTimeout").value(10))
         .andDo(MockMvcResultHandlers.print())
@@ -1201,8 +1201,8 @@ class SolutionControllerTests : ControllerTestBase() {
                 runTemplateTags,
                 runTemplateComputeSize,
                 RunTemplateResourceSizing(
-                    ResourceSizeInfo("cpu_requests", "memory_requests"),
-                    ResourceSizeInfo("cpu_limits", "memory_limits"),
+                    ResourceSizeInfo("1", "2G"),
+                    ResourceSizeInfo("1", "2G"),
                 ),
                 runTemplateParameterGroups,
                 10,
@@ -1228,10 +1228,10 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.description").value(runTemplateDescription))
         .andExpect(jsonPath("$.tags").value(runTemplateTags))
         .andExpect(jsonPath("$.computeSize").value(runTemplateComputeSize))
-        .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests"))
-        .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests"))
-        .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits"))
-        .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits"))
+        .andExpect(jsonPath("$.runSizing.requests.cpu").value("1"))
+        .andExpect(jsonPath("$.runSizing.requests.memory").value("2G"))
+        .andExpect(jsonPath("$.runSizing.limits.cpu").value("1"))
+        .andExpect(jsonPath("$.runSizing.limits.memory").value("2G"))
         .andExpect(jsonPath("$.parameterGroups").value(runTemplateParameterGroups))
         .andExpect(jsonPath("$.executionTimeout").value(10))
         .andDo(MockMvcResultHandlers.print())
@@ -1256,8 +1256,8 @@ class SolutionControllerTests : ControllerTestBase() {
                 mutableListOf("tag1", "tag2"),
                 "this_is_a_compute_size",
                 RunTemplateResourceSizing(
-                    ResourceSizeInfo("cpu_requests", "memory_requests"),
-                    ResourceSizeInfo("cpu_limits", "memory_limits"),
+                    ResourceSizeInfo("1", "2G"),
+                    ResourceSizeInfo("1", "2G"),
                 ),
                 mutableListOf("parameterGroup1"),
                 10,
@@ -1279,8 +1279,8 @@ class SolutionControllerTests : ControllerTestBase() {
     val runTemplateComputeSize = "this_is_a_compute_size2"
     val runTemplateRunSizing =
         RunTemplateResourceSizing(
-            ResourceSizeInfo("cpu_requests2", "memory_requests2"),
-            ResourceSizeInfo("cpu_limits2", "memory_limits2"),
+            ResourceSizeInfo("2", "3G"),
+            ResourceSizeInfo("2", "3G"),
         )
     val newRunTemplate =
         RunTemplateUpdateRequest(
@@ -1310,10 +1310,10 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.description").value(description))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.computeSize").value(runTemplateComputeSize))
-        .andExpect(jsonPath("$.runSizing.requests.cpu").value("cpu_requests2"))
-        .andExpect(jsonPath("$.runSizing.requests.memory").value("memory_requests2"))
-        .andExpect(jsonPath("$.runSizing.limits.cpu").value("cpu_limits2"))
-        .andExpect(jsonPath("$.runSizing.limits.memory").value("memory_limits2"))
+        .andExpect(jsonPath("$.runSizing.requests.cpu").value("2"))
+        .andExpect(jsonPath("$.runSizing.requests.memory").value("3G"))
+        .andExpect(jsonPath("$.runSizing.limits.cpu").value("2"))
+        .andExpect(jsonPath("$.runSizing.limits.memory").value("3G"))
         .andExpect(jsonPath("$.parameterGroups").value(mutableListOf(parameterGroupId)))
         .andExpect(jsonPath("$.executionTimeout").value(100))
         .andDo(MockMvcResultHandlers.print())
@@ -1336,8 +1336,8 @@ class SolutionControllerTests : ControllerTestBase() {
     val runTemplateComputeSize = "this_is_a_compute_size"
     val runTemplateRunSizing =
         RunTemplateResourceSizing(
-            ResourceSizeInfo("cpu_requests", "memory_requests"),
-            ResourceSizeInfo("cpu_limits", "memory_limits"),
+            ResourceSizeInfo("1", "2G"),
+            ResourceSizeInfo("1", "2G"),
         )
     val runTemplates =
         mutableListOf(

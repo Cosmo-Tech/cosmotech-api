@@ -168,6 +168,96 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
+  fun `test create solution with a run template with wrong runSizing`() {
+
+    val solutionKey = "key"
+    val solutionName = "name"
+    val solutionDescription = "description"
+    val solutionVersion = "1.0.0"
+    val solutionTags = mutableListOf("tag1", "tag2")
+    val solutionUrl = "url"
+    val solutionRunTemplates =
+        mutableListOf(
+            RunTemplateCreateRequest(
+                id = "template",
+                runSizing =
+                    RunTemplateResourceSizing(
+                        requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
+                        limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                    ),
+            )
+        )
+    val solutionParameterGroups =
+        mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
+    val solutionRepository = "repository"
+
+    val solutionCreateRequest =
+        SolutionCreateRequest(
+            key = solutionKey,
+            name = solutionName,
+            description = solutionDescription,
+            version = solutionVersion,
+            tags = solutionTags,
+            repository = solutionRepository,
+            runTemplates = solutionRunTemplates,
+            parameterGroups = solutionParameterGroups,
+            parameters =
+                mutableListOf(
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                ),
+            security =
+                SolutionSecurity(
+                    default = ROLE_ADMIN,
+                    accessControlList = mutableListOf(SolutionAccessControl("user_id", ROLE_ADMIN)),
+                ),
+            url = solutionUrl,
+            alwaysPull = true,
+        )
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.createSolution(organizationSaved.id, solutionCreateRequest)
+        }
+
+    assertEquals(
+        "Invalid quantity format. " +
+            "Please check runSizing values " +
+            "{requests.cpu=3Go, requests.memory=3Go, limits.cpu=4Go, limits.memory=4Go}",
+        exception.message,
+    )
+  }
+
+  @Test
+  fun `test update solution with wrong runTemplates resource sizing`() {
+
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.updateSolution(
+              organizationSaved.id,
+              solutionSaved.id,
+              SolutionUpdateRequest(
+                  runTemplates =
+                      mutableListOf(
+                          RunTemplateCreateRequest(
+                              id = "template",
+                              runSizing =
+                                  RunTemplateResourceSizing(
+                                      requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
+                                      limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                                  ),
+                          )
+                      )
+              ),
+          )
+        }
+    assertEquals(
+        "Invalid quantity format. " +
+            "Please check runSizing values " +
+            "{requests.cpu=3Go, requests.memory=3Go, limits.cpu=4Go, limits.memory=4Go}",
+        exception.message,
+    )
+  }
+
+  @Test
   fun `test update solution with empty SolutionUpdateRequest`() {
 
     val solutionKey = "key"
@@ -1823,8 +1913,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         computeSize = "this_is_a_computeSize",
                         runSizing =
                             RunTemplateResourceSizing(
-                                requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
-                                limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                                requests = ResourceSizeInfo(cpu = "1", memory = "1G"),
+                                limits = ResourceSizeInfo(cpu = "2", memory = "2G"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
                         executionTimeout = 10,
@@ -1838,8 +1928,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         computeSize = "this_is_a_computeSize2",
                         runSizing =
                             RunTemplateResourceSizing(
-                                requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
-                                limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                                requests = ResourceSizeInfo(cpu = "3", memory = "3G"),
+                                limits = ResourceSizeInfo(cpu = "4", memory = "4G"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
                         executionTimeout = 20,
@@ -1864,10 +1954,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
         firstRunTemplate.parameterGroups,
     )
     assertEquals(10, firstRunTemplate.executionTimeout!!)
-    assertEquals("1Go", firstRunTemplate.runSizing?.requests?.cpu)
-    assertEquals("1Go", firstRunTemplate.runSizing?.requests?.memory)
-    assertEquals("2Go", firstRunTemplate.runSizing?.limits?.cpu)
-    assertEquals("2Go", firstRunTemplate.runSizing?.limits?.memory)
+    assertEquals("1", firstRunTemplate.runSizing?.requests?.cpu)
+    assertEquals("1G", firstRunTemplate.runSizing?.requests?.memory)
+    assertEquals("2", firstRunTemplate.runSizing?.limits?.cpu)
+    assertEquals("2G", firstRunTemplate.runSizing?.limits?.memory)
     val secondRunTemplate = runTemplateList[1]
     assertEquals("runTemplateId2", secondRunTemplate.id)
     assertEquals("this_is_a_description2", secondRunTemplate.description)
@@ -1880,10 +1970,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
         secondRunTemplate.parameterGroups,
     )
     assertEquals(20, secondRunTemplate.executionTimeout!!)
-    assertEquals("3Go", secondRunTemplate.runSizing?.requests?.cpu)
-    assertEquals("3Go", secondRunTemplate.runSizing?.requests?.memory)
-    assertEquals("4Go", secondRunTemplate.runSizing?.limits?.cpu)
-    assertEquals("4Go", secondRunTemplate.runSizing?.limits?.memory)
+    assertEquals("3", secondRunTemplate.runSizing?.requests?.cpu)
+    assertEquals("3G", secondRunTemplate.runSizing?.requests?.memory)
+    assertEquals("4", secondRunTemplate.runSizing?.limits?.cpu)
+    assertEquals("4G", secondRunTemplate.runSizing?.limits?.memory)
   }
 
   @Test
@@ -1902,8 +1992,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         computeSize = "this_is_a_computeSize",
                         runSizing =
                             RunTemplateResourceSizing(
-                                requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
-                                limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                                requests = ResourceSizeInfo(cpu = "1", memory = "1G"),
+                                limits = ResourceSizeInfo(cpu = "2", memory = "2G"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
                         executionTimeout = 10,
@@ -1917,8 +2007,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         computeSize = "this_is_a_computeSize2",
                         runSizing =
                             RunTemplateResourceSizing(
-                                requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
-                                limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                                requests = ResourceSizeInfo(cpu = "3", memory = "3G"),
+                                limits = ResourceSizeInfo(cpu = "4", memory = "4G"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
                         executionTimeout = 20,
@@ -1945,10 +2035,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("this_is_a_computeSize", runTemplate.computeSize)
     assertEquals(mutableListOf("parameterGroup1", "parameterGroup2"), runTemplate.parameterGroups)
     assertEquals(10, runTemplate.executionTimeout!!)
-    assertEquals("1Go", runTemplate.runSizing?.requests?.cpu)
-    assertEquals("1Go", runTemplate.runSizing?.requests?.memory)
-    assertEquals("2Go", runTemplate.runSizing?.limits?.cpu)
-    assertEquals("2Go", runTemplate.runSizing?.limits?.memory)
+    assertEquals("1", runTemplate.runSizing?.requests?.cpu)
+    assertEquals("1G", runTemplate.runSizing?.requests?.memory)
+    assertEquals("2", runTemplate.runSizing?.limits?.cpu)
+    assertEquals("2G", runTemplate.runSizing?.limits?.memory)
   }
 
   @Test
@@ -1963,6 +2053,62 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
         }
     assertEquals(
         "Solution run template with id non-existing-solution-run-template-id does not exist",
+        exception.message,
+    )
+  }
+
+  @Test
+  fun `test update solution run template with wrong runSizing`() {
+    val newSolutionWithRunTemplates =
+        makeSolution(
+            organizationSaved.id,
+            runTemplates =
+                mutableListOf(
+                    RunTemplateCreateRequest(
+                        id = "runTemplateId",
+                        description = "this_is_a_description",
+                        labels = mutableMapOf("fr" to "this_is_a_label"),
+                        name = "runTemplateName1",
+                        tags = mutableListOf("runTemplateTag1", "runTemplateTag2"),
+                        computeSize = "this_is_a_computeSize",
+                        runSizing =
+                            RunTemplateResourceSizing(
+                                requests = ResourceSizeInfo(cpu = "1", memory = "1G"),
+                                limits = ResourceSizeInfo(cpu = "2", memory = "2G"),
+                            ),
+                        parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
+                        executionTimeout = 10,
+                    )
+                ),
+        )
+
+    val newSolution =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithRunTemplates)
+
+    val runTemplateId = newSolution.runTemplates[0].id
+    val exception =
+        assertThrows<IllegalArgumentException> {
+          solutionApiService.updateSolutionRunTemplate(
+              organizationSaved.id,
+              newSolution.id,
+              runTemplateId,
+              RunTemplateUpdateRequest(
+                  description = "this_is_a_description3",
+                  labels = mutableMapOf("fr" to "this_is_a_label3"),
+                  name = "runTemplateName3",
+                  runSizing =
+                      RunTemplateResourceSizing(
+                          requests = ResourceSizeInfo(cpu = "1Go", memory = "1G"),
+                          limits = ResourceSizeInfo(cpu = "1", memory = "1G"),
+                      ),
+              ),
+          )
+        }
+
+    assertEquals(
+        "Invalid quantity format. " +
+            "Please check runSizing values " +
+            "{requests.cpu=1Go, requests.memory=1G, limits.cpu=1, limits.memory=1G}",
         exception.message,
     )
   }
@@ -1983,8 +2129,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         computeSize = "this_is_a_computeSize",
                         runSizing =
                             RunTemplateResourceSizing(
-                                requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
-                                limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                                requests = ResourceSizeInfo(cpu = "1", memory = "1G"),
+                                limits = ResourceSizeInfo(cpu = "2", memory = "2G"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
                         executionTimeout = 10,
@@ -1998,8 +2144,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         computeSize = "this_is_a_computeSize2",
                         runSizing =
                             RunTemplateResourceSizing(
-                                requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
-                                limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                                requests = ResourceSizeInfo(cpu = "3", memory = "3G"),
+                                limits = ResourceSizeInfo(cpu = "4", memory = "4G"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
                         executionTimeout = 20,
@@ -2024,8 +2170,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                 computeSize = "this_is_a_computeSize3",
                 runSizing =
                     RunTemplateResourceSizing(
-                        requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
-                        limits = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
+                        requests = ResourceSizeInfo(cpu = "1", memory = "1G"),
+                        limits = ResourceSizeInfo(cpu = "1", memory = "1G"),
                     ),
                 parameterGroups = mutableListOf("parameterGroup5"),
                 executionTimeout = 5,
@@ -2040,10 +2186,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("this_is_a_computeSize3", runTemplate.computeSize)
     assertEquals(mutableListOf("parameterGroup5"), runTemplate.parameterGroups)
     assertEquals(5, runTemplate.executionTimeout!!)
-    assertEquals("1Go", runTemplate.runSizing?.requests?.cpu)
-    assertEquals("1Go", runTemplate.runSizing?.requests?.memory)
-    assertEquals("1Go", runTemplate.runSizing?.limits?.cpu)
-    assertEquals("1Go", runTemplate.runSizing?.limits?.memory)
+    assertEquals("1", runTemplate.runSizing?.requests?.cpu)
+    assertEquals("1G", runTemplate.runSizing?.requests?.memory)
+    assertEquals("1", runTemplate.runSizing?.limits?.cpu)
+    assertEquals("1G", runTemplate.runSizing?.limits?.memory)
   }
 
   @Test
@@ -2080,8 +2226,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         computeSize = "this_is_a_computeSize",
                         runSizing =
                             RunTemplateResourceSizing(
-                                requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
-                                limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                                requests = ResourceSizeInfo(cpu = "1", memory = "1G"),
+                                limits = ResourceSizeInfo(cpu = "2", memory = "2G"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
                         executionTimeout = 10,
@@ -2095,8 +2241,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         computeSize = "this_is_a_computeSize2",
                         runSizing =
                             RunTemplateResourceSizing(
-                                requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
-                                limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
+                                requests = ResourceSizeInfo(cpu = "3", memory = "3G"),
+                                limits = ResourceSizeInfo(cpu = "4", memory = "4G"),
                             ),
                         parameterGroups = mutableListOf("parameterGroup3", "parameterGroup4"),
                         executionTimeout = 20,
@@ -2175,8 +2321,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             computeSize = "this_is_a_computeSize",
             runSizing =
                 RunTemplateResourceSizing(
-                    requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
-                    limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                    requests = ResourceSizeInfo(cpu = "1", memory = "1G"),
+                    limits = ResourceSizeInfo(cpu = "2", memory = "2G"),
                 ),
             parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
             executionTimeout = 10,
@@ -2205,14 +2351,21 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
         newRunTemplate.parameterGroups,
     )
     assertEquals(10, newRunTemplate.executionTimeout!!)
-    assertEquals("1Go", newRunTemplate.runSizing?.requests?.cpu)
-    assertEquals("1Go", newRunTemplate.runSizing?.requests?.memory)
-    assertEquals("2Go", newRunTemplate.runSizing?.limits?.cpu)
-    assertEquals("2Go", newRunTemplate.runSizing?.limits?.memory)
+    assertEquals("1", newRunTemplate.runSizing?.requests?.cpu)
+    assertEquals("1G", newRunTemplate.runSizing?.requests?.memory)
+    assertEquals("2", newRunTemplate.runSizing?.limits?.cpu)
+    assertEquals("2G", newRunTemplate.runSizing?.limits?.memory)
   }
 
   @Test
-  fun `test create solution run template with already existing run template id`() {
+  fun `test create solution run template with wrong runSizing`() {
+    val newSolutionWithoutRunTemplates = makeSolution(organizationSaved.id)
+
+    val newSolutionWithEmptyRunTemplates =
+        solutionApiService.createSolution(organizationSaved.id, newSolutionWithoutRunTemplates)
+
+    assertTrue(newSolutionWithEmptyRunTemplates.parameterGroups.isEmpty())
+
     val runTemplateCreateRequest =
         RunTemplateCreateRequest(
             id = "runTemplateId",
@@ -2223,31 +2376,71 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             computeSize = "this_is_a_computeSize",
             runSizing =
                 RunTemplateResourceSizing(
-                    requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
-                    limits = ResourceSizeInfo(cpu = "2Go", memory = "2Go"),
+                    requests = ResourceSizeInfo(cpu = "1", memory = "1G"),
+                    limits = ResourceSizeInfo(cpu = "2", memory = "2G"),
                 ),
             parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
             executionTimeout = 10,
         )
 
-    val newSolutionWithRunTemplate =
-        solutionApiService.createSolution(
-            organizationSaved.id,
-            makeSolution(runTemplates = mutableListOf(runTemplateCreateRequest)),
-        )
+    solutionApiService.createSolutionRunTemplate(
+        organizationSaved.id,
+        newSolutionWithEmptyRunTemplates.id,
+        runTemplateCreateRequest,
+    )
 
-    assertEquals(1, newSolutionWithRunTemplate.runTemplates.size)
+    val newSolutionWithNewRunTemplate =
+        solutionApiService.getSolution(organizationSaved.id, newSolutionWithEmptyRunTemplates.id)
+
+    assertFalse(newSolutionWithNewRunTemplate.runTemplates.isEmpty())
+    assertEquals(1, newSolutionWithNewRunTemplate.runTemplates.size)
+    val newRunTemplate = newSolutionWithNewRunTemplate.runTemplates[0]
+    assertEquals("runTemplateId", newRunTemplate.id)
+    assertEquals("this_is_a_description", newRunTemplate.description)
+    assertEquals(mutableMapOf("fr" to "this_is_a_label"), newRunTemplate.labels)
+    assertEquals("runTemplateName1", newRunTemplate.name)
+    assertEquals(mutableListOf("runTemplateTag1", "runTemplateTag2"), newRunTemplate.tags)
+    assertEquals("this_is_a_computeSize", newRunTemplate.computeSize)
+    assertEquals(
+        mutableListOf("parameterGroup1", "parameterGroup2"),
+        newRunTemplate.parameterGroups,
+    )
+    assertEquals(10, newRunTemplate.executionTimeout!!)
+    assertEquals("1", newRunTemplate.runSizing?.requests?.cpu)
+    assertEquals("1G", newRunTemplate.runSizing?.requests?.memory)
+    assertEquals("2", newRunTemplate.runSizing?.limits?.cpu)
+    assertEquals("2G", newRunTemplate.runSizing?.limits?.memory)
+  }
+
+  @Test
+  fun `test create solution run template with already existing run template id`() {
+    val runTemplateCreateRequest =
+        RunTemplateCreateRequest(
+            id = "runTemplateId",
+            description = "this_is_a_description",
+            labels = mutableMapOf("fr" to "this_is_a_label"),
+            name = "runTemplateName1",
+            runSizing =
+                RunTemplateResourceSizing(
+                    requests = ResourceSizeInfo(cpu = "1Go", memory = "1G"),
+                    limits = ResourceSizeInfo(cpu = "2", memory = "2G"),
+                ),
+        )
 
     val exception =
         assertThrows<IllegalArgumentException> {
-          solutionApiService.createSolutionRunTemplate(
+          solutionApiService.createSolution(
               organizationSaved.id,
-              newSolutionWithRunTemplate.id,
-              runTemplateCreateRequest,
+              makeSolution(runTemplates = mutableListOf(runTemplateCreateRequest)),
           )
         }
 
-    assertEquals("Run template with id 'runTemplateId' already exists", exception.message)
+    assertEquals(
+        "Invalid quantity format. " +
+            "Please check runSizing values " +
+            "{requests.cpu=1Go, requests.memory=1G, limits.cpu=2, limits.memory=2G}",
+        exception.message,
+    )
   }
 
   @Test

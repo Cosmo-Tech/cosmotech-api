@@ -84,8 +84,8 @@ class DatasetControllerTests : ControllerTestBase() {
 
     val runTemplateRunSizing =
         RunTemplateResourceSizing(
-            com.cosmotech.solution.domain.ResourceSizeInfo("cpu_requests", "memory_requests"),
-            com.cosmotech.solution.domain.ResourceSizeInfo("cpu_limits", "memory_limits"),
+            com.cosmotech.solution.domain.ResourceSizeInfo("1", "2G"),
+            com.cosmotech.solution.domain.ResourceSizeInfo("1", "2G"),
         )
 
     val runTemplates =
