@@ -515,7 +515,17 @@ subprojects {
   }
 
   configure<JibExtension> {
-    from { image = "eclipse-temurin:21-alpine-3.22" }
+    from {
+      image = "${project.property("baseimage.name")}"
+      auth {
+        username =
+            project.findProperty("baseimage.repository.user")?.toString()
+                ?: System.getenv("BASEIMAGE_REPOSITORY_USER")
+        password =
+            project.findProperty("baseimage.repository.password")?.toString()
+                ?: System.getenv("BASEIMAGE_REPOSITORY_PASSWORD")
+      }
+    }
     to { image = "${project.group}/${project.name}:${project.version}" }
     container {
       format = OCI
