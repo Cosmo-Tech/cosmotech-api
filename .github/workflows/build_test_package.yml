@@ -231,8 +231,8 @@ jobs:
             ./gradlew
             :cosmotech-api:jibDockerBuild
             -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
-            -Pbaseimage.repository.user=${{ secrets.BASEIMAGE_REPOSITORY_USER }}
-            -Pbaseimage.repository.password=${{ secrets.BASEIMAGE_REPOSITORY_PASSWORD }}
+            -Pbaseimage.repository.user="${{ secrets.BASEIMAGE_REPOSITORY_USER }}"
+            -Pbaseimage.repository.password="${{ secrets.BASEIMAGE_REPOSITORY_PASSWORD }}"
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.33.1
