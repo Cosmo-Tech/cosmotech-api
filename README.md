@@ -18,47 +18,6 @@ The Cosmo Tech Cloud Platform API exposes a [REST](https://en.wikipedia.org/wiki
 
 It is written in [Kotlin](https://kotlinlang.org/), makes use of the [Spring Boot framework](https://spring.io/projects/spring-boot), and is built with [Gradle](https://gradle.org/).
 
-## Configuration changes from previous version
-
-### Version 2.0.0
-
-In this version, several functionnalities were added:
-- RBAC/ACL functionnality: the possibility to manage rights/permissions for users on Organization/Workspace/Scenario
-- TwinCache functionnality: the possibility to cache input dataset in a cache solution
-- fine grade customization :
-  - Image pull policy
-  - claim used for users email and users roles
-  - data ingestion (ADX) timeout
-
-You can find the parameters to set in configuration:
-
-```
-csm:
-  platform:
-    ...
-    images:
-      ...
-      imagePullPolicy: "IfNotPresent"
-    ...
-    authorization:
-      ...
-      mailJwtClaim: upn
-      rolesJwtClaim: roles
-    ...
-    dataIngestion:
-      state:
-        noDataTimeOutSeconds: 180
-    ...
-    twincache:
-      host: <twin cache host>
-      password: <twin cache password>
-      port: "6379"
-      username: default
-    ...
-    rbac:
-      enabled: false
-```
-
 ## Swagger UI
 
 This API is continuously deployed at the following URLs, so you can easily explore it :
@@ -158,6 +117,40 @@ If you want to use a different context/cluster without changing your default set
 ```shell
 ./gradlew :cosmotech-api:bootRun -PjvmArgs=-DuseKubernetesContext=<MY_CONTEXT>
 ```
+
+### Build local image
+
+You can build a Docker image of the API using [Jib](https://github.com/GoogleContainerTools/jib):
+
+```shell
+./gradlew :cosmotech-api:jibDockerBuild
+```
+
+#### Credentials configuration
+
+To pull the base image, Jib requires credentials for the repository specified in `gradle.properties`. You can provide them by setting environment variables:
+
+```shell
+export BASEIMAGE_REPOSITORY_USER=[YOUR_USER]
+export BASEIMAGE_REPOSITORY_PASSWORD=[YOUR_PASSWORD]
+```
+
+Alternatively, you can add them to your `~/.gradle/gradle.properties` file:
+
+```properties
+baseimage.repository.user=[YOUR_USER]
+baseimage.repository.password=[YOUR_PASSWORD]
+```
+
+You can also pass these properties directly via the command line using the `-P` flag:
+
+```shell
+./gradlew :cosmotech-api:jibDockerBuild \
+  -Pbaseimage.repository.user=[YOUR_USER] \
+  -Pbaseimage.repository.password=[YOUR_PASSWORD]
+```
+
+The build will use the base image defined in `gradle.properties` (`baseimage.name`) and tag the result as `${project.group}/${project.name}:${project.version}`.
 
 ## Deploying
 
@@ -380,4 +373,3 @@ kube-linter --config api/kubernetes/.kube-linter.yaml lint api/kubernetes/csm-ar
 
 ### License dependencies
 The product is using the following dependencies, under their respective licenses: [License check page](https://github.com/Cosmo-Tech/cosmotech-api/blob/main/doc/licenses/index.html)
-
