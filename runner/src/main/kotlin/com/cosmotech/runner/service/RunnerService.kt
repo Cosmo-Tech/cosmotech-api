@@ -212,7 +212,7 @@ class RunnerService(
     var runner =
         runnerRepository.findBy(organization!!.id, workspace!!.id, runnerId).orElseThrow {
           CsmResourceNotFoundException(
-              "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}"
+              "Runner '$runnerId' not found in Organization '${organization!!.id}' and Workspace '${workspace!!.id}'"
           )
         }
     if (
@@ -679,7 +679,7 @@ class RunnerService(
                 )
               } else {
                 logger.warn(
-                    "Parameter $parameterId not found in parent ($parentId) dataset parameters: " +
+                    "Parameter '$parameterId' not found in parent Dataset '$parentId' parameters: " +
                         "No dataset part will be created"
                 )
               }
@@ -849,7 +849,7 @@ class RunnerService(
       csmRbac.checkEntityExists(
           runner.getRbac(),
           userId,
-          "User '$userId' not found in runner ${runner.id}",
+          "User '$userId' not found in Runner '${runner.id}'",
       )
     }
 
@@ -976,7 +976,7 @@ class RunnerService(
                 parametersValuesList.add(parameterValue)
               } else {
                 logger.warn(
-                    "Parameter $parameterId not found in parent ($parentId) parameters values"
+                    "Parameter '$parameterId' not found in parent Runner '$parentId' parameters values"
                 )
               }
             }

@@ -459,7 +459,7 @@ internal class WorkspaceServiceImpl(
     val workspace =
         workspaceRepository.findBy(organizationId, workspaceId).orElseThrow {
           CsmResourceNotFoundException(
-              "Workspace $workspaceId not found in organization $organizationId"
+              "Workspace '$workspaceId' not found in Organization '$organizationId'"
           )
         }
     csmRbac.verify(workspace.security.toGenericSecurity(workspaceId), requiredPermission)
@@ -504,7 +504,7 @@ internal class WorkspaceServiceImpl(
     csmRbac.checkEntityExists(
         workspace.security.toGenericSecurity(workspaceId),
         identityId,
-        "User '$identityId' not found in workspace $workspaceId",
+        "User '$identityId' not found in Workspace '$workspaceId'",
     )
     val rbacSecurity =
         csmRbac.setEntityRole(

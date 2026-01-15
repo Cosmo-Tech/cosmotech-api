@@ -8,6 +8,7 @@ import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.RunStop
 import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.events.UpdateRunnerStatus
+import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_DELETE
@@ -142,8 +143,9 @@ class RunServiceImpl(
         runRepository
             .findBy(organizationId, workspaceId, runnerId, runId)
             .orElseThrow {
-              throw IllegalArgumentException(
-                  "Run #$runId not found in #$runnerId. In #$workspaceId, #$organizationId."
+              throw CsmResourceNotFoundException(
+                  "Run '$runId' not found in Organization '$organizationId', " +
+                      "Workspace '$workspaceId' and Runner '$runnerId'"
               )
             }
             .withStateInformation()
@@ -306,8 +308,9 @@ class RunServiceImpl(
           runRepository
               .findBy(organizationId, workspaceId, runnerId, runId)
               .orElseThrow {
-                throw IllegalArgumentException(
-                    "Run #$runId not found in #$runnerId. In #$workspaceId, #$organizationId."
+                throw CsmResourceNotFoundException(
+                    "Run '$runId' not found in Organization '$organizationId', " +
+                        "Workspace '$workspaceId' and Runner '$runnerId'"
                 )
               }
               .withStateInformation()

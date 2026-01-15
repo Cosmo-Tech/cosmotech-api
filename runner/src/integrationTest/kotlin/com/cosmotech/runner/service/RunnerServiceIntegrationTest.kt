@@ -975,9 +975,9 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
           datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, parameterDatasetId)
         }
     assertEquals(
-        "Dataset $parameterDatasetId not found " +
-            "in organization ${organizationSaved.id} " +
-            "and workspace ${workspaceSaved.id}",
+        "Dataset '$parameterDatasetId' not found " +
+            "in Organization '${organizationSaved.id}' " +
+            "and Workspace '${workspaceSaved.id}'",
         exception.message,
     )
   }
@@ -1318,7 +1318,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
               "id",
           )
         }
-    assertEquals("Entity id not found in ${retrievedDataset.id} component", exception.message)
+    assertEquals("Entity 'id' not found in component '${retrievedDataset.id}'", exception.message)
   }
 
   @Test

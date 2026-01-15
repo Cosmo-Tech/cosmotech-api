@@ -81,7 +81,7 @@ class DatasetServiceImpl(
     val dataset =
         datasetRepository.findBy(organizationId, workspaceId, datasetId).orElseThrow {
           CsmResourceNotFoundException(
-              "Dataset $datasetId not found in organization $organizationId and workspace $workspaceId"
+              "Dataset '$datasetId' not found in Organization '$organizationId' and Workspace '$workspaceId'"
           )
         }
     csmRbac.verify(dataset.security.toGenericSecurity(datasetId), requiredPermission)
@@ -96,7 +96,7 @@ class DatasetServiceImpl(
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     return datasetRepository.findBy(organizationId, workspaceId, datasetId).orElseThrow {
       CsmResourceNotFoundException(
-          "Dataset $datasetId not found in organization $organizationId and workspace $workspaceId"
+          "Dataset '$datasetId' not found in Organization '$organizationId' and Workspace '$workspaceId'"
       )
     }
   }
@@ -402,7 +402,7 @@ class DatasetServiceImpl(
     csmRbac.checkEntityExists(
         dataset.security.toGenericSecurity(datasetId),
         identityId,
-        "User '$identityId' not found in dataset $datasetId",
+        "User '$identityId' not found in Dataset '$datasetId'",
     )
     val rbacSecurity =
         csmRbac.setEntityRole(
@@ -527,8 +527,8 @@ class DatasetServiceImpl(
             .findBy(organizationId, workspaceId, datasetId, datasetPartId)
             .orElseThrow {
               CsmResourceNotFoundException(
-                  "Dataset Part $datasetPartId not found in organization $organizationId, " +
-                      "workspace $workspaceId and dataset $datasetId"
+                  "Dataset part '$datasetPartId' not found in Organization '$organizationId', " +
+                      "Workspace '$workspaceId' and Dataset '$datasetId'"
               )
             }
 
@@ -559,8 +559,8 @@ class DatasetServiceImpl(
         .findBy(organizationId, workspaceId, datasetId, datasetPartId)
         .orElseThrow {
           CsmResourceNotFoundException(
-              "Dataset Part $datasetPartId not found in organization $organizationId, " +
-                  "workspace $workspaceId and dataset $datasetId"
+              "Dataset part '$datasetPartId' not found in Organization '$organizationId', " +
+                  "Workspace '$workspaceId' and Dataset '$datasetId'"
           )
         }
   }
@@ -856,8 +856,8 @@ class DatasetServiceImpl(
             .findBy(organizationId, workspaceId, datasetId, datasetPartId)
             .orElseThrow {
               CsmResourceNotFoundException(
-                  "Dataset Part $datasetPartId not found in organization $organizationId, " +
-                      "workspace $workspaceId and dataset $datasetId"
+                  "Dataset part '$datasetPartId' not found in Organization '$organizationId', " +
+                      "Workspace '$workspaceId' and Dataset '$datasetId'"
               )
             }
     val now = Instant.now().toEpochMilli()
@@ -900,8 +900,8 @@ class DatasetServiceImpl(
             .findBy(organizationId, workspaceId, datasetId, datasetPartId)
             .orElseThrow {
               CsmResourceNotFoundException(
-                  "Dataset Part $datasetPartId not found in organization $organizationId, " +
-                      "workspace $workspaceId and dataset $datasetId"
+                  "Dataset part '$datasetPartId' not found in Organization '$organizationId', " +
+                      "Workspace '$workspaceId' and Dataset '$datasetId'"
               )
             }
 
@@ -1012,7 +1012,7 @@ class DatasetServiceImpl(
     val dataset =
         datasetRepository.findBy(organizationId, workspaceId, datasetParameterId).orElseThrow {
           CsmResourceNotFoundException(
-              "Dataset $datasetParameterId not found in organization $organizationId and workspace $workspaceId"
+              "Dataset '$datasetParameterId' not found in Organization '$organizationId' and Workspace '$workspaceId'"
           )
         }
 

@@ -436,7 +436,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
           )
         }
     assertEquals(
-        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        "Solution 'non-existing-solution-id' not found in Organization '${organizationSaved.id}'",
         exception.message,
     )
   }
@@ -732,7 +732,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
           )
         }
     assertEquals(
-        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        "Solution 'non-existing-solution-id' not found in Organization '${organizationSaved.id}'",
         exception.message,
     )
   }
@@ -1514,7 +1514,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
           )
         }
     assertEquals(
-        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        "Solution 'non-existing-solution-id' not found in Organization '${organizationSaved.id}'",
         exception.message,
     )
   }
@@ -1766,7 +1766,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
           )
         }
     assertEquals(
-        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        "Solution 'non-existing-solution-id' not found in Organization '${organizationSaved.id}'",
         exception.message,
     )
   }
@@ -1891,7 +1891,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
           solutionApiService.listRunTemplates(organizationSaved.id, "non-existing-solution-id")
         }
     assertEquals(
-        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        "Solution 'non-existing-solution-id' not found in Organization '${organizationSaved.id}'",
         exception.message,
     )
   }
@@ -2297,7 +2297,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
           )
         }
     assertEquals(
-        "Solution non-existing-solution-id not found in organization ${organizationSaved.id}",
+        "Solution 'non-existing-solution-id' not found in Organization '${organizationSaved.id}'",
         exception.message,
     )
   }

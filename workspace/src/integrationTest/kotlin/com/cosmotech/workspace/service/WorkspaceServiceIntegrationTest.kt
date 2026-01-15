@@ -813,7 +813,7 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
         }
 
     assertEquals(
-        "Workspace ${workspaceSaved.id} not found in organization ${anotherOrganizationSaved.id}",
+        "Workspace '${workspaceSaved.id}' not found in Organization '${anotherOrganizationSaved.id}'",
         exception.message,
     )
   }
