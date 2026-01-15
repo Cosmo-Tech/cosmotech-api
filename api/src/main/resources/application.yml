@@ -145,6 +145,7 @@ csm:
           - text/plain
           - text/x-yaml
           - application/json
+          - application/vnd.apache.parquet
     containerRegistry:
       scheme: http
       host: localhost:5000
