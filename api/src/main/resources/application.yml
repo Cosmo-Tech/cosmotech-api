@@ -136,6 +136,7 @@ csm:
           - text/plain
           - text/x-yaml
           - application/json
+          - application/vnd.apache.parquet
         datasets:
           - application/zip
           - application/xml
