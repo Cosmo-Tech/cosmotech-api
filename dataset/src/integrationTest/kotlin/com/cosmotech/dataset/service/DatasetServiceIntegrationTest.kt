@@ -694,9 +694,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         }
 
     assertEquals(
-        "Dataset $datasetId not found " +
-            "in organization ${organizationSaved.id} " +
-            "and workspace ${workspaceSaved.id}",
+        "Dataset '$datasetId' not found " +
+            "in Organization '${organizationSaved.id}' " +
+            "and Workspace '${workspaceSaved.id}'",
         exception.message,
     )
   }
@@ -760,9 +760,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         }
 
     assertEquals(
-        "Dataset $datasetId not found " +
-            "in organization ${organizationSaved.id} " +
-            "and workspace ${workspaceSaved.id}",
+        "Dataset '$datasetId' not found " +
+            "in Organization '${organizationSaved.id}' " +
+            "and Workspace '${workspaceSaved.id}'",
         exception.message,
     )
 
@@ -2484,8 +2484,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         }
 
     assertEquals(
-        "Dataset Part wrongDatasetPartId not found in organization ${organizationSaved.id}, " +
-            "workspace ${workspaceSaved.id} and dataset ${createDataset.id}",
+        "Dataset part 'wrongDatasetPartId' not found in Organization '${organizationSaved.id}', " +
+            "Workspace '${workspaceSaved.id}' and Dataset '${createDataset.id}'",
         exception.message,
     )
   }
@@ -2813,9 +2813,9 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
           )
         }
     assertEquals(
-        "Dataset Part ${createdDataset.parts[0].id} not found " +
-            "in organization ${organizationSaved.id}, " +
-            "workspace ${workspaceSaved.id} and dataset ${createdDataset.id}",
+        "Dataset part '${createdDataset.parts[0].id}' not found " +
+            "in Organization '${organizationSaved.id}', " +
+            "Workspace '${workspaceSaved.id}' and Dataset '${createdDataset.id}'",
         oldDatasetPartShouldNotExistInDB.message,
     )
 

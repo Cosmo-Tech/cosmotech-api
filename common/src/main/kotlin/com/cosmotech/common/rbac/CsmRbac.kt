@@ -105,7 +105,7 @@ open class CsmRbac(
       this.checkEntityExists(
           parentRbacSecurity,
           entityId,
-          "Entity $entityId not found in parent ${parentRbacSecurity.id} component",
+          "Entity '$entityId' not found in parent component '${parentRbacSecurity.id}'",
       )
     }
     return setEntityRole(rbacSecurity, entityId, role, rolesDefinition)
@@ -150,7 +150,7 @@ open class CsmRbac(
   fun getAccessControl(rbacSecurity: RbacSecurity, entityId: String): RbacAccessControl {
     return rbacSecurity.accessControlList.find { it.id == entityId }
         ?: throw CsmResourceNotFoundException(
-            "Entity $entityId not found in ${rbacSecurity.id} component"
+            "Entity '$entityId' not found in component '${rbacSecurity.id}'"
         )
   }
 

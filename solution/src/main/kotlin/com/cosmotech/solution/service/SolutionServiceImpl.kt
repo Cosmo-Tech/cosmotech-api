@@ -585,7 +585,7 @@ class SolutionServiceImpl(
     csmRbac.checkEntityExists(
         solution.security.toGenericSecurity(solutionId),
         identityId,
-        "User '$identityId' not found in solution $solutionId",
+        "User '$identityId' not found in Solution '$solutionId'",
     )
     val rbacSecurity =
         csmRbac.setEntityRole(
@@ -626,7 +626,7 @@ class SolutionServiceImpl(
     val solution =
         solutionRepository.findBy(organizationId, solutionId).orElseThrow {
           CsmResourceNotFoundException(
-              "Solution $solutionId not found in organization $organizationId"
+              "Solution '$solutionId' not found in Organization '$organizationId'"
           )
         }
     csmRbac.verify(solution.security.toGenericSecurity(solutionId), requiredPermission)

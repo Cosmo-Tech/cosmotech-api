@@ -219,7 +219,7 @@ class OrganizationServiceImpl(
     csmRbac.checkEntityExists(
         organization.security.toGenericSecurity(organizationId),
         identityId,
-        "User '$identityId' not found in organization $organizationId",
+        "User '$identityId' not found in Organization '$organizationId'",
     )
     val rbacSecurity =
         csmRbac.setEntityRole(
