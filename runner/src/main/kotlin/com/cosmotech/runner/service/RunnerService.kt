@@ -670,11 +670,10 @@ class RunnerService(
               val parentDatasetParameter = parentDatasetParameters[parameterId]
               if (parentDatasetParameter != null) {
                 datasetPartList.add(
-                    addDatasetPartInDatasetParameter(
+                    copyDatasetPartInDataset(
                         parentDatasetParameter,
                         runner.datasets.parameter,
                         parameterId,
-                        runner.id,
                     )
                 )
               } else {
@@ -689,21 +688,20 @@ class RunnerService(
       return datasetPartList
     }
 
-    private fun addDatasetPartInDatasetParameter(
+    private fun copyDatasetPartInDataset(
         datasetPartToAdd: DatasetPart,
         datasetId: String,
-        parameterId: String,
-        runnerId: String,
+        newDatasetPartName: String,
     ): DatasetPart {
 
-      val sourceName = datasetPartToAdd.sourceName
       val datasetPartCreateRequest =
           DatasetPartCreateRequest(
-              name = parameterId,
-              description = "Dataset Part associated to $parameterId parameter",
-              sourceName = sourceName,
-              tags = mutableListOf(runnerId, parameterId),
+              name = newDatasetPartName,
+              description = datasetPartToAdd.description,
+              sourceName = datasetPartToAdd.sourceName,
+              tags = datasetPartToAdd.tags,
               type = datasetPartToAdd.type,
+              additionalData = datasetPartToAdd.additionalData,
           )
       val datasetPartResource =
           datasetApiService.downloadDatasetPart(
