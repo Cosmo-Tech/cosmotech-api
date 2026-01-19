@@ -2951,6 +2951,219 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     return DatasetCreateRequest(name = name, parts = parts)
   }
 
+  @Test
+  fun `PROD-15252 - test inheritance from parent runner`() {
+
+    // 1- Create default workspace's dataset parameter
+
+    val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMERS_FILE_NAME").file
+    val input = FileInputStream(resourceTestFile)
+    val multipartFile =
+        MockMultipartFile("file", CUSTOMERS_FILE_NAME, "text/csv", IOUtils.toByteArray(input))
+
+    val resourceTestFile2 =
+        resourceLoader.getResource("classpath:/$CUSTOMERS_5_LINES_FILE_NAME").file
+    val input2 = FileInputStream(resourceTestFile2)
+    val multipartFile2 =
+        MockMultipartFile(
+            "file",
+            CUSTOMERS_5_LINES_FILE_NAME,
+            "text/csv",
+            IOUtils.toByteArray(input2),
+        )
+    val workspaceDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            DatasetCreateRequest(
+                name = "Dataset workspace",
+                description = "Dataset used for default parameter in ${workspaceSaved.id}",
+                parts =
+                    mutableListOf(
+                        DatasetPartCreateRequest(
+                            name = "param2",
+                            sourceName = CUSTOMERS_FILE_NAME,
+                            type = DatasetPartTypeEnum.File,
+                        ),
+                        DatasetPartCreateRequest(
+                            name = "param3",
+                            sourceName = CUSTOMERS_5_LINES_FILE_NAME,
+                            type = DatasetPartTypeEnum.DB,
+                        ),
+                    ),
+            ),
+            arrayOf(multipartFile, multipartFile2),
+        )
+
+    // 2- Create update workspace with default dataset
+
+    workspaceApiService.updateWorkspace(
+        organizationSaved.id,
+        workspaceSaved.id,
+        WorkspaceUpdateRequest(
+            solution =
+                WorkspaceSolution(
+                    solutionId = solutionSaved.id,
+                    datasetId = workspaceDataset.id,
+                    defaultParameterValues =
+                        mutableMapOf(
+                            "param2" to workspaceDataset.parts[0].id,
+                            "param3" to workspaceDataset.parts[1].id,
+                        ),
+                )
+        ),
+    )
+
+    // 3 - Create a parent runner with the newly created solution using the runTemplate
+    val parentRunnerCreateRequest =
+        RunnerCreateRequest(
+            name = "Parent Runner with expected dataset parameter",
+            solutionId = solutionSaved.id,
+            runTemplateId = "runTemplateId",
+        )
+
+    val parentCreatedRunner =
+        runnerApiService.createRunner(
+            organizationSaved.id,
+            workspaceSaved.id,
+            parentRunnerCreateRequest,
+        )
+
+    // 4 - Check parent runner parameters
+    var retrievedParentRunner =
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, parentCreatedRunner.id)
+    assertEquals(1, retrievedParentRunner.parametersValues.size)
+    val parentRunnerParameterValue = retrievedParentRunner.parametersValues[0]
+    assertEquals("param1", parentRunnerParameterValue.parameterId)
+    assertEquals("5", parentRunnerParameterValue.value)
+    assertEquals("integer", parentRunnerParameterValue.varType)
+    assertNotNull(retrievedParentRunner.datasets.parameters)
+    val datasetParentRunnerParameters = retrievedParentRunner.datasets.parameters!!
+    assertNotEquals(0, datasetParentRunnerParameters.size)
+
+    val datasetParentRunnerId = retrievedParentRunner.datasets.parameter
+
+    val datasetParameterFromParentRunner =
+        datasetApiService.getDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetParentRunnerId,
+        )
+
+    assertEquals(
+        datasetParameterFromParentRunner.parts.size,
+        datasetParentRunnerParameters.size,
+    )
+    assertEquals(
+        datasetParameterFromParentRunner.parts,
+        datasetParentRunnerParameters as MutableList<DatasetPart>,
+    )
+
+    // 5 - Update parent runner parameters
+    val firstDatasetPartParentRunnerId = datasetParentRunnerParameters[0].id
+    val secondDatasetPartParentRunnerId = datasetParentRunnerParameters[1].id
+
+    datasetApiService.updateDatasetPart(
+        organizationSaved.id,
+        workspaceSaved.id,
+        datasetParentRunnerId,
+        firstDatasetPartParentRunnerId,
+        DatasetPartUpdateRequest(
+            description = "toto1",
+            additionalData =
+                mutableMapOf("this is a test" to "that should be in error", "ok" to false),
+        ),
+    )
+
+    datasetApiService.updateDatasetPart(
+        organizationSaved.id,
+        workspaceSaved.id,
+        datasetParentRunnerId,
+        secondDatasetPartParentRunnerId,
+        DatasetPartUpdateRequest(
+            description = "tutu1",
+            additionalData =
+                mutableMapOf("this is a test" to "that should be successful", "ok" to true),
+        ),
+    )
+
+    // 6 - Create a child runner and expect childRunner dataset to have part inherited from parent
+    val childRunnerCreateRequest =
+        RunnerCreateRequest(
+            name = "Child Runner with expected dataset parameter",
+            solutionId = solutionSaved.id,
+            runTemplateId = "runTemplateId",
+            parentId = parentCreatedRunner.id,
+        )
+
+    val childCreatedRunner =
+        runnerApiService.createRunner(
+            organizationSaved.id,
+            workspaceSaved.id,
+            childRunnerCreateRequest,
+        )
+
+    // 7 - Check child runner parameters
+    val retrievedChildRunner =
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, childCreatedRunner.id)
+    assertNotNull(retrievedChildRunner.datasets.parameters)
+    assertEquals(2, retrievedChildRunner.datasets.parameters!!.size)
+    assertNotEquals(
+        datasetParentRunnerId,
+        retrievedChildRunner.datasets.parameter,
+    )
+    assertEquals(1, retrievedChildRunner.parametersValues.size)
+    val childRunnerParameterValue = retrievedChildRunner.parametersValues[0]
+    assertEquals("param1", childRunnerParameterValue.parameterId)
+    assertEquals("5", childRunnerParameterValue.value)
+    assertEquals("integer", childRunnerParameterValue.varType)
+
+    // 8 - Retrieve stored data for assertion
+    val datasetParameterFromChildRunner =
+        datasetApiService.getDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            retrievedChildRunner.datasets.parameter,
+        )
+
+    retrievedParentRunner =
+        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, parentCreatedRunner.id)
+
+    val childDatasetParameterParts =
+        retrievedChildRunner.datasets.parameters as MutableList<DatasetPart>
+    val parentDatasetParameterParts =
+        retrievedParentRunner.datasets.parameters as MutableList<DatasetPart>
+
+    assertEquals(
+        datasetParameterFromChildRunner.parts,
+        childDatasetParameterParts,
+    )
+
+    // Not equals due to datasetPart ids and create/update infos
+    // We need to be sure that child parts are new ones and not just links to parent parts
+    assertNotEquals(
+        datasetParameterFromChildRunner.parts,
+        parentDatasetParameterParts,
+    )
+    // Fix randomed and timestamped values
+    childDatasetParameterParts.forEach {
+      it.id = "id"
+      it.datasetId = "datasetId"
+      it.createInfo.timestamp = 0
+      it.updateInfo.timestamp = 0
+    }
+
+    parentDatasetParameterParts.forEach {
+      it.id = "id"
+      it.datasetId = "datasetId"
+      it.createInfo.timestamp = 0
+      it.updateInfo.timestamp = 0
+    }
+
+    // Check if dataset parts are equal
+    assertEquals(parentDatasetParameterParts, childDatasetParameterParts)
+  }
+
   fun makeSolution(organizationId: String = organizationSaved.id): SolutionCreateRequest {
     return SolutionCreateRequest(
         key = UUID.randomUUID().toString(),
@@ -2959,7 +3172,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             mutableListOf(
                 RunTemplateParameterGroupCreateRequest(
                     id = "testParameterGroups",
-                    parameters = mutableListOf("param1", "param2"),
+                    parameters = mutableListOf("param1", "param2", "param3"),
                 )
             ),
         parameters =
@@ -2974,6 +3187,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 RunTemplateParameterCreateRequest(
                     id = "param2",
                     varType = DATASET_PART_VARTYPE_FILE,
+                ),
+                RunTemplateParameterCreateRequest(
+                    id = "param3",
+                    varType = DATASET_PART_VARTYPE_DB,
                 ),
             ),
         runTemplates =
