@@ -36,6 +36,7 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -520,4 +521,12 @@ fun MockHttpServletRequestBuilder.withPlatformAdminHeader(): MockHttpServletRequ
     this.header(PLATFORM_ADMIN_EMAIL, PLATFORM_ADMIN_API_KEY_VALUE)
 
 fun MockHttpServletRequestBuilder.withOrganizationUserHeader(): MockHttpServletRequestBuilder =
+    this.header(ORGANIZATION_USER_EMAIL, ORGANIZATION_USER_API_KEY_VALUE)
+
+fun MockMultipartHttpServletRequestBuilder.withPlatformAdminHeader():
+    MockMultipartHttpServletRequestBuilder =
+    this.header(PLATFORM_ADMIN_EMAIL, PLATFORM_ADMIN_API_KEY_VALUE)
+
+fun MockMultipartHttpServletRequestBuilder.withOrganizationUserHeader():
+    MockMultipartHttpServletRequestBuilder =
     this.header(ORGANIZATION_USER_EMAIL, ORGANIZATION_USER_API_KEY_VALUE)

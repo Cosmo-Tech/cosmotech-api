@@ -13,8 +13,9 @@ import org.cyclonedx.gradle.CyclonedxDirectTask
 import org.cyclonedx.model.Component.Type.APPLICATION
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
@@ -25,13 +26,15 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // implementations/configurations in a 'buildSrc' included build.
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
+val kotlinVersion = "2.2"
+
 plugins {
-  val kotlinVersion = "2.0.21"
-  kotlin("jvm") version kotlinVersion
-  kotlin("plugin.spring") version kotlinVersion apply false
+  val kotlinCompleteVersion = "2.2.21"
+  kotlin("jvm") version kotlinCompleteVersion
+  kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.1"
   id("com.diffplug.spotless") version "8.1.0"
-  id("org.springframework.boot") version "3.5.9" apply false
+  id("org.springframework.boot") version "4.0.0" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.1.9"
   id("com.github.jk1.dependency-license-report") version "3.0.1"
@@ -51,16 +54,15 @@ version = scmVersion.version
 // Dependencies version
 val jacksonAnnotationVersion = "2.20"
 val jacksonDatabindVersion = "2.20.1"
-val jacksonModuleKotlinVersion = "2.20.1"
-val springWebVersion = "6.2.14"
+
+val jacksonVersion = "3.0.3"
 val bouncyCastleJdk18Version = "1.83"
-val springBootVersion = "3.5.8"
 val springSecurityJwtVersion = "1.1.1.RELEASE"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
-val redisOmSpringVersion = "1.1.1"
+val redisOmSpringVersion = "2.0.1"
 val kotlinCoroutinesVersion = "1.10.2"
-val springDocVersion = "2.8.14"
+val springDocVersion = "3.0.0"
 val swaggerParserVersion = "2.1.36"
 val commonsCsvVersion = "1.14.1"
 val apiValidationVersion = "3.1.1"
@@ -72,7 +74,6 @@ val testContainersPostgreSQLVersion = "1.21.3"
 val testContainersLocalStackVersion = "1.21.3"
 val commonCompressVersion = "1.28.0"
 val awsSpringVersion = "3.4.2"
-val undertowVersion = "2.3.21.Final"
 
 // Checks
 val detektVersion = "1.23.8"
@@ -81,7 +82,7 @@ val detektVersion = "1.23.8"
 val jUnitBomVersion = "6.0.1"
 val mockkVersion = "1.14.7"
 val awaitilityKVersion = "4.3.0"
-val springMockkVersion = "4.0.2"
+val springMockkVersion = "5.0.1"
 
 val configBuildDir = "${layout.buildDirectory.get()}/config"
 
@@ -103,10 +104,7 @@ licenseReport {
       "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/license-normalizer-bundle.json"
 
   renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"))
-  filters =
-      arrayOf<LicenseBundleNormalizer>(
-          LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true)
-      )
+  filters = arrayOf(LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true))
 }
 
 buildscript {
@@ -281,7 +279,7 @@ subprojects {
 
   dependencies {
     // https://youtrack.jetbrains.com/issue/KT-71057/POM-file-unusable-after-upgrading-to-2.0.20-from-2.0.10
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.21"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.2.21"))
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
@@ -294,49 +292,56 @@ subprojects {
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.springframework.boot:spring-boot-starter-web") {
+    implementation("org.springframework.boot:spring-boot-starter-webmvc") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-undertow") {
-      constraints {
-        implementation("org.jboss.xnio:xnio-api:3.8.17.Final")
-        implementation("io.undertow:undertow-core:$undertowVersion")
-        implementation("io.undertow:undertow-servlet:$undertowVersion")
-        implementation("io.undertow:undertow-websockets-jsr:$undertowVersion")
-      }
+    implementation("org.springframework.boot:spring-boot-starter-jetty")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    /*{
+       constraints {
+         implementation("org.jboss.xnio:xnio-api:3.8.17.Final")
+         implementation("io.undertow:undertow-core:2.3.20.Final")
+       }
+    } */
+    implementation("tools.jackson:jackson-bom:3.0.3") {
+      constraints { implementation("com.fasterxml.jackson.core:jackson-annotations:3.0-rc5") }
     }
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
+    implementation("tools.jackson.module:jackson-module-kotlin")
+    implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
+    implementation("tools.jackson.core:jackson-databind")
+    implementation("tools.jackson.datatype:jackson-datatype-jsr310:3.0.0-rc2")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
     implementation("io.kubernetes:client-java:${kubernetesClientVersion}")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}")
-    implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
+    implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}") {
+      exclude(group = "com.fasterxml.jackson.core", module = "jackson-databind")
+      exclude(group = "com.fasterxml.jackson.dataformat", module = "jackson-dataformat-yaml")
+      constraints {
+        implementation("tools.jackson.core:jackson-databind:${jacksonVersion}")
+        implementation("tools.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}")
+      }
+    }
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation(
         "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springOauthAutoConfigureVersion}"
     ) {
+      exclude(group = "com.fasterxml.jackson.core", module = "jackson-databind")
       constraints {
-        implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationVersion")
-        implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")
-        implementation("org.springframework:spring-web:$springWebVersion")
-        implementation("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
-        implementation(
-            "org.springframework.security:spring-security-jwt:${springSecurityJwtVersion}"
-        ) {
-          exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
-          constraints {
-            implementation("org.bouncycastle:bcpkix-jdk18on:${bouncyCastleJdk18Version}")
-          }
-        }
+        implementation("tools.jackson.core:jackson-annotations:$jacksonAnnotationVersion")
+        implementation("tools.jackson.core:jackson-databind:$jacksonVersion")
       }
     }
     implementation("org.springframework.security:spring-security-oauth2-jose")
-    implementation("org.springframework.security:spring-security-oauth2-resource-server")
+    implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
-    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
-    implementation("org.springframework.data:spring-data-redis")
-    implementation("org.springframework:spring-jdbc")
+    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}") {
+      exclude(group = "com.fasterxml.jackson.core", module = "jackson-databind")
+      constraints { implementation("tools.jackson.core:jackson-databind:${jacksonVersion}") }
+    }
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.postgresql:postgresql")
     implementation("org.apache.commons:commons-compress:$commonCompressVersion")
 
@@ -381,11 +386,11 @@ subprojects {
     compilerArgs.add("-parameters")
   }
 
-  tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions {
-      languageVersion = "1.9"
+  kotlin {
+    compilerOptions {
+      languageVersion.set(KotlinVersion.fromVersion(kotlinVersion))
       freeCompilerArgs = listOf("-Xjsr305=strict")
-      jvmTarget = kotlinJvmTarget.toString()
+      jvmTarget.set(JvmTarget.fromTarget(kotlinJvmTarget.toString()))
       java {
         targetCompatibility = JavaVersion.VERSION_21
         sourceCompatibility = JavaVersion.VERSION_21
@@ -495,7 +500,7 @@ subprojects {
       )
       additionalProperties.set(
           mapOf(
-              "title" to "Cosmo Tech ${projectDirName.capitalizeAsciiOnly()} Manager API",
+              "title" to "Cosmo Tech ${projectDirName/*.capitalizeAsciiOnly()*/} Manager API",
               "basePackage" to "com.cosmotech",
               "configPackage" to "com.cosmotech.${projectDirName}.config",
               "enumPropertyNaming" to "original",
@@ -637,12 +642,12 @@ tasks.getByName("spotlessKotlinGradle") {
 val copySubProjectsDetektReportsTasks =
     subprojects.flatMap { subProject ->
       listOf("html", "xml", "txt", "sarif").map { format ->
-        val formatCapitalized = format.capitalizeAsciiOnly()
+        val formatCapitalized = format // .capitalizeAsciiOnly()
         val copyTask =
             tasks.register<Copy>(
                 "detektCopy${formatCapitalized}ReportFor" +
                     "${subProject.projectDir.relativeTo(rootDir)}"
-                        .capitalizeAsciiOnly()
+                        // .capitalizeAsciiOnly()
                         .replace("/", "_")
             ) {
               group = "detekt"

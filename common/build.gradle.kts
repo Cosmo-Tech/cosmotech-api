@@ -13,6 +13,7 @@ val tikaVersion = "3.2.3"
 val jUnitBomVersion = "6.0.1"
 
 dependencies {
+  implementation("org.springframework.boot:spring-boot-starter-restclient")
   implementation("org.apache.httpcomponents.client5:httpclient5")
   implementation("org.hashids:hashids:${hashidsVersion}")
   implementation(

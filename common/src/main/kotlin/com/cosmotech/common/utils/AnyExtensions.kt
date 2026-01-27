@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.utils
 
-import com.fasterxml.jackson.core.type.TypeReference
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KProperty
@@ -25,10 +24,6 @@ inline fun <reified T, U, R> T.changed(old: U?, memberAccessBlock: T.() -> R): B
   val oldValue = with(old, memberAccessBlock)
   return currentValue != oldValue
 }
-
-/** Convert any object as a Map, using the Jackson Object Mapper */
-fun <T> T.convertToMap(): Map<String, Any> =
-    objectMapper().convertValue(this, object : TypeReference<Map<String, Any>>() {})
 
 /**
  * Compare this object against another one of the same type and mutate the former if {@code

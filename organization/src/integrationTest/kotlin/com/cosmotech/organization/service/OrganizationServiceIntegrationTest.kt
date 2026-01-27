@@ -45,7 +45,7 @@ import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.junit.Assert.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -53,19 +53,16 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.test.context.junit4.SpringRunner
 
 @ActiveProfiles(profiles = ["organization-test"])
 @ExtendWith(MockKExtension::class)
 @ExtendWith(SpringExtension::class)
-@RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("FunctionName")
 class OrganizationServiceIntegrationTest : CsmTestBase() {

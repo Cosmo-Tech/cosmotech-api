@@ -59,7 +59,7 @@ fun getCurrentAccountGroups(configuration: CsmPlatformProperties): List<String> 
   return getValueFromAuthenticatedToken(configuration) {
     try {
       val jwt = JWTParser.parse(it)
-      jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.groupJwtClaim)
+      jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.groupJwtClaim) ?: mutableListOf()
     } catch (e: ParseException) {
       JSONObjectUtils.parse(it)[configuration.authorization.groupJwtClaim] as List<String>
     }

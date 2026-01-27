@@ -21,14 +21,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
+import org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs
 import org.springframework.http.HttpHeaders
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration
 import org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
@@ -84,7 +84,7 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
                 )
               }
             }
-            .apply<DefaultMockMvcBuilder>(springSecurity())
+            .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
             .apply<DefaultMockMvcBuilder>(
                 documentationConfiguration(restDocumentationContextProvider)
                     .operationPreprocessors()
@@ -144,7 +144,7 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
           redisStackServer.containerInfo.networkSettings.networks.entries
               .elementAt(0)
               .value
-              .ipAddress
+              .ipAddress!!
 
       registry.add("spring.data.redis.host") { containerIp }
       registry.add("spring.data.redis.port") { DEFAULT_REDIS_PORT }

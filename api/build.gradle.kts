@@ -21,8 +21,10 @@ dependencies {
   implementation(projects.cosmotechRunApi)
   implementation(projects.cosmotechRunnerApi)
   implementation(projects.cosmotechCommonApi)
-  testImplementation("org.springframework.security:spring-security-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
+  testImplementation("org.springframework.boot:spring-boot-restdocs")
+  testImplementation("org.springframework.security:spring-security-test")
 }
 
 tasks.getByName<Delete>("clean") { delete("$rootDir/openapi/openapi.yaml") }

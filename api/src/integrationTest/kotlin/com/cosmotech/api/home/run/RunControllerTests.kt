@@ -57,7 +57,7 @@ import com.cosmotech.runner.domain.*
 import com.cosmotech.runner.domain.ResourceSizeInfo
 import com.cosmotech.solution.domain.RunTemplateCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
-import com.ninjasquad.springmockk.SpykBean
+import com.ninjasquad.springmockk.MockkSpyBean
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
@@ -94,7 +94,7 @@ class RunControllerTests : ControllerTestBase() {
 
   @Autowired lateinit var runApiService: RunApiServiceInterface
 
-  @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
+  @MockkSpyBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
 
   @MockK(relaxed = true) private lateinit var containerFactory: RunContainerFactory
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService

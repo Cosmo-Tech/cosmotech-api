@@ -39,7 +39,7 @@ import com.cosmotech.solution.domain.RunTemplateParameterGroupCreateRequest
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
-import com.ninjasquad.springmockk.SpykBean
+import com.ninjasquad.springmockk.MockkSpyBean
 import io.mockk.every
 import org.hamcrest.core.StringContains.containsString
 import org.json.JSONObject
@@ -67,7 +67,7 @@ class RunnerControllerTests : ControllerTestBase() {
   private lateinit var datasetId: String
   private val logger = LoggerFactory.getLogger(RunnerControllerTests::class.java)
 
-  @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
+  @MockkSpyBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
 
   private val solutionParameterId1 = "param1"
   private val solutionParameterDefaultValue1 = "this_is_a_default_value"

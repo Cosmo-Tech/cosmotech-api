@@ -53,12 +53,10 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.services.s3.S3Client
@@ -66,7 +64,6 @@ import software.amazon.awssdk.services.s3.S3Client
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
 @ExtendWith(SpringExtension::class)
-@RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("FunctionName")
 class WorkspaceServiceRBACTest : CsmTestBase() {

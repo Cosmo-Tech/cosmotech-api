@@ -13,9 +13,9 @@ import java.util.stream.Collectors
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties
+import org.springframework.boot.restclient.RestTemplateBuilder
+import org.springframework.boot.security.oauth2.server.resource.autoconfigure.OAuth2ResourceServerProperties
 import org.springframework.boot.ssl.SslBundles
-import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.converter.Converter
@@ -171,8 +171,8 @@ class KeycloakJwtGrantedAuthoritiesConverter(
       if (rawRoleClaim is Collection<*>) {
         return rawRoleClaim
             .stream()
-            .map { role: Any? -> SimpleGrantedAuthority((role as? String)) }
             .filter(Objects::nonNull)
+            .map { role -> SimpleGrantedAuthority((role as String)) }
             .collect(Collectors.toList())
       } else if (rawRoleClaim != null) {
         logger.debug(

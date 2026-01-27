@@ -3,15 +3,13 @@
 package com.cosmotech.common.config
 
 import com.cosmotech.common.utils.yamlObjectMapper
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
+import org.springframework.boot.EnvironmentPostProcessor
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
-import org.springframework.boot.env.EnvironmentPostProcessor
 import org.springframework.boot.logging.DeferredLog
 import org.springframework.context.annotation.AdviceMode
 import org.springframework.context.annotation.Bean
@@ -21,10 +19,11 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.http.MediaType
-import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter
+import org.springframework.http.converter.AbstractJacksonHttpMessageConverter
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import tools.jackson.databind.ObjectMapper
 
 @Configuration
 @ConfigurationPropertiesScan(basePackages = ["com.cosmotech"])
@@ -78,7 +77,7 @@ open class CsmPlatformEnvironmentPostProcessor : EnvironmentPostProcessor {
  * property.
  */
 class YamlMessageConverter(objectMapper: ObjectMapper) :
-    AbstractJackson2HttpMessageConverter(
+    AbstractJacksonHttpMessageConverter<ObjectMapper>(
         objectMapper,
         MediaType("application", "yaml", StandardCharsets.UTF_8),
         MediaType("text", "yaml", StandardCharsets.UTF_8),
@@ -89,13 +88,6 @@ class YamlMessageConverter(objectMapper: ObjectMapper) :
     ) {
 
   constructor() : this(yamlObjectMapper())
-
-  override fun setObjectMapper(objectMapper: ObjectMapper) {
-    require(objectMapper.factory is YAMLFactory) {
-      "ObjectMapper must be configured with YAMLFactory"
-    }
-    super.setObjectMapper(objectMapper)
-  }
 }
 
 @Configuration

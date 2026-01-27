@@ -5,7 +5,7 @@ package com.cosmotech.run.workflow
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunContainer
 import com.cosmotech.run.domain.RunStatus
-import org.springframework.boot.actuate.health.HealthIndicator
+import org.springframework.boot.health.contributor.HealthIndicator
 
 data class RunStartContainers(
     val generateName: String? = null,

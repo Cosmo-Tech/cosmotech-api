@@ -56,7 +56,7 @@ open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
           redisStackServer.containerInfo.networkSettings.networks.entries
               .elementAt(0)
               .value
-              .ipAddress
+              .ipAddress ?: "cannot_find_redis_container_ip"
 
       registry.add("spring.data.redis.host") { containerIp }
       registry.add("spring.data.redis.port") { DEFAULT_REDIS_PORT }

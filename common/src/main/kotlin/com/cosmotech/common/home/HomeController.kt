@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping
 
 @Controller
 internal class HomeController(
-    @Value("\${server.servlet.context-path:}") private val servletContextPath: String
+    @param:Value("\${server.servlet.context-path:}") private val servletContextPath: String
 ) {
 
   private val baseEndpoint = servletContextPath.substringBeforeLast("/")
