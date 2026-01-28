@@ -17,6 +17,7 @@ paths:
       operationId: about
       tags:
         - meta
+      description: "Retrieve API version information, build details, and platform configuration. Useful for debugging and compatibility checks."
       summary: Get various information about the API
       responses:
         "200":

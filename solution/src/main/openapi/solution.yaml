@@ -20,6 +20,7 @@ paths:
       operationId: createSolution
       tags:
         - solution
+      description: "Create a new solution with optional run templates and parameter definitions. Required: key (unique identifier), name. The solution key must be unique within the organization."
       summary: Create a new solution
       requestBody:
         description: The Solution to create
@@ -62,6 +63,7 @@ paths:
         - $ref: '#/components/parameters/size'
       tags:
         - solution
+      description: "Retrieve a paginated list of all solutions in an organization that the user has permission to view."
       summary: List all Solutions
       responses:
         "200":
@@ -92,6 +94,7 @@ paths:
       operationId: getSolution
       tags:
         - solution
+      description: "Retrieve detailed information about a solution including run templates, parameters, parameter groups, and security configuration."
       summary: Get the details of a solution
       responses:
         "200":
@@ -742,6 +745,7 @@ paths:
       operationId: createSolutionAccessControl
       tags:
         - solution
+      description: "Grant access to a dataset for a user or group. Required: identity id and role. Valid roles: viewer, editor, admin. Returns 400 if user already has access."
       summary: Create solution access control
       requestBody:
         description: Access control to create

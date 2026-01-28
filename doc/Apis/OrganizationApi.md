@@ -26,11 +26,13 @@ All URIs are relative to *http://localhost:8080*
 
 Create a new organization
 
+    Create a new organization. Required: name. Optional: security configuration. The creating user automatically becomes an administrator.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **OrganizationCreateRequest** | [**OrganizationCreateRequest**](../Models/OrganizationCreateRequest.md)| The Organization to create | |
+| **OrganizationCreateRequest** | [**OrganizationCreateRequest**](../Models/OrganizationCreateRequest.md)|  | |
 
 ### Return type
 
@@ -50,6 +52,8 @@ Create a new organization
 > OrganizationAccessControl createOrganizationAccessControl(organization\_id, OrganizationAccessControl)
 
 Add a control access to the Organization
+
+    Grant access to an organization for a user or group. Valid roles: viewer, editor, admin.
 
 ### Parameters
 
@@ -76,6 +80,8 @@ Add a control access to the Organization
 > deleteOrganization(organization\_id)
 
 Delete an organization
+
+    Permanently delete an organization. Requires all workspaces within the organization to be deleted first. This operation cannot be undone.
 
 ### Parameters
 
@@ -127,6 +133,8 @@ null (empty response body)
 > Organization getOrganization(organization\_id)
 
 Get the details of an Organization
+
+    Retrieve detailed information about an organization including name, creation info, update history, and security configuration.
 
 ### Parameters
 
@@ -254,6 +262,8 @@ Get the Organization security users list
 > List listOrganizations(page, size)
 
 List all Organizations
+
+    Retrieve a paginated list of all organizations the authenticated user has permission to view. Use &#39;page&#39; and &#39;size&#39; query parameters for pagination.
 
 ### Parameters
 

@@ -19,6 +19,7 @@ paths:
       operationId: createWorkspace
       tags:
         - workspace
+      description: "Create a new workspace linked to a solution. Required: key (unique identifier), name, and solution configuration. The workspace key must be unique within the organization."
       summary: Create a new workspace
       requestBody:
         description: The Workspace to create
@@ -61,6 +62,7 @@ paths:
       - $ref: '#/components/parameters/size'
       tags:
         - workspace
+      description: "Retrieve a paginated list of all workspaces in an organization that the user has permission to view."
       summary: List all Workspaces
       responses:
         "200":
@@ -90,6 +92,7 @@ paths:
       operationId: getWorkspace
       tags:
         - workspace
+      description: "Retrieve detailed information about a workspace including its solution link, security settings, file storage info, and configuration."
       summary: Get the details of a workspace
       responses:
         "200":
@@ -154,6 +157,7 @@ paths:
       operationId: deleteWorkspace
       tags:
         - workspace
+      description: "Permanently delete a workspace. All datasets and runners within the workspace must be deleted first. This operation cannot be undone."
       summary: Delete a workspace
       responses:
         "204":
@@ -171,6 +175,7 @@ paths:
       operationId: createWorkspaceFile
       tags:
         - workspace
+      description: "Upload a file to workspace storage. Use 'destination' to specify path, 'overwrite' to replace existing files. Returns 400 if file exists and overwrite is false."
       summary: Upload a file for the Workspace
       requestBody:
         description: The file to upload
@@ -275,6 +280,7 @@ paths:
       operationId: getWorkspaceFile
       tags:
         - workspace
+      description: "Download a specific file from workspace storage. Requires 'file_name' query parameter. Returns file as binary stream. Returns error if file doesn't exist."
       summary: Download the Workspace File specified
       responses:
         "200":
@@ -422,6 +428,7 @@ paths:
       operationId: createWorkspaceAccessControl
       tags:
         - workspace
+      description: "Grant access to a workspace for a user or group. Valid roles: viewer, editor, admin. Returns 400 if user already has access."
       summary: Add a control access to the Workspace
       requestBody:
         description: The new Workspace security access to add.
@@ -534,6 +541,7 @@ paths:
       operationId: deleteWorkspaceAccessControl
       tags:
         - workspace
+      description: "Remove a user's access to a workspace. Cannot remove the last administrator."
       summary: Remove the specified access from the given Workspace
       responses:
         "204":

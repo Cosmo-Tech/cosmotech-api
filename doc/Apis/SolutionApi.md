@@ -39,6 +39,8 @@ All URIs are relative to *http://localhost:8080*
 
 Create a new solution
 
+    Create a new solution with optional run templates and parameter definitions. Required: key (unique identifier), name. The solution key must be unique within the organization.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -64,6 +66,8 @@ Create a new solution
 > SolutionAccessControl createSolutionAccessControl(organization\_id, solution\_id, SolutionAccessControl)
 
 Create solution access control
+
+    Grant access to a dataset for a user or group. Required: identity id and role. Valid roles: viewer, editor, admin. Returns 400 if user already has access.
 
 ### Parameters
 
@@ -334,6 +338,8 @@ Retrieve a solution run templates
 
 Get the details of a solution
 
+    Retrieve detailed information about a solution including run templates, parameters, parameter groups, and security configuration.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -570,6 +576,8 @@ List solution security users
 > List listSolutions(organization\_id, page, size)
 
 List all Solutions
+
+    Retrieve a paginated list of all solutions in an organization that the user has permission to view.
 
 ### Parameters
 
