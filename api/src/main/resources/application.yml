@@ -137,6 +137,7 @@ csm:
           - text/x-yaml
           - application/json
           - application/vnd.apache.parquet
+          - application/x-parquet
         datasets:
           - application/zip
           - application/xml
@@ -147,6 +148,7 @@ csm:
           - text/x-yaml
           - application/json
           - application/vnd.apache.parquet
+          - application/x-parquet
     containerRegistry:
       scheme: http
       host: localhost:5000
