@@ -59,7 +59,7 @@ fun getCurrentAccountGroups(configuration: CsmPlatformProperties): List<String> 
   return getValueFromAuthenticatedToken(configuration) {
     try {
       val jwt = JWTParser.parse(it)
-      jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.groupJwtClaim)
+      jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.groupJwtClaim) ?: emptyList()
     } catch (e: ParseException) {
       JSONObjectUtils.parse(it)[configuration.authorization.groupJwtClaim] as List<String>
     }
@@ -70,7 +70,7 @@ fun getCurrentAuthenticatedRoles(configuration: CsmPlatformProperties): List<Str
   return getValueFromAuthenticatedToken(configuration) {
     try {
       val jwt = JWTParser.parse(it)
-      jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.rolesJwtClaim)
+      jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.rolesJwtClaim) ?: emptyList()
     } catch (e: ParseException) {
       JSONObjectUtils.parse(it)[configuration.authorization.rolesJwtClaim] as List<String>
     }
