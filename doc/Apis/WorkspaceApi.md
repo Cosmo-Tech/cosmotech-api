@@ -30,6 +30,8 @@ All URIs are relative to *http://localhost:8080*
 
 Create a new workspace
 
+    Create a new workspace linked to a solution. Required: key (unique identifier), name, and solution configuration. The workspace key must be unique within the organization.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -55,6 +57,8 @@ Create a new workspace
 > WorkspaceAccessControl createWorkspaceAccessControl(organization\_id, workspace\_id, WorkspaceAccessControl)
 
 Add a control access to the Workspace
+
+    Grant access to a workspace for a user or group. Valid roles: viewer, editor, admin. Returns 400 if user already has access.
 
 ### Parameters
 
@@ -82,6 +86,8 @@ Add a control access to the Workspace
 > WorkspaceFile createWorkspaceFile(organization\_id, workspace\_id, file, overwrite, destination)
 
 Upload a file for the Workspace
+
+    Upload a file to workspace storage. Use &#39;destination&#39; to specify path, &#39;overwrite&#39; to replace existing files. Returns 400 if file exists and overwrite is false.
 
 ### Parameters
 
@@ -112,6 +118,8 @@ Upload a file for the Workspace
 
 Delete a workspace
 
+    Permanently delete a workspace. All datasets and runners within the workspace must be deleted first. This operation cannot be undone.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -137,6 +145,8 @@ null (empty response body)
 > deleteWorkspaceAccessControl(organization\_id, workspace\_id, identity\_id)
 
 Remove the specified access from the given Workspace
+
+    Remove a user&#39;s access to a workspace. Cannot remove the last administrator.
 
 ### Parameters
 
@@ -218,6 +228,8 @@ null (empty response body)
 
 Get the details of a workspace
 
+    Retrieve detailed information about a workspace including its solution link, security settings, file storage info, and configuration.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -270,6 +282,8 @@ Get a control access for the Workspace
 > File getWorkspaceFile(organization\_id, workspace\_id, file\_name)
 
 Download the Workspace File specified
+
+    Download a specific file from workspace storage. Requires &#39;file_name&#39; query parameter. Returns file as binary stream. Returns error if file doesn&#39;t exist.
 
 ### Parameters
 
@@ -402,6 +416,8 @@ Get the Workspace security users list
 > List listWorkspaces(organization\_id, page, size)
 
 List all Workspaces
+
+    Retrieve a paginated list of all workspaces in an organization that the user has permission to view.
 
 ### Parameters
 

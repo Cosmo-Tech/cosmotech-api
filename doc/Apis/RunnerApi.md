@@ -27,6 +27,8 @@ All URIs are relative to *http://localhost:8080*
 
 Create a new Runner
 
+    Create a new runner for executing simulations. Required: name, solutionId, runTemplateId. Use parentId to create a child runner that inherits configuration from a parent.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -53,6 +55,8 @@ Create a new Runner
 > RunnerAccessControl createRunnerAccessControl(organization\_id, workspace\_id, runner\_id, RunnerAccessControl)
 
 Add a control access to the Runner
+
+    Grant access to a runner for a user or group. Valid roles: viewer, editor, validator (can validate runs), admin.
 
 ### Parameters
 
@@ -81,6 +85,8 @@ Add a control access to the Runner
 > deleteRunner(organization\_id, workspace\_id, runner\_id)
 
 Delete a runner
+
+    Delete a runner. Cannot delete while runs are in progress. Note: Child runners that reference this runner are not deleted automatically.
 
 ### Parameters
 
@@ -136,6 +142,8 @@ null (empty response body)
 > Runner getRunner(organization\_id, workspace\_id, runner\_id)
 
 Get the details of a runner
+
+    Retrieve detailed information about a runner including configuration, parameter values, dataset associations, last run status, and validation state.
 
 ### Parameters
 
@@ -274,6 +282,8 @@ Get the Runner security users list
 
 List all Runners
 
+    Retrieve a paginated list of all runners in a workspace. Includes master runners and child runners with their current status and configuration.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -302,6 +312,8 @@ List all Runners
 
 Start a run with runner parameters
 
+    Start a new simulation run using the runner&#39;s current configuration. Returns immediately with a run ID. The run executes asynchronously - use the run status endpoint to monitor progress.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -328,6 +340,8 @@ Start a run with runner parameters
 > stopRun(organization\_id, workspace\_id, runner\_id)
 
 Stop the last run
+
+    Stop the currently executing run for this runner. Only affects the most recent run. The stop operation is asynchronous - the run may continue briefly before stopping.
 
 ### Parameters
 

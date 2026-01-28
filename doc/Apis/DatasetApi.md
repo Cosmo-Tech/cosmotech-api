@@ -33,6 +33,8 @@ All URIs are relative to *http://localhost:8080*
 
 Create a Dataset
 
+    Create a new dataset in the workspace. Required fields: name. The dataset is initialized with empty data and can be populated through dataset parts. Creator becomes admin.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -89,6 +91,8 @@ Add a control access to the Dataset
 
 Create a data part of a Dataset
 
+    Create a new data part within a dataset. Specify type as &#39;FILE&#39; for file uploads or &#39;DB&#39; for database queries. Returns the created part with generated ID.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -118,7 +122,7 @@ Create a data part of a Dataset
 
 Delete a Dataset
 
-    Delete a dataset
+    Permanently delete a dataset and all its data parts. This operation cannot be undone. Returns 204 on success, 404 if not found, 409 if dataset is in use by runners.
 
 ### Parameters
 
@@ -146,6 +150,8 @@ null (empty response body)
 > deleteDatasetAccessControl(organization\_id, workspace\_id, dataset\_id, identity\_id)
 
 Remove the specified access from the given Dataset
+
+    Remove a user or group&#39;s access to a dataset. Cannot remove the last administrator - at least one admin must remain.
 
 ### Parameters
 
@@ -205,6 +211,8 @@ null (empty response body)
 
 Download data from a dataset part
 
+    Download the file content from a FILE-type dataset part. Returns the file as a binary stream with appropriate Content-Type. Not available for DB-type parts.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -233,7 +241,7 @@ Download data from a dataset part
 
 Retrieve a Dataset
 
-    Retrieve a dataset
+    Retrieve complete information about a specific dataset including metadata, source configuration, security settings, and associated dataset parts summary.
 
 ### Parameters
 
@@ -318,6 +326,8 @@ Retrieve a data part of a Dataset
 
 Retrieve all dataset parts of a Dataset
 
+    Retrieve all data parts associated with a dataset. Parts can be of type FILE (uploaded files) or DB (database connections). Returns part metadata, type, and status.
+
 ### Parameters
 
 |Name | Type | Description  | Notes |
@@ -374,7 +384,7 @@ Get the Dataset security users list
 
 Retrieve a list of defined Dataset
 
-    List all datasets
+    Retrieve a paginated list of all datasets in the specified workspace. Supports pagination via &#39;page&#39; and &#39;size&#39; query parameters. Returns datasets based on user permissions.
 
 ### Parameters
 
@@ -403,6 +413,8 @@ Retrieve a list of defined Dataset
 > File queryData(organization\_id, workspace\_id, dataset\_id, dataset\_part\_id, selects, sums, avgs, counts, mins, maxs, offset, limit, groupBys, orderBys)
 
 Query data of a Dataset part. This endpoint is only available for dataset parts that support queries (type &#x3D;&#x3D; DB). 
+
+    Execute a SQL or DSL query against a database-type dataset part. The query parameter is required. Results are returned as JSON. Only available for parts with type&#x3D;DB.
 
 ### Parameters
 
@@ -531,7 +543,7 @@ Search Datasets by tags
 
 Update a Dataset
 
-    Update a dataset
+    Update dataset metadata (name, description, tags). Note: Some fields cannot be modified after creation. Returns the updated dataset.
 
 ### Parameters
 

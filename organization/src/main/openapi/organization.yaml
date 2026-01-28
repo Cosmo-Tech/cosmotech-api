@@ -18,9 +18,9 @@ paths:
       operationId: createOrganization
       tags:
         - organization
+      description: "Create a new organization. Required: name. Optional: security configuration. The creating user automatically becomes an administrator."
       summary: Create a new organization
       requestBody:
-        description: The Organization to create
         required: true
         content:
           application/json:
@@ -60,6 +60,7 @@ paths:
         - $ref: '#/components/parameters/size'
       tags:
         - organization
+      description: "Retrieve a paginated list of all organizations the authenticated user has permission to view. Use 'page' and 'size' query parameters for pagination."
       summary: List all Organizations
       responses:
         "200":
@@ -89,6 +90,7 @@ paths:
       operationId: getOrganization
       tags:
         - organization
+      description: "Retrieve detailed information about an organization including name, creation info, update history, and security configuration."
       summary: Get the details of an Organization
       responses:
         "200":
@@ -153,6 +155,7 @@ paths:
       operationId: deleteOrganization
       tags:
         - organization
+      description: "Permanently delete an organization. Requires all workspaces within the organization to be deleted first. This operation cannot be undone."
       summary: Delete an organization
       responses:
         "204":
@@ -299,6 +302,7 @@ paths:
       operationId: createOrganizationAccessControl
       tags:
         - organization
+      description: "Grant access to an organization for a user or group. Valid roles: viewer, editor, admin."
       summary: Add a control access to the Organization
       requestBody:
         description: The new Organization security access to add.

@@ -20,11 +20,11 @@ paths:
     parameters:
       - $ref: '#/components/parameters/organizationId'
       - $ref: '#/components/parameters/workspaceId'
-    description: Create a dataset
     post:
       operationId: createDataset
       tags:
         - dataset
+      description: "Create a new dataset in the workspace. Required fields: name. The dataset is initialized with empty data and can be populated through dataset parts. Creator becomes admin."
       summary: Create a Dataset
       requestBody:
         content:
@@ -71,7 +71,7 @@ paths:
         - $ref: '#/components/parameters/size'
       tags:
         - dataset
-      description: List all datasets
+      description: "Retrieve a paginated list of all datasets in the specified workspace. Supports pagination via 'page' and 'size' query parameters. Returns datasets based on user permissions."
       summary: Retrieve a list of defined Dataset
       responses:
         "200":
@@ -166,7 +166,7 @@ paths:
       operationId: getDataset
       tags:
         - dataset
-      description: Retrieve a dataset
+      description: "Retrieve complete information about a specific dataset including metadata, source configuration, security settings, and associated dataset parts summary."
       summary: Retrieve a Dataset
       responses:
         "200":
@@ -192,7 +192,7 @@ paths:
       operationId: updateDataset
       tags:
         - dataset
-      description: Update a dataset
+      description: "Update dataset metadata (name, description, tags). Note: Some fields cannot be modified after creation. Returns the updated dataset."
       summary: Update a Dataset
       requestBody:
         content:
@@ -235,7 +235,7 @@ paths:
       operationId: deleteDataset
       tags:
         - dataset
-      description: Delete a dataset
+      description: "Permanently delete a dataset and all its data parts. This operation cannot be undone. Returns 204 on success, 404 if not found, 409 if dataset is in use by runners."
       summary: Delete a Dataset
       responses:
         "204":
@@ -411,6 +411,7 @@ paths:
       operationId: deleteDatasetAccessControl
       tags:
         - dataset
+      description: "Remove a user or group's access to a dataset. Cannot remove the last administrator - at least one admin must remain."
       summary: Remove the specified access from the given Dataset
       responses:
         "204":
@@ -460,9 +461,9 @@ paths:
       operationId: createDatasetPart
       tags:
         - dataset
+      description: "Create a new data part within a dataset. Specify type as 'FILE' for file uploads or 'DB' for database queries. Returns the created part with generated ID."
       summary: Create a data part of a Dataset
       requestBody:
-        description: New Dataset part to create.
         content:
           multipart/form-data:
             schema:
@@ -507,6 +508,7 @@ paths:
         - $ref: '#/components/parameters/size'
       tags:
         - dataset
+      description: "Retrieve all data parts associated with a dataset. Parts can be of type FILE (uploaded files) or DB (database connections). Returns part metadata, type, and status."
       summary: Retrieve all dataset parts of a Dataset
       responses:
         "200":
@@ -759,6 +761,7 @@ paths:
       operationId: queryData
       tags:
         - dataset
+      description: "Execute a SQL or DSL query against a database-type dataset part. The query parameter is required. Results are returned as JSON. Only available for parts with type=DB."
       summary: |
         Query data of a Dataset part.
         This endpoint is only available for dataset parts that support queries (type == DB).
@@ -789,6 +792,7 @@ paths:
       operationId: downloadDatasetPart
       tags:
         - dataset
+      description: "Download the file content from a FILE-type dataset part. Returns the file as a binary stream with appropriate Content-Type. Not available for DB-type parts."
       summary: Download data from a dataset part
       responses:
         "200":
