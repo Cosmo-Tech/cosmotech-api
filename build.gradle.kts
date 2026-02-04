@@ -72,7 +72,12 @@ val testContainersPostgreSQLVersion = "1.21.3"
 val testContainersLocalStackVersion = "1.21.3"
 val commonCompressVersion = "1.28.0"
 val awsSpringVersion = "3.4.2"
-val undertowVersion = "2.3.21.Final"
+// The version is fixed to 2.3.20.Final
+// due to a undertow bug https://issues.redhat.com/browse/JBEAP-31823
+// the server.undertow.max-http-post-size is not override by
+// spring.servlet.multipart.max-file-size
+// Fix should be available in 2.3.23.Final
+val undertowVersion = "2.3.20.Final"
 
 // Checks
 val detektVersion = "1.23.8"
