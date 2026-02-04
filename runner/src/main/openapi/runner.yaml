@@ -20,7 +20,7 @@ paths:
       operationId: createRunner
       tags:
         - runner
-      description: "Create a new runner for executing simulations. Required: name, solutionId, runTemplateId. Use parentId to create a child runner that inherits configuration from a parent."
+      description: "Create a new runner for executing simulations. Use parentId to create a child runner that inherits configuration from a parent."
       summary: Create a new Runner
       requestBody:
         description: the Runner to create
@@ -67,7 +67,7 @@ paths:
         - $ref: '#/components/parameters/size'
       tags:
         - runner
-      description: "Retrieve a paginated list of all runners in a workspace. Includes master runners and child runners with their current status and configuration."
+      description: "Retrieve a paginated list of all runners in a workspace."
       summary: List all Runners
       responses:
         "200":
@@ -99,7 +99,7 @@ paths:
       operationId: getRunner
       tags:
         - runner
-      description: "Retrieve detailed information about a runner including configuration, parameter values, dataset associations, last run status, and validation state."
+      description: "Retrieve detailed information about a runner."
       summary: Get the details of a runner
       responses:
         "200":
@@ -181,7 +181,7 @@ paths:
       operationId: startRun
       tags:
         - runner
-      description: "Start a new simulation run using the runner's current configuration. Returns immediately with a run ID. The run executes asynchronously - use the run status endpoint to monitor progress."
+      description: "Start a new simulation run using the runner's current configuration. Returns the run Id. The run executes asynchronously - use the run status endpoint to monitor progress"
       summary: Start a run with runner parameters
       responses:
         "202":
@@ -205,7 +205,7 @@ paths:
       operationId: stopRun
       tags:
         - runner
-      description: "Stop the currently executing run for this runner. Only affects the most recent run. The stop operation is asynchronous - the run may continue briefly before stopping."
+      description: "Stop the currently executing run for this runner. The stop operation is asynchronous - the run may continue briefly before stopping."
       summary: Stop the last run
       responses:
         "202":

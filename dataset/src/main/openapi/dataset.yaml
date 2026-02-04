@@ -24,7 +24,9 @@ paths:
       operationId: createDataset
       tags:
         - dataset
-      description: "Create a new dataset in the workspace. Required fields: name. The dataset is initialized with empty data and can be populated through dataset parts. Creator becomes admin."
+      description: Create a new dataset in the workspace.
+          The dataset is initialized with specified parts (can be empty).
+          The dataset can also be populated through dataset parts.
       summary: Create a Dataset
       requestBody:
         content:
@@ -166,7 +168,7 @@ paths:
       operationId: getDataset
       tags:
         - dataset
-      description: "Retrieve complete information about a specific dataset including metadata, source configuration, security settings, and associated dataset parts summary."
+      description: Retrieve complete information about a specific dataset including dataset parts.
       summary: Retrieve a Dataset
       responses:
         "200":
@@ -192,7 +194,7 @@ paths:
       operationId: updateDataset
       tags:
         - dataset
-      description: "Update dataset metadata (name, description, tags). Note: Some fields cannot be modified after creation. Returns the updated dataset."
+      description: Update dataset information and return the updated dataset.
       summary: Update a Dataset
       requestBody:
         content:
@@ -235,7 +237,7 @@ paths:
       operationId: deleteDataset
       tags:
         - dataset
-      description: "Permanently delete a dataset and all its data parts. This operation cannot be undone. Returns 204 on success, 404 if not found, 409 if dataset is in use by runners."
+      description: "Permanently delete a dataset and all its data parts. This operation cannot be undone."
       summary: Delete a Dataset
       responses:
         "204":
@@ -461,7 +463,7 @@ paths:
       operationId: createDatasetPart
       tags:
         - dataset
-      description: "Create a new data part within a dataset. Specify type as 'FILE' for file uploads or 'DB' for database queries. Returns the created part with generated ID."
+      description: "Create a new data part within a dataset. Specify type as 'File' for file storage or 'DB' for database storage. Returns the created part."
       summary: Create a data part of a Dataset
       requestBody:
         content:
@@ -508,7 +510,7 @@ paths:
         - $ref: '#/components/parameters/size'
       tags:
         - dataset
-      description: "Retrieve all data parts associated with a dataset. Parts can be of type FILE (uploaded files) or DB (database connections). Returns part metadata, type, and status."
+      description: "Retrieve all data parts associated with a dataset."
       summary: Retrieve all dataset parts of a Dataset
       responses:
         "200":
@@ -761,7 +763,7 @@ paths:
       operationId: queryData
       tags:
         - dataset
-      description: "Execute a SQL or DSL query against a database-type dataset part. The query parameter is required. Results are returned as JSON. Only available for parts with type=DB."
+      description: "Execute a query against a dataset part. Results are returned as plain-text CSV. Only available for parts with type=DB."
       summary: |
         Query data of a Dataset part.
         This endpoint is only available for dataset parts that support queries (type == DB).
@@ -792,7 +794,7 @@ paths:
       operationId: downloadDatasetPart
       tags:
         - dataset
-      description: "Download the file content from a FILE-type dataset part. Returns the file as a binary stream with appropriate Content-Type. Not available for DB-type parts."
+      description: "Download the file content from a dataset part. Returns the file as an application/octet-stream."
       summary: Download data from a dataset part
       responses:
         "200":

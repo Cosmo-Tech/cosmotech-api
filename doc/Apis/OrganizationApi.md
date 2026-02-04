@@ -26,7 +26,7 @@ All URIs are relative to *http://localhost:8080*
 
 Create a new organization
 
-    Create a new organization. Required: name. Optional: security configuration. The creating user automatically becomes an administrator.
+    Create a new organization.
 
 ### Parameters
 
@@ -53,7 +53,7 @@ Create a new organization
 
 Add a control access to the Organization
 
-    Grant access to an organization for a user or group. Valid roles: viewer, editor, admin.
+    Grant access to an organization for a user or group.
 
 ### Parameters
 
@@ -81,7 +81,7 @@ Add a control access to the Organization
 
 Delete an organization
 
-    Permanently delete an organization. Requires all workspaces within the organization to be deleted first. This operation cannot be undone.
+    Permanently delete an organization. This operation cannot be undone.
 
 ### Parameters
 
@@ -134,7 +134,7 @@ null (empty response body)
 
 Get the details of an Organization
 
-    Retrieve detailed information about an organization including name, creation info, update history, and security configuration.
+    Retrieve detailed information about an organization.
 
 ### Parameters
 

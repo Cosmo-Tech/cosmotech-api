@@ -18,7 +18,7 @@ paths:
       operationId: createOrganization
       tags:
         - organization
-      description: "Create a new organization. Required: name. Optional: security configuration. The creating user automatically becomes an administrator."
+      description: "Create a new organization."
       summary: Create a new organization
       requestBody:
         required: true
@@ -90,7 +90,7 @@ paths:
       operationId: getOrganization
       tags:
         - organization
-      description: "Retrieve detailed information about an organization including name, creation info, update history, and security configuration."
+      description: "Retrieve detailed information about an organization."
       summary: Get the details of an Organization
       responses:
         "200":
@@ -155,7 +155,7 @@ paths:
       operationId: deleteOrganization
       tags:
         - organization
-      description: "Permanently delete an organization. Requires all workspaces within the organization to be deleted first. This operation cannot be undone."
+      description: "Permanently delete an organization. This operation cannot be undone."
       summary: Delete an organization
       responses:
         "204":
@@ -302,7 +302,7 @@ paths:
       operationId: createOrganizationAccessControl
       tags:
         - organization
-      description: "Grant access to an organization for a user or group. Valid roles: viewer, editor, admin."
+      description: "Grant access to an organization for a user or group."
       summary: Add a control access to the Organization
       requestBody:
         description: The new Organization security access to add.

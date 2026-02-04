@@ -27,7 +27,7 @@ All URIs are relative to *http://localhost:8080*
 
 Create a new Runner
 
-    Create a new runner for executing simulations. Required: name, solutionId, runTemplateId. Use parentId to create a child runner that inherits configuration from a parent.
+    Create a new runner for executing simulations. Use parentId to create a child runner that inherits configuration from a parent.
 
 ### Parameters
 
@@ -143,7 +143,7 @@ null (empty response body)
 
 Get the details of a runner
 
-    Retrieve detailed information about a runner including configuration, parameter values, dataset associations, last run status, and validation state.
+    Retrieve detailed information about a runner.
 
 ### Parameters
 
@@ -282,7 +282,7 @@ Get the Runner security users list
 
 List all Runners
 
-    Retrieve a paginated list of all runners in a workspace. Includes master runners and child runners with their current status and configuration.
+    Retrieve a paginated list of all runners in a workspace.
 
 ### Parameters
 
@@ -312,7 +312,7 @@ List all Runners
 
 Start a run with runner parameters
 
-    Start a new simulation run using the runner&#39;s current configuration. Returns immediately with a run ID. The run executes asynchronously - use the run status endpoint to monitor progress.
+    Start a new simulation run using the runner&#39;s current configuration. Returns the run Id. The run executes asynchronously - use the run status endpoint to monitor progress
 
 ### Parameters
 
@@ -341,7 +341,7 @@ Start a run with runner parameters
 
 Stop the last run
 
-    Stop the currently executing run for this runner. Only affects the most recent run. The stop operation is asynchronous - the run may continue briefly before stopping.
+    Stop the currently executing run for this runner. The stop operation is asynchronous - the run may continue briefly before stopping.
 
 ### Parameters
 

@@ -20,7 +20,7 @@ paths:
       operationId: createSolution
       tags:
         - solution
-      description: "Create a new solution with optional run templates and parameter definitions. Required: key (unique identifier), name. The solution key must be unique within the organization."
+      description: "Create a new solution with optional run templates and parameter definitions."
       summary: Create a new solution
       requestBody:
         description: The Solution to create
@@ -94,7 +94,7 @@ paths:
       operationId: getSolution
       tags:
         - solution
-      description: "Retrieve detailed information about a solution including run templates, parameters, parameter groups, and security configuration."
+      description: "Retrieve detailed information about a solution."
       summary: Get the details of a solution
       responses:
         "200":
@@ -745,7 +745,7 @@ paths:
       operationId: createSolutionAccessControl
       tags:
         - solution
-      description: "Grant access to a dataset for a user or group. Required: identity id and role. Valid roles: viewer, editor, admin. Returns 400 if user already has access."
+      description: "Grant access to a solution for a user or group."
       summary: Create solution access control
       requestBody:
         description: Access control to create
