@@ -30,7 +30,7 @@ All URIs are relative to *http://localhost:8080*
 
 Create a new workspace
 
-    Create a new workspace linked to a solution. Required: key (unique identifier), name, and solution configuration. The workspace key must be unique within the organization.
+    Create a new workspace.
 
 ### Parameters
 
@@ -58,7 +58,7 @@ Create a new workspace
 
 Add a control access to the Workspace
 
-    Grant access to a workspace for a user or group. Valid roles: viewer, editor, admin. Returns 400 if user already has access.
+    Grant access to a workspace for a user or group.
 
 ### Parameters
 
@@ -87,7 +87,7 @@ Add a control access to the Workspace
 
 Upload a file for the Workspace
 
-    Upload a file to workspace storage. Use &#39;destination&#39; to specify path, &#39;overwrite&#39; to replace existing files. Returns 400 if file exists and overwrite is false.
+    Upload a file to workspace storage. Use &#39;destination&#39; to specify path, &#39;overwrite&#39; to replace existing files.
 
 ### Parameters
 
@@ -118,7 +118,7 @@ Upload a file for the Workspace
 
 Delete a workspace
 
-    Permanently delete a workspace. All datasets and runners within the workspace must be deleted first. This operation cannot be undone.
+    Permanently delete a workspace.
 
 ### Parameters
 
@@ -228,7 +228,7 @@ null (empty response body)
 
 Get the details of a workspace
 
-    Retrieve detailed information about a workspace including its solution link, security settings, file storage info, and configuration.
+    Retrieve detailed information about a workspace.
 
 ### Parameters
 
@@ -283,7 +283,7 @@ Get a control access for the Workspace
 
 Download the Workspace File specified
 
-    Download a specific file from workspace storage. Requires &#39;file_name&#39; query parameter. Returns file as binary stream. Returns error if file doesn&#39;t exist.
+    Download a specific file from workspace storage. Returns file as binary stream.
 
 ### Parameters
 

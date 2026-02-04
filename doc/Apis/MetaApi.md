@@ -13,7 +13,7 @@ All URIs are relative to *http://localhost:8080*
 
 Get various information about the API
 
-    Retrieve API version information, build details, and platform configuration. Useful for debugging and compatibility checks.
+    Retrieve API version information and build details.
 
 ### Parameters
 This endpoint does not need any parameter.

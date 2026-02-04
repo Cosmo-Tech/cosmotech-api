@@ -45,7 +45,7 @@ null (empty response body)
 
 Get the details of a run
 
-    Retrieve detailed information about a specific run including state, parameters used, dataset list, execution timestamps, and container configuration.
+    Retrieve detailed information about a specific run.
 
 ### Parameters
 
@@ -105,7 +105,7 @@ get the logs for the Run
 
 get the status for the Run
 
-    Retrieve detailed execution status of a run including workflow phase, progress, individual node states, and estimated completion time.
+    Retrieve detailed execution status of a run.
 
 ### Parameters
 
@@ -135,7 +135,7 @@ get the status for the Run
 
 get the list of Runs for the Runner
 
-    Retrieve a paginated list of all runs for a specific runner, ordered by creation time (newest first). Includes run state, timestamps, and basic metadata.
+    Retrieve a paginated list of all runs for a specific runner.
 
 ### Parameters
 
