@@ -474,6 +474,7 @@ class RunnerControllerTests : ControllerTestBase() {
     val datasetList = mutableListOf(datasetId)
     val runnerParameterValue = "parameter_value"
     val runnerParameterVarType = "this_is_a_vartype"
+    val validationStatus = RunnerValidationStatus.Validated
 
     val additionalData =
         mutableMapOf(
@@ -521,6 +522,7 @@ class RunnerControllerTests : ControllerTestBase() {
                         isInherited = false,
                     )
                 ),
+            validationStatus = validationStatus,
         )
 
     mvc.perform(
@@ -555,6 +557,7 @@ class RunnerControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.parametersValues[0].value").value(runnerParameterValue))
         .andExpect(jsonPath("$.parametersValues[0].varType").value(solutionParameterVarType1))
         .andExpect(jsonPath("$.parametersValues[0].isInherited").value(false))
+        .andExpect(jsonPath("$.validationStatus").value(validationStatus.name))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
         .andExpect(jsonPath("$.security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
         .andDo(MockMvcResultHandlers.print())

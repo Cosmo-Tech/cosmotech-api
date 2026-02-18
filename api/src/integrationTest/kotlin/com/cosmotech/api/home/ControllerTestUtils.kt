@@ -220,6 +220,7 @@ class ControllerTestUtils {
         tags: MutableList<String> = mutableListOf(),
         datasetList: MutableList<String>? = mutableListOf(),
         parametersValues: MutableList<RunnerRunTemplateParameterValue>? = mutableListOf(),
+        validationStatus: RunnerValidationStatus,
     ): RunnerUpdateRequest {
 
       return RunnerUpdateRequest(
@@ -233,6 +234,7 @@ class ControllerTestUtils {
           additionalData = additionalData,
           solutionName = solutionName,
           runTemplateName = runTemplateName,
+          validationStatus = validationStatus,
       )
     }
   }

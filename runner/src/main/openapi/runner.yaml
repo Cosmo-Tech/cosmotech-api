@@ -774,6 +774,9 @@ components:
           description: the Solution Run Template name associated with this Runner
           minLength: 1
           x-size-message: "cannot be empty"
+        validationStatus:
+          allOf:
+            - $ref: '#/components/schemas/RunnerValidationStatus'
     RunnerSecurity:
       type: object
       description: the Runner security information

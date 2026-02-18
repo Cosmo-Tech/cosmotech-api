@@ -315,6 +315,30 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
+  fun `test updateRunner with validationStatus`() {
+    assertEquals(RunnerValidationStatus.Draft, runnerSaved.validationStatus)
+
+    val updateRunnerResponse =
+        runnerApiService.updateRunner(
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            RunnerUpdateRequest(
+                validationStatus = RunnerValidationStatus.Validated,
+            ),
+        )
+    assertEquals(RunnerValidationStatus.Validated, updateRunnerResponse.validationStatus)
+
+    val updatedRunner =
+        runnerApiService.getRunner(
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+        )
+    assertEquals(RunnerValidationStatus.Validated, updatedRunner.validationStatus)
+  }
+
+  @Test
   fun `test updateRunner and check parameterValues after updating a simple solution parameter to DATASET_PART varType`() {
 
     // 1 - create a runner with an integer parameter

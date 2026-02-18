@@ -456,6 +456,7 @@ class RunnerService(
       )
     }
 
+    @Suppress("LongMethod")
     fun setValueFrom(runnerUpdateRequest: RunnerUpdateRequest): RunnerInstance {
 
       runnerUpdateRequest.runSizing?.let {
@@ -515,7 +516,8 @@ class RunnerService(
                       lastRunStatus = this.runner.lastRunInfo.lastRunStatus,
                       lastRunId = this.runner.lastRunInfo.lastRunId,
                   ),
-              validationStatus = this.runner.validationStatus,
+              validationStatus =
+                  runnerUpdateRequest.validationStatus ?: this.runner.validationStatus,
           )
       )
     }
