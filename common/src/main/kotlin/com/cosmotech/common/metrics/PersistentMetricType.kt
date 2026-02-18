@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.metrics
 
-enum class PersitentMetricType {
+enum class PersistentMetricType {
   COUNTER,
   GAUGE,
 }

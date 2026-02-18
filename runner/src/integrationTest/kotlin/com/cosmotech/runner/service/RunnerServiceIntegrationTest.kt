@@ -802,7 +802,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
-  fun `test AccessControls management on Runner as ressource Admin`() {
+  fun `test AccessControls management on Runner as resource Admin`() {
     logger.info("should add an Access Control and assert it has been added")
     val runnerAccessControl = RunnerAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     var runnerAccessControlRegistered =
@@ -2295,7 +2295,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   }
 
   @Test
-  fun `test runner creation based on solution without dataset's type parameters with overrided parameter value on workspace`() {
+  fun `test runner creation based on solution without dataset's type parameters with overridden parameter value on workspace`() {
 
     // 1 - Create a solution with simple solution parameter
     val simpleParameterId = "my_property_name"
@@ -2336,7 +2336,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             solutionCreateRequestWithDatasetParameters,
         )
 
-    val simpleParameterOverridedValue = "my_override_value"
+    val simpleParameterOverriddenValue = "my_override_value"
     workspace =
         makeWorkspaceCreateRequest(
             name = "Workspace",
@@ -2344,7 +2344,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 WorkspaceSolution(
                     solutionId = solutionSaved.id,
                     defaultParameterValues =
-                        mutableMapOf(simpleParameterId to simpleParameterOverridedValue),
+                        mutableMapOf(simpleParameterId to simpleParameterOverriddenValue),
                 ),
         )
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
@@ -2381,7 +2381,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(1, runnerParametersValues.size)
     val runnerParameterValue = runnerParametersValues[0]
     assertEquals(simpleParameterId, runnerParameterValue.parameterId)
-    assertEquals(simpleParameterOverridedValue, runnerParameterValue.value)
+    assertEquals(simpleParameterOverriddenValue, runnerParameterValue.value)
     assertEquals(simpleParameterVarType, runnerParameterValue.varType)
   }
 

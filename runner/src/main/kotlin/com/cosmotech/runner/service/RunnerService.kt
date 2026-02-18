@@ -117,7 +117,7 @@ class RunnerService(
   }
 
   fun deleteInstance(runnerInstance: RunnerInstance) {
-    val runner = runnerInstance.getRunnerDataObjet()
+    val runner = runnerInstance.getRunnerDataObject()
 
     // Check there are no running runs
     val hasRunningRuns = HasRunningRuns(this, runner.organizationId, runner.workspaceId, runner.id)
@@ -154,7 +154,7 @@ class RunnerService(
         )
     this.eventPublisher.publishEvent(runnerDeleted)
 
-    return runnerRepository.delete(runnerInstance.getRunnerDataObjet())
+    return runnerRepository.delete(runnerInstance.getRunnerDataObject())
   }
 
   private fun listAllRunnerByParentId(
@@ -200,7 +200,7 @@ class RunnerService(
   }
 
   fun saveInstance(runnerInstance: RunnerInstance): Runner {
-    return runnerRepository.save(runnerInstance.getRunnerDataObjet())
+    return runnerRepository.save(runnerInstance.getRunnerDataObject())
   }
 
   fun getNewInstance(): RunnerInstance {
@@ -280,16 +280,16 @@ class RunnerService(
   }
 
   fun startRunWith(runnerInstance: RunnerInstance): CreatedRun {
-    val startEvent = RunStart(this, runnerInstance.getRunnerDataObjet())
+    val startEvent = RunStart(this, runnerInstance.getRunnerDataObject())
     this.eventPublisher.publishEvent(startEvent)
     val runId = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
     runnerInstance.setLastRunInfo(runId)
-    runnerRepository.save(runnerInstance.getRunnerDataObjet())
+    runnerRepository.save(runnerInstance.getRunnerDataObject())
     return CreatedRun(id = runId)
   }
 
   fun stopLastRunOf(runnerInstance: RunnerInstance) {
-    val runner = runnerInstance.getRunnerDataObjet()
+    val runner = runnerInstance.getRunnerDataObject()
     runner.lastRunInfo.lastRunId
         ?: throw IllegalArgumentException("Runner ${runner.id} doesn't have a last run")
     this.eventPublisher.publishEvent(RunStop(this, runner))
@@ -339,7 +339,7 @@ class RunnerService(
           )
     }
 
-    fun getRunnerDataObjet(): Runner = this.runner
+    fun getRunnerDataObject(): Runner = this.runner
 
     fun userHasPermission(permission: String): RunnerInstance = apply {
       csmRbac.verify(this.getRbacSecurity(), permission, this.roleDefinition)

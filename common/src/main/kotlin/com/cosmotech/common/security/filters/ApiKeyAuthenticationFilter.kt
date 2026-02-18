@@ -55,8 +55,8 @@ class ApiKeyAuthenticationFilter(val csmPlatformProperties: CsmPlatformPropertie
           val isUriMatching =
               securedUris
                   .associateWith { it.split("/.*", ignoreCase = true, limit = 2) }
-                  .filter { (securedUri, securedUriSplitted) ->
-                    filterSecuredUriWithRequestUri(securedUriSplitted, requestUri, securedUri)
+                  .filter { (securedUri, securedUriSplit) ->
+                    filterSecuredUriWithRequestUri(securedUriSplit, requestUri, securedUri)
                   }
                   .isNotEmpty()
 
@@ -87,18 +87,18 @@ class ApiKeyAuthenticationFilter(val csmPlatformProperties: CsmPlatformPropertie
   }
 
   private fun filterSecuredUriWithRequestUri(
-      securedUriSplitted: List<String>,
+      securedUriSplit: List<String>,
       requestUri: String,
       securedUri: String,
   ) =
-      if (securedUriSplitted.size == 1 && securedUriSplitted[0] == "/") {
+      if (securedUriSplit.size == 1 && securedUriSplit[0] == "/") {
         true
       } else {
-        val requestUriSplitted = requestUri.split(securedUriSplitted[0])
-        if (requestUriSplitted.size < 2) {
+        val requestUriSplit = requestUri.split(securedUriSplit[0])
+        if (requestUriSplit.size < 2) {
           false
         } else {
-          val uriSuffix = securedUriSplitted[0] + requestUriSplitted[1]
+          val uriSuffix = securedUriSplit[0] + requestUriSplit[1]
           securedUri.toRegex().matches(uriSuffix)
         }
       }

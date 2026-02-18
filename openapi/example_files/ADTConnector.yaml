@@ -22,7 +22,7 @@
           valueType: string
           envVar: AZURE_CLIENT_ID
         - id: AZURE_CLIENT_SECRET
-          label: Azure CLient secret
+          label: Azure Client secret
           valueType: password
           envVar: AZURE_CLIENT_SECRET
     - id: parameters

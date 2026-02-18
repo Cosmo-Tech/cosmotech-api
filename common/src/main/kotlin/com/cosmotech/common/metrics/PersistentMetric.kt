@@ -26,6 +26,6 @@ data class PersistentMetric(
     val downSamplingBucketDuration: Long = 0,
     val downSamplingAggregation: DownSamplingAggregationType = DownSamplingAggregationType.AVG,
     val downSamplingSuffix: String = DEFAULT_DOWN_SAMPLING_SUFFIX,
-    val type: PersitentMetricType = PersitentMetricType.COUNTER,
+    val type: PersistentMetricType = PersistentMetricType.COUNTER,
     val scope: String = DEFAULT_SCOPE,
 )

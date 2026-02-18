@@ -40,7 +40,7 @@ fun <T> T.convertToMap(): Map<String, Any> =
  *
  * @param new the new object against which comparison is performed
  * @param mutateIfChanged whether to mutate the current object if for fields that have changed
- * @param excludedFields an array of fields to exlude from comparison. Note that fields named 'id´
+ * @param excludedFields an array of fields to exclude from comparison. Note that fields named 'id´
  *   are automatically excluded, by convention.
  * @throws UnsupportedOperationException if the object being compared are not instances of a data
  *   class
@@ -80,9 +80,9 @@ inline fun <reified T> T.compareToAndMutateIfNeeded(
             membersChanged.add(member.name)
             if (mutateIfChanged) {
               require(member is KMutableProperty) {
-                """Detected change but cannot mutate this object 
+                """Detected change but cannot mutate this object
                     because property ${member.name} (on class ${T::class}) is not mutable.
-                    Either exclude this field or call this function with mutateIfChanged=false 
+                    Either exclude this field or call this function with mutateIfChanged=false
                     to view the changes detected"""
               }
 

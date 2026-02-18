@@ -783,7 +783,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
         val name = "o-connector-test-1"
         val organizationRegistered =
             organizationApiService.createOrganization(makeSimpleOrganizationCreateRequest(name))
-        organizationApiService.getOrganizationAccessControl(organizationRegistered.id, "UNKOWN")
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id, "UNKNOWN")
       }
     }
 
@@ -2000,7 +2000,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
       val name = "o-connector-test-1"
       val organizationRegistered =
           organizationApiService.createOrganization(makeSimpleOrganizationCreateRequest(name))
-      organizationApiService.getOrganizationAccessControl(organizationRegistered.id, "UNKOWN")
+      organizationApiService.getOrganizationAccessControl(organizationRegistered.id, "UNKNOWN")
     }
   }
 

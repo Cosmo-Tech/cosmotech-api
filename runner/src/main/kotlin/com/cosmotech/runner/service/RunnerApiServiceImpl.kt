@@ -80,7 +80,7 @@ internal class RunnerApiServiceImpl(
   override fun getRunner(organizationId: String, workspaceId: String, runnerId: String): Runner {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId)
-    val runner = runnerInstance.getRunnerDataObjet()
+    val runner = runnerInstance.getRunnerDataObject()
     val listDatasetParts =
         datasetApiServiceInterface.listDatasetParts(
             organizationId,
@@ -150,7 +150,7 @@ internal class RunnerApiServiceImpl(
 
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
 
-    val lastRunInfo = runnerInstance.getRunnerDataObjet().lastRunInfo
+    val lastRunInfo = runnerInstance.getRunnerDataObject().lastRunInfo
 
     if (
         lastRunInfo.lastRunStatus in
@@ -244,7 +244,7 @@ internal class RunnerApiServiceImpl(
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
 
-    return runnerInstance.getRunnerDataObjet().security
+    return runnerInstance.getRunnerDataObject().security
   }
 
   override fun listRunnerPermissions(
@@ -284,7 +284,7 @@ internal class RunnerApiServiceImpl(
     runnerInstance.setDefaultSecurity(runnerRole.role)
     runnerService.saveInstance(runnerInstance.stamp())
 
-    return runnerInstance.getRunnerDataObjet().security
+    return runnerInstance.getRunnerDataObject().security
   }
 
   @EventListener(RunDeleted::class)
@@ -294,8 +294,8 @@ internal class RunnerApiServiceImpl(
             .inOrganization(runDeleted.organizationId)
             .inWorkspace(runDeleted.workspaceId)
     val runnerInstance = runnerService.getInstance(runDeleted.runnerId)
-    if (runnerInstance.getRunnerDataObjet().lastRunInfo.lastRunId == runDeleted.runId) {
-      runnerInstance.getRunnerDataObjet().lastRunInfo =
+    if (runnerInstance.getRunnerDataObject().lastRunInfo.lastRunId == runDeleted.runId) {
+      runnerInstance.getRunnerDataObject().lastRunInfo =
           LastRunInfo(
               lastRunId = runDeleted.lastRun,
               lastRunStatus = LastRunInfo.LastRunStatus.NotStarted,

@@ -106,7 +106,7 @@ class ContainerRegistryServiceTest {
     val jo = JSONObject()
     jo.put("name", "my-repository")
     jo.put("tags", ja)
-    val reponseMockk = mockk<ResponseSpec>()
+    val responseMockk = mockk<ResponseSpec>()
 
     every {
       restClient
@@ -114,10 +114,10 @@ class ContainerRegistryServiceTest {
           .uri("/v2/my-repository/tags/list")
           .header(HttpHeaders.AUTHORIZATION, any())
           .retrieve()
-    } returns reponseMockk
+    } returns responseMockk
 
-    every { reponseMockk.onStatus(any(), any()) } returns reponseMockk
-    every { reponseMockk.body(String::class.java) } returns jo.toString()
+    every { responseMockk.onStatus(any(), any()) } returns responseMockk
+    every { responseMockk.body(String::class.java) } returns jo.toString()
 
     containerRegistryService.checkSolutionImage("my-repository", "latest")
   }

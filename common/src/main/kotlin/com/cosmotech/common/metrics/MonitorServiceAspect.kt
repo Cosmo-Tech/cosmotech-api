@@ -91,7 +91,7 @@ class MonitorServiceAspect(
             value = 1.0,
             labels = licensingMetricLabels,
             qualifier = "call",
-            type = PersitentMetricType.COUNTER,
+            type = PersistentMetricType.COUNTER,
             downSampling = true,
             downSamplingAggregation = DownSamplingAggregationType.MAX,
         )

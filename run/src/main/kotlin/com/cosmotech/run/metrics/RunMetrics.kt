@@ -8,7 +8,7 @@ import com.cosmotech.common.events.PersistentMetricEvent
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.metrics.DownSamplingAggregationType
 import com.cosmotech.common.metrics.PersistentMetric
-import com.cosmotech.common.metrics.PersitentMetricType
+import com.cosmotech.common.metrics.PersistentMetricType
 import com.cosmotech.runner.domain.Runner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
@@ -73,7 +73,7 @@ internal class RunMetrics(
             incrementBy = 1,
             qualifier = TOTAL_QUALIFIER,
             labels = labels,
-            type = PersitentMetricType.COUNTER,
+            type = PersistentMetricType.COUNTER,
             downSampling = true,
             downSamplingAggregation = DownSamplingAggregationType.MAX,
         )
