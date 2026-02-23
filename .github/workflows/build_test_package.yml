@@ -235,7 +235,7 @@ jobs:
             -Pbaseimage.repository.password="${{ secrets.BASEIMAGE_REPOSITORY_PASSWORD }}"
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.34.1
         id: scan
         # Add TRIVY_DB_REPOSITORY due to ratelimit issue
         # https://github.com/aquasecurity/trivy-action/issues/389
