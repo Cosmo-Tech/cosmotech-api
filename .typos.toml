@@ -1,0 +1,4 @@
+[default.extend-words]
+testng = "testng"
+Groupe = "Groupe"
+AKS = "AKS"
