@@ -10,7 +10,6 @@
 | **tags** | **List** | The list of tags | [optional] [default to null] |
 | **solution** | [**WorkspaceSolution**](WorkspaceSolution.md) |  | [default to null] |
 | **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
-| **datasetCopy** | **Boolean** | Activate the copy of dataset on scenario creation | [optional] [default to true] |
 | **security** | [**WorkspaceSecurity**](WorkspaceSecurity.md) |  | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

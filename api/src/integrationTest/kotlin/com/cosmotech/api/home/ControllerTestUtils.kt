@@ -303,7 +303,6 @@ class ControllerTestUtils {
         defaultParameterValues: MutableMap<String, String>? = null,
         description: String = "",
         version: String = "",
-        datasetCopy: Boolean? = null,
         security: WorkspaceSecurity? = null,
         additionalData: MutableMap<String, Any> = mutableMapOf(),
         tags: MutableList<String> = mutableListOf(),
@@ -319,7 +318,6 @@ class ControllerTestUtils {
               ),
           description = description,
           version = version,
-          datasetCopy = datasetCopy,
           security = security,
           tags = tags,
           additionalData = additionalData,
@@ -334,7 +332,6 @@ class ControllerTestUtils {
         datasetId: String? = null,
         defaultParameterValues: MutableMap<String, String>? = null,
         description: String = "",
-        datasetCopy: Boolean? = null,
         additionalData: MutableMap<String, Any> = mutableMapOf(),
         tags: MutableList<String> = mutableListOf(),
     ): WorkspaceUpdateRequest {
@@ -349,7 +346,6 @@ class ControllerTestUtils {
                   defaultParameterValues = defaultParameterValues,
               ),
           description = description,
-          datasetCopy = datasetCopy,
           tags = tags,
           additionalData = additionalData,
       )

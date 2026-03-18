@@ -521,7 +521,6 @@ entity Workspace {
     * updateInfo: WorkspaceEditInfo
     * solution: WorkspaceSolution
     additionalData: Map
-    datasetCopy: Boolean
     * security: WorkspaceSecurity
 }
 
@@ -538,7 +537,6 @@ entity WorkspaceCreateRequest {
     tags: List<String>
     * solution: WorkspaceSolution
     additionalData: Map
-    datasetCopy: Boolean
     security: WorkspaceSecurity
 }
 
@@ -573,7 +571,6 @@ entity WorkspaceUpdateRequest {
     tags: List<String>
     solution: WorkspaceSolution
     additionalData: Map
-    datasetCopy: Boolean
 }
 
 
