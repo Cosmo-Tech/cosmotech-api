@@ -678,11 +678,6 @@ components:
           type: object
           description: Free form additional data
           additionalProperties: true
-        datasetCopy:
-          type: boolean
-          default: true
-          description: Activate the copy of dataset on scenario creation, meaning that each scenario created in this workspace
-            will make this copy. when false, scenario use directly the dataset specified.
         security:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
@@ -731,10 +726,6 @@ components:
           type: object
           description: Free form additional data
           additionalProperties: true
-        datasetCopy:
-          type: boolean
-          default: true
-          description: Activate the copy of dataset on scenario creation
         security:
           $ref: '#/components/schemas/WorkspaceSecurity'
       required:
@@ -770,9 +761,6 @@ components:
           type: object
           description: Free form additional data
           additionalProperties: true
-        datasetCopy:
-          type: boolean
-          description: Activate the copy of dataset on scenario creation
 
     # File Operation Schemas
     WorkspaceFileUpload:
@@ -917,7 +905,6 @@ components:
           - Brewery
         solution:
           solutionId: sol-feo16eua48o
-        datasetCopy: true
         createInfo:
           timestamp: 1621353329000
           userId: john.doe@cosmotech.com
@@ -941,7 +928,6 @@ components:
           - Brewery
         solution:
           solutionId: sol-feo16eua48o
-        datasetCopy: true
         security:
           default: viewer
           accessControlList:
@@ -961,7 +947,6 @@ components:
             - Brewery
           solution:
             solutionId: sol-feo16eua48o
-          datasetCopy: true
           createInfo:
             timestamp: 1621353329000
             userId: john.doe@cosmotech.com
@@ -983,7 +968,6 @@ components:
             - Brewery
           solution:
             solutionId: sol-ojd96oz14pz
-          datasetCopy: true
           createInfo:
             timestamp: 1621353329000
             userId: bob.doe@cosmotech.com
@@ -1014,7 +998,6 @@ components:
           - Brewery
         solution:
           solutionId: sol-feo16eua48o
-        datasetCopy: true
         createInfo:
           timestamp: 1621353329000
           userId: john.doe@cosmotech.com

@@ -650,7 +650,6 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             version = "1.0.0",
             tags = mutableListOf("tag1", "tag2"),
             additionalData = mutableMapOf("url" to "http://url"),
-            datasetCopy = true,
             security =
                 WorkspaceSecurity(
                     default = ROLE_NONE,
@@ -666,7 +665,6 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             version = workspaceToCreate.version,
             tags = workspaceToCreate.tags,
             additionalData = workspaceToCreate.additionalData,
-            datasetCopy = workspaceToCreate.datasetCopy,
             security = workspaceToCreate.security,
         )
 
@@ -694,7 +692,6 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             version = "1.0.0",
             tags = mutableListOf("tag1", "tag2"),
             additionalData = mutableMapOf("url" to "http://url"),
-            datasetCopy = true,
             security =
                 WorkspaceSecurity(
                     default = ROLE_ADMIN,
@@ -710,7 +707,6 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             version = workspaceToCreate.version,
             tags = workspaceToCreate.tags,
             additionalData = workspaceToCreate.additionalData,
-            datasetCopy = workspaceToCreate.datasetCopy,
             security = workspaceToCreate.security,
         )
     workspaceSaved =
@@ -724,7 +720,6 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             description = "new description",
             tags = mutableListOf("newTag1", "newTag2"),
             additionalData = mutableMapOf("url" to "http://new/url", "moreData" to "best data"),
-            datasetCopy = false,
         )
     workspaceToCreate =
         workspaceToCreate.copy(
@@ -735,7 +730,6 @@ class WorkspaceServiceIntegrationTest : CsmTestBase() {
             description = workspaceUpdateRequest.description,
             tags = workspaceUpdateRequest.tags,
             additionalData = workspaceUpdateRequest.additionalData,
-            datasetCopy = workspaceUpdateRequest.datasetCopy,
         )
 
     workspaceSaved =

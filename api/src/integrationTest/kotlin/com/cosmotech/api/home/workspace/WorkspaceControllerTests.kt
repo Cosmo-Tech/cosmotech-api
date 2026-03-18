@@ -93,7 +93,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val description = "here_is_workspace_description"
     val version = "1.0.0"
-    val datasetCopy = false
     val tags = mutableListOf("tag1,tag2")
     val additionalData =
         mutableMapOf(
@@ -128,7 +127,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                 ),
                                 description,
                                 version,
-                                datasetCopy,
                                 workspaceSecurity,
                                 additionalData,
                                 tags,
@@ -155,7 +153,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
             jsonPath("$.solution.defaultParameterValues.solution_parameter2")
                 .value("solution_parameter2_defaultValue")
         )
-        .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.additionalData").value(additionalData))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
@@ -176,7 +173,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
         createWorkspaceAndReturnId(mvc, organizationId, WORKSPACE_KEY, WORKSPACE_NAME, solutionId)
 
     val description = "here_is_workspace_description"
-    val datasetCopy = false
     val tags = mutableListOf("tag1,tag2")
     val additionalData =
         mutableMapOf(
@@ -201,7 +197,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                     "solution_parameter2" to "solution_parameter2_defaultValue",
                                 ),
                                 description,
-                                datasetCopy,
                                 additionalData,
                                 tags,
                             )
@@ -226,7 +221,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
             jsonPath("$.solution.defaultParameterValues.solution_parameter2")
                 .value("solution_parameter2_defaultValue")
         )
-        .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.additionalData").value(additionalData))
         .andExpect(jsonPath("$.organizationId").value(organizationId))
@@ -305,7 +299,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     val description = "here_is_workspace_description"
     val version = "1.0.0"
-    val datasetCopy = false
     val tags = mutableListOf("tag1,tag2")
     val additionalData =
         mutableMapOf(
@@ -338,7 +331,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 ),
                 description,
                 version,
-                datasetCopy,
                 workspaceSecurity,
                 additionalData,
                 tags,
@@ -357,7 +349,6 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.updateInfo.userId").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$.version").value(version))
         .andExpect(jsonPath("$.description").value(description))
-        .andExpect(jsonPath("$.datasetCopy").value(datasetCopy))
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.additionalData").value(additionalData))
         .andExpect(jsonPath("$.organizationId").value(organizationId))

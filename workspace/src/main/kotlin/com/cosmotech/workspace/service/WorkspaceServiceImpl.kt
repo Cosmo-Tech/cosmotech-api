@@ -159,7 +159,6 @@ internal class WorkspaceServiceImpl(
             tags = workspaceCreateRequest.tags,
             description = workspaceCreateRequest.description,
             additionalData = workspaceCreateRequest.additionalData,
-            datasetCopy = workspaceCreateRequest.datasetCopy,
         )
 
     return workspaceRepository.save(createdWorkspace)
@@ -192,7 +191,6 @@ internal class WorkspaceServiceImpl(
             updateInfo = existingWorkspace.updateInfo,
             additionalData =
                 workspaceUpdateRequest.additionalData ?: existingWorkspace.additionalData,
-            datasetCopy = workspaceUpdateRequest.datasetCopy ?: existingWorkspace.datasetCopy,
             security = existingWorkspace.security,
         )
 

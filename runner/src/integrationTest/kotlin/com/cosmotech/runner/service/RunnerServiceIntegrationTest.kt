@@ -1272,7 +1272,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id),
-            datasetCopy = false,
         )
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     val runnerDataset =
@@ -1306,7 +1305,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id),
-            datasetCopy = true,
         )
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
     val runnerDataset =
@@ -1545,7 +1543,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id),
-            datasetCopy = false,
         )
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
@@ -1655,7 +1652,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             key = "key",
             name = "workspace",
             solution = WorkspaceSolution(solutionSaved.id),
-            datasetCopy = false,
         )
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
