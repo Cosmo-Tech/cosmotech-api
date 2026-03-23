@@ -6,7 +6,6 @@ import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.events.RunDeleted
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.RunStop
-import com.cosmotech.common.events.RunType
 import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException

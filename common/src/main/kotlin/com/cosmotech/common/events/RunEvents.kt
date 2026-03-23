@@ -3,8 +3,8 @@
 package com.cosmotech.common.events
 
 enum class RunType(val value: String) {
-    Run("run"),
-    Delete("delete"),
+  Run("run"),
+  Delete("delete"),
 }
 
 class RunStart(publisher: Any, val runnerData: Any, val runType: RunType) :
