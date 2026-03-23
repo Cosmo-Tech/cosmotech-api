@@ -2,7 +2,13 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.events
 
-class RunStart(publisher: Any, val runnerData: Any) : CsmRequestResponseEvent<String>(publisher)
+enum class RunType(val value: String) {
+    Run("run"),
+    Delete("delete"),
+}
+
+class RunStart(publisher: Any, val runnerData: Any, val runType: RunType) :
+    CsmRequestResponseEvent<String>(publisher)
 
 class RunStop(publisher: Any, val runnerData: Any) : CsmEvent(publisher)
 

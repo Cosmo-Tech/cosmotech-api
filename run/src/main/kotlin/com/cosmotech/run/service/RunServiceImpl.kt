@@ -6,6 +6,7 @@ import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.events.RunDeleted
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.RunStop
+import com.cosmotech.common.events.RunType
 import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
@@ -230,6 +231,7 @@ class RunServiceImpl(
   @EventListener(RunStart::class)
   fun onRunStart(runStartRequest: RunStart) {
     val runner = runStartRequest.runnerData as Runner
+    val runType = runStartRequest.runType
     val runId = generateId("run", prependPrefix = "run-")
 
     val startInfo =
@@ -239,6 +241,7 @@ class RunServiceImpl(
             runner.id,
             WORKFLOW_TYPE_RUN,
             runId,
+            runType,
         )
     val runRequest =
         workflowService.launchRun(

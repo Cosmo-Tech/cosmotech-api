@@ -4,6 +4,7 @@ package com.cosmotech.run
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.containerregistry.ContainerRegistryService
+import com.cosmotech.common.events.RunType
 import com.cosmotech.common.utils.sanitizeForKubernetes
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -50,6 +51,7 @@ private const val PARAMETERS_RUNNER_VAR = "CSM_RUNNER_ID"
 private const val PARAMETERS_RUN_VAR = "CSM_RUN_ID"
 
 private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
+private const val RUN_TYPE = "CSM_RUN_TYPE"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
 private const val NODE_PARAM_NONE = "%NONE%"
 const val NODE_LABEL_DEFAULT = "basic"
@@ -89,6 +91,7 @@ class RunContainerFactory(
       runnerId: String,
       workflowType: String,
       runId: String,
+      runType: RunType = RunType.Run,
   ): StartInfo {
     val organization = organizationService.getOrganization(organizationId)
     val workspace = workspaceService.getWorkspace(organizationId, workspaceId)
@@ -113,6 +116,7 @@ class RunContainerFactory(
                 runId,
                 runId,
                 workflowType,
+                runType,
             ),
         runner = runner,
         workspace = workspace,
@@ -131,6 +135,7 @@ class RunContainerFactory(
       runId: String,
       csmSimulationId: String,
       workflowType: String,
+      runType: RunType = RunType.Run,
   ): RunStartContainers {
 
     check(runner.runTemplateId.isNotBlank()) { "Runner runTemplateId cannot be blank" }
@@ -176,6 +181,7 @@ class RunContainerFactory(
         )
 
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
+    envVars[RUN_TYPE] = runType.value
 
     val customSizing = runSizing ?: (runTemplateSizing ?: defaultSizing)
 
