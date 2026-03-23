@@ -281,7 +281,7 @@ class RunnerService(
   }
 
   fun startRunWith(runnerInstance: RunnerInstance, runType: RunType): CreatedRun {
-    val startEvent = RunStart(this, runnerInstance.getRunnerDataObjet(), runType)
+    val startEvent = RunStart(this, runnerInstance.getRunnerDataObject(), runType)
     this.eventPublisher.publishEvent(startEvent)
     val runId = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
     runnerInstance.setLastRunInfo(runId)
