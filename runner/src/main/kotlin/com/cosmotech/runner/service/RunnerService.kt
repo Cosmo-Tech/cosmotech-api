@@ -6,6 +6,7 @@ import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.events.HasRunningRuns
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.RunStop
+import com.cosmotech.common.events.RunType
 import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.common.exceptions.CsmClientException
@@ -279,8 +280,8 @@ class RunnerService(
     return runners
   }
 
-  fun startRunWith(runnerInstance: RunnerInstance): CreatedRun {
-    val startEvent = RunStart(this, runnerInstance.getRunnerDataObject())
+  fun startRunWith(runnerInstance: RunnerInstance, runType: RunType): CreatedRun {
+    val startEvent = RunStart(this, runnerInstance.getRunnerDataObjet(), runType)
     this.eventPublisher.publishEvent(startEvent)
     val runId = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
     runnerInstance.setLastRunInfo(runId)
