@@ -109,7 +109,7 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
 
   companion object {
     private const val DEFAULT_REDIS_PORT = 6379
-    private const val LOCALSTACK_FULL_IMAGE_NAME = "localstack/localstack:latest"
+    private const val LOCALSTACK_FULL_IMAGE_NAME = "localstack/localstack:4.14.0"
 
     var postgres: PostgreSQLContainer<*> =
         PostgreSQLContainer("postgres:latest")
