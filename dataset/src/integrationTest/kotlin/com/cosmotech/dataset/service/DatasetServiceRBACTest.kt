@@ -50,6 +50,7 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -81,6 +82,7 @@ import org.springframework.web.multipart.MultipartFile
 @ExtendWith(MockKExtension::class)
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
+@EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class DatasetServiceRBACTest : CsmTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"

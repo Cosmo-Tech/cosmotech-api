@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.tests
 
-import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import com.redis.testcontainers.RedisServer
 import com.redis.testcontainers.RedisStackContainer
 import com.redis.testcontainers.junit.AbstractTestcontainersRedisTestBase
@@ -16,7 +15,6 @@ import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
 import org.testcontainers.utility.MountableFile
 
-@EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
 open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
 
   companion object {
@@ -78,12 +76,15 @@ open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
   @BeforeAll
   fun beforeAll() {
     redisStackServer.start()
+    localStackServer.start()
     postgres.start()
   }
 
   @AfterAll
   fun afterAll() {
     postgres.stop()
+    localStackServer.stop()
+    redisStackServer.stop()
   }
 
   override fun redisServers(): MutableCollection<RedisServer> {

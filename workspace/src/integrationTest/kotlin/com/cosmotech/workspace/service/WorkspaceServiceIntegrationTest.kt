@@ -23,6 +23,7 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.*
+import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -54,6 +55,7 @@ import org.springframework.test.context.junit4.SpringRunner
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
 @Suppress("FunctionName")
 class WorkspaceServiceIntegrationTest : CsmTestBase() {
   val TEST_USER_MAIL = "testuser@mail.fr"

@@ -4,6 +4,7 @@ package com.cosmotech.api.home
 
 import com.cosmotech.api.home.Constants.ORGANIZATION_USER_EMAIL
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
+import com.cosmotech.common.tests.CsmTestBase
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.organization.domain.Organization
@@ -12,11 +13,6 @@ import com.cosmotech.runner.domain.Runner
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import com.redis.om.spring.indexing.RediSearchIndexer
-import com.redis.testcontainers.RedisServer
-import com.redis.testcontainers.RedisStackContainer
-import com.redis.testcontainers.junit.AbstractTestcontainersRedisTestBase
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.LoggerFactory
@@ -26,27 +22,19 @@ import org.springframework.http.HttpHeaders
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration
-import org.springframework.restdocs.operation.preprocess.Preprocessors.*
+import org.springframework.restdocs.operation.preprocess.Preprocessors.modifyHeaders
+import org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT
-import org.testcontainers.containers.localstack.LocalStackContainer
-import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.utility.DockerImageName
-import org.testcontainers.utility.MountableFile
 
-@Testcontainers
 @EnableWebSecurity
 @ExtendWith(RestDocumentationExtension::class)
 @AutoConfigureRestDocs
-abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
+abstract class ControllerTestBase : CsmTestBase() {
 
   @Autowired private lateinit var context: WebApplicationContext
 
@@ -105,79 +93,5 @@ abstract class ControllerTestBase : AbstractTestcontainersRedisTestBase() {
                     )
             )
             .build()
-  }
-
-  companion object {
-    private const val DEFAULT_REDIS_PORT = 6379
-    private const val LOCALSTACK_FULL_IMAGE_NAME = "localstack/localstack:4.14.0"
-
-    var postgres: PostgreSQLContainer<*> =
-        PostgreSQLContainer("postgres:latest")
-            .withCopyFileToContainer(
-                MountableFile.forClasspathResource("init-db.sql"),
-                "/docker-entrypoint-initdb.d/",
-            )
-
-    var redisStackServer = RedisStackContainer(RedisStackContainer.DEFAULT_IMAGE_NAME)
-
-    val localStackServer =
-        LocalStackContainer(DockerImageName.parse(LOCALSTACK_FULL_IMAGE_NAME))
-            .withServices(LocalStackContainer.Service.S3)
-
-    init {
-      redisStackServer.start()
-      postgres.start()
-      localStackServer.start()
-      localStackServer.execInContainer("awslocal", "s3", "mb", "s3://test-bucket")
-    }
-
-    @JvmStatic
-    @DynamicPropertySource
-    fun connectionProperties(registry: DynamicPropertyRegistry) {
-      initPostgresConfiguration(registry)
-      initRedisConfiguration(registry)
-      initS3Configuration(registry)
-    }
-
-    private fun initRedisConfiguration(registry: DynamicPropertyRegistry) {
-      val containerIp =
-          redisStackServer.containerInfo.networkSettings.networks.entries
-              .elementAt(0)
-              .value
-              .ipAddress
-
-      registry.add("spring.data.redis.host") { containerIp }
-      registry.add("spring.data.redis.port") { DEFAULT_REDIS_PORT }
-    }
-
-    private fun initS3Configuration(registry: DynamicPropertyRegistry) {
-      registry.add("spring.cloud.aws.s3.endpoint") { localStackServer.endpoint }
-      registry.add("spring.cloud.aws.credentials.access-key") { localStackServer.accessKey }
-      registry.add("spring.cloud.aws.credentials.secret-key") { localStackServer.secretKey }
-      registry.add("spring.cloud.aws.s3.region") { localStackServer.region }
-    }
-
-    private fun initPostgresConfiguration(registry: DynamicPropertyRegistry) {
-      registry.add("csm.platform.databases.data.host") { postgres.host }
-      registry.add("csm.platform.databases.data.port") { postgres.getMappedPort(POSTGRESQL_PORT) }
-    }
-  }
-
-  @BeforeAll
-  fun beforeAll() {
-    redisStackServer.start()
-    localStackServer.start()
-    postgres.start()
-  }
-
-  @AfterAll
-  fun afterAll() {
-    postgres.stop()
-    localStackServer.stop()
-    redisStackServer.stop()
-  }
-
-  override fun redisServers(): MutableCollection<RedisServer> {
-    return mutableListOf(redisStackServer)
   }
 }
