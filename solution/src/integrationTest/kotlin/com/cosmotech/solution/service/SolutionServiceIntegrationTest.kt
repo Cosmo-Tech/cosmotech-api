@@ -24,6 +24,7 @@ import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.*
+import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -58,6 +59,7 @@ const val CONNECTED_READER_USER = "test.user@cosmotech.com"
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
 @Suppress("FunctionName")
 class SolutionServiceIntegrationTest : CsmTestBase() {
 

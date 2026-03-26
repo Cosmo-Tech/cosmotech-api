@@ -29,6 +29,7 @@ import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
+import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -58,6 +59,7 @@ import org.springframework.test.util.ReflectionTestUtils
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
 class SolutionServiceRBACTest : CsmTestBase() {
 
   val TEST_USER_MAIL = "testuser@mail.fr"

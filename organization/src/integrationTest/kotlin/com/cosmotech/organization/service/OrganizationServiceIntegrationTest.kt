@@ -36,6 +36,7 @@ import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationUpdateRequest
+import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -68,6 +69,7 @@ import org.springframework.test.context.junit4.SpringRunner
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("FunctionName")
+@EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
 class OrganizationServiceIntegrationTest : CsmTestBase() {
 
   private val logger = LoggerFactory.getLogger(OrganizationServiceIntegrationTest::class.java)
