@@ -39,7 +39,7 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.18.18"
   id("com.diffplug.spotless") version "7.0.3"
-  id("org.springframework.boot") version "3.4.9" apply false
+  id("org.springframework.boot") version "3.5.5" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.1.0"
   id("com.github.jk1.dependency-license-report") version "2.9"
@@ -126,10 +126,12 @@ allprojects {
     all {
       resolutionStrategy {
         force("com.redis.om:redis-om-spring:0.9.10")
-        force("com.google.code.gson:gson:2.13.1")
-        force("io.netty:netty-handler:4.2.4.Final")
-        force("ch.qos.logback:logback-core:1.5.20")
-        force("org.springframework.security:spring-security-core:6.5.5")
+        force("redis.clients:jedis:5.2.0")
+        force("com.redis:lettucemod:4.3.0")
+        // force("com.google.code.gson:gson:2.13.1")
+        // force("io.netty:netty-handler:4.2.4.Final")
+        // force("ch.qos.logback:logback-core:1.5.20")
+        // force("org.springframework.security:spring-security-core:6.5.5")
       }
     }
   }
@@ -280,9 +282,7 @@ subprojects {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     implementation(
-        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)) {
-          constraints { implementation("org.springframework:spring-core:6.2.12") }
-        }
+        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
@@ -290,7 +290,12 @@ subprojects {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
     implementation("org.springframework.boot:spring-boot-starter-undertow") {
-      constraints { implementation("io.undertow:undertow-core:2.3.20.Final") }
+      // CVE-2025-12543, CVE-2024-3884, CVE-2024-4027
+      constraints {
+        implementation("io.undertow:undertow-core:2.3.24.Final")
+        implementation("io.undertow:undertow-servlet:2.3.24.Final")
+        implementation("io.undertow:undertow-websockets-jsr:2.3.24.Final")
+      }
     }
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
@@ -308,7 +313,9 @@ subprojects {
 
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
-    implementation("org.springframework.data:spring-data-redis")
+    implementation("org.springframework.data:spring-data-redis") {
+      exclude(group = "redis.clients", module = "jedis")
+    }
     implementation("org.springframework:spring-jdbc")
     implementation("org.postgresql:postgresql")
 
