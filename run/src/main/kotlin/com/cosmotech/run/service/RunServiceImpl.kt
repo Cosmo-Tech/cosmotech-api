@@ -230,6 +230,7 @@ class RunServiceImpl(
   @EventListener(RunStart::class)
   fun onRunStart(runStartRequest: RunStart) {
     val runner = runStartRequest.runnerData as Runner
+    val runType = runStartRequest.runType
     val runId = generateId("run", prependPrefix = "run-")
 
     val startInfo =
@@ -239,6 +240,7 @@ class RunServiceImpl(
             runner.id,
             WORKFLOW_TYPE_RUN,
             runId,
+            runType,
         )
     val runRequest =
         workflowService.launchRun(

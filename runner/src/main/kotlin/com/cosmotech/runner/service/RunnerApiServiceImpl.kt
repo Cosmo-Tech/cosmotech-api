@@ -5,6 +5,7 @@ package com.cosmotech.runner.service
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.events.GetRunnerAttachedToDataset
 import com.cosmotech.common.events.RunDeleted
+import com.cosmotech.common.events.RunType
 import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.common.rbac.PERMISSION_DELETE
 import com.cosmotech.common.rbac.PERMISSION_LAUNCH
@@ -121,6 +122,7 @@ internal class RunnerApiServiceImpl(
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_DELETE)
 
     runnerService.deleteInstance(runnerInstance)
+    runnerService.startRunWith(runnerInstance, RunType.Delete)
   }
 
   override fun listRunners(
@@ -142,7 +144,7 @@ internal class RunnerApiServiceImpl(
 
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_LAUNCH)
 
-    return runnerService.startRunWith(runnerInstance)
+    return runnerService.startRunWith(runnerInstance, RunType.Run)
   }
 
   override fun stopRun(organizationId: String, workspaceId: String, runnerId: String) {
