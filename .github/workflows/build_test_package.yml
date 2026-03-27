@@ -31,7 +31,7 @@ jobs:
           java-version: '23'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '8.14'
           cache-disabled: true
@@ -94,7 +94,7 @@ jobs:
           java-version: '23'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '8.14'
           cache-disabled: true
@@ -125,7 +125,7 @@ jobs:
           java-version: '23'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '8.14'
           cache-disabled: true
@@ -174,7 +174,7 @@ jobs:
           java-version: '23'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '8.14'
           cache-disabled: true
@@ -221,7 +221,7 @@ jobs:
         run: echo "gitRefName=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '8.14'
           cache-disabled: true
