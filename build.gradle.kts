@@ -39,7 +39,7 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.18.18"
   id("com.diffplug.spotless") version "7.0.3"
-  id("org.springframework.boot") version "3.5.5" apply false
+  id("org.springframework.boot") version "3.5.13" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.1.0"
   id("com.github.jk1.dependency-license-report") version "2.9"
@@ -128,10 +128,6 @@ allprojects {
         force("com.redis.om:redis-om-spring:0.9.10")
         force("redis.clients:jedis:5.2.0")
         force("com.redis:lettucemod:4.3.0")
-        // force("com.google.code.gson:gson:2.13.1")
-        // force("io.netty:netty-handler:4.2.4.Final")
-        // force("ch.qos.logback:logback-core:1.5.20")
-        // force("org.springframework.security:spring-security-core:6.5.5")
       }
     }
   }
@@ -290,7 +286,6 @@ subprojects {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
     implementation("org.springframework.boot:spring-boot-starter-undertow") {
-      // CVE-2025-12543, CVE-2024-3884, CVE-2024-4027
       constraints {
         implementation("io.undertow:undertow-core:2.3.24.Final")
         implementation("io.undertow:undertow-servlet:2.3.24.Final")
