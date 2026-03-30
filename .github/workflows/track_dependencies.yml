@@ -36,5 +36,5 @@ jobs:
         with:
           serverhostname: ${{ secrets.DEPENDENCY_TRACK_SERVER_HOSTNAME }}
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
-          project: 'c3a3a2fa-86a9-4961-be0d-4dbb5cea7176'
+          project: 'd5e95625-8615-40f8-b633-49b026ee5e43'
           bomfilename: 'build/reports/cosmotech-api-bom.xml'
