@@ -31,7 +31,7 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.1"
   id("com.diffplug.spotless") version "8.1.0"
-  id("org.springframework.boot") version "3.5.9" apply false
+  id("org.springframework.boot") version "3.5.13" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.1.9"
   id("com.github.jk1.dependency-license-report") version "3.0.1"
@@ -304,10 +304,9 @@ subprojects {
     }
     implementation("org.springframework.boot:spring-boot-starter-undertow") {
       constraints {
-        implementation("org.jboss.xnio:xnio-api:3.8.17.Final")
-        implementation("io.undertow:undertow-core:$undertowVersion")
-        implementation("io.undertow:undertow-servlet:$undertowVersion")
-        implementation("io.undertow:undertow-websockets-jsr:$undertowVersion")
+        implementation("io.undertow:undertow-core:2.3.24.Final")
+        implementation("io.undertow:undertow-servlet:2.3.24.Final")
+        implementation("io.undertow:undertow-websockets-jsr:2.3.24.Final")
       }
     }
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
