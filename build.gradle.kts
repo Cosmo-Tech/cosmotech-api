@@ -59,7 +59,7 @@ version = scmVersion.version
 // Dependencies version
 val kotlinJvmTarget = 21
 val cosmotechApiCommonVersion = "2.0.4"
-val redisOmSpringVersion = "0.9.10"
+val redisOmSpringVersion = "0.9.11"
 val kotlinCoroutinesVersion = "1.10.2"
 val oktaSpringBootVersion = "3.0.7"
 val springDocVersion = "2.8.12"
@@ -125,7 +125,7 @@ allprojects {
   configurations {
     all {
       resolutionStrategy {
-        force("com.redis.om:redis-om-spring:0.9.10")
+        force("com.redis.om:redis-om-spring:0.9.11")
         force("redis.clients:jedis:5.2.0")
         force("com.redis:lettucemod:4.3.0")
       }
