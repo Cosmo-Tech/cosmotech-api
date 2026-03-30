@@ -22,18 +22,18 @@ jobs:
     if: github.event_name != 'pull_request_target'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
-          gradle-version: '8.12'
+          gradle-version: '8.14'
           cache-disabled: true
 
       - name: Build with Gradle
@@ -376,25 +376,25 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # Fetch all tags since Gradle project version is built upon SCM
           fetch-depth: 0
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "21"
 
       - name: Retrieve branch or tag name
         id: refvar
-        run: echo "::set-output name=gitRefName::${GITHUB_REF#refs/*/}"
+        run: echo "gitRefName=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
-          gradle-version: '8.12'
+          gradle-version: '8.14'
           cache-disabled: true
 
       - name: Build local Container Image for scanning
@@ -404,7 +404,7 @@ jobs:
             -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.35.0
         id: scan
         # Add TRIVY_DB_REPOSITORY due to ratelimit issue
         # https://github.com/aquasecurity/trivy-action/issues/389
@@ -423,20 +423,20 @@ jobs:
           output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: "trivy-results.sarif"
 
       - name: Archive container image scan report
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: container-image-scan-report
           path: "trivy-results.sarif"
           retention-days: 3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3.3.0
+        uses: docker/login-action@v3.6.0
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
         with:
           registry: ghcr.io
