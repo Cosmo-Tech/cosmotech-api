@@ -51,7 +51,7 @@ class SolutionControllerTests : ControllerTestBase() {
   private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
 
   @BeforeEach
-  fun beforeEach() {
+  override fun beforeEach() {
     ReflectionTestUtils.setField(
         solutionApiService,
         "containerRegistryService",

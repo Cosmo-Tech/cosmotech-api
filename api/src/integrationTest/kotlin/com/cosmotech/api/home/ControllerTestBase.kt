@@ -17,7 +17,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
+import org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.HttpHeaders
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
@@ -34,6 +35,7 @@ import org.springframework.web.context.WebApplicationContext
 @EnableWebSecurity
 @ExtendWith(RestDocumentationExtension::class)
 @AutoConfigureRestDocs
+@AutoConfigureMockMvc
 abstract class ControllerTestBase : CsmTestBase() {
 
   @Autowired private lateinit var context: WebApplicationContext
@@ -46,7 +48,7 @@ abstract class ControllerTestBase : CsmTestBase() {
 
   @BeforeEach
   fun beforeEach(restDocumentationContextProvider: RestDocumentationContextProvider) {
-
+    redisStackServer.execInContainer("redis-cli", "flushall")
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)

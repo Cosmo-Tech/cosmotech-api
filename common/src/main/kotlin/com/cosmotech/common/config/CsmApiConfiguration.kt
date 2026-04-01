@@ -2,16 +2,15 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.config
 
+import com.cosmotech.common.utils.jsonObjectMapper
 import com.cosmotech.common.utils.yamlObjectMapper
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
+import org.springframework.boot.EnvironmentPostProcessor
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
-import org.springframework.boot.env.EnvironmentPostProcessor
 import org.springframework.boot.logging.DeferredLog
 import org.springframework.context.annotation.AdviceMode
 import org.springframework.context.annotation.Bean
@@ -21,7 +20,8 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.http.MediaType
-import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import org.springframework.http.converter.yaml.JacksonYamlHttpMessageConverter
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
@@ -38,7 +38,29 @@ open class CsmApiConfiguration {
           BasicThreadFactory.builder().namingPattern("csm-event-handler-%d").build()
       )
 
-  @Bean open fun yamlHttpMessageConverter(): YamlMessageConverter = YamlMessageConverter()
+  @Bean
+  open fun yamlHttpMessageConverter(): JacksonYamlHttpMessageConverter {
+    val jacksonYamlHttpMessageConverter = JacksonYamlHttpMessageConverter(yamlObjectMapper())
+    jacksonYamlHttpMessageConverter.supportedMediaTypes =
+        listOf(
+            MediaType("application", "yaml", StandardCharsets.UTF_8),
+            MediaType("text", "yaml", StandardCharsets.UTF_8),
+            MediaType("application", "*+yaml", StandardCharsets.UTF_8),
+            MediaType("application", "yml", StandardCharsets.UTF_8),
+            MediaType("text", "yml", StandardCharsets.UTF_8),
+            MediaType("application", "*+yml", StandardCharsets.UTF_8),
+        )
+    return jacksonYamlHttpMessageConverter
+  }
+
+  @Bean
+  open fun jsonHttpMessageConverter(): JacksonJsonHttpMessageConverter {
+    val jacksonJsonHttpMessageConverter = JacksonJsonHttpMessageConverter(jsonObjectMapper())
+    val supportedMediaTypes = jacksonJsonHttpMessageConverter.supportedMediaTypes.toMutableList()
+    supportedMediaTypes.add(MediaType("application", "octet-stream"))
+    jacksonJsonHttpMessageConverter.supportedMediaTypes = supportedMediaTypes
+    return jacksonJsonHttpMessageConverter
+  }
 }
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -61,40 +83,6 @@ open class CsmPlatformEnvironmentPostProcessor : EnvironmentPostProcessor {
         log.debug("'$profile' is already an active profile")
       }
     }
-  }
-}
-
-/**
- * Implementation of {@link org.springframework.http.converter.HttpMessageConverter
- * HttpMessageConverter} that can read and write YAML using <a
- * href="https://github.com/FasterXML/jackson-dataformats-text/tree/master/yaml"> Jackson extension
- * component for reading and writing YAML encoded data</a>.
- *
- * By default, this converter supports {@code application/yaml}, {@code application/yml}, {@code
- * text/yaml}, {@code text/yml}, {@code application/<*>+yaml}, and {@code application/<*>+yml} with
- * {@code UTF-8} character set.
- *
- * This can be overridden by setting the {@link #setSupportedMediaTypes supportedMediaTypes}
- * property.
- */
-class YamlMessageConverter(objectMapper: ObjectMapper) :
-    AbstractJackson2HttpMessageConverter(
-        objectMapper,
-        MediaType("application", "yaml", StandardCharsets.UTF_8),
-        MediaType("text", "yaml", StandardCharsets.UTF_8),
-        MediaType("application", "*+yaml", StandardCharsets.UTF_8),
-        MediaType("application", "yml", StandardCharsets.UTF_8),
-        MediaType("text", "yml", StandardCharsets.UTF_8),
-        MediaType("application", "*+yml", StandardCharsets.UTF_8),
-    ) {
-
-  constructor() : this(yamlObjectMapper())
-
-  override fun setObjectMapper(objectMapper: ObjectMapper) {
-    require(objectMapper.factory is YAMLFactory) {
-      "ObjectMapper must be configured with YAMLFactory"
-    }
-    super.setObjectMapper(objectMapper)
   }
 }
 
