@@ -21,6 +21,7 @@ dependencies {
   implementation("com.squareup.retrofit2:converter-scalars:$retroFitVersion")
   implementation(platform("com.squareup.okhttp3:okhttp-bom:$okHttpBom"))
   implementation("com.squareup.okhttp3:okhttp")
+  implementation("org.springframework.boot:spring-boot-starter-restclient:4.0.5")
   implementation("com.squareup.okhttp3:logging-interceptor")
 }
 

@@ -6,6 +6,10 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.ssl.SslBundles
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.data.redis.connection.RedisConnectionFactory
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.core.StringRedisTemplate
 import redis.clients.jedis.DefaultJedisClientConfig
 import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.JedisClientConfig
@@ -49,5 +53,17 @@ open class RedisConfig {
   @Bean
   open fun unifiedJedis(csmJedisClientConfig: JedisClientConfig): UnifiedJedis {
     return UnifiedJedis(HostAndPort(twincacheHost, twincachePort.toInt()), csmJedisClientConfig)
+  }
+
+  @Bean
+  open fun connectionFactory(): LettuceConnectionFactory {
+    return LettuceConnectionFactory()
+  }
+
+  @Bean
+  fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, String> {
+    val template = StringRedisTemplate()
+    template.connectionFactory = connectionFactory
+    return template
   }
 }

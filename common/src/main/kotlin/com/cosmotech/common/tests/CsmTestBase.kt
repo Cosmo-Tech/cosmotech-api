@@ -2,26 +2,29 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.tests
 
-import com.redis.testcontainers.RedisServer
 import com.redis.testcontainers.RedisStackContainer
-import com.redis.testcontainers.junit.AbstractTestcontainersRedisTestBase
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.TestInstance
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT
-import org.testcontainers.containers.localstack.LocalStackContainer
+import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.localstack.LocalStackContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer.POSTGRESQL_PORT
 import org.testcontainers.utility.DockerImageName
 import org.testcontainers.utility.MountableFile
 
-open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
+@Testcontainers
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+open class CsmTestBase {
 
   companion object {
     private const val DEFAULT_REDIS_PORT = 6379
     private const val LOCALSTACK_FULL_IMAGE_NAME = "localstack/localstack:4.14.0"
 
-    var postgres: PostgreSQLContainer<*> =
+    var postgres: PostgreSQLContainer =
         PostgreSQLContainer("postgres:latest")
             .withCopyFileToContainer(
                 MountableFile.forClasspathResource("init-db.sql"),
@@ -31,8 +34,7 @@ open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
     var redisStackServer = RedisStackContainer(RedisStackContainer.DEFAULT_IMAGE_NAME)
 
     val localStackServer =
-        LocalStackContainer(DockerImageName.parse(LOCALSTACK_FULL_IMAGE_NAME))
-            .withServices(LocalStackContainer.Service.S3)
+        LocalStackContainer(DockerImageName.parse(LOCALSTACK_FULL_IMAGE_NAME)).withServices("s3")
 
     init {
       redisStackServer.start()
@@ -54,7 +56,7 @@ open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
           redisStackServer.containerInfo.networkSettings.networks.entries
               .elementAt(0)
               .value
-              .ipAddress
+              .ipAddress ?: "cannot_find_redis_container_ip"
 
       registry.add("spring.data.redis.host") { containerIp }
       registry.add("spring.data.redis.port") { DEFAULT_REDIS_PORT }
@@ -80,14 +82,15 @@ open class CsmTestBase : AbstractTestcontainersRedisTestBase() {
     postgres.start()
   }
 
+  @BeforeEach
+  open fun beforeEach() {
+    redisStackServer.execInContainer("redis-cli", "flushall")
+  }
+
   @AfterAll
   fun afterAll() {
     postgres.stop()
     localStackServer.stop()
     redisStackServer.stop()
-  }
-
-  override fun redisServers(): MutableCollection<RedisServer> {
-    return mutableListOf(redisStackServer)
   }
 }

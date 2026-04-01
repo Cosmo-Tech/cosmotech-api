@@ -51,11 +51,7 @@ management:
     port: 8081
 
 server:
-  error:
-    whitelabel:
-      enabled: false
-    include-stacktrace: never
-  undertow:
+  jetty:
     accesslog:
       enabled: true
 
@@ -179,3 +175,7 @@ api:
   swagger-ui:
     base-path: ${server.servlet.context-path}
   version: ${csm.platform.api.version}
+
+spring.web.error.include-stacktrace: never
+
+spring.web.error.whitelabel.enabled: false

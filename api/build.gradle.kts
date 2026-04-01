@@ -21,7 +21,9 @@ dependencies {
   implementation(projects.cosmotechRunApi)
   implementation(projects.cosmotechRunnerApi)
   implementation(projects.cosmotechCommonApi)
-  testImplementation("org.springframework.security:spring-security-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-security-test")
+  testImplementation("org.springframework.boot:spring-boot-restdocs")
+  testImplementation("org.springframework.boot:spring-boot-webmvc-test")
   testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 }
 

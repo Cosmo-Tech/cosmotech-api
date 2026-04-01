@@ -37,8 +37,8 @@ import okhttp3.OkHttpClient
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
+import org.springframework.boot.health.contributor.Health
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient

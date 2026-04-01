@@ -1,6 +1,6 @@
 management:
   endpoints:
-    enabled-by-default: false
+    access.default: none
 
 spring:
   data:

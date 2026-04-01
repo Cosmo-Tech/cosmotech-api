@@ -13,8 +13,9 @@ import org.cyclonedx.gradle.CyclonedxDirectTask
 import org.cyclonedx.model.Component.Type.APPLICATION
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
@@ -25,13 +26,15 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // implementations/configurations in a 'buildSrc' included build.
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
+val kotlinVersion = "2.2"
+
 plugins {
-  val kotlinVersion = "2.0.21"
-  kotlin("jvm") version kotlinVersion
-  kotlin("plugin.spring") version kotlinVersion apply false
+  val kotlinCompleteVersion = "2.2.21"
+  kotlin("jvm") version kotlinCompleteVersion
+  kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.1"
   id("com.diffplug.spotless") version "8.1.0"
-  id("org.springframework.boot") version "3.5.13" apply false
+  id("org.springframework.boot") version "4.0.0" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.1.9"
   id("com.github.jk1.dependency-license-report") version "3.0.1"
@@ -44,6 +47,8 @@ plugins {
 
 scmVersion { tag { prefix.set("") } }
 
+dependencies { runtimeOnly("javax.xml.bind:jaxb-api:2.3.1") }
+
 group = "com.cosmotech"
 
 version = scmVersion.version
@@ -51,39 +56,33 @@ version = scmVersion.version
 // Dependencies version
 val jacksonAnnotationVersion = "2.20"
 val jacksonDatabindVersion = "2.20.1"
-val jacksonModuleKotlinVersion = "2.20.1"
+val jacksonModuleKotlinVersion = "3.0.4"
 val springWebVersion = "6.2.14"
 val bouncyCastleJdk18Version = "1.83"
 val springBootVersion = "3.5.8"
 val springSecurityJwtVersion = "1.1.1.RELEASE"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
-val redisOmSpringVersion = "1.1.1"
+val redisOmSpringVersion = "2.0.1"
 val kotlinCoroutinesVersion = "1.10.2"
-val springDocVersion = "2.8.14"
+val springDocVersion = "3.0.2"
 val swaggerParserVersion = "2.1.36"
 val commonsCsvVersion = "1.14.1"
-val apiValidationVersion = "3.1.1"
+val apiValidationVersion = "3.0.2"
 val kubernetesClientVersion = "22.0.0"
 val orgJsonVersion = "20250517"
 val testNgVersion = "7.11.0"
-val testContainersRedisVersion = "1.6.4"
-val testContainersPostgreSQLVersion = "1.21.3"
-val testContainersLocalStackVersion = "1.21.3"
+val testContainersRedisVersion = "2.2.4"
+val testContainersPostgreSQLVersion = "1.21.4"
+val testContainersLocalStackVersion = "1.21.4"
 val commonCompressVersion = "1.28.0"
-val awsSpringVersion = "3.4.2"
-// The version is fixed to 2.3.20.Final
-// due to a undertow bug https://issues.redhat.com/browse/JBEAP-31823
-// the server.undertow.max-http-post-size is not override by
-// spring.servlet.multipart.max-file-size
-// Fix should be available in 2.3.23.Final
-val undertowVersion = "2.3.20.Final"
+val awsSpringVersion = "4.0.0"
 
 // Checks
 val detektVersion = "1.23.8"
 
 // Tests
-val jUnitBomVersion = "6.0.1"
+val jUnitBomVersion = "6.0.3"
 val mockkVersion = "1.14.7"
 val awaitilityKVersion = "4.3.0"
 val springMockkVersion = "4.0.2"
@@ -108,10 +107,7 @@ licenseReport {
       "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/license-normalizer-bundle.json"
 
   renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"))
-  filters =
-      arrayOf<LicenseBundleNormalizer>(
-          LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true)
-      )
+  filters = arrayOf(LicenseBundleNormalizer(uri(bundle).toURL().openStream(), true))
 }
 
 buildscript {
@@ -286,7 +282,7 @@ subprojects {
 
   dependencies {
     // https://youtrack.jetbrains.com/issue/KT-71057/POM-file-unusable-after-upgrading-to-2.0.20-from-2.0.10
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.21"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.2.21"))
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
@@ -299,17 +295,12 @@ subprojects {
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.springframework.boot:spring-boot-starter-web") {
+    implementation("org.springframework.boot:spring-boot-starter-webmvc") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-undertow") {
-      constraints {
-        implementation("io.undertow:undertow-core:2.3.24.Final")
-        implementation("io.undertow:undertow-servlet:2.3.24.Final")
-        implementation("io.undertow:undertow-websockets-jsr:2.3.24.Final")
-      }
-    }
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
+    implementation("org.springframework.boot:spring-boot-starter-jetty")
+    implementation("tools.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
+    implementation("tools.jackson.dataformat:jackson-dataformat-yaml:3.0.4")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
     implementation("io.kubernetes:client-java:${kubernetesClientVersion}")
@@ -336,10 +327,10 @@ subprojects {
       }
     }
     implementation("org.springframework.security:spring-security-oauth2-jose")
-    implementation("org.springframework.security:spring-security-oauth2-resource-server")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
-    implementation("org.springframework.data:spring-data-redis")
+    //implementation("org.springframework.data:spring-data-redis")
     implementation("org.springframework:spring-jdbc")
     implementation("org.postgresql:postgresql")
     implementation("org.apache.commons:commons-compress:$commonCompressVersion")
@@ -356,9 +347,7 @@ subprojects {
     testImplementation("org.awaitility:awaitility-kotlin:$awaitilityKVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
     testImplementation("org.testng:testng:$testNgVersion")
-    testImplementation(
-        "com.redis.testcontainers:testcontainers-redis-junit:$testContainersRedisVersion"
-    )
+    testImplementation("com.redis:testcontainers-redis:$testContainersRedisVersion")
     testImplementation("org.testcontainers:postgresql:$testContainersPostgreSQLVersion")
     testImplementation("org.testcontainers:localstack:$testContainersLocalStackVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -385,11 +374,11 @@ subprojects {
     compilerArgs.add("-parameters")
   }
 
-  tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions {
-      languageVersion = "1.9"
+  kotlin {
+    compilerOptions {
+      languageVersion.set(KotlinVersion.fromVersion(kotlinVersion))
       freeCompilerArgs = listOf("-Xjsr305=strict")
-      jvmTarget = kotlinJvmTarget.toString()
+      jvmTarget.set(JvmTarget.fromTarget(kotlinJvmTarget.toString()))
       java {
         targetCompatibility = JavaVersion.VERSION_21
         sourceCompatibility = JavaVersion.VERSION_21
@@ -399,7 +388,7 @@ subprojects {
   }
 
   val integrationTest =
-      task<Test>("integrationTest") {
+      tasks.register<Test>("integrationTest") {
         description = "Runs integration tests"
         group = "verification"
         useJUnitPlatform()
@@ -499,7 +488,7 @@ subprojects {
       )
       additionalProperties.set(
           mapOf(
-              "title" to "Cosmo Tech ${projectDirName.capitalizeAsciiOnly()} Manager API",
+              "title" to "Cosmo Tech ${projectDirName} Manager API",
               "basePackage" to "com.cosmotech",
               "configPackage" to "com.cosmotech.${projectDirName}.config",
               "enumPropertyNaming" to "original",
@@ -641,13 +630,11 @@ tasks.getByName("spotlessKotlinGradle") {
 val copySubProjectsDetektReportsTasks =
     subprojects.flatMap { subProject ->
       listOf("html", "xml", "txt", "sarif").map { format ->
-        val formatCapitalized = format.capitalizeAsciiOnly()
+        val formatCapitalized = format
         val copyTask =
             tasks.register<Copy>(
                 "detektCopy${formatCapitalized}ReportFor" +
-                    "${subProject.projectDir.relativeTo(rootDir)}"
-                        .capitalizeAsciiOnly()
-                        .replace("/", "_")
+                    "${subProject.projectDir.relativeTo(rootDir)}".replace("/", "_")
             ) {
               group = "detekt"
               description =
