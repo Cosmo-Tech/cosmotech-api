@@ -161,7 +161,7 @@ class DatasetServiceImpl(
             .initSecurity(datasetCreateRequest.security.toGenericSecurity(datasetId))
             .toResourceSecurity()
 
-    val datasetParts =
+    val datasetParts: MutableList<DatasetPart>? =
         datasetCreateRequest.parts
             ?.map { part ->
               val constructDatasetPart =

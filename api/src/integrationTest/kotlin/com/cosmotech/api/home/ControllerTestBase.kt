@@ -48,7 +48,6 @@ abstract class ControllerTestBase : CsmTestBase() {
 
   @BeforeEach
   fun beforeEach(restDocumentationContextProvider: RestDocumentationContextProvider) {
-    redisStackServer.execInContainer("redis-cli", "flushall")
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)

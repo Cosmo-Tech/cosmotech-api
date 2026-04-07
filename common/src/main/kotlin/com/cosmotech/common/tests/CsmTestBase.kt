@@ -83,7 +83,7 @@ open class CsmTestBase {
   }
 
   @BeforeEach
-  open fun beforeEach() {
+  fun flushAll() {
     redisStackServer.execInContainer("redis-cli", "flushall")
   }
 

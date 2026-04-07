@@ -48,7 +48,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
   private lateinit var solutionId: String
 
   @BeforeEach
-  override fun beforeEach() {
+  fun beforeEach() {
     organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
     solutionId = createSolutionAndReturnId(mvc, organizationId, constructSolutionCreateRequest())
   }
