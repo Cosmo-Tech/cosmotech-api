@@ -31,10 +31,9 @@ jobs:
           java-version: '23'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '8.14'
-          cache-disabled: true
+          gradle-version: '9.4.1'
 
       - name: Build with Gradle
         env:
@@ -94,10 +93,9 @@ jobs:
           java-version: '23'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '8.14'
-          cache-disabled: true
+          gradle-version: '9.4.1'
 
       - name: Run ${{ matrix.service.testPrefix }} controller tests
         env:
@@ -125,10 +123,9 @@ jobs:
           java-version: '23'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '8.14'
-          cache-disabled: true
+          gradle-version: '9.4.1'
 
       - name: Run unit tests
         env:
@@ -174,10 +171,9 @@ jobs:
           java-version: '23'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '8.14'
-          cache-disabled: true
+          gradle-version: '9.4.1'
 
       - name: Run RBAC ${{ matrix.service.packageName }} integration tests
         env:
@@ -221,10 +217,9 @@ jobs:
         run: echo "gitRefName=${GITHUB_REF#refs/*/}" >> "${GITHUB_OUTPUT}"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '8.14'
-          cache-disabled: true
+          gradle-version: '9.4.1'
 
       - name: Build local Container Image for scanning
         run: >
