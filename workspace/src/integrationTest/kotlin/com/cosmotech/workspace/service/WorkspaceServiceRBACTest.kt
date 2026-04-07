@@ -85,8 +85,8 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
 
   private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
 
-    @BeforeEach
-    override fun beforeEach() {
+  @BeforeEach
+  override fun beforeEach() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
     ReflectionTestUtils.setField(
         solutionApiService,
