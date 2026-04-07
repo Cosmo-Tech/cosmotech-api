@@ -7,14 +7,15 @@ import org.springframework.boot.ssl.SslBundles
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.RedisConnectionFactory
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.data.redis.core.StringRedisTemplate
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer
 import redis.clients.jedis.DefaultJedisClientConfig
 import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.JedisClientConfig
 import redis.clients.jedis.Protocol
+import redis.clients.jedis.RedisClient
 import redis.clients.jedis.UnifiedJedis
+import tools.jackson.databind.json.JsonMapper
 
 @Configuration
 open class RedisConfig {
@@ -52,17 +53,19 @@ open class RedisConfig {
 
   @Bean
   open fun unifiedJedis(csmJedisClientConfig: JedisClientConfig): UnifiedJedis {
-    return UnifiedJedis(HostAndPort(twincacheHost, twincachePort.toInt()), csmJedisClientConfig)
+    return RedisClient.builder()
+        .clientConfig(csmJedisClientConfig)
+        .hostAndPort(HostAndPort(twincacheHost, twincachePort.toInt()))
+        .build()
   }
 
   @Bean
-  open fun connectionFactory(): LettuceConnectionFactory {
-    return LettuceConnectionFactory()
-  }
-
-  @Bean
-  fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, String> {
-    val template = StringRedisTemplate()
+  fun redisTemplate(
+      connectionFactory: RedisConnectionFactory,
+      jsonObjectMapper: JsonMapper,
+  ): RedisTemplate<Any, Any> {
+    val template = RedisTemplate<Any, Any>()
+    template.defaultSerializer = GenericJacksonJsonRedisSerializer(jsonObjectMapper)
     template.connectionFactory = connectionFactory
     return template
   }

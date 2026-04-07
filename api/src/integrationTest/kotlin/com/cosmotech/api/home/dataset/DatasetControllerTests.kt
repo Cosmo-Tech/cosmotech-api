@@ -80,7 +80,7 @@ class DatasetControllerTests : ControllerTestBase() {
   private val logger = LoggerFactory.getLogger(DatasetControllerTests::class.java)
 
   @BeforeEach
-  override fun beforeEach() {
+  fun beforeEach() {
     val runTemplateRunSizing =
         RunTemplateResourceSizing(
             com.cosmotech.solution.domain.ResourceSizeInfo("1", "2G"),

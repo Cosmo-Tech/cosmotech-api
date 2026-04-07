@@ -76,7 +76,7 @@ class RunnerControllerTests : ControllerTestBase() {
   private val solutionParameterDefaultValue2 = "ignored_value_with_this_varType"
 
   @BeforeEach
-  override fun beforeEach() {
+  fun beforeEach() {
     val tags = mutableListOf("tag1", "tag2")
     val description = "this_is_a_description"
     val parameterGroupId = "parameterGroup1"

@@ -100,7 +100,7 @@ class RunControllerTests : ControllerTestBase() {
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
   @BeforeEach
-  override fun beforeEach() {
+  fun beforeEach() {
     ReflectionTestUtils.setField(runApiService, "containerFactory", containerFactory)
     ReflectionTestUtils.setField(runApiService, "workflowService", workflowService)
     ReflectionTestUtils.setField(runApiService, "eventPublisher", eventPublisher)
