@@ -380,7 +380,7 @@ subprojects {
   kotlin {
     compilerOptions {
       languageVersion.set(KotlinVersion.fromVersion(kotlinVersion))
-      freeCompilerArgs = listOf("-Xjsr305=strict")
+      freeCompilerArgs = listOf("-Xjsr305=strict", "-Xannotation-default-target=param-property")
       jvmTarget.set(JvmTarget.fromTarget(kotlinJvmTarget.toString()))
       java {
         targetCompatibility = JavaVersion.VERSION_21

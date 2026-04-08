@@ -510,9 +510,9 @@ class WorkflowBuildersTests {
     val template = buildTemplate(ORGANIZATION_ID, WORKSPACE_ID, src, csmPlatformProperties, true)
     assertNotNull(template.container)
     val envFrom = template.container!!.envFrom
-    assertEquals(1, envFrom.size)
+    assertEquals(1, envFrom!!.size)
     assertNotNull(envFrom[0].secretRef)
-    assertEquals("$ORGANIZATION_ID-$WORKSPACE_ID".lowercase(), envFrom[0].secretRef.name)
+    assertEquals("$ORGANIZATION_ID-$WORKSPACE_ID".lowercase(), envFrom[0].secretRef!!.name)
   }
 
   @Test
@@ -520,7 +520,7 @@ class WorkflowBuildersTests {
     val src = getRunContainer()
     val template = buildTemplate(ORGANIZATION_ID, null, src, csmPlatformProperties, true)
     assertNotNull(template.container)
-    assertTrue(template.container!!.envFrom.isEmpty())
+    assertTrue(template.container!!.envFrom!!.isEmpty())
   }
 
   private fun getRunContainer(name: String = "default"): RunContainer {

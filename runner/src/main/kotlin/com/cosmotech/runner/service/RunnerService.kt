@@ -67,7 +67,7 @@ const val DATASET_PART_VARTYPE_DB = "%DATASET_PART_ID_DB%"
 
 @Component
 @Scope("prototype")
-@Suppress("TooManyFunctions", "LargeClass")
+@Suppress("TooManyFunctions", "LargeClass", "UNCHECKED_CAST")
 class RunnerService(
     private val runnerRepository: RunnerRepository,
     private val organizationApiService: OrganizationApiServiceInterface,
@@ -272,7 +272,7 @@ class RunnerService(
           }
       runner.apply {
         lastRunInfo.lastRunStatus = lastRunStatus
-        datasets.parameters = listDatasetParts as MutableList<Any>?
+        datasets.parameters = listDatasetParts as MutableList<Any>
         security = updateSecurityVisibility(this).security
       }
     }

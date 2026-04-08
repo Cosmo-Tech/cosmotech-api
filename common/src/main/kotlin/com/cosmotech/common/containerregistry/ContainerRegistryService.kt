@@ -16,6 +16,8 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
+import org.springframework.web.client.body
+import org.springframework.web.client.toEntity
 
 @Service("csmContainerRegistry")
 class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformProperties) {
@@ -61,7 +63,7 @@ class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformPro
               .uri("/v2/$repository/tags/list")
               .header(HttpHeaders.AUTHORIZATION, getHeaderAuthorization())
               .retrieve()
-              .body(String::class.java)!!
+              .body<String>()!!
 
       val tags: JSONArray = JSONObject(images).get("tags") as JSONArray
       if (!tags.contains(tag)) {
@@ -84,7 +86,7 @@ class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformPro
               .header(HttpHeaders.AUTHORIZATION, getHeaderAuthorization())
               .header(HttpHeaders.ACCEPT, "application/vnd.docker.distribution.manifest.v2+json")
               .retrieve()
-              .body(String::class.java)!!
+              .body<String>()!!
 
       val digest = JSONObject(manifest).getJSONObject("config").getString("digest")
 
@@ -94,17 +96,17 @@ class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformPro
               .uri("/v2/$repository/blobs/$digest")
               .header(HttpHeaders.AUTHORIZATION, getHeaderAuthorization())
               .retrieve()
-              .toEntity(String::class.java)
+              .toEntity<String>()
 
       // If we need to follow a redirect, do it without the initial 'Authorization' header or Azure
       // Blob Storage will complain
-      var blob =
-          if (blobResponse.statusCode.is3xxRedirection())
+      val blob =
+          if (blobResponse.statusCode.is3xxRedirection)
               restClient
                   .get()
-                  .uri(URI(blobResponse.headers.getFirst(HttpHeaders.LOCATION)))
+                  .uri(URI(blobResponse.headers.getFirst(HttpHeaders.LOCATION) ?: ""))
                   .retrieve()
-                  .body(String::class.java)!!
+                  .body<String>()!!
           else blobResponse.body!!
 
       return JSONObject(blob)

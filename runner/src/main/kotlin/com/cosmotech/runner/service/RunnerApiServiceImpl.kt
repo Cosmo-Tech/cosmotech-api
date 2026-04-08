@@ -29,7 +29,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 
 @Service
-@Suppress("TooManyFunctions", "UnusedPrivateMember")
+@Suppress("TooManyFunctions", "UnusedPrivateMember", "UNCHECKED_CAST")
 internal class RunnerApiServiceImpl(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val runnerServiceManager: RunnerServiceManager,
@@ -74,7 +74,7 @@ internal class RunnerApiServiceImpl(
             null,
         )
 
-    return runnerSaved.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
+    return runnerSaved.apply { datasets.parameters = listDatasetParts as MutableList<Any> }
   }
 
   override fun getRunner(organizationId: String, workspaceId: String, runnerId: String): Runner {
@@ -89,7 +89,7 @@ internal class RunnerApiServiceImpl(
             null,
             null,
         )
-    return runner.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
+    return runner.apply { datasets.parameters = listDatasetParts as MutableList<Any> }
   }
 
   override fun updateRunner(
@@ -113,7 +113,7 @@ internal class RunnerApiServiceImpl(
             null,
         )
 
-    return runnerSaved.apply { datasets.parameters = listDatasetParts as MutableList<Any>? }
+    return runnerSaved.apply { datasets.parameters = listDatasetParts as MutableList<Any> }
   }
 
   override fun deleteRunner(organizationId: String, workspaceId: String, runnerId: String) {

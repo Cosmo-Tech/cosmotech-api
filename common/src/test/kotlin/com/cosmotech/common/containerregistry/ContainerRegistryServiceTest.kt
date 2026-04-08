@@ -19,12 +19,13 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.test.util.ReflectionTestUtils
-import org.springframework.util.MultiValueMap
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClient.ResponseSpec
 import org.springframework.web.client.RestClientException
+import org.springframework.web.client.body
+import org.springframework.web.client.toEntity
 
 class ContainerRegistryServiceTest {
 
@@ -52,7 +53,7 @@ class ContainerRegistryServiceTest {
             .uri("/v2/any/tags/list")
             .header(HttpHeaders.AUTHORIZATION, any())
             .retrieve()
-            .body(String::class.java)
+            .body<String>()
       } throws HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR)
 
       containerRegistryService.checkSolutionImage("any", "any")
@@ -68,7 +69,7 @@ class ContainerRegistryServiceTest {
             .uri("/v2/any/tags/list")
             .header(HttpHeaders.AUTHORIZATION, any())
             .retrieve()
-            .body(String::class.java)
+            .body<String>()
       } throws HttpClientErrorException(HttpStatus.BAD_REQUEST)
 
       containerRegistryService.checkSolutionImage("any", "any")
@@ -91,7 +92,7 @@ class ContainerRegistryServiceTest {
             .uri("/v2/any/tags/list")
             .header(HttpHeaders.AUTHORIZATION, any())
             .retrieve()
-            .body(String::class.java)
+            .body<String>()
       } returns jo.toString()
 
       containerRegistryService.checkSolutionImage("any", "wrong_tag")
@@ -117,7 +118,7 @@ class ContainerRegistryServiceTest {
     } returns responseMockk
 
     every { responseMockk.onStatus(any(), any()) } returns responseMockk
-    every { responseMockk.body(String::class.java) } returns jo.toString()
+    every { responseMockk.body<String>() } returns jo.toString()
 
     containerRegistryService.checkSolutionImage("my-repository", "latest")
   }
@@ -131,7 +132,7 @@ class ContainerRegistryServiceTest {
           .header(HttpHeaders.AUTHORIZATION, any())
           .header(HttpHeaders.ACCEPT, "application/vnd.docker.distribution.manifest.v2+json")
           .retrieve()
-          .body(String::class.java)
+          .body<String>()
     } returns """{"config":{"digest":"mydigest"}}"""
 
     every {
@@ -140,7 +141,7 @@ class ContainerRegistryServiceTest {
           .uri("/v2/myimage/blobs/mydigest")
           .header(HttpHeaders.AUTHORIZATION, any())
           .retrieve()
-          .toEntity(String::class.java)
+          .toEntity<String>()
     } returns ResponseEntity("""{"config":{"Labels":{"mylabel":"myvalue"}}}""", HttpStatus.OK)
 
     assertEquals("myvalue", containerRegistryService.getImageLabel("myimage", "mytag", "mylabel"))
@@ -155,24 +156,20 @@ class ContainerRegistryServiceTest {
           .header(HttpHeaders.AUTHORIZATION, any())
           .header(HttpHeaders.ACCEPT, "application/vnd.docker.distribution.manifest.v2+json")
           .retrieve()
-          .body(String::class.java)
+          .body<String>()
     } returns """{"config":{"digest":"mydigest"}}"""
 
-    val response =
-        ResponseEntity<String>(
-            MultiValueMap.fromSingleValue(mapOf(HttpHeaders.LOCATION to String())),
-            HttpStatus.TEMPORARY_REDIRECT,
-        )
+    val response = ResponseEntity(HttpHeaders.LOCATION, HttpStatus.TEMPORARY_REDIRECT)
     every {
       noRedirectClient
           .get()
           .uri("/v2/myimage/blobs/mydigest")
           .header(HttpHeaders.AUTHORIZATION, any())
           .retrieve()
-          .toEntity(String::class.java)
+          .toEntity<String>()
     } returns response
 
-    every { restClient.get().uri(any<URI>()).retrieve().body(String::class.java) } returns
+    every { restClient.get().uri(any<URI>()).retrieve().body<String>() } returns
         """{"config":{"Labels":{"mylabel":"myvalue"}}}"""
 
     assertEquals("myvalue", containerRegistryService.getImageLabel("myimage", "mytag", "mylabel"))
@@ -187,7 +184,7 @@ class ContainerRegistryServiceTest {
           .header(HttpHeaders.AUTHORIZATION, any())
           .header(HttpHeaders.ACCEPT, "application/vnd.docker.distribution.manifest.v2+json")
           .retrieve()
-          .body(String::class.java)
+          .body<String>()
     } returns """{"config":{"digest":"mydigest"}}"""
 
     every {
@@ -196,7 +193,7 @@ class ContainerRegistryServiceTest {
           .uri("/v2/myimage/blobs/mydigest")
           .header(HttpHeaders.AUTHORIZATION, any())
           .retrieve()
-          .toEntity(String::class.java)
+          .toEntity<String>()
     } returns ResponseEntity("""{"config":{"Labels":null}}""", HttpStatus.OK)
 
     assertNull(containerRegistryService.getImageLabel("myimage", "mytag", "mylabel"))
@@ -211,7 +208,7 @@ class ContainerRegistryServiceTest {
           .header(HttpHeaders.AUTHORIZATION, any())
           .header(HttpHeaders.ACCEPT, "application/vnd.docker.distribution.manifest.v2+json")
           .retrieve()
-          .body(String::class.java)
+          .body<String>()
     } throws RestClientException("")
 
     assertNull(containerRegistryService.getImageLabel("wrong", "wrong", "mylabel"))
