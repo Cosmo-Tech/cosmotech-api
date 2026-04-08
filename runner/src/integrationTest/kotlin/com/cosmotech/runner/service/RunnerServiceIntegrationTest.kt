@@ -84,6 +84,7 @@ import org.springframework.test.util.ReflectionTestUtils
 @ExtendWith(MockKExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
+@Suppress("UNCHECKED_CAST")
 class RunnerServiceIntegrationTest : CsmTestBase() {
 
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
@@ -388,7 +389,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test CRUD operations on Runner as Platform Admin`() {
     every { getCurrentAccountIdentifier(any()) } returns "random_user_with_patform_admin_role"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
-    var initialRunnerList =
+    val initialRunnerList =
         runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id, null, null)
 
     logger.info("should create a new Runner")
@@ -398,7 +399,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, newRunner)
 
     logger.info("should find all Runners and assert there is one more")
-    var runnerList =
+    val runnerList =
         runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id, null, null)
     assertEquals(initialRunnerList.size + 1, runnerList.size)
 
@@ -719,7 +720,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, parentCreation)
     val parentRunner2 =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, parentCreation)
-    var childCreation = makeRunnerCreateRequest(parentId = parentRunner1.id)
+    val childCreation = makeRunnerCreateRequest(parentId = parentRunner1.id)
     val childRunner1 =
         runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, childCreation)
     childCreation.parentId = parentRunner2.id

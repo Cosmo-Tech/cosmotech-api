@@ -1,6 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
 @file:JvmName("SecurityUtilsKt")
+@file:Suppress("UNCHECKED_CAST")
 
 package com.cosmotech.common.utils
 
