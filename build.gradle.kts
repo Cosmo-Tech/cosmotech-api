@@ -40,7 +40,7 @@ plugins {
   id("com.github.jk1.dependency-license-report") version "3.0.1"
   id("org.jetbrains.kotlinx.kover") version "0.9.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
-  id("org.openapi.generator") version "7.17.0" apply false
+  id("org.openapi.generator") version "7.22.0" apply false
   id("com.google.cloud.tools.jib") version "3.5.1" apply false
   id("org.cyclonedx.bom") version "3.1.0"
 }
@@ -65,8 +65,8 @@ val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
 val redisOmSpringVersion = "2.0.4"
 val kotlinCoroutinesVersion = "1.10.2"
-val springDocVersion = "3.0.2"
-val swaggerParserVersion = "2.1.36"
+val springDocVersion = "3.0.3"
+val swaggerParserVersion = "2.1.42"
 val commonsCsvVersion = "1.14.1"
 val apiValidationVersion = "3.0.2"
 val kubernetesClientVersion = "22.0.0"
