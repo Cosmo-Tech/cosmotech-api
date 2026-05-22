@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.tests
 
-import com.redis.testcontainers.RedisStackContainer
+import com.redis.testcontainers.RedisContainer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -31,13 +31,13 @@ open class CsmTestBase {
                 "/docker-entrypoint-initdb.d/",
             )
 
-    var redisStackServer = RedisStackContainer(RedisStackContainer.DEFAULT_IMAGE_NAME)
+    var redisServer = RedisContainer(RedisContainer.DEFAULT_IMAGE_NAME)
 
     val localStackServer =
         LocalStackContainer(DockerImageName.parse(LOCALSTACK_FULL_IMAGE_NAME)).withServices("s3")
 
     init {
-      redisStackServer.start()
+      redisServer.start()
       postgres.start()
       localStackServer.start()
       localStackServer.execInContainer("awslocal", "s3", "mb", "s3://test-bucket")
@@ -53,10 +53,8 @@ open class CsmTestBase {
 
     private fun initRedisConfiguration(registry: DynamicPropertyRegistry) {
       val containerIp =
-          redisStackServer.containerInfo.networkSettings.networks.entries
-              .elementAt(0)
-              .value
-              .ipAddress ?: "cannot_find_redis_container_ip"
+          redisServer.containerInfo.networkSettings.networks.entries.elementAt(0).value.ipAddress
+              ?: "cannot_find_redis_container_ip"
 
       registry.add("spring.data.redis.host") { containerIp }
       registry.add("spring.data.redis.port") { DEFAULT_REDIS_PORT }
@@ -77,20 +75,20 @@ open class CsmTestBase {
 
   @BeforeAll
   fun beforeAll() {
-    redisStackServer.start()
+    redisServer.start()
     localStackServer.start()
     postgres.start()
   }
 
   @BeforeEach
   fun flushAll() {
-    redisStackServer.execInContainer("redis-cli", "flushall")
+    redisServer.execInContainer("redis-cli", "flushall")
   }
 
   @AfterAll
   fun afterAll() {
     postgres.stop()
     localStackServer.stop()
-    redisStackServer.stop()
+    redisServer.stop()
   }
 }
