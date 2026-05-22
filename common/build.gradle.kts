@@ -5,7 +5,7 @@
 plugins { id("org.jetbrains.kotlinx.kover") }
 
 val hashidsVersion = "1.0.3"
-val testContainersRedisVersion = "1.6.4"
+val testContainersRedisVersion = "2.2.4"
 val testContainersPostgreSQLVersion = "2.0.4"
 val testContainersLocalStackVersion = "2.0.4"
 val tikaVersion = "3.2.3"
@@ -16,15 +16,12 @@ dependencies {
   implementation("org.apache.httpcomponents.client5:httpclient5")
   implementation("org.springframework.boot:spring-boot-starter-restclient:4.0.5")
   implementation("org.hashids:hashids:${hashidsVersion}")
-  implementation(
-      "com.redis.testcontainers:testcontainers-redis-junit:${testContainersRedisVersion}"
-  ) {
-    constraints { implementation("com.redis:lettucemod:4.5.0") }
-  }
+  implementation("com.redis:testcontainers-redis:${testContainersRedisVersion}")
   implementation("org.testcontainers:testcontainers-postgresql:${testContainersPostgreSQLVersion}")
   implementation("org.testcontainers:testcontainers-localstack:${testContainersLocalStackVersion}")
   implementation("org.apache.tika:tika-core:${tikaVersion}")
   implementation("org.springframework.boot:spring-boot-starter-test")
+  implementation("org.testcontainers:junit-jupiter:1.21.4")
 
   testImplementation(kotlin("test"))
   testImplementation(platform("org.junit:junit-bom:${jUnitBomVersion}"))
