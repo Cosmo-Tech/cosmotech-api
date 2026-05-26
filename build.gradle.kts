@@ -34,7 +34,7 @@ plugins {
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.1"
   id("com.diffplug.spotless") version "8.1.0"
-  id("org.springframework.boot") version "4.0.4" apply false
+  id("org.springframework.boot") version "4.0.6" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.1.9"
   id("com.github.jk1.dependency-license-report") version "3.0.1"
@@ -136,8 +136,6 @@ allprojects {
     sourceCompatibility = JavaVersion.VERSION_21
     toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
   }
-  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:2.0.4") } } }
-
   repositories {
     maven {
       name = "Argo Client Java GitHub Packages"

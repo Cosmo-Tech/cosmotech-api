@@ -293,6 +293,12 @@ class DatasetServiceRBACTest : CsmTestBase() {
               workspace = makeWorkspaceCreateRequest(role = role)
               workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
+              dataset = makeDatasetCreateRequest()
+              datasetSaved = datasetApiService.createDataset(
+                  organizationSaved.id,
+                  workspaceSaved.id,
+                  dataset,
+                  mockMultipartFiles)
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
               if (shouldThrow) {
