@@ -7,7 +7,6 @@ plugins { id("org.jetbrains.kotlinx.kover") }
 val hashidsVersion = "1.0.3"
 val testContainersRedisVersion = "2.2.4"
 val testContainersPostgreSQLVersion = "2.0.4"
-val testContainersLocalStackVersion = "2.0.4"
 val tikaVersion = "3.2.3"
 
 val jUnitBomVersion = "6.0.1"
@@ -18,7 +17,6 @@ dependencies {
   implementation("org.hashids:hashids:${hashidsVersion}")
   implementation("com.redis:testcontainers-redis:${testContainersRedisVersion}")
   implementation("org.testcontainers:testcontainers-postgresql:${testContainersPostgreSQLVersion}")
-  implementation("org.testcontainers:testcontainers-localstack:${testContainersLocalStackVersion}")
   implementation("org.apache.tika:tika-core:${tikaVersion}")
   implementation("org.springframework.boot:spring-boot-starter-test")
   implementation("org.testcontainers:junit-jupiter:1.21.4")

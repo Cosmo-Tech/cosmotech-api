@@ -9,11 +9,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
+import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.localstack.LocalStackContainer
 import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.postgresql.PostgreSQLContainer.POSTGRESQL_PORT
-import org.testcontainers.utility.DockerImageName
 import org.testcontainers.utility.MountableFile
 
 @Testcontainers
@@ -22,7 +21,6 @@ open class CsmTestBase {
 
   companion object {
     private const val DEFAULT_REDIS_PORT = 6379
-    private const val LOCALSTACK_FULL_IMAGE_NAME = "localstack/localstack:4.14.0"
 
     var postgres: PostgreSQLContainer =
         PostgreSQLContainer("postgres:latest")
@@ -33,14 +31,21 @@ open class CsmTestBase {
 
     var redisServer = RedisContainer(RedisContainer.DEFAULT_IMAGE_NAME)
 
-    val localStackServer =
-        LocalStackContainer(DockerImageName.parse(LOCALSTACK_FULL_IMAGE_NAME)).withServices("s3")
+    val seaweedServer =
+        GenericContainer("chrislusf/seaweedfs:latest")
+            .withEnv(
+                mapOf(
+                    "AWS_ACCESS_KEY_ID" to "test",
+                    "AWS_SECRET_ACCESS_KEY" to "test",
+                    "S3_BUCKET" to "test-bucket",
+                    "S3_REGION" to "us-east-1",
+                )
+            )
 
     init {
       redisServer.start()
       postgres.start()
-      localStackServer.start()
-      localStackServer.execInContainer("awslocal", "s3", "mb", "s3://test-bucket")
+      seaweedServer.start()
     }
 
     @JvmStatic
@@ -61,10 +66,20 @@ open class CsmTestBase {
     }
 
     private fun initS3Configuration(registry: DynamicPropertyRegistry) {
-      registry.add("spring.cloud.aws.s3.endpoint") { localStackServer.endpoint }
-      registry.add("spring.cloud.aws.credentials.access-key") { localStackServer.accessKey }
-      registry.add("spring.cloud.aws.credentials.secret-key") { localStackServer.secretKey }
-      registry.add("spring.cloud.aws.s3.region") { localStackServer.region }
+      val containerIp =
+          seaweedServer.containerInfo.networkSettings.networks.entries.elementAt(0).value.ipAddress
+              ?: "cannot_find_seaweed_container_ip"
+      val seaweedEnvMap = seaweedServer.envMap
+      registry.add("spring.cloud.aws.s3.endpoint") {
+        "http://$containerIp:8333/${seaweedEnvMap["S3_BUCKET"]!!}"
+      }
+      registry.add("spring.cloud.aws.credentials.access-key") {
+        seaweedEnvMap["AWS_ACCESS_KEY_ID"]!!
+      }
+      registry.add("spring.cloud.aws.credentials.secret-key") {
+        seaweedEnvMap["AWS_SECRET_ACCESS_KEY"]!!
+      }
+      registry.add("spring.cloud.aws.s3.region") { seaweedEnvMap["S3_REGION"]!! }
     }
 
     private fun initPostgresConfiguration(registry: DynamicPropertyRegistry) {
@@ -76,7 +91,7 @@ open class CsmTestBase {
   @BeforeAll
   fun beforeAll() {
     redisServer.start()
-    localStackServer.start()
+    seaweedServer.start()
     postgres.start()
   }
 
@@ -88,7 +103,7 @@ open class CsmTestBase {
   @AfterAll
   fun afterAll() {
     postgres.stop()
-    localStackServer.stop()
+    seaweedServer.stop()
     redisServer.stop()
   }
 }
