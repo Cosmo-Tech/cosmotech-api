@@ -166,6 +166,7 @@ All URIs are relative to *http://localhost:8080*
  - [RunnerRole](./Models/RunnerRole.md)
  - [RunnerRunTemplateParameterValue](./Models/RunnerRunTemplateParameterValue.md)
  - [RunnerSecurity](./Models/RunnerSecurity.md)
+ - [RunnerStatus](./Models/RunnerStatus.md)
  - [RunnerUpdateRequest](./Models/RunnerUpdateRequest.md)
  - [RunnerValidationStatus](./Models/RunnerValidationStatus.md)
  - [Solution](./Models/Solution.md)

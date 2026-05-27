@@ -367,6 +367,7 @@ entity Runner {
     runSizing: RunnerResourceSizing
     * parametersValues: List<RunnerRunTemplateParameterValue>
     * lastRunInfo: LastRunInfo
+    * status: RunnerStatus
     * validationStatus: RunnerValidationStatus
     * security: RunnerSecurity
 }
@@ -422,6 +423,9 @@ entity RunnerRunTemplateParameterValue {
 entity RunnerSecurity {
     * default: String
     * accessControlList: List<RunnerAccessControl>
+}
+
+entity RunnerStatus {
 }
 
 entity RunnerUpdateRequest {

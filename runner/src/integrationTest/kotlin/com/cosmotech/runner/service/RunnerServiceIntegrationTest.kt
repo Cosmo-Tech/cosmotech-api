@@ -40,6 +40,7 @@ import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.*
 import com.cosmotech.runner.domain.ResourceSizeInfo
 import com.cosmotech.runner.domain.RunnerRole
+import com.cosmotech.runner.scheduled.RunnerScheduledTasks
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
@@ -106,6 +107,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
   @Autowired lateinit var resourceLoader: ResourceLoader
+
+  @Autowired lateinit var runnerScheduledTasks: RunnerScheduledTasks
 
   private var containerRegistryService: ContainerRegistryService = mockk(relaxed = true)
   private var startTime: Long = 0
@@ -424,7 +427,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     )
 
     logger.info("should delete the Runner and assert there is one less Runner left")
+    val expectedRunId = "run-genid12345"
+    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
+        {
+          firstArg<RunStart>().response = expectedRunId
+        }
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, newRunnerSaved.id)
+    // force trigger scheduled cleanup
+    runnerScheduledTasks.cleanupArchivedRunners()
     val runnerListAfterDelete =
         runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id, null, null)
     assertEquals(runnerList.size - 1, runnerListAfterDelete.size)
@@ -696,13 +706,22 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(parentRunner.id, childRunner.parentId)
 
     // Delete intermediate parent, child should refer to grandParent
+    val expectedRunId = "run-genid12345"
+    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
+        {
+          firstArg<RunStart>().response = expectedRunId
+        }
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, parentRunner.id)
+    // force trigger scheduled cleanup
+    runnerScheduledTasks.cleanupArchivedRunners()
     var newChildParentId =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, childRunner.id).parentId
     assertEquals(grandParentRunner.id, newChildParentId)
 
     // Delete root grandParent, child should clear its parent
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, grandParentRunner.id)
+    // force trigger scheduled cleanup
+    runnerScheduledTasks.cleanupArchivedRunners()
     newChildParentId =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, childRunner.id).parentId
     assertNull(newChildParentId)
@@ -739,7 +758,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(grandParentRunner.id, childRunner2.rootId)
 
     // Delete grand parent
+    val expectedRunId = "run-genid12345"
+    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
+        {
+          firstArg<RunStart>().response = expectedRunId
+        }
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, grandParentRunner.id)
+    // force trigger scheduled cleanup
+    runnerScheduledTasks.cleanupArchivedRunners()
     assertNull(
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, parentRunner1.id).rootId
     )
@@ -967,14 +993,21 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerUpdateRequest(),
     )
 
-    every { eventPublisher.publishEvent(any<HasRunningRuns>()) } answers
+    every { eventPublisher.publishEvent(match { it is HasRunningRuns }) } answers
         {
           firstArg<HasRunningRuns>().response = true
         }
 
+    val expectedRunId = "run-genid12345"
+    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
+        {
+          firstArg<RunStart>().response = expectedRunId
+        }
     val exception =
         assertThrows<Exception> {
           runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+          // force trigger scheduled cleanup
+          runnerScheduledTasks.cleanupArchivedRunners()
         }
     assertEquals(
         "Can't delete runner ${runnerSaved.id}: at least one run is still running",
@@ -984,7 +1017,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `test on runner delete keep bases datasets but not parameters dataset`() {
+    val expectedRunId = "run-genid12345"
+    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
+        {
+          firstArg<RunStart>().response = expectedRunId
+        }
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+    // force trigger scheduled cleanup
+    runnerScheduledTasks.cleanupArchivedRunners()
 
     runnerSaved.datasets.bases.forEach { dataset ->
       assertDoesNotThrow {
@@ -1289,7 +1329,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             workspaceSaved.id,
             runnerSaved.datasets.bases[0],
         )
+    val expectedRunId = "run-genid12345"
+    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
+        {
+          firstArg<RunStart>().response = expectedRunId
+        }
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
+    // force trigger scheduled cleanup
+    runnerScheduledTasks.cleanupArchivedRunners()
 
     assertDoesNotThrow {
       datasetApiService.getDataset(organizationSaved.id, workspaceSaved.id, datasetRetrieved.id)

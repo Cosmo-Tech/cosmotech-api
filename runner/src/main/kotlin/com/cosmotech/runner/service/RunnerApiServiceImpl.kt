@@ -23,6 +23,7 @@ import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
+import com.cosmotech.runner.domain.RunnerStatus
 import com.cosmotech.runner.domain.RunnerUpdateRequest
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
@@ -121,7 +122,12 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_DELETE)
 
-    runnerService.deleteInstance(runnerInstance)
+    // Set runner status to Archived for future deletion (allow async process)
+    runnerInstance.runner.status = RunnerStatus.Archived
+    runnerService.saveInstance(runnerInstance.stamp())
+    // prevent concurrent run. Protect from data confusion (data write after run deletion)
+    runnerService.stopLastRunOf(runnerInstance)
+    runnerService.startRunWith(runnerInstance, RunType.Delete)
   }
 
   override fun listRunners(
@@ -140,10 +146,12 @@ internal class RunnerApiServiceImpl(
 
   override fun startRun(organizationId: String, workspaceId: String, runnerId: String): CreatedRun {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
-
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_LAUNCH)
 
-    return runnerService.startRunWith(runnerInstance)
+    if (runnerInstance.getRunnerDataObject().status == RunnerStatus.Archived) {
+      throw IllegalStateException("This runner is archived and can not be launched")
+    }
+    return runnerService.startRunWith(runnerInstance, RunType.Run)
   }
 
   override fun stopRun(organizationId: String, workspaceId: String, runnerId: String) {
