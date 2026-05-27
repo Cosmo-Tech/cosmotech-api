@@ -22,6 +22,7 @@
 | **runSizing** | [**RunnerResourceSizing**](RunnerResourceSizing.md) | definition of resources needed for the runner run | [optional] [default to null] |
 | **parametersValues** | [**List**](RunnerRunTemplateParameterValue.md) | the list of Solution Run Template parameters values | [default to null] |
 | **lastRunInfo** | [**LastRunInfo**](LastRunInfo.md) | last run info from current runner | [default to null] |
+| **status** | [**RunnerStatus**](RunnerStatus.md) |  | [default to null] |
 | **validationStatus** | [**RunnerValidationStatus**](RunnerValidationStatus.md) |  | [default to null] |
 | **security** | [**RunnerSecurity**](RunnerSecurity.md) |  | [default to null] |
 

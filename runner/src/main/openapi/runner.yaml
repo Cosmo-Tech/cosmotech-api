@@ -631,6 +631,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/LastRunInfo'
           description: last run info from current runner
+        status:
+          allOf:
+            - $ref: '#/components/schemas/RunnerStatus'
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
         validationStatus:
           allOf:
             - $ref: '#/components/schemas/RunnerValidationStatus'
@@ -651,6 +655,7 @@ components:
         - datasets
         - parametersValues
         - lastRunInfo
+        - status
         - validationStatus
         - security
 
@@ -877,6 +882,12 @@ components:
         - Rejected
         - Unknown
         - Validated
+    RunnerStatus:
+      type: string
+      description: the status of the runner
+      enum:
+        - Ok
+        - Archived
     CreatedRun:
       type: object
       description: Newly created Run info
