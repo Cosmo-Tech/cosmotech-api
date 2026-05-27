@@ -47,6 +47,7 @@ import com.cosmotech.runner.domain.RunnerDatasets
 import com.cosmotech.runner.domain.RunnerEditInfo
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.runner.domain.RunnerSecurity
+import com.cosmotech.runner.domain.RunnerStatus
 import com.cosmotech.runner.domain.RunnerUpdateRequest
 import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.runner.repository.RunnerRepository
@@ -291,9 +292,13 @@ class RunnerService(
 
   fun stopLastRunOf(runnerInstance: RunnerInstance) {
     val runner = runnerInstance.getRunnerDataObject()
-    runner.lastRunInfo.lastRunId
-        ?: throw IllegalArgumentException("Runner ${runner.id} doesn't have a last run")
+    runner.lastRunInfo.lastRunId ?: return // No run to stop
     this.eventPublisher.publishEvent(RunStop(this, runner))
+  }
+
+  fun cleanupArchived() {
+    val archivedRunners: List<Runner> = runnerRepository.findAllByStatus(RunnerStatus.Archived)
+    archivedRunners.forEach { runner -> deleteInstance(RunnerInstance().initializeFrom(runner)) }
   }
 
   @Suppress("TooManyFunctions")
@@ -326,6 +331,7 @@ class RunnerService(
               parametersValues = mutableListOf(),
               lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
               validationStatus = RunnerValidationStatus.Draft,
+              status = RunnerStatus.Ok,
               security = RunnerSecurity("", accessControlList = mutableListOf()),
           )
     }
@@ -444,6 +450,7 @@ class RunnerService(
                   ),
               solutionName = runnerCreateRequest.solutionName,
               solutionId = runnerCreateRequest.solutionId,
+              status = this.runner.status,
               validationStatus = this.runner.validationStatus,
               additionalData = runnerCreateRequest.additionalData,
               runTemplateName = runnerCreateRequest.runTemplateName,
@@ -517,6 +524,7 @@ class RunnerService(
                       lastRunStatus = this.runner.lastRunInfo.lastRunStatus,
                       lastRunId = this.runner.lastRunInfo.lastRunId,
                   ),
+              status = this.runner.status,
               validationStatus =
                   runnerUpdateRequest.validationStatus ?: this.runner.validationStatus,
           )

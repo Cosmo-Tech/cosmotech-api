@@ -4,6 +4,7 @@ package com.cosmotech.run.service
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.events.RunStart
+import com.cosmotech.common.events.RunType
 import com.cosmotech.common.rbac.ROLE_ADMIN
 import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.tests.CsmTestBase
@@ -35,6 +36,7 @@ import com.cosmotech.runner.domain.RunnerCreateRequest
 import com.cosmotech.runner.domain.RunnerDatasets
 import com.cosmotech.runner.domain.RunnerEditInfo
 import com.cosmotech.runner.domain.RunnerSecurity
+import com.cosmotech.runner.domain.RunnerStatus
 import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.*
@@ -263,12 +265,13 @@ class RunServiceIntegrationTest : CsmTestBase() {
             datasets = RunnerDatasets(bases = mutableListOf(), parameter = ""),
             workspaceId = workspaceId,
             validationStatus = RunnerValidationStatus.Draft,
+            status = RunnerStatus.Ok,
             parametersValues = mutableListOf(),
             lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
             security =
                 RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))),
         )
-    val runStart = RunStart(this, runner)
+    val runStart = RunStart(this, runner, RunType.Run)
     eventPublisher.publishEvent(runStart)
     return runStart.response!!
   }

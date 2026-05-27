@@ -4,6 +4,7 @@ package com.cosmotech.run
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.containerregistry.ContainerRegistryService
+import com.cosmotech.common.events.RunType
 import com.cosmotech.common.rbac.ROLE_ADMIN
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -23,6 +24,7 @@ import com.cosmotech.runner.domain.RunnerDatasets
 import com.cosmotech.runner.domain.RunnerEditInfo
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.runner.domain.RunnerSecurity
+import com.cosmotech.runner.domain.RunnerStatus
 import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
@@ -173,8 +175,12 @@ class ContainerFactoryTests {
         image = "twinengines.azurecr.io/" + solution.repository + ":" + solution.version,
         envVars =
             mapOf(
-                "CSM_API_SCOPE" to "/.default",
+                "IDP_CLIENT_ID" to csmPlatformProperties.identityProvider.identity.clientId,
+                "IDP_CLIENT_SECRET" to csmPlatformProperties.identityProvider.identity.clientSecret,
+                "IDP_BASE_URL" to csmPlatformProperties.identityProvider.serverBaseUrl,
+                "IDP_TENANT_ID" to csmPlatformProperties.identityProvider.identity.tenantId,
                 "CSM_API_URL" to csmPlatformProperties.api.baseUrl,
+                "CSM_API_SCOPE" to "/.default",
                 "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
                 "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
                 "CSM_OUTPUT_ABSOLUTE_PATH" to "/pkg/share/Simulation/Output",
@@ -183,16 +189,13 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_PORT" to csmPlatformProperties.databases.resources.port,
                 "TWIN_CACHE_PASSWORD" to csmPlatformProperties.databases.resources.password,
                 "TWIN_CACHE_USERNAME" to csmPlatformProperties.databases.resources.username,
-                "IDP_CLIENT_ID" to csmPlatformProperties.identityProvider.identity.clientId,
-                "IDP_CLIENT_SECRET" to csmPlatformProperties.identityProvider.identity.clientSecret,
-                "IDP_BASE_URL" to csmPlatformProperties.identityProvider.serverBaseUrl,
-                "IDP_TENANT_ID" to csmPlatformProperties.identityProvider.identity.tenantId,
                 "CSM_SIMULATION_ID" to CSM_SIMULATION_ID,
                 "CSM_ORGANIZATION_ID" to organization.id,
                 "CSM_WORKSPACE_ID" to workspace.id,
                 "CSM_RUNNER_ID" to runner.id,
                 "CSM_RUN_ID" to runId,
                 "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
+                "CSM_RUN_TYPE" to RunType.Run.value,
             ),
         entrypoint = "entrypoint.py",
         nodeLabel = runTemplate.computeSize!!.removeSuffix("pool"),
@@ -223,6 +226,7 @@ class ContainerFactoryTests {
             ),
         validationStatus = RunnerValidationStatus.Draft,
         lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
+        status = RunnerStatus.Ok,
         security =
             RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))),
     )
