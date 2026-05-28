@@ -4,6 +4,7 @@ package com.cosmotech.run
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.containerregistry.ContainerRegistryService
+import com.cosmotech.common.events.RunType
 import com.cosmotech.common.rbac.ROLE_ADMIN
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -193,6 +194,7 @@ class ContainerFactoryTests {
                 "CSM_RUNNER_ID" to runner.id,
                 "CSM_RUN_ID" to runId,
                 "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
+                "CSM_RUN_TYPE" to RunType.Run.value,
             ),
         entrypoint = "entrypoint.py",
         nodeLabel = runTemplate.computeSize!!.removeSuffix("pool"),
