@@ -24,7 +24,9 @@ import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_NAME
 import com.cosmotech.api.home.runner.RunnerConstants.RUNNER_RUN_TEMPLATE
 import com.cosmotech.api.home.withPlatformAdminHeader
 import com.cosmotech.common.events.CsmEventPublisher
+import com.cosmotech.common.events.HasRunningRuns
 import com.cosmotech.common.events.RunStart
+import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.common.rbac.ROLE_ADMIN
 import com.cosmotech.common.rbac.ROLE_NONE
@@ -636,6 +638,17 @@ class RunnerControllerTests : ControllerTestBase() {
 
   @Test
   fun delete_runner() {
+    val expectedRunId = "run-genid12345"
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<HasRunningRuns>().response = false
+        } andThenAnswer
+        {
+          firstArg<RunnerDeleted>()
+        } andThenAnswer
+        {
+          firstArg<RunStart>().response = expectedRunId
+        }
 
     val runnerId =
         createRunnerAndReturnId(
