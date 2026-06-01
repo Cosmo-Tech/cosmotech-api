@@ -8,6 +8,7 @@ import com.cosmotech.common.events.CsmEventPublisher
 import com.cosmotech.common.events.GetRunnerAttachedToDataset
 import com.cosmotech.common.events.HasRunningRuns
 import com.cosmotech.common.events.RunStart
+import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.common.exceptions.CsmAccessForbiddenException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
@@ -393,6 +394,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test CRUD operations on Runner as Platform Admin`() {
     every { getCurrentAccountIdentifier(any()) } returns "random_user_with_patform_admin_role"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<HasRunningRuns>().response = false
+        } andThenAnswer
+        {
+          firstArg<RunnerDeleted>()
+        } andThenAnswer
+        {
+          firstArg<RunStart>().response = "notRelevant"
+        }
     var initialRunnerList =
         runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id, null, null)
 
@@ -684,6 +695,25 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `update parentId on Runner delete`() {
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<HasRunningRuns>().response = false
+        } andThenAnswer
+        {
+          firstArg<RunnerDeleted>()
+        } andThenAnswer
+        {
+          firstArg<RunStart>().response = "notRelevant"
+        } andThenAnswer
+        {
+          firstArg<HasRunningRuns>().response = false
+        } andThenAnswer
+        {
+          firstArg<RunnerDeleted>()
+        } andThenAnswer
+        {
+          firstArg<RunStart>().response = "notRelevant"
+        }
     // Create a 3 level hierarchy: grandParent <- parent <- child
     val grandParentCreation = makeRunnerCreateRequest()
     val grandParentRunner =
@@ -714,6 +744,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `update rootId on root Runner delete`() {
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<HasRunningRuns>().response = false
+        } andThenAnswer
+        {
+          firstArg<RunnerDeleted>()
+        } andThenAnswer
+        {
+          firstArg<RunStart>().response = "notRelevant"
+        }
     // Create a 3 level hierarchy: grandParent <- parent1 <- child1
     //                                         <- parent2 <- child2
     val grandParentCreation = makeRunnerCreateRequest()
@@ -971,9 +1011,15 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerUpdateRequest(),
     )
 
-    every { eventPublisher.publishEvent(any<HasRunningRuns>()) } answers
+    every { eventPublisher.publishEvent(any()) } answers
         {
           firstArg<HasRunningRuns>().response = true
+        } andThenAnswer
+        {
+          firstArg<RunnerDeleted>()
+        } andThenAnswer
+        {
+          firstArg<RunStart>().response = "notRelevant"
         }
 
     val exception =
@@ -1269,6 +1315,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `on Runner delete linked datasets should not be deleted`() {
+    every { eventPublisher.publishEvent(any()) } answers
+        {
+          firstArg<HasRunningRuns>().response = false
+        } andThenAnswer
+        {
+          firstArg<RunnerDeleted>()
+        } andThenAnswer
+        {
+          firstArg<RunStart>().response = "notRelevant"
+        }
     workspace =
         WorkspaceCreateRequest(
             key = "key",
