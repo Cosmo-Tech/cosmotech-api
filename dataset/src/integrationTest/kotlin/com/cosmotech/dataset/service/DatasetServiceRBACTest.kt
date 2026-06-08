@@ -107,10 +107,10 @@ class DatasetServiceRBACTest : CsmTestBase() {
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.common.utils.SecurityUtilsKt")
-    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
+    every { getCurrentAccountIdentifier(csmPlatformProperties) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAccountGroups(csmPlatformProperties) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
+    every { getCurrentAuthenticatedRoles(csmPlatformProperties) } returns listOf("user")
 
     val resourceTestFile = resourceLoader.getResource("classpath:/$CUSTOMER_SOURCE_FILE_NAME").file
 
@@ -162,7 +162,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC getDataset : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
               val datasetCreated =
                   datasetApiService.createDataset(
                       organizationSaved.id,
@@ -220,7 +221,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC createDatasetAccessControl : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               dataset =
                   makeDatasetCreateRequest(
@@ -283,6 +285,9 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC searchDatasets : $role") {
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_ADMIN_USER
+
               organization =
                   makeOrganizationCreateRequest(name = "Organization test", role = ROLE_USER)
               organizationSaved = organizationApiService.createOrganization(organization)
@@ -293,13 +298,30 @@ class DatasetServiceRBACTest : CsmTestBase() {
               workspace = makeWorkspaceCreateRequest(role = role)
               workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
 
-              dataset = makeDatasetCreateRequest()
-              datasetSaved = datasetApiService.createDataset(
-                  organizationSaved.id,
-                  workspaceSaved.id,
-                  dataset,
-                  mockMultipartFiles)
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              dataset =
+                  makeDatasetCreateRequest(
+                      datasetSecurity =
+                          DatasetSecurity(
+                              default = ROLE_NONE,
+                              accessControlList =
+                                  mutableListOf(
+                                      DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                                      DatasetAccessControl(
+                                          id = CONNECTED_DEFAULT_USER,
+                                          role = role,
+                                      ),
+                                  ),
+                          )
+                  )
+              datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      mockMultipartFiles,
+                  )
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               if (shouldThrow) {
                 val exception =
@@ -341,7 +363,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC deleteDataset : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               dataset =
                   makeDatasetCreateRequest(
@@ -402,7 +425,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC deleteDatasetAccessControl : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               dataset =
                   makeDatasetCreateRequest(
@@ -465,7 +489,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC createDataset : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               organization =
                   makeOrganizationCreateRequest(
@@ -537,7 +562,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC getDatasetAccessControl : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               dataset =
                   makeDatasetCreateRequest(
@@ -600,7 +626,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC listDatasetSecurityUsers : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               dataset =
                   makeDatasetCreateRequest(
@@ -661,7 +688,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC listDatasets : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               organization =
                   makeOrganizationCreateRequest(
@@ -715,7 +743,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC updateDataset : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               organization =
                   makeOrganizationCreateRequest(
@@ -747,7 +776,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                           )
                   )
 
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_ADMIN_USER
               datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id,
@@ -756,7 +786,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       mockMultipartFiles,
                   )
 
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               if (shouldThrow) {
                 val exception =
@@ -798,7 +829,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC searchDatasetParts : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               dataset =
                   makeDatasetCreateRequest(
@@ -865,7 +897,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC updateDatasetAccessControl : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               dataset =
                   makeDatasetCreateRequest(
@@ -930,7 +963,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC updateDatasetDefaultSecurity : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               dataset =
                   makeDatasetCreateRequest(
@@ -1032,7 +1066,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       mockMultipartFiles,
                   )
 
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               if (shouldThrow) {
                 val exception =
@@ -1113,7 +1148,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       mockMultipartFiles,
                   )
 
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               if (shouldThrow) {
                 val exception =
@@ -1192,7 +1228,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       mockMultipartFiles,
                   )
 
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               if (shouldThrow) {
                 val exception =
@@ -1271,7 +1308,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       mockMultipartFiles,
                   )
 
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               if (shouldThrow) {
                 val exception =
@@ -1350,7 +1388,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       mockMultipartFiles,
                   )
 
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               if (shouldThrow) {
                 val exception =
@@ -1431,7 +1470,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       mockMultipartFiles,
                   )
 
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               if (shouldThrow) {
                 val exception =
@@ -1514,7 +1554,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                       mockMultipartFiles,
                   )
 
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+              every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                  CONNECTED_DEFAULT_USER
 
               if (shouldThrow) {
                 val exception =
@@ -1661,8 +1702,8 @@ class DatasetServiceRBACTest : CsmTestBase() {
                   default = ROLE_NONE,
                   accessControlList =
                       mutableListOf(
-                          WorkspaceAccessControl(id = userName, role = role),
                           WorkspaceAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                          WorkspaceAccessControl(id = userName, role = role),
                       ),
               ),
       )

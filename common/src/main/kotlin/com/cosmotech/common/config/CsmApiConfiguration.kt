@@ -56,9 +56,6 @@ open class CsmApiConfiguration {
   @Bean
   open fun jsonHttpMessageConverter(): JacksonJsonHttpMessageConverter {
     val jacksonJsonHttpMessageConverter = JacksonJsonHttpMessageConverter(jsonObjectMapper())
-    val supportedMediaTypes = jacksonJsonHttpMessageConverter.supportedMediaTypes.toMutableList()
-    supportedMediaTypes.add(MediaType("application", "octet-stream"))
-    jacksonJsonHttpMessageConverter.supportedMediaTypes = supportedMediaTypes
     return jacksonJsonHttpMessageConverter
   }
 }

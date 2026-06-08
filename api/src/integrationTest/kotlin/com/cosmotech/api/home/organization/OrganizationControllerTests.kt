@@ -21,6 +21,7 @@ import com.cosmotech.api.home.withPlatformAdminHeader
 import com.cosmotech.common.rbac.ROLE_ADMIN
 import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.rbac.ROLE_VIEWER
+import kotlin.test.assertEquals
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -377,18 +378,44 @@ class OrganizationControllerTests : ControllerTestBase() {
 
   @Test
   fun create_organization_with_empty_name() {
-    mvc.perform(
-            post("/organizations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .withPlatformAdminHeader()
-                .content(EMPTY_NAME_ORGANIZATION_REQUEST_CREATION)
-                .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+    val responseContent =
+        JSONObject(
+            mvc.perform(
+                    post("/organizations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .withPlatformAdminHeader()
+                        .content(EMPTY_NAME_ORGANIZATION_REQUEST_CREATION)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(csrf())
+                )
+                .andExpect(status().is4xxClientError)
+                .andExpect(status().isBadRequest)
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn()
+                .response
+                .contentAsString
         )
-        .andExpect(status().is4xxClientError)
-        .andExpect(status().isBadRequest)
-        .andExpect(content().string(emptyNameOrganizationCreationRequestError))
-        .andDo(MockMvcResultHandlers.print())
+
+    assertEquals(
+        JSONObject(emptyNameOrganizationCreationRequestError).get("detail"),
+        responseContent.get("detail"),
+    )
+    assertEquals(
+        JSONObject(emptyNameOrganizationCreationRequestError).get("title"),
+        responseContent.get("title"),
+    )
+    assertEquals(
+        JSONObject(emptyNameOrganizationCreationRequestError).get("status"),
+        responseContent.get("status"),
+    )
+    assertEquals(
+        JSONObject(emptyNameOrganizationCreationRequestError).get("instance"),
+        responseContent.get("instance"),
+    )
+    assertEquals(
+        JSONObject(emptyNameOrganizationCreationRequestError).get("type"),
+        responseContent.get("type"),
+    )
   }
 
   @Test
