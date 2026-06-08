@@ -167,6 +167,7 @@ springdoc:
     tags-sorter: alpha
     oauth:
       use-pkce-with-authorization-code-grant: true
+    url: /openapi.yaml
   writer-with-default-pretty-printer: true
 
 # Aliases

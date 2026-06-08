@@ -2566,7 +2566,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
     assertEquals(customerPartTags, customerDatasetPart.tags)
     assertEquals(CUSTOMER_SOURCE_FILE_NAME, customerDatasetPart.sourceName)
     assertEquals(DatasetPartTypeEnum.File, customerDatasetPart.type)
-    val inventoryDatasetPart = listDatasetParts[1]
+    var inventoryDatasetPart = listDatasetParts[1]
     assertEquals(inventoryPartName, inventoryDatasetPart.name)
     assertEquals(inventoryPartDescription, inventoryDatasetPart.description)
     assertEquals(inventoryPartTags, inventoryDatasetPart.tags)
@@ -2601,6 +2601,30 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         )
     assertNotNull(listDatasetParts)
     assertTrue(listDatasetParts.isEmpty())
+
+    listDatasetParts =
+        datasetApiService.listDatasetParts(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createdDataset.id,
+            0,
+            2,
+        )
+
+    assertNotNull(listDatasetParts)
+    assertEquals(2, listDatasetParts.size)
+    customerDatasetPart = listDatasetParts[0]
+    assertEquals(customerPartName, customerDatasetPart.name)
+    assertEquals(customerPartDescription, customerDatasetPart.description)
+    assertEquals(customerPartTags, customerDatasetPart.tags)
+    assertEquals(CUSTOMER_SOURCE_FILE_NAME, customerDatasetPart.sourceName)
+    assertEquals(DatasetPartTypeEnum.File, customerDatasetPart.type)
+    inventoryDatasetPart = listDatasetParts[1]
+    assertEquals(inventoryPartName, inventoryDatasetPart.name)
+    assertEquals(inventoryPartDescription, inventoryDatasetPart.description)
+    assertEquals(inventoryPartTags, inventoryDatasetPart.tags)
+    assertEquals(INVENTORY_SOURCE_FILE_NAME, inventoryDatasetPart.sourceName)
+    assertEquals(DatasetPartTypeEnum.File, inventoryDatasetPart.type)
   }
 
   @Test
@@ -2662,6 +2686,140 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         InputStreamResource(downloadFile).inputStream.bufferedReader().use { it.readText() }
 
     assertEquals(expectedText, retrievedText)
+  }
+
+  @Test
+  fun `test listDatasetParts pagination`() {
+
+    val customerPartName = "Customers list"
+    val customerPartDescription = "List of customers"
+    val customerPartTags = mutableListOf("part", "public", "customers")
+    val customerPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = customerPartName,
+            sourceName = CUSTOMER_SOURCE_FILE_NAME,
+            description = customerPartDescription,
+            tags = customerPartTags,
+            type = DatasetPartTypeEnum.File,
+        )
+
+    val inventoryPartName = "Product list"
+    val inventoryPartDescription = "List of Product"
+    val inventoryPartTags = mutableListOf("part", "public", "product")
+    val inventoryPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = inventoryPartName,
+            sourceName = INVENTORY_SOURCE_FILE_NAME,
+            description = inventoryPartDescription,
+            tags = inventoryPartTags,
+            type = DatasetPartTypeEnum.File,
+        )
+
+    val wholeCustPartName = "Whole customer list"
+    val wholeCustPartDescription = "List of whole customer "
+    val wholeCustPartTags = mutableListOf("part", "public", "product", "whole")
+    val wholeCustPartCreateRequest =
+        DatasetPartCreateRequest(
+            name = wholeCustPartName,
+            sourceName = CUSTOMERS_10000_SOURCE_FILE_NAME,
+            description = wholeCustPartDescription,
+            tags = wholeCustPartTags,
+            type = DatasetPartTypeEnum.File,
+        )
+
+    val datasetName = "Shop Dataset"
+    val datasetDescription = "Dataset for shop"
+    val datasetTags = mutableListOf("dataset", "public", "shop")
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = datasetName,
+            description = datasetDescription,
+            tags = datasetTags,
+            parts =
+                mutableListOf(
+                    customerPartCreateRequest,
+                    inventoryPartCreateRequest,
+                    wholeCustPartCreateRequest,
+                ),
+        )
+
+    val emptyCustomerMockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMER_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            " ".toByteArray(),
+        )
+
+    val emptyInventoryMockMultipartFile =
+        MockMultipartFile(
+            "files",
+            INVENTORY_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            " ".toByteArray(),
+        )
+
+    val wholeCustMockMultipartFile =
+        MockMultipartFile(
+            "files",
+            CUSTOMERS_10000_SOURCE_FILE_NAME,
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            " ".toByteArray(),
+        )
+
+    val createdDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(
+                emptyCustomerMockMultipartFile,
+                emptyInventoryMockMultipartFile,
+                wholeCustMockMultipartFile,
+            ),
+        )
+    //        key     =>        value
+    // { expectedSize => (pageIndex, pageSize) }
+    val testParameters =
+        mapOf(
+            3 to Pair(null, null),
+            3 to Pair(0, null),
+            1 to Pair(0, 1),
+            2 to Pair(0, 2),
+            3 to Pair(0, 3),
+            0 to Pair(3, null),
+            0 to Pair(1, 0),
+            1 to Pair(1, 1),
+            1 to Pair(1, 2),
+            0 to Pair(1, null),
+            0 to Pair(2, 0),
+            1 to Pair(2, 1),
+            0 to Pair(2, 2),
+            0 to Pair(2, 3),
+            0 to Pair(2, null),
+            0 to Pair(3, 0),
+            0 to Pair(3, 1),
+            0 to Pair(3, 2),
+            0 to Pair(3, 3),
+            0 to Pair(3, null),
+        )
+
+    testParameters.forEach { expectedSize, (pageIndex, pageSize) ->
+      logger.debug(
+          "test listDatasetParts pagination with pageIndex($pageIndex) pageSize($pageSize) for expected size $expectedSize"
+      )
+      val listDatasetParts =
+          datasetApiService.listDatasetParts(
+              organizationSaved.id,
+              workspaceSaved.id,
+              createdDataset.id,
+              pageIndex,
+              pageSize,
+          )
+
+      assertNotNull(listDatasetParts)
+      assertEquals(expectedSize, listDatasetParts.size)
+    }
   }
 
   @Test
