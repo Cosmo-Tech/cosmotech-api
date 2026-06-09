@@ -31,6 +31,14 @@ buildscript {
     // used and it breaks the generation of the python client.
     resolutionStrategy.force("com.samskivert:jmustache:1.15")
   }
+  dependencies {
+    // This dependency is needed by jib-gradle-plugin to handle correctly
+    // zstd compressed layers in docker images (e.g. used by Docker Hardened Images)
+    // here is some relative links:
+    // issue : https://github.com/GoogleContainerTools/jib/issues/3714
+    // PR: https://github.com/GoogleContainerTools/jib/pull/3717
+    classpath("com.github.luben:zstd-jni:1.5.7-4")
+  }
 }
 
 plugins {
