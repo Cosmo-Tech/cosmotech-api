@@ -46,6 +46,7 @@ open class CsmTestBase {
       redisServer.start()
       postgres.start()
       seaweedServer.start()
+      seaweedServer.execInContainer("echo \"s3.bucket.create -name test-bucket\" | weed shell")
     }
 
     @JvmStatic
@@ -70,9 +71,7 @@ open class CsmTestBase {
           seaweedServer.containerInfo.networkSettings.networks.entries.elementAt(0).value.ipAddress
               ?: "cannot_find_seaweed_container_ip"
       val seaweedEnvMap = seaweedServer.envMap
-      registry.add("spring.cloud.aws.s3.endpoint") {
-        "http://$containerIp:8333/${seaweedEnvMap["S3_BUCKET"]!!}"
-      }
+      registry.add("spring.cloud.aws.s3.endpoint") { "http://$containerIp:8333" }
       registry.add("spring.cloud.aws.credentials.access-key") {
         seaweedEnvMap["AWS_ACCESS_KEY_ID"]!!
       }
