@@ -4,7 +4,6 @@ package com.cosmotech.run.service
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.events.RunStart
-import com.cosmotech.common.events.RunType
 import com.cosmotech.common.rbac.ROLE_ADMIN
 import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.tests.CsmTestBase
@@ -274,7 +273,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
             security =
                 RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))),
         )
-    val runStart = RunStart(this, runner, RunType.Run)
+    val runStart = RunStart(this, runner)
     eventPublisher.publishEvent(runStart)
     return runStart.response!!
   }
