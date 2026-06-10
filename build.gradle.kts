@@ -32,17 +32,17 @@ plugins {
   val kotlinCompleteVersion = "2.2.21"
   kotlin("jvm") version kotlinCompleteVersion
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
-  id("pl.allegro.tech.build.axion-release") version "1.21.1"
-  id("com.diffplug.spotless") version "8.1.0"
+  id("pl.allegro.tech.build.axion-release") version "1.21.2"
+  id("com.diffplug.spotless") version "8.6.0"
   id("org.springframework.boot") version "4.0.6" apply false
   id("project-report")
-  id("org.owasp.dependencycheck") version "12.1.9"
-  id("com.github.jk1.dependency-license-report") version "3.0.1"
-  id("org.jetbrains.kotlinx.kover") version "0.9.4"
+  id("org.owasp.dependencycheck") version "12.2.2"
+  id("com.github.jk1.dependency-license-report") version "3.1.3"
+  id("org.jetbrains.kotlinx.kover") version "0.9.8"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
-  id("org.openapi.generator") version "7.22.0" apply false
+  id("org.openapi.generator") version "7.23.0" apply false
   id("com.google.cloud.tools.jib") version "3.5.3" apply false
-  id("org.cyclonedx.bom") version "3.1.0"
+  id("org.cyclonedx.bom") version "3.2.4"
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -85,7 +85,7 @@ val detektVersion = "1.23.8"
 val jUnitBomVersion = "6.0.3"
 val mockkVersion = "1.14.7"
 val awaitilityKVersion = "4.3.0"
-val springMockkVersion = "4.0.2"
+val springMockkVersion = "5.0.1"
 
 val configBuildDir = "${layout.buildDirectory.get()}/config"
 

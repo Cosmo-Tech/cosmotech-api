@@ -47,7 +47,7 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.ninjasquad.springmockk.SpykBean
+import com.ninjasquad.springmockk.MockkSpyBean
 import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.awspring.cloud.s3.S3Template
@@ -109,7 +109,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   @Autowired lateinit var s3Template: S3Template
   @Autowired lateinit var resourceLoader: ResourceLoader
   @Autowired lateinit var writerJdbcTemplate: JdbcTemplate
-  @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
+  @MockkSpyBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
 
   lateinit var organization: OrganizationCreateRequest
   lateinit var workspace: WorkspaceCreateRequest

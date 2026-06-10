@@ -49,7 +49,7 @@ import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
-import com.ninjasquad.springmockk.SpykBean
+import com.ninjasquad.springmockk.MockkSpyBean
 import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
@@ -96,11 +96,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   private val logger = LoggerFactory.getLogger(RunnerServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"
 
-  @SpykBean private lateinit var eventPublisher: CsmEventPublisher
+  @MockkSpyBean private lateinit var eventPublisher: CsmEventPublisher
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
-  @SpykBean lateinit var datasetApiService: DatasetApiServiceInterface
+  @MockkSpyBean lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @Autowired lateinit var runnerApiService: RunnerApiServiceInterface

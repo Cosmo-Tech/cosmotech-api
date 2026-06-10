@@ -44,7 +44,7 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.ninjasquad.springmockk.SpykBean
+import com.ninjasquad.springmockk.MockkSpyBean
 import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
@@ -90,7 +90,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
-  @SpykBean lateinit var runServiceImpl: RunServiceImpl
+  @MockkSpyBean lateinit var runServiceImpl: RunServiceImpl
   @Autowired lateinit var runApiService: RunApiServiceInterface
   @Autowired lateinit var eventPublisher: com.cosmotech.common.events.CsmEventPublisher
 
