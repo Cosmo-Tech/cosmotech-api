@@ -41,6 +41,11 @@ spring:
         path-style-access-enabled: true
         endpoint: ${csm.platform.s3.endpointUrl}
         checksum-validation-enabled: ${csm.platform.s3.checksumValidationEnabled}
+  web:
+    error:
+      include-stacktrace: never
+      whitelabel:
+        enabled: false
 
 management:
   endpoints:
@@ -176,7 +181,3 @@ api:
   swagger-ui:
     base-path: ${server.servlet.context-path}
   version: ${csm.platform.api.version}
-
-spring.web.error.include-stacktrace: never
-
-spring.web.error.whitelabel.enabled: false
