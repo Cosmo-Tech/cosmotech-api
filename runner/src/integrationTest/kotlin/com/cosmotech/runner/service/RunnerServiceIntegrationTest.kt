@@ -93,6 +93,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   val TEST_USER_MAIL = "fake@mail.fr"
   val CUSTOMERS_FILE_NAME = "customers.csv"
   val CUSTOMERS_5_LINES_FILE_NAME = "customers_5_lines.csv"
+  val GEN_RUN_ID = "run-gen12345"
 
   private val logger = LoggerFactory.getLogger(RunnerServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"
@@ -159,6 +160,10 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
+    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
+        {
+          firstArg<RunStart>().response = GEN_RUN_ID
+        }
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)
@@ -427,11 +432,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     )
 
     logger.info("should delete the Runner and assert there is one less Runner left")
-    val expectedRunId = "run-genid12345"
-    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
-        {
-          firstArg<RunStart>().response = expectedRunId
-        }
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, newRunnerSaved.id)
     // force trigger scheduled cleanup
     runnerScheduledTasks.cleanupArchivedRunners()
@@ -706,11 +706,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(parentRunner.id, childRunner.parentId)
 
     // Delete intermediate parent, child should refer to grandParent
-    val expectedRunId = "run-genid12345"
-    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
-        {
-          firstArg<RunStart>().response = expectedRunId
-        }
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, parentRunner.id)
     // force trigger scheduled cleanup
     runnerScheduledTasks.cleanupArchivedRunners()
@@ -758,11 +753,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(grandParentRunner.id, childRunner2.rootId)
 
     // Delete grand parent
-    val expectedRunId = "run-genid12345"
-    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
-        {
-          firstArg<RunStart>().response = expectedRunId
-        }
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, grandParentRunner.id)
     // force trigger scheduled cleanup
     runnerScheduledTasks.cleanupArchivedRunners()
@@ -998,11 +988,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
           firstArg<HasRunningRuns>().response = true
         }
 
-    val expectedRunId = "run-genid12345"
-    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
-        {
-          firstArg<RunStart>().response = expectedRunId
-        }
     val exception =
         assertThrows<Exception> {
           runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
@@ -1017,11 +1002,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `test on runner delete keep bases datasets but not parameters dataset`() {
-    val expectedRunId = "run-genid12345"
-    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
-        {
-          firstArg<RunStart>().response = expectedRunId
-        }
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     // force trigger scheduled cleanup
     runnerScheduledTasks.cleanupArchivedRunners()
@@ -1329,11 +1309,6 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             workspaceSaved.id,
             runnerSaved.datasets.bases[0],
         )
-    val expectedRunId = "run-genid12345"
-    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
-        {
-          firstArg<RunStart>().response = expectedRunId
-        }
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     // force trigger scheduled cleanup
     runnerScheduledTasks.cleanupArchivedRunners()
@@ -1804,14 +1779,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `startRun send event`() {
-    val expectedRunId = "run-genid12345"
-    every { eventPublisher.publishEvent(any<RunStart>()) } answers
-        {
-          firstArg<RunStart>().response = expectedRunId
-        }
-
     val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-    assertEquals(expectedRunId, run.id)
+    assertEquals(GEN_RUN_ID, run.id)
   }
 
   @Test
@@ -1840,14 +1809,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   @Test
   fun `test getRunner when runner has been started`() {
 
-    val expectedRunId = "run-genid12345"
-    every { eventPublisher.publishEvent(any<RunStart>()) } answers
-        {
-          firstArg<RunStart>().response = expectedRunId
-        }
-
     val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-    assertEquals(expectedRunId, run.id)
+    assertEquals(GEN_RUN_ID, run.id)
 
     // This line points to the fact that the run status is not final, so the getRunner trigger an
     // update
@@ -1856,69 +1819,44 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         {
           firstArg<UpdateRunnerStatus>().response = "Running"
         }
-
     val runnerStarted =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
-    assertEquals(expectedRunId, runnerStarted.lastRunInfo.lastRunId)
+    assertEquals(GEN_RUN_ID, runnerStarted.lastRunInfo.lastRunId)
     assertEquals(LastRunInfo.LastRunStatus.Running, runnerStarted.lastRunInfo.lastRunStatus)
   }
 
   @Test
   fun `test getRunner when runner has been stopped`() {
 
-    val expectedRunId = "run-genid12345"
-
-    every { eventPublisher.publishEvent(any()) } answers
+    every { eventPublisher.publishEvent(match { it is UpdateRunnerStatus }) } answers
         {
-          firstArg<RunStart>().response = expectedRunId
-        } andThenAnswer
-        {
-          // This line points to the fact that the run status is not final, so the getRunner trigger
-          // an update
-          // for lastRunInfo
           firstArg<UpdateRunnerStatus>().response = "Running"
         } andThenAnswer
         {
-          // Mock the RunStop event
-        } andThenAnswer
-        {
-          // Simulate the workflow's stop and the runner.lastInfo update after workflow's stop
-          // For the getRunner Called at the end on the test
           firstArg<UpdateRunnerStatus>().response = "Failed"
         }
-
     val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-    assertEquals(expectedRunId, run.id)
+    assertEquals(GEN_RUN_ID, run.id)
 
     runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
     val runnerStarted =
         runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
 
-    assertEquals(expectedRunId, runnerStarted.lastRunInfo.lastRunId)
+    assertEquals(GEN_RUN_ID, runnerStarted.lastRunInfo.lastRunId)
     assertEquals(LastRunInfo.LastRunStatus.Failed, runnerStarted.lastRunInfo.lastRunStatus)
   }
 
   @Test
   fun `test to stop a runner when is already finished but lastRunInfo is not updated to Successful`() {
-
-    val expectedRunId = "run-genid12345"
-
-    every { eventPublisher.publishEvent(any()) } answers
+    every { eventPublisher.publishEvent(match { it is UpdateRunnerStatus }) } answers
         {
-          firstArg<RunStart>().response = expectedRunId
-        } andThenAnswer
-        {
-          // This line points to the fact that the run status is not final, so the getRunner trigger
-          // an update
-          // for lastRunInfo
           firstArg<UpdateRunnerStatus>().response = "Successful"
         }
 
     val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-    assertEquals(expectedRunId, run.id)
-
+    assertEquals(GEN_RUN_ID, run.id)
     assertDoesNotThrow {
       runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     }
@@ -1926,22 +1864,12 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `test to stop a runner when is already finished but lastRunInfo is not updated to Failed`() {
-
-    val expectedRunId = "run-genid12345"
-
-    every { eventPublisher.publishEvent(any()) } answers
+    every { eventPublisher.publishEvent(match { it is UpdateRunnerStatus }) } answers
         {
-          firstArg<RunStart>().response = expectedRunId
-        } andThenAnswer
-        {
-          // This line points the fact that the run status is not final so the getRunner trigger an
-          // update
-          // for lastRunInfo
           firstArg<UpdateRunnerStatus>().response = "Failed"
         }
-
     val run = runnerApiService.startRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
-    assertEquals(expectedRunId, run.id)
+    assertEquals(GEN_RUN_ID, run.id)
 
     assertDoesNotThrow {
       runnerApiService.stopRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
