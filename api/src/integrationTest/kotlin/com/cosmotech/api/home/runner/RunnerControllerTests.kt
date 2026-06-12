@@ -635,6 +635,11 @@ class RunnerControllerTests : ControllerTestBase() {
 
   @Test
   fun delete_runner() {
+    val expectedRunId = "run-genid12345"
+    every { eventPublisher.publishEvent(any<RunStart>()) } answers
+        {
+          firstArg<RunStart>().response = expectedRunId
+        }
 
     val runnerId =
         createRunnerAndReturnId(
