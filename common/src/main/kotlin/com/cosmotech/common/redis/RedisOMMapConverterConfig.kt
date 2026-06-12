@@ -24,7 +24,8 @@ import org.springframework.data.convert.WritingConverter
  *
  * BeanFactoryPostProcessor runs BEFORE any repository beans are instantiated, ensuring the
  * converters are registered before SimpleRedisDocumentRepository creates its internal
- * MappingRedisOMConverter.
+ * MappingRedisOMConverter. See the issue created:
+ * https://github.com/redis/redis-om-spring/issues/755
  */
 @Configuration
 open class RedisOMMapConverterConfig {
