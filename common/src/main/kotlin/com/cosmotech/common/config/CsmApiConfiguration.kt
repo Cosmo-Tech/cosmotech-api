@@ -20,6 +20,7 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.http.MediaType
+import org.springframework.http.converter.ResourceHttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.http.converter.yaml.JacksonYamlHttpMessageConverter
 import org.springframework.scheduling.annotation.EnableAsync
@@ -57,6 +58,15 @@ open class CsmApiConfiguration {
   open fun jsonHttpMessageConverter(): JacksonJsonHttpMessageConverter {
     val jacksonJsonHttpMessageConverter = JacksonJsonHttpMessageConverter(jsonObjectMapper())
     return jacksonJsonHttpMessageConverter
+  }
+
+  @Bean
+  open fun resourceHttpMessageConverter(): ResourceHttpMessageConverter {
+    val resourceHttpMessageConverter = ResourceHttpMessageConverter()
+    val supportedMediaTypes = resourceHttpMessageConverter.supportedMediaTypes.toMutableList()
+    supportedMediaTypes.add(MediaType.APPLICATION_OCTET_STREAM)
+    resourceHttpMessageConverter.supportedMediaTypes = supportedMediaTypes
+    return resourceHttpMessageConverter
   }
 }
 

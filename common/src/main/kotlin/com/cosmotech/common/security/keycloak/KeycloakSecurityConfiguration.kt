@@ -173,7 +173,6 @@ class KeycloakJwtGrantedAuthoritiesConverter(
             .stream()
             .filter(Objects::nonNull)
             .map { role -> SimpleGrantedAuthority((role as String)) }
-            .filter(Objects::nonNull)
             .collect(Collectors.toList())
       } else if (rawRoleClaim != null) {
         logger.debug(
