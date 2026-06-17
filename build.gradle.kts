@@ -57,9 +57,7 @@ version = scmVersion.version
 val jacksonAnnotationVersion = "2.20"
 val jacksonDatabindVersion = "2.20.1"
 val jacksonModuleKotlinVersion = "3.0.4"
-val springWebVersion = "6.2.14"
 val bouncyCastleJdk18Version = "1.83"
-val springBootVersion = "3.5.8"
 val springSecurityJwtVersion = "1.1.1.RELEASE"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
@@ -309,22 +307,8 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation(
         "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springOauthAutoConfigureVersion}"
-    ) {
-      constraints {
-        implementation("com.fasterxml.jackson.core:jackson-annotations:$jacksonAnnotationVersion")
-        implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")
-        implementation("org.springframework:spring-web:$springWebVersion")
-        implementation("org.springframework.boot:spring-boot-autoconfigure:$springBootVersion")
-        implementation(
-            "org.springframework.security:spring-security-jwt:${springSecurityJwtVersion}"
-        ) {
-          exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
-          constraints {
-            implementation("org.bouncycastle:bcpkix-jdk18on:${bouncyCastleJdk18Version}")
-          }
-        }
-      }
-    }
+    )
+    implementation("org.openapitools:jackson-databind-nullable:0.2.10")
     implementation("org.springframework.security:spring-security-oauth2-jose")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
@@ -496,7 +480,7 @@ subprojects {
               "exceptionHandler" to false,
               "serviceInterface" to true,
               "documentationProvider" to "none",
-              "useSpringBoot3" to true,
+              "useSpringBoot4" to true,
               "useTags" to true,
               "beanQualifiers" to true,
               "modelMutable" to true,
