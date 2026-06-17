@@ -44,6 +44,7 @@ import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.service.toGenericSecurity
 import java.io.ByteArrayOutputStream
 import java.time.Instant
+import kotlin.math.min
 import org.apache.commons.lang3.StringUtils
 import org.postgresql.copy.CopyManager
 import org.postgresql.core.BaseConnection
@@ -161,7 +162,7 @@ class DatasetServiceImpl(
             .initSecurity(datasetCreateRequest.security.toGenericSecurity(datasetId))
             .toResourceSecurity()
 
-    val datasetParts =
+    val datasetParts: MutableList<DatasetPart>? =
         datasetCreateRequest.parts
             ?.map { part ->
               val constructDatasetPart =
@@ -576,62 +577,16 @@ class DatasetServiceImpl(
 
     val defaultPageSize = csmPlatformProperties.databases.resources.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
-    val isAdmin =
-        csmRbac.isAdmin(dataset.security.toGenericSecurity(datasetId), getCommonRolesDefinition())
 
-    val result: MutableList<DatasetPart>
-    val rbacEnabled = !isAdmin && this.csmPlatformProperties.rbac.enabled
-    if (pageable == null) {
-      result =
-          findAllPaginated(defaultPageSize) {
-            if (rbacEnabled) {
-              val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
-              datasetPartRepository
-                  .findByOrganizationIdAndWorkspaceIdAndDatasetId(
-                      organizationId,
-                      workspaceId,
-                      datasetId,
-                      currentUser,
-                      it,
-                  )
-                  .toList()
-            } else {
-              datasetPartRepository
-                  .findByOrganizationIdAndWorkspaceIdAndDatasetIdNoSecurity(
-                      organizationId,
-                      workspaceId,
-                      datasetId,
-                      it,
-                  )
-                  .toList()
-            }
-          }
+    return if (pageable == null) {
+      dataset.parts
     } else {
-      result =
-          if (rbacEnabled) {
-            val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
-            datasetPartRepository
-                .findByOrganizationIdAndWorkspaceIdAndDatasetId(
-                    organizationId,
-                    workspaceId,
-                    datasetId,
-                    currentUser,
-                    pageable,
-                )
-                .toList()
-          } else {
-            datasetPartRepository
-                .findByOrganizationIdAndWorkspaceIdAndDatasetIdNoSecurity(
-                    organizationId,
-                    workspaceId,
-                    datasetId,
-                    pageable,
-                )
-                .toList()
-          }
+      val start = pageable.offset.toInt()
+      dataset.parts.subList(
+          min(start, dataset.parts.size),
+          min(start + pageable.pageSize, dataset.parts.size),
+      )
     }
-
-    return result
   }
 
   override fun queryData(
