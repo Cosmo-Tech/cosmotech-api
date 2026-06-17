@@ -4,6 +4,7 @@ package com.cosmotech.runner.service
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.containerregistry.ContainerRegistryService
+import com.cosmotech.common.events.CleanUpRun
 import com.cosmotech.common.events.CsmEventPublisher
 import com.cosmotech.common.events.GetRunnerAttachedToDataset
 import com.cosmotech.common.events.HasRunningRuns
@@ -434,6 +435,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     logger.info("should delete the Runner and assert there is one less Runner left")
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, newRunnerSaved.id)
     // force trigger scheduled cleanup
+    every { eventPublisher.publishEvent(match { it is UpdateRunnerStatus }) } answers
+        {
+          firstArg<UpdateRunnerStatus>().response = "Successful"
+        }
+    every { eventPublisher.publishEvent(match { it is CleanUpRun }) } answers
+        {
+          firstArg<CleanUpRun>().response = true
+        }
+    // this triggers the call to update runner status
+    runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, newRunnerSaved.id)
     runnerScheduledTasks.cleanupArchivedRunners()
     val runnerListAfterDelete =
         runnerApiService.listRunners(organizationSaved.id, workspaceSaved.id, null, null)
@@ -1004,6 +1015,16 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test on runner delete keep bases datasets but not parameters dataset`() {
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     // force trigger scheduled cleanup
+    every { eventPublisher.publishEvent(match { it is UpdateRunnerStatus }) } answers
+        {
+          firstArg<UpdateRunnerStatus>().response = "Successful"
+        }
+    every { eventPublisher.publishEvent(match { it is CleanUpRun }) } answers
+        {
+          firstArg<CleanUpRun>().response = true
+        }
+    // this triggers the call to update runner status
+    runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     runnerScheduledTasks.cleanupArchivedRunners()
 
     runnerSaved.datasets.bases.forEach { dataset ->
