@@ -1208,6 +1208,7 @@ components:
           example: "user@company.com"
         role:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: The assigned role
           example: "editor"
       required:

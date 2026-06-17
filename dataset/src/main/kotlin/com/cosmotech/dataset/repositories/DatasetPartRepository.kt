@@ -3,7 +3,6 @@
 package com.cosmotech.dataset.repositories
 
 import com.cosmotech.common.redis.Sanitize
-import com.cosmotech.common.redis.SecurityConstraint
 import com.cosmotech.dataset.domain.DatasetPart
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
@@ -24,29 +23,6 @@ interface DatasetPartRepository : RedisDocumentRepository<DatasetPart, String> {
       @Sanitize @Param("datasetId") datasetId: String,
       @Sanitize @Param("datasetPartId") datasetPartId: String,
   ): Optional<DatasetPart>
-
-  @Query(
-      "(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} " +
-          "@datasetId:{\$datasetId}) \$securityConstraint"
-  )
-  fun findByOrganizationIdAndWorkspaceIdAndDatasetId(
-      @Sanitize @Param("organizationId") organizationId: String,
-      @Sanitize @Param("workspaceId") workspaceId: String,
-      @Sanitize @Param("datasetId") datasetId: String,
-      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
-      pageRequest: PageRequest,
-  ): Page<DatasetPart>
-
-  @Query(
-      "(@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} " +
-          "@datasetId:{\$datasetId})"
-  )
-  fun findByOrganizationIdAndWorkspaceIdAndDatasetIdNoSecurity(
-      @Sanitize @Param("organizationId") organizationId: String,
-      @Sanitize @Param("workspaceId") workspaceId: String,
-      @Sanitize @Param("datasetId") datasetId: String,
-      pageRequest: PageRequest,
-  ): Page<DatasetPart>
 
   @Query(
       "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} " +
