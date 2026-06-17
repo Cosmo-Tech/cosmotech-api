@@ -38,7 +38,7 @@ class ResourceScanner {
   ) {
     val metadata = Metadata()
     metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name)
-    var mimetype = tika.detector.detect(inputStream, metadata)
+    val mimetype = tika.detector.detect(BufferedInputStream(inputStream), metadata)
     this.validateMimeType(mimetype.toString(), name, authorizedMimeTypes)
     this.logger.info("Detected type for file $name: $mimetype")
     if (mimetype.subtype == ZIP_MIME_TYPE) {

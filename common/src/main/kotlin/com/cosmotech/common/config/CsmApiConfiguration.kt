@@ -11,6 +11,8 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import org.springframework.boot.EnvironmentPostProcessor
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
+import org.springframework.boot.http.converter.autoconfigure.ClientHttpMessageConvertersCustomizer
+import org.springframework.boot.http.converter.autoconfigure.ServerHttpMessageConvertersCustomizer
 import org.springframework.boot.logging.DeferredLog
 import org.springframework.context.annotation.AdviceMode
 import org.springframework.context.annotation.Bean
@@ -20,6 +22,7 @@ import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.http.MediaType
+import org.springframework.http.converter.HttpMessageConverters
 import org.springframework.http.converter.ResourceHttpMessageConverter
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.http.converter.yaml.JacksonYamlHttpMessageConverter
@@ -39,8 +42,7 @@ open class CsmApiConfiguration {
           BasicThreadFactory.builder().namingPattern("csm-event-handler-%d").build()
       )
 
-  @Bean
-  open fun yamlHttpMessageConverter(): JacksonYamlHttpMessageConverter {
+  fun yamlHttpMessageConverter(): JacksonYamlHttpMessageConverter {
     val jacksonYamlHttpMessageConverter = JacksonYamlHttpMessageConverter(yamlObjectMapper())
     jacksonYamlHttpMessageConverter.supportedMediaTypes =
         listOf(
@@ -54,19 +56,41 @@ open class CsmApiConfiguration {
     return jacksonYamlHttpMessageConverter
   }
 
-  @Bean
-  open fun jsonHttpMessageConverter(): JacksonJsonHttpMessageConverter {
-    val jacksonJsonHttpMessageConverter = JacksonJsonHttpMessageConverter(jsonObjectMapper())
-    return jacksonJsonHttpMessageConverter
+  fun jsonHttpMessageConverter(): JacksonJsonHttpMessageConverter {
+    val converter = JacksonJsonHttpMessageConverter(jsonObjectMapper())
+    converter.supportedMediaTypes =
+        converter.supportedMediaTypes + MediaType.APPLICATION_OCTET_STREAM
+    return converter
   }
 
-  @Bean
-  open fun resourceHttpMessageConverter(): ResourceHttpMessageConverter {
+  fun resourceHttpMessageConverter(): ResourceHttpMessageConverter {
     val resourceHttpMessageConverter = ResourceHttpMessageConverter()
     val supportedMediaTypes = resourceHttpMessageConverter.supportedMediaTypes.toMutableList()
     supportedMediaTypes.add(MediaType.APPLICATION_OCTET_STREAM)
     resourceHttpMessageConverter.supportedMediaTypes = supportedMediaTypes
     return resourceHttpMessageConverter
+  }
+
+  @Bean
+  fun customClientConvertersCustomizer(): ClientHttpMessageConvertersCustomizer {
+    return ClientHttpMessageConvertersCustomizer {
+        clientBuilder: HttpMessageConverters.ClientBuilder ->
+      clientBuilder
+          .addCustomConverter(resourceHttpMessageConverter())
+          .withYamlConverter(yamlHttpMessageConverter())
+          .withJsonConverter(jsonHttpMessageConverter())
+    }
+  }
+
+  @Bean
+  fun customServerConvertersCustomizer(): ServerHttpMessageConvertersCustomizer {
+    return ServerHttpMessageConvertersCustomizer {
+        serverBuilder: HttpMessageConverters.ServerBuilder ->
+      serverBuilder
+          .addCustomConverter(resourceHttpMessageConverter())
+          .withYamlConverter(yamlHttpMessageConverter())
+          .withJsonConverter(jsonHttpMessageConverter())
+    }
   }
 }
 
