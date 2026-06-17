@@ -9,11 +9,17 @@ class TriggerRunnerEvent(
     val runnerId: String,
 ) : CsmRequestResponseEvent<String>(publisher)
 
-class RunnerDeleted(
+class RunnerPropagateDelete(
     publisher: Any,
     val organizationId: String,
     val workspaceId: String,
     val runnerId: String,
+) : CsmEvent(publisher)
+
+class RunnerDeleted(
+    publisher: Any,
+    val organizationId: String,
+    val workspaceId: String,
     val datasetParameterId: String,
 ) : CsmEvent(publisher)
 
@@ -31,3 +37,5 @@ class GetRunnerAttachedToDataset(
     val workspaceId: String,
     val datasetId: String,
 ) : CsmRequestResponseEvent<String>(publisher)
+
+class CleanUpRun(publisher: Any, val runId: String) : CsmRequestResponseEvent<Boolean>(publisher)

@@ -3,10 +3,11 @@
 package com.cosmotech.run.service
 
 import com.cosmotech.common.CsmPhoenixService
+import com.cosmotech.common.events.CleanUpRun
 import com.cosmotech.common.events.RunDeleted
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.RunStop
-import com.cosmotech.common.events.RunnerDeleted
+import com.cosmotech.common.events.RunnerPropagateDelete
 import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.id.generateId
@@ -332,8 +333,11 @@ class RunServiceImpl(
         getRun(runner.organizationId, runner.workspaceId, runner.id, runner.lastRunInfo.lastRunId!!)
     run.hasPermission(PERMISSION_WRITE)
 
-    check(!(run.state!!.isTerminal())) {
-      "Run ${run.id} is already in a terminal state (${run.state}). It can't be stopped."
+    if (!(run.state!!.isTerminal())) {
+      logger.warn(
+          "Run ${run.id} is already in a terminal state (${run.state}). It can't be stopped."
+      )
+      return // exiting, run already stopped
     }
 
     workflowService.stopWorkflow(run)
@@ -347,9 +351,25 @@ class RunServiceImpl(
     csmRbac.verify(runner.getRbac(), permission, getRunnerRolesDefinition())
   }
 
-  @EventListener(RunnerDeleted::class)
-  fun onRunnerDeleted(runnerDeleted: RunnerDeleted) {
-    listAllRuns(runnerDeleted.organizationId, runnerDeleted.workspaceId, runnerDeleted.runnerId)
+  @EventListener(RunnerPropagateDelete::class)
+  fun onRunnerDeleted(propagateEvent: RunnerPropagateDelete) {
+    listAllRuns(propagateEvent.organizationId, propagateEvent.workspaceId, propagateEvent.runnerId)
         .forEach { deleteRun(it) }
+  }
+
+  @EventListener(CleanUpRun::class)
+  fun onCleanUp(cleanUp: CleanUpRun) {
+    val run =
+        runRepository.findById(cleanUp.runId).orElseThrow {
+          throw CsmResourceNotFoundException("Run '${cleanUp.runId}' not found during cleanup")
+        }
+
+    val runState = getRunStatus(run).state
+    if (runState == RunState.Successful) {
+      runRepository.delete(run)
+      cleanUp.response = true
+    } else {
+      cleanUp.response = false
+    }
   }
 }

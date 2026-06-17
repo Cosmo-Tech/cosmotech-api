@@ -3,11 +3,13 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.common.CsmPhoenixService
+import com.cosmotech.common.events.CleanUpRun
 import com.cosmotech.common.events.HasRunningRuns
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.RunStop
 import com.cosmotech.common.events.RunType
 import com.cosmotech.common.events.RunnerDeleted
+import com.cosmotech.common.events.RunnerPropagateDelete
 import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.common.exceptions.CsmClientException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
@@ -118,7 +120,7 @@ class RunnerService(
     csmRbac.verify(workspace!!.security.toGenericSecurity(workspace!!.id), permission)
   }
 
-  fun deleteInstance(runnerInstance: RunnerInstance) {
+  fun archiveInstance(runnerInstance: RunnerInstance) {
     val runner = runnerInstance.getRunnerDataObject()
 
     // Check there are no running runs
@@ -141,22 +143,20 @@ class RunnerService(
       }
       runnerRepository.save(it)
     }
-
     // Update new root ids
     newRoots.forEach { updateChildrenRootId(parent = it, newRootId = it.id) }
 
     // Notify the deletion
-    val runnerDeleted =
-        RunnerDeleted(
+    val runnerPropagate =
+        RunnerPropagateDelete(
             this,
             runner.organizationId,
             runner.workspaceId,
             runner.id,
-            runner.datasets.parameter,
         )
-    this.eventPublisher.publishEvent(runnerDeleted)
-
-    return runnerRepository.delete(runnerInstance.getRunnerDataObject())
+    this.eventPublisher.publishEvent(runnerPropagate)
+    // start the delete run
+    this.startRunWith(runnerInstance, RunType.Delete)
   }
 
   private fun listAllRunnerByParentId(
@@ -297,8 +297,24 @@ class RunnerService(
   }
 
   fun cleanupArchived() {
+    // do a cleanup on runner that are archived and have a last run status of successful
     val archivedRunners: List<Runner> = runnerRepository.findAllByStatus(RunnerStatus.Archived)
-    archivedRunners.forEach { runner -> deleteInstance(RunnerInstance().initializeFrom(runner)) }
+
+    archivedRunners.forEach { runner ->
+      val cleanupEvent = CleanUpRun(this, runner.lastRunInfo.lastRunId!!)
+      this.eventPublisher.publishEvent(cleanupEvent)
+      if (cleanupEvent.response == true) {
+        runnerRepository.delete(runner)
+        val runnerEvent =
+            RunnerDeleted(
+                this,
+                runner.organizationId,
+                runner.workspaceId,
+                runner.datasets.parameter,
+            )
+        this.eventPublisher.publishEvent(runnerEvent)
+      }
+    }
   }
 
   @Suppress("TooManyFunctions")
