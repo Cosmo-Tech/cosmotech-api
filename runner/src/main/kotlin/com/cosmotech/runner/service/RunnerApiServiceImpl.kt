@@ -125,9 +125,8 @@ internal class RunnerApiServiceImpl(
     // Set runner status to Archived for future deletion (allow async process)
     runnerInstance.runner.status = RunnerStatus.Archived
     runnerService.saveInstance(runnerInstance.stamp())
-    // prevent concurrent run. Protect from data confusion (data write after run deletion)
-    runnerService.stopLastRunOf(runnerInstance)
-    runnerService.startRunWith(runnerInstance, RunType.Delete)
+
+    runnerService.archiveInstance(runnerInstance)
   }
 
   override fun listRunners(
