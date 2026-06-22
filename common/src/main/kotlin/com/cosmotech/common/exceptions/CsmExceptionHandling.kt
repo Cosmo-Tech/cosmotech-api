@@ -23,6 +23,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
+import org.springframework.web.multipart.support.MissingServletRequestPartException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import org.springframework.web.util.BindErrorUtils
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
@@ -201,7 +202,7 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
     return response
   }
 
-  @ExceptionHandler
+  @ExceptionHandler(QuantityFormatException::class)
   fun handleQuantityFormatException(exception: QuantityFormatException): ProblemDetail {
     val badRequestStatus = HttpStatus.BAD_REQUEST
     val response = ProblemDetail.forStatus(badRequestStatus)
@@ -210,5 +211,14 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
       response.detail = exception.message
     }
     return response
+  }
+
+  override fun handleMissingServletRequestPart(
+      ex: MissingServletRequestPartException,
+      headers: HttpHeaders,
+      status: HttpStatusCode,
+      request: WebRequest,
+  ): ResponseEntity<Any>? {
+    return super.handleExceptionInternal(ex, ex.body, headers, status, request)
   }
 }

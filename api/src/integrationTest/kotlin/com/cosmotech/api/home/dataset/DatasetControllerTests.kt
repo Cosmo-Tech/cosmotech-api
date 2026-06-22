@@ -625,6 +625,33 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
+  fun create_dataset_part_with_no_file() {
+
+    val datasetId =
+        createDatasetAndReturnId(mvc, organizationId, workspaceId, constructDatasetCreateRequest())
+
+    val datasetPartCreateRequest =
+        MockMultipartFile(
+            "datasetPartCreateRequest",
+            null,
+            MediaType.APPLICATION_JSON_VALUE,
+            JSONObject(constructDatasetPartCreateRequest()).toString().byteInputStream(),
+        )
+
+    mvc.perform(
+            multipart(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts"
+                )
+                .file(datasetPartCreateRequest)
+                .withPlatformAdminHeader()
+                .accept(MediaType.APPLICATION_JSON)
+                .with(csrf())
+        )
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail").value("Required part 'file' is not present."))
+  }
+
+  @Test
   fun delete_dataset_part() {
 
     val datasetId =
