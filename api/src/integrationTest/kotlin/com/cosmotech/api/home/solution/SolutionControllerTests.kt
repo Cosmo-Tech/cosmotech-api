@@ -714,6 +714,57 @@ class SolutionControllerTests : ControllerTestBase() {
   }
 
   @Test
+  fun update_solution_parameter_with_null_values() {
+
+    val parameterId = "my_parameter_id"
+
+    val solutionId =
+        createSolutionAndReturnId(
+            mvc,
+            organizationId,
+            constructSolutionCreateRequest(
+                parameters =
+                    mutableListOf(
+                        RunTemplateParameterCreateRequest(
+                            parameterId,
+                            "this_is_a_vartype",
+                            "my_parameter_desc",
+                            mutableMapOf("fr" to "this_is_a_label"),
+                            "this_is_a_default_value",
+                            "this_is_a_minimal_value",
+                            "this_is_a_maximal_value",
+                            mutableMapOf(
+                                "you_can_put" to "whatever_you_want_here",
+                                "even" to JSONObject(mapOf("object" to "if_you_want")),
+                            ),
+                        )
+                    )
+            ),
+        )
+
+    mvc.perform(
+            patch("/organizations/$organizationId/solutions/$solutionId/parameters/$parameterId")
+                .withPlatformAdminHeader()
+                .content(
+                    """
+                        {
+                            "description": null,
+                            "varType":"",
+                            "labels": null,
+                            "minValue": null,
+                            "maxValue": null,
+                            "additionalData": null
+                        }
+                    """
+                )
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(csrf())
+        )
+        .andExpect(status().is4xxClientError)
+        .andExpect(jsonPath("$.detail").value("varType: cannot be empty"))
+  }
+
+  @Test
   fun list_solution_parameters() {
 
     val parameterId = "parameter1"
