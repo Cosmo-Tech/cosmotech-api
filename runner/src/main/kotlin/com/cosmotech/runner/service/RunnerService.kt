@@ -849,7 +849,7 @@ class RunnerService(
       csmRbac.checkEntityExists(
           runner.getRbac(),
           userId,
-          "User '$userId' not found in Runner '${runner.id}'",
+          "Entity '$userId' not found in Runner '${runner.id}'",
       )
     }
 
