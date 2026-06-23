@@ -585,7 +585,7 @@ class SolutionServiceImpl(
     csmRbac.checkEntityExists(
         solution.security.toGenericSecurity(solutionId),
         identityId,
-        "User '$identityId' not found in Solution '$solutionId'",
+        "Entity '$identityId' not found in Solution '$solutionId'",
     )
     val rbacSecurity =
         csmRbac.setEntityRole(

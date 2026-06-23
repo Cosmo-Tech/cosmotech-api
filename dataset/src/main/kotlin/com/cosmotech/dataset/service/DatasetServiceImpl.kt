@@ -403,7 +403,7 @@ class DatasetServiceImpl(
     csmRbac.checkEntityExists(
         dataset.security.toGenericSecurity(datasetId),
         identityId,
-        "User '$identityId' not found in Dataset '$datasetId'",
+        "Entity '$identityId' not found in Dataset '$datasetId'",
     )
     val rbacSecurity =
         csmRbac.setEntityRole(

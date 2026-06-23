@@ -502,7 +502,7 @@ internal class WorkspaceServiceImpl(
     csmRbac.checkEntityExists(
         workspace.security.toGenericSecurity(workspaceId),
         identityId,
-        "User '$identityId' not found in Workspace '$workspaceId'",
+        "Entity '$identityId' not found in Workspace '$workspaceId'",
     )
     val rbacSecurity =
         csmRbac.setEntityRole(
