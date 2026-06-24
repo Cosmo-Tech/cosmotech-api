@@ -23,6 +23,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
+import org.springframework.web.multipart.MultipartException
 import org.springframework.web.multipart.support.MissingServletRequestPartException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import org.springframework.web.util.BindErrorUtils
@@ -204,6 +205,17 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
 
   @ExceptionHandler(QuantityFormatException::class)
   fun handleQuantityFormatException(exception: QuantityFormatException): ProblemDetail {
+    val badRequestStatus = HttpStatus.BAD_REQUEST
+    val response = ProblemDetail.forStatus(badRequestStatus)
+    response.type = URI.create(httpStatusCodeTypePrefix + badRequestStatus.value())
+    if (exception.message != null) {
+      response.detail = exception.message
+    }
+    return response
+  }
+
+  @ExceptionHandler(MultipartException::class)
+  fun handleMultipartException(exception: MultipartException): ProblemDetail {
     val badRequestStatus = HttpStatus.BAD_REQUEST
     val response = ProblemDetail.forStatus(badRequestStatus)
     response.type = URI.create(httpStatusCodeTypePrefix + badRequestStatus.value())
