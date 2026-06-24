@@ -28,8 +28,5 @@ object OrganizationConstants {
         """{"id":"$NEW_USER_ID","role":"$NEW_USER_ROLE"}"""
   }
 
-  object Errors {
-    val emptyNameOrganizationCreationRequestError =
-        """{"type":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400","title":"Bad Request","status":400,"detail":"name: cannot be empty","instance":"/organizations"}"""
-  }
+  object Errors {}
 }

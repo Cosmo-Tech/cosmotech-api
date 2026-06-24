@@ -615,10 +615,9 @@ tasks.getByName("spotlessKotlinGradle") {
 val copySubProjectsDetektReportsTasks =
     subprojects.flatMap { subProject ->
       listOf("html", "xml", "txt", "sarif").map { format ->
-        val formatCapitalized = format
         val copyTask =
             tasks.register<Copy>(
-                "detektCopy${formatCapitalized}ReportFor" +
+                "detektCopy${format}ReportFor" +
                     "${subProject.projectDir.relativeTo(rootDir)}".replace("/", "_")
             ) {
               group = "detekt"
