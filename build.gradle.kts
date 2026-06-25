@@ -54,7 +54,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 // Dependencies version
-val jacksonModulesVersion = "3.0.4"
+val jacksonBom = "3.2.0"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
 val redisOmSpringVersion = "2.0.7"
@@ -287,6 +287,7 @@ subprojects {
     implementation(
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
     )
+    implementation(platform("tools.jackson:jackson-bom:$jacksonBom"))
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
@@ -294,8 +295,8 @@ subprojects {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
     implementation("org.springframework.boot:spring-boot-starter-jetty")
-    implementation("tools.jackson.module:jackson-module-kotlin:$jacksonModulesVersion")
-    implementation("tools.jackson.dataformat:jackson-dataformat-yaml:$jacksonModulesVersion")
+    implementation("tools.jackson.module:jackson-module-kotlin")
+    implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
     implementation("io.kubernetes:client-java:${kubernetesClientVersion}")
