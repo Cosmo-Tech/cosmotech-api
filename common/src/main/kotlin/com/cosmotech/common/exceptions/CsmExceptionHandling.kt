@@ -140,11 +140,10 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
     val problemDetail = ProblemDetail.forStatus(badRequestStatus)
     problemDetail.type = URI.create(httpStatusCodeTypePrefix + badRequestStatus.value())
     val constraintViolations = exception.constraintViolations
-    problemDetail.detail =
-        constraintViolations.joinToString {
-          val constraint = (it as ConstraintViolationImpl)
-          "${constraint.invalidValue}:${constraint.message}"
-        }
+    problemDetail.detail = constraintViolations.joinToString {
+      val constraint = (it as ConstraintViolationImpl)
+      "${constraint.invalidValue}:${constraint.message}"
+    }
     return problemDetail
   }
 

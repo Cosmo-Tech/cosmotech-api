@@ -37,8 +37,9 @@ class RedisAspect {
       applyLambda: (Int) -> Unit,
   ) {
     val parameterAnnotations = methodSignature.method.parameterAnnotations
-    val annotatedParamIndexes =
-        parameterAnnotations.map { it.any { annotation -> annotation is T } }
+    val annotatedParamIndexes = parameterAnnotations.map {
+      it.any { annotation -> annotation is T }
+    }
     annotatedParamIndexes.forEachIndexed { index, toApply ->
       if (toApply) {
         applyLambda(index)

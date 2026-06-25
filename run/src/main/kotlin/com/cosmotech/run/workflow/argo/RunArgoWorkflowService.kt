@@ -86,14 +86,13 @@ internal class RunArgoWorkflowService(
       httpClient = unsafeOkHttpClient
       isDebugging = logger.isTraceEnabled
       setUserAgent("com.cosmotech/cosmotech-api $apiVersion")
-      json =
-          json.apply {
-            gson =
-                gson
-                    .newBuilder()
-                    .registerTypeAdapter(java.time.Instant::class.java, InstantTypeAdapter())
-                    .create()
-          }
+      json = json.apply {
+        gson =
+            gson
+                .newBuilder()
+                .registerTypeAdapter(java.time.Instant::class.java, InstantTypeAdapter())
+                .create()
+      }
     }
   }
 
