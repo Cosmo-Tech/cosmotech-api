@@ -33,11 +33,11 @@ plugins {
   kotlin("jvm") version kotlinCompleteVersion
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.2"
-  id("com.diffplug.spotless") version "8.6.0"
-  id("org.springframework.boot") version "4.0.6" apply false
+  id("com.diffplug.spotless") version "8.7.0"
+  id("org.springframework.boot") version "4.0.7" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.2.2"
-  id("com.github.jk1.dependency-license-report") version "3.1.3"
+  id("com.github.jk1.dependency-license-report") version "3.1.4"
   id("org.jetbrains.kotlinx.kover") version "0.9.8"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
   id("org.openapi.generator") version "7.23.0" apply false
@@ -54,34 +54,30 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 // Dependencies version
-val jacksonAnnotationVersion = "2.20"
-val jacksonDatabindVersion = "2.20.1"
-val jacksonModuleKotlinVersion = "3.0.4"
-val bouncyCastleJdk18Version = "1.83"
-val springSecurityJwtVersion = "1.1.1.RELEASE"
+val jacksonModulesVersion = "3.0.4"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
 val redisOmSpringVersion = "2.0.7"
-val kotlinCoroutinesVersion = "1.10.2"
+val kotlinCoroutinesVersion = "1.11.0"
 val springDocVersion = "3.0.3"
 val swaggerParserVersion = "2.1.42"
 val commonsCsvVersion = "1.14.1"
-val apiValidationVersion = "3.0.2"
+val apiValidationVersion = "3.1.1"
 val kubernetesClientVersion = "22.0.0"
-val orgJsonVersion = "20250517"
-val testNgVersion = "7.11.0"
+val orgJsonVersion = "20260522"
+val testNgVersion = "7.12.0"
 val testContainersRedisVersion = "2.2.4"
-val testContainersPostgreSQLVersion = "1.21.4"
+val testContainersPostgreSQLVersion = "2.0.5"
 val testContainersLocalStackVersion = "1.21.4"
 val commonCompressVersion = "1.28.0"
-val awsSpringVersion = "4.0.0"
+val awsSpringVersion = "4.0.2"
 
 // Checks
 val detektVersion = "1.23.8"
 
 // Tests
-val jUnitBomVersion = "6.0.3"
-val mockkVersion = "1.14.7"
+val jUnitBomVersion = "6.1.0"
+val mockkVersion = "1.14.11"
 val awaitilityKVersion = "4.3.0"
 val springMockkVersion = "5.0.1"
 
@@ -115,7 +111,7 @@ buildscript {
     // here is some relative links:
     // issue : https://github.com/GoogleContainerTools/jib/issues/3714
     // PR: https://github.com/GoogleContainerTools/jib/pull/3717
-    classpath("com.github.luben:zstd-jni:1.5.7-4")
+    classpath("com.github.luben:zstd-jni:1.5.7-11")
   }
 }
 
@@ -222,12 +218,14 @@ subprojects {
     }
   }
 
-  val integrationTestImplementation by
-      configurations.getting { extendsFrom(configurations.testImplementation.get()) }
+  val integrationTestImplementation by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+  }
 
   @Suppress("UNUSED_VARIABLE")
-  val integrationTestRuntimeOnly by
-      configurations.getting { extendsFrom(configurations.testRuntimeOnly.get()) }
+  val integrationTestRuntimeOnly by configurations.getting {
+    extendsFrom(configurations.testRuntimeOnly.get())
+  }
 
   tasks.withType<Detekt>().configureEach {
     buildUponDefaultConfig = true // preconfigure defaults
@@ -296,8 +294,8 @@ subprojects {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
     implementation("org.springframework.boot:spring-boot-starter-jetty")
-    implementation("tools.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
-    implementation("tools.jackson.dataformat:jackson-dataformat-yaml:3.0.4")
+    implementation("tools.jackson.module:jackson-module-kotlin:$jacksonModulesVersion")
+    implementation("tools.jackson.dataformat:jackson-dataformat-yaml:$jacksonModulesVersion")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
     implementation("io.kubernetes:client-java:${kubernetesClientVersion}")
@@ -308,7 +306,6 @@ subprojects {
     implementation(
         "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springOauthAutoConfigureVersion}"
     )
-    implementation("org.openapitools:jackson-databind-nullable:0.2.10")
     implementation("org.springframework.security:spring-security-oauth2-jose")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
@@ -333,7 +330,9 @@ subprojects {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
     testImplementation("org.testng:testng:$testNgVersion")
     testImplementation("com.redis:testcontainers-redis:$testContainersRedisVersion")
-    testImplementation("org.testcontainers:postgresql:$testContainersPostgreSQLVersion")
+    testImplementation(
+        "org.testcontainers:testcontainers-postgresql:$testContainersPostgreSQLVersion"
+    )
     testImplementation("org.testcontainers:localstack:$testContainersLocalStackVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
@@ -612,30 +611,29 @@ tasks.getByName("spotlessKotlinGradle") {
   dependsOn(":cosmotech-api:openApiMarkdownGenerate", ":cosmotech-api:openApiUmlGenerate")
 }
 
-val copySubProjectsDetektReportsTasks =
-    subprojects.flatMap { subProject ->
-      listOf("html", "xml", "txt", "sarif").map { format ->
-        val copyTask =
-            tasks.register<Copy>(
-                "detektCopy${format}ReportFor" +
-                    "${subProject.projectDir.relativeTo(rootDir)}".replace("/", "_")
-            ) {
-              group = "detekt"
-              description =
-                  "Copy sub-projects detekt reports to \$projectDir/build/reports/detekt/\$format"
-              dependsOn("spotlessKotlin", "spotlessKotlinGradle", "spotlessJava")
-              from(
-                  file(
-                      "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"
-                  )
+val copySubProjectsDetektReportsTasks = subprojects.flatMap { subProject ->
+  listOf("html", "xml", "txt", "sarif").map { format ->
+    val copyTask =
+        tasks.register<Copy>(
+            "detektCopy${format}ReportFor" +
+                "${subProject.projectDir.relativeTo(rootDir)}".replace("/", "_")
+        ) {
+          group = "detekt"
+          description =
+              "Copy sub-projects detekt reports to \$projectDir/build/reports/detekt/\$format"
+          dependsOn("spotlessKotlin", "spotlessKotlinGradle", "spotlessJava")
+          from(
+              file(
+                  "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"
               )
-              into("${subProject.parent!!.layout.projectDirectory}/build/reports/detekt/$format")
-            }
-        subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
-        subProject.tasks.withType<CyclonedxDirectTask> { finalizedBy(copyTask) }
-        copyTask
-      }
-    }
+          )
+          into("${subProject.parent!!.layout.projectDirectory}/build/reports/detekt/$format")
+        }
+    subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
+    subProject.tasks.withType<CyclonedxDirectTask> { finalizedBy(copyTask) }
+    copyTask
+  }
+}
 
 tasks.getByName("detekt") { shouldRunAfter(*copySubProjectsDetektReportsTasks.toTypedArray()) }
 

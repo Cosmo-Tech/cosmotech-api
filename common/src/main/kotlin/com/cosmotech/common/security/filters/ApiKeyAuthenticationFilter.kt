@@ -25,17 +25,15 @@ class ApiKeyAuthenticationFilter(val csmPlatformProperties: CsmPlatformPropertie
     logger.debug("API-Key filter starts")
     val allowedApiKeyConsumers = csmPlatformProperties.authorization.allowedApiKeyConsumers
 
-    val matchingApiKeyHeaderRequests =
-        allowedApiKeyConsumers.filter { apiKeyConsumer ->
-          request.getHeader(apiKeyConsumer.apiKeyHeaderName) != null
-        }
+    val matchingApiKeyHeaderRequests = allowedApiKeyConsumers.filter { apiKeyConsumer ->
+      request.getHeader(apiKeyConsumer.apiKeyHeaderName) != null
+    }
 
     if (matchingApiKeyHeaderRequests.isNotEmpty()) {
 
-      val matchingApiKeyConsumer =
-          matchingApiKeyHeaderRequests.firstOrNull { apiKeyConsumer ->
-            request.getHeader(apiKeyConsumer.apiKeyHeaderName) == apiKeyConsumer.apiKey
-          }
+      val matchingApiKeyConsumer = matchingApiKeyHeaderRequests.firstOrNull { apiKeyConsumer ->
+        request.getHeader(apiKeyConsumer.apiKeyHeaderName) == apiKeyConsumer.apiKey
+      }
 
       if (matchingApiKeyConsumer == null) {
         response.status = HttpStatus.FORBIDDEN.value()

@@ -12,8 +12,9 @@ fun getAboutInfo(): JSONObject {
           ?: throw IllegalStateException(
               "Unable to read about info data from 'classpath:/about.json'"
           )
-  val aboutJsonContent =
-      aboutJsonInputStream.use { it.bufferedReader().use(BufferedReader::readText) }
+  val aboutJsonContent = aboutJsonInputStream.use {
+    it.bufferedReader().use(BufferedReader::readText)
+  }
 
   try {
     return JSONObject(aboutJsonContent)

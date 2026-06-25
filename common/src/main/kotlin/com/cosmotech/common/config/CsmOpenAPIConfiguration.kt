@@ -25,8 +25,9 @@ open class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformPropert
             ?: throw IllegalStateException(
                 "Unable to parse OpenAPI definition from 'classpath:/static/openapi.yaml'"
             )
-    val openApiYamlContent =
-        openApiYamlInputStream.use { it.bufferedReader().use(BufferedReader::readText) }
+    val openApiYamlContent = openApiYamlInputStream.use {
+      it.bufferedReader().use(BufferedReader::readText)
+    }
     val openApiYamlParseResult = OpenAPIV3Parser().readContents(openApiYamlContent)
 
     check(openApiYamlParseResult.messages.isNullOrEmpty()) {
