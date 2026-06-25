@@ -34,7 +34,7 @@ plugins {
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.2"
   id("com.diffplug.spotless") version "8.6.0"
-  id("org.springframework.boot") version "4.0.6" apply false
+  id("org.springframework.boot") version "4.1.0" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.2.2"
   id("com.github.jk1.dependency-license-report") version "3.1.3"
