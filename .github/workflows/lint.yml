@@ -24,7 +24,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Set up JDK
       uses: actions/setup-java@v5
@@ -51,7 +51,7 @@ jobs:
       categories: ${{ steps.report-list.outputs.categories }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -70,7 +70,7 @@ jobs:
         run: ./gradlew detekt
 
       - name: Save reports as artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: ${{ always() }}
         with:
           name: sarif-reports
@@ -94,7 +94,7 @@ jobs:
 
     steps:
       - name: Retrieve reports
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: sarif-reports
           path: sarif
@@ -110,6 +110,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Actions Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Spell Check Repo
-        uses: crate-ci/typos@v1.43.5
+        uses: crate-ci/typos@v1.47.2
