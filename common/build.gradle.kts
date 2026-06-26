@@ -13,7 +13,7 @@ val jUnitBomVersion = "6.0.1"
 
 dependencies {
   implementation("org.apache.httpcomponents.client5:httpclient5")
-  implementation("org.springframework.boot:spring-boot-starter-restclient:4.0.7")
+  implementation("org.springframework.boot:spring-boot-starter-restclient:4.1.0")
   implementation("org.hashids:hashids:${hashidsVersion}")
   implementation("com.redis:testcontainers-redis:${testContainersRedisVersion}")
   implementation("org.testcontainers:testcontainers-postgresql:${testContainersPostgreSQLVersion}")
