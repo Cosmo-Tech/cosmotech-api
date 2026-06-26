@@ -58,6 +58,7 @@ Models/RunnerResourceSizing.md
 Models/RunnerRole.md
 Models/RunnerRunTemplateParameterValue.md
 Models/RunnerSecurity.md
+Models/RunnerStatus.md
 Models/RunnerUpdateRequest.md
 Models/RunnerValidationStatus.md
 Models/Solution.md

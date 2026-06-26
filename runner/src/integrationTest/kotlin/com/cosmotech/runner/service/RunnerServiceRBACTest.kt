@@ -4,6 +4,8 @@ package com.cosmotech.runner.service
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.containerregistry.ContainerRegistryService
+import com.cosmotech.common.events.CsmEventPublisher
+import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.exceptions.CsmAccessForbiddenException
 import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.common.rbac.PERMISSION_DELETE
@@ -81,6 +83,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val TEST_USER_MAIL = "testuser@mail.fr"
 
+  @MockkSpyBean private lateinit var eventPublisher: CsmEventPublisher
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
   @MockkSpyBean lateinit var datasetApiService: DatasetApiServiceInterface
@@ -112,6 +115,10 @@ class RunnerServiceRBACTest : CsmTestBase() {
         containerRegistryService,
     )
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
+    every { eventPublisher.publishEvent(any<RunStart>()) } answers
+        {
+          firstArg<RunStart>().response = "run-gen12345"
+        }
   }
 
   @TestFactory

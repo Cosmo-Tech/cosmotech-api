@@ -3,10 +3,13 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.common.CsmPhoenixService
+import com.cosmotech.common.events.CleanUpRun
 import com.cosmotech.common.events.HasRunningRuns
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.RunStop
+import com.cosmotech.common.events.RunType
 import com.cosmotech.common.events.RunnerDeleted
+import com.cosmotech.common.events.RunnerPropagateDelete
 import com.cosmotech.common.events.UpdateRunnerStatus
 import com.cosmotech.common.exceptions.CsmClientException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
@@ -46,6 +49,7 @@ import com.cosmotech.runner.domain.RunnerDatasets
 import com.cosmotech.runner.domain.RunnerEditInfo
 import com.cosmotech.runner.domain.RunnerRunTemplateParameterValue
 import com.cosmotech.runner.domain.RunnerSecurity
+import com.cosmotech.runner.domain.RunnerStatus
 import com.cosmotech.runner.domain.RunnerUpdateRequest
 import com.cosmotech.runner.domain.RunnerValidationStatus
 import com.cosmotech.runner.repository.RunnerRepository
@@ -116,7 +120,7 @@ class RunnerService(
     csmRbac.verify(workspace!!.security.toGenericSecurity(workspace!!.id), permission)
   }
 
-  fun deleteInstance(runnerInstance: RunnerInstance) {
+  fun archiveInstance(runnerInstance: RunnerInstance) {
     val runner = runnerInstance.getRunnerDataObject()
 
     // Check there are no running runs
@@ -139,22 +143,20 @@ class RunnerService(
       }
       runnerRepository.save(it)
     }
-
     // Update new root ids
     newRoots.forEach { updateChildrenRootId(parent = it, newRootId = it.id) }
 
     // Notify the deletion
-    val runnerDeleted =
-        RunnerDeleted(
+    val runnerPropagate =
+        RunnerPropagateDelete(
             this,
             runner.organizationId,
             runner.workspaceId,
             runner.id,
-            runner.datasets.parameter,
         )
-    this.eventPublisher.publishEvent(runnerDeleted)
-
-    return runnerRepository.delete(runnerInstance.getRunnerDataObject())
+    this.eventPublisher.publishEvent(runnerPropagate)
+    // start the delete run
+    this.startRunWith(runnerInstance, RunType.Delete)
   }
 
   private fun listAllRunnerByParentId(
@@ -279,8 +281,8 @@ class RunnerService(
     return runners
   }
 
-  fun startRunWith(runnerInstance: RunnerInstance): CreatedRun {
-    val startEvent = RunStart(this, runnerInstance.getRunnerDataObject())
+  fun startRunWith(runnerInstance: RunnerInstance, runType: RunType): CreatedRun {
+    val startEvent = RunStart(this, runnerInstance.getRunnerDataObject(), runType)
     this.eventPublisher.publishEvent(startEvent)
     val runId = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
     runnerInstance.setLastRunInfo(runId)
@@ -290,9 +292,29 @@ class RunnerService(
 
   fun stopLastRunOf(runnerInstance: RunnerInstance) {
     val runner = runnerInstance.getRunnerDataObject()
-    runner.lastRunInfo.lastRunId
-        ?: throw IllegalArgumentException("Runner ${runner.id} doesn't have a last run")
+    runner.lastRunInfo.lastRunId ?: return // No run to stop
     this.eventPublisher.publishEvent(RunStop(this, runner))
+  }
+
+  fun cleanupArchived() {
+    // do a cleanup on runner that are archived and have a last run status of successful
+    val archivedRunners: List<Runner> = runnerRepository.findAllByStatus(RunnerStatus.Archived)
+
+    archivedRunners.forEach { runner ->
+      val cleanupEvent = CleanUpRun(this, runner.lastRunInfo.lastRunId!!)
+      this.eventPublisher.publishEvent(cleanupEvent)
+      if (cleanupEvent.response == true) {
+        runnerRepository.delete(runner)
+        val runnerEvent =
+            RunnerDeleted(
+                this,
+                runner.organizationId,
+                runner.workspaceId,
+                runner.datasets.parameter,
+            )
+        this.eventPublisher.publishEvent(runnerEvent)
+      }
+    }
   }
 
   @Suppress("TooManyFunctions")
@@ -325,6 +347,7 @@ class RunnerService(
               parametersValues = mutableListOf(),
               lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
               validationStatus = RunnerValidationStatus.Draft,
+              status = RunnerStatus.Ok,
               security = RunnerSecurity("", accessControlList = mutableListOf()),
           )
     }
@@ -443,6 +466,7 @@ class RunnerService(
                   ),
               solutionName = runnerCreateRequest.solutionName,
               solutionId = runnerCreateRequest.solutionId,
+              status = this.runner.status,
               validationStatus = this.runner.validationStatus,
               additionalData = runnerCreateRequest.additionalData,
               runTemplateName = runnerCreateRequest.runTemplateName,
@@ -516,6 +540,7 @@ class RunnerService(
                       lastRunStatus = this.runner.lastRunInfo.lastRunStatus,
                       lastRunId = this.runner.lastRunInfo.lastRunId,
                   ),
+              status = this.runner.status,
               validationStatus =
                   runnerUpdateRequest.validationStatus ?: this.runner.validationStatus,
           )

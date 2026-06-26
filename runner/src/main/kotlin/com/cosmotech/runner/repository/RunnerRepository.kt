@@ -5,6 +5,7 @@ package com.cosmotech.runner.repository
 import com.cosmotech.common.redis.Sanitize
 import com.cosmotech.common.redis.SecurityConstraint
 import com.cosmotech.runner.domain.Runner
+import com.cosmotech.runner.domain.RunnerStatus
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
 import java.util.*
@@ -54,4 +55,9 @@ interface RunnerRepository : RedisDocumentRepository<Runner, String> {
       @Sanitize @Param("workspaceId") workspaceId: String,
       @Sanitize @Param("datasetId") datasetId: String,
   ): Optional<Runner>
+
+  @Query("(@status:{\$status})")
+  fun findAllByStatus(
+      @Sanitize @Param("status") status: RunnerStatus,
+  ): List<Runner>
 }
