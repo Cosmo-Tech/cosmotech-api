@@ -83,7 +83,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val TEST_USER_MAIL = "testuser@mail.fr"
 
-  @SpykBean private lateinit var eventPublisher: CsmEventPublisher
+  @MockkSpyBean private lateinit var eventPublisher: CsmEventPublisher
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
   @MockkSpyBean lateinit var datasetApiService: DatasetApiServiceInterface
