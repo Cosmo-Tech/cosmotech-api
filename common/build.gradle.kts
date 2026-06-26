@@ -9,7 +9,7 @@ val testContainersRedisVersion = "2.2.4"
 val testContainersPostgreSQLVersion = "2.0.5"
 val tikaVersion = "3.3.1"
 
-val jUnitBomVersion = "6.0.1"
+val jUnitBomVersion = "6.1.0"
 
 dependencies {
   implementation("org.apache.httpcomponents.client5:httpclient5")
