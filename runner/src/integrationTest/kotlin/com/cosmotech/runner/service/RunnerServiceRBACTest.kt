@@ -115,7 +115,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
         containerRegistryService,
     )
     every { containerRegistryService.getImageLabel(any(), any(), any()) } returns null
-    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
+    every { eventPublisher.publishEvent(any<RunStart>()) } answers
         {
           firstArg<RunStart>().response = "run-gen12345"
         }

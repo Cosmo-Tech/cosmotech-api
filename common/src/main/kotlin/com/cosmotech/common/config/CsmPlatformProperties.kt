@@ -43,7 +43,22 @@ data class CsmPlatformProperties(
 
     /** Persistent metrics configuration */
     val metrics: Metrics = Metrics(),
+
+    /** Tasks configuration */
+    val tasks: CsmTasks = CsmTasks(),
 ) {
+
+  data class CsmTasks(
+      /** Clean up archived runners task */
+      val cleanUpArchivedRunners: CsmTask = CsmTask()
+  ) {
+    data class CsmTask(
+        /** Enabled or disabled the task */
+        val enabled: Boolean = true,
+        /** Fixed delay in seconds (default 5min) */
+        val delay: Long = 300,
+    )
+  }
 
   data class Metrics(
       /** Enable Metrics service */
