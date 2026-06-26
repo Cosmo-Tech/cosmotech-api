@@ -41,7 +41,7 @@ import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.*
 import com.cosmotech.runner.domain.ResourceSizeInfo
 import com.cosmotech.runner.domain.RunnerRole
-import com.cosmotech.runner.scheduled.RunnerScheduledTasks
+import com.cosmotech.runner.tasks.RunnerScheduledTasks
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
@@ -161,7 +161,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     every { getCurrentAccountGroups(any()) } returns listOf("myTestGroup")
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
-    every { eventPublisher.publishEvent(match { it is RunStart }) } answers
+    every { eventPublisher.publishEvent(any<RunStart>()) } answers
         {
           firstArg<RunStart>().response = GEN_RUN_ID
         }
@@ -435,11 +435,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     logger.info("should delete the Runner and assert there is one less Runner left")
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, newRunnerSaved.id)
     // force trigger scheduled cleanup
-    every { eventPublisher.publishEvent(match { it is UpdateRunnerStatus }) } answers
+    every { eventPublisher.publishEvent(any<UpdateRunnerStatus>()) } answers
         {
           firstArg<UpdateRunnerStatus>().response = "Successful"
         }
-    every { eventPublisher.publishEvent(match { it is CleanUpRun }) } answers
+    every { eventPublisher.publishEvent(any<CleanUpRun>()) } answers
         {
           firstArg<CleanUpRun>().response = true
         }
@@ -994,7 +994,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
         RunnerUpdateRequest(),
     )
 
-    every { eventPublisher.publishEvent(match { it is HasRunningRuns }) } answers
+    every { eventPublisher.publishEvent(any<HasRunningRuns>()) } answers
         {
           firstArg<HasRunningRuns>().response = true
         }
@@ -1015,11 +1015,11 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test on runner delete keep bases datasets but not parameters dataset`() {
     runnerApiService.deleteRunner(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
     // force trigger scheduled cleanup
-    every { eventPublisher.publishEvent(match { it is UpdateRunnerStatus }) } answers
+    every { eventPublisher.publishEvent(any<UpdateRunnerStatus>()) } answers
         {
           firstArg<UpdateRunnerStatus>().response = "Successful"
         }
-    every { eventPublisher.publishEvent(match { it is CleanUpRun }) } answers
+    every { eventPublisher.publishEvent(any<CleanUpRun>()) } answers
         {
           firstArg<CleanUpRun>().response = true
         }
@@ -1850,7 +1850,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   @Test
   fun `test getRunner when runner has been stopped`() {
 
-    every { eventPublisher.publishEvent(match { it is UpdateRunnerStatus }) } answers
+    every { eventPublisher.publishEvent(any<UpdateRunnerStatus>()) } answers
         {
           firstArg<UpdateRunnerStatus>().response = "Running"
         } andThenAnswer
@@ -1871,7 +1871,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `test to stop a runner when is already finished but lastRunInfo is not updated to Successful`() {
-    every { eventPublisher.publishEvent(match { it is UpdateRunnerStatus }) } answers
+    every { eventPublisher.publishEvent(any<UpdateRunnerStatus>()) } answers
         {
           firstArg<UpdateRunnerStatus>().response = "Successful"
         }
@@ -1885,7 +1885,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
 
   @Test
   fun `test to stop a runner when is already finished but lastRunInfo is not updated to Failed`() {
-    every { eventPublisher.publishEvent(match { it is UpdateRunnerStatus }) } answers
+    every { eventPublisher.publishEvent(any<UpdateRunnerStatus>()) } answers
         {
           firstArg<UpdateRunnerStatus>().response = "Failed"
         }

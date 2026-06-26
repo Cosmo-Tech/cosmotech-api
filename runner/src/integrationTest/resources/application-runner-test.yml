@@ -127,3 +127,6 @@ csm:
       accessKeyId: "s3_username"
       secretAccessKey: "s3_password"
       region: "dummy"
+    tasks:
+      cleanUpArchivedRunners:
+        enabled: true

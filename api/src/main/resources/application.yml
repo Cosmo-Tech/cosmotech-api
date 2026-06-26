@@ -155,6 +155,10 @@ csm:
       host: localhost:5000
       username: csmenginesdev
       password: "my_registry_password"
+    tasks:
+      cleanUpArchivedRunners:
+        enabled: true
+        delay: 300
 
 springdoc:
   # See https://springdoc.org/#properties
