@@ -74,7 +74,7 @@ val awsSpringVersion = "4.0.2"
 val detektVersion = "1.23.8"
 
 // Tests
-val jUnitBomVersion = "6.1.0"
+val jUnitBomVersion = "6.1.1"
 val mockkVersion = "1.14.11"
 val awaitilityKVersion = "4.3.0"
 val springMockkVersion = "5.0.1"
