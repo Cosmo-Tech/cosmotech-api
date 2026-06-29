@@ -47,8 +47,6 @@ plugins {
 
 scmVersion { tag { prefix.set("") } }
 
-dependencies { runtimeOnly("javax.xml.bind:jaxb-api:2.3.1") }
-
 group = "com.cosmotech"
 
 version = scmVersion.version

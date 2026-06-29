@@ -7,6 +7,7 @@ plugins { id("org.jetbrains.kotlinx.kover") }
 val argoClientJavaVersion = "v3.6.13"
 val retroFitVersion = "3.0.0"
 val okHttpBom = "5.4.0"
+val springPlatformBomVersion = "4.0.7"
 
 dependencies {
   implementation(projects.cosmotechDatasetApi)
@@ -21,7 +22,9 @@ dependencies {
   implementation("com.squareup.retrofit2:converter-scalars:$retroFitVersion")
   implementation(platform("com.squareup.okhttp3:okhttp-bom:$okHttpBom"))
   implementation("com.squareup.okhttp3:okhttp")
-  implementation("org.springframework.boot:spring-boot-starter-restclient:4.0.7")
+  implementation(
+      "org.springframework.boot:spring-boot-starter-restclient:$springPlatformBomVersion"
+  )
   implementation("com.squareup.okhttp3:logging-interceptor")
 }
 
