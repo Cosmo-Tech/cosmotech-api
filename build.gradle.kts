@@ -69,6 +69,7 @@ val testContainersPostgreSQLVersion = "2.0.5"
 val testContainersLocalStackVersion = "1.21.4"
 val commonCompressVersion = "1.28.0"
 val awsSpringVersion = "4.0.2"
+val bcpkixVersion = "1.84"
 
 // Checks
 val detektVersion = "1.23.8"
@@ -304,12 +305,26 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation(
         "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springOauthAutoConfigureVersion}"
-    )
+    ) {
+      // CVE fixes here:
+      // bcpkix-jdk15on has several one (at least)
+      // CVE-2024-34447, CVE-2024-30171, CVE-2024-29857, CVE-2023-33202
+      // CVE-2023-33201, CVE-2020-15522
+      // and the version up to date and usable is bcpkix-jdk18on:1.84+
+      constraints {
+        implementation("org.bouncycastle:bcpkix-jdk18on:$bcpkixVersion")
+      }
+      exclude(group = "org.bouncycastle", module = "bcpkix-jdk15on")
+    }
     implementation("org.springframework.security:spring-security-oauth2-jose")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}") {
       exclude(group = "org.springframework.data", module = "spring-data-redis")
+      // CVE fix here:
+      // redisvl is not used for the project.
+      // it brings a lot of deprecated libs (like opennlp-tools,...)
+      exclude(group = "com.redis", module = "redisvl")
     }
     implementation("org.springframework.data:spring-data-redis")
     implementation("org.springframework:spring-jdbc")
