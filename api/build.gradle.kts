@@ -150,6 +150,7 @@ tasks.register<Copy>("copyPythonLicense") {
 tasks.register("generatePythonClient") { dependsOn("copyPythonGitPushScript", "copyPythonLicense") }
 
 tasks.register<GenerateTask>("openApiUmlGenerate") {
+  dependsOn("spotlessKotlinGradle")
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
   outputDir.set("$rootDir/openapi/plantuml")
@@ -157,6 +158,7 @@ tasks.register<GenerateTask>("openApiUmlGenerate") {
 }
 
 tasks.register<GenerateTask>("openApiMarkdownGenerate") {
+  dependsOn("spotlessKotlinGradle")
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
   outputDir.set("$rootDir/doc")
