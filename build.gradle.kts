@@ -294,10 +294,12 @@ subprojects {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
     implementation("org.springframework.boot:spring-boot-starter-undertow") {
+      // CVE fixes:
+      // CVE-2026-28367, CVE-2026-28368, CVE-2026-28369, CVE-2026-3260, CVE-2016-6311
       constraints {
-        implementation("io.undertow:undertow-core:2.3.24.Final")
-        implementation("io.undertow:undertow-servlet:2.3.24.Final")
-        implementation("io.undertow:undertow-websockets-jsr:2.3.24.Final")
+        implementation("io.undertow:undertow-core:2.4.2.Final")
+        implementation("io.undertow:undertow-servlet:2.3.25.Final")
+        implementation("io.undertow:undertow-websockets-jsr:2.3.25.Final")
       }
     }
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonModuleKotlinVersion")
