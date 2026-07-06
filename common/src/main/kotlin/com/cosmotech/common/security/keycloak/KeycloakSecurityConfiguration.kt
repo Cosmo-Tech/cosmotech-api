@@ -95,10 +95,10 @@ internal open class KeycloakSecurityConfiguration(
   ): JwtDecoder {
     val jwtProperties = oAuth2ResourceServerProperties.jwt
     val nimbusJwtDecoderBuilder =
-        NimbusJwtDecoder.withJwkSetUri(jwtProperties.jwkSetUri).jwsAlgorithms {
+        NimbusJwtDecoder.withJwkSetUri(jwtProperties.jwkSetUri!!).jwsAlgorithms {
             signatureAlgorithms: MutableSet<SignatureAlgorithm> ->
           for (algorithm in jwtProperties.jwsAlgorithms) {
-            signatureAlgorithms.add(SignatureAlgorithm.from(algorithm))
+            signatureAlgorithms.add(SignatureAlgorithm.from(algorithm)!!)
           }
         }
     if (tlsEnabled) {
@@ -109,7 +109,7 @@ internal open class KeycloakSecurityConfiguration(
     val nimbusJwtDecoder = nimbusJwtDecoderBuilder.build()
 
     // Timestamp and Issuer
-    val issuerUri = jwtProperties.issuerUri
+    val issuerUri = jwtProperties.issuerUri!!
     val validators = mutableListOf(JwtValidators.createDefaultWithIssuer(issuerUri))
     // Audience
     val audienceValidator =
