@@ -26,9 +26,8 @@ This API is continuously deployed at the following URLs, so you can easily explo
 
 ## Client Libraries
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-cosmotech--api--typescript--client-brightgreen)](https://github.com/Cosmo-Tech/cosmotech-api-typescript-client)
-
-[![Python](https://img.shields.io/badge/Python-cosmotech--api--python--client-orange)](https://github.com/Cosmo-Tech/cosmotech-api-python-client)
+[![TypeScript](https://img.shields.io/badge/TypeScript-cosmotech--api--typescript--client-blue)](https://github.com/Cosmo-Tech/cosmotech-api-typescript-client)
+[![Python](https://img.shields.io/badge/Python-cosmotech--api--python--client-blue)](https://github.com/Cosmo-Tech/cosmotech-api-python-client)
 
 Note that the repositories for all these client libraries are automatically updated and kept in sync, if there is any change in the OpenAPI definition files (in the `main` branch of this repo).
 
