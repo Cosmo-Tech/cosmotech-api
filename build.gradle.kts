@@ -33,7 +33,7 @@ plugins {
   kotlin("jvm") version kotlinCompleteVersion
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.2"
-  id("com.diffplug.spotless") version "8.7.0"
+  id("com.diffplug.spotless") version "8.8.0"
   id("org.springframework.boot") version "4.0.7" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.2.2"
