@@ -635,6 +635,7 @@ components:
           allOf:
             - $ref: '#/components/schemas/RunnerStatus'
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          default: Ok
         validationStatus:
           allOf:
             - $ref: '#/components/schemas/RunnerValidationStatus'
@@ -655,7 +656,6 @@ components:
         - datasets
         - parametersValues
         - lastRunInfo
-        - status
         - validationStatus
         - security
 

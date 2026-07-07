@@ -347,7 +347,6 @@ class RunnerService(
               parametersValues = mutableListOf(),
               lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
               validationStatus = RunnerValidationStatus.Draft,
-              status = RunnerStatus.Ok,
               security = RunnerSecurity("", accessControlList = mutableListOf()),
           )
     }

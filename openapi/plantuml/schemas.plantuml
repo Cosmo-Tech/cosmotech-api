@@ -367,7 +367,7 @@ entity Runner {
     runSizing: RunnerResourceSizing
     * parametersValues: List<RunnerRunTemplateParameterValue>
     * lastRunInfo: LastRunInfo
-    * status: RunnerStatus
+    status: RunnerStatus
     * validationStatus: RunnerValidationStatus
     * security: RunnerSecurity
 }
