@@ -8,7 +8,7 @@ val hashidsVersion = "1.0.3"
 val testContainersRedisVersion = "2.2.4"
 val testContainersPostgreSQLVersion = "2.0.5"
 val tikaVersion = "3.3.1"
-val springPlatformBomVersion = "4.0.7"
+val springPlatformBomVersion = "4.1.0"
 val jUnitBomVersion = "6.1.0"
 val testContainersJupiterVersion = "1.21.4"
 
