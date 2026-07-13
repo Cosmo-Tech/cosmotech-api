@@ -9,7 +9,7 @@ val testContainersRedisVersion = "2.2.4"
 val testContainersPostgreSQLVersion = "2.0.5"
 val tikaVersion = "3.3.1"
 val springPlatformBomVersion = "4.0.7"
-val jUnitBomVersion = "6.1.0"
+val jUnitBomVersion = "6.1.2"
 val testContainersJupiterVersion = "1.21.4"
 
 dependencies {
