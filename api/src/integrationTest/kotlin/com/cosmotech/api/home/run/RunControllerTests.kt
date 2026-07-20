@@ -327,7 +327,7 @@ class RunControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].runTemplateId").value(""))
         .andExpect(jsonPath("$[0].computeSize").value(""))
         .andExpect(jsonPath("$[0].nodeLabel").value(""))
-        .andExpect(jsonPath("$[0].containers").value(null))
+        .andExpect(jsonPath("$[0].containers").doesNotExist())
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
@@ -367,7 +367,7 @@ class RunControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.runTemplateId").value(""))
         .andExpect(jsonPath("$.computeSize").value(""))
         .andExpect(jsonPath("$.nodeLabel").value(""))
-        .andExpect(jsonPath("$.containers").value(null))
+        .andExpect(jsonPath("$.containers").doesNotExist())
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
