@@ -105,6 +105,7 @@ tasks.getByName<OpenApiMergerTask>("mergeOpenApiFiles") {
 }
 
 tasks.register<GenerateTask>("openApiTypescriptGenerate") {
+  quiet.set(true)
   group = "openapi-ts"
   description = "Generate OpenAPI TypeScript-Axios client"
   dependsOn("mergeOpenApiFiles")
@@ -146,6 +147,7 @@ tasks.register("generateTypescriptClient") {
 }
 
 tasks.register<GenerateTask>("openApiPythonGenerate") {
+  quiet.set(true)
   group = "openapi-python"
   description = "Generate OpenAPI Python client"
   dependsOn("mergeOpenApiFiles")
@@ -189,6 +191,7 @@ tasks.register("generatePythonClient") {
 }
 
 tasks.register<GenerateTask>("openApiUmlGenerate") {
+  quiet.set(true)
   group = "documentation"
   description = "Generate OpenAPI UML schema"
   dependsOn("mergeOpenApiFiles")
@@ -204,6 +207,7 @@ tasks.register<Delete>("openApiMarkdownClean") {
 }
 
 tasks.register<GenerateTask>("openApiMarkdownGenerate") {
+  quiet.set(true)
   group = "documentation"
   description = "Generate MD documentation files"
   dependsOn("mergeOpenApiFiles", "openApiMarkdownClean")
@@ -242,6 +246,7 @@ tasks.withType<GenerateTask> {
 }
 
 tasks.register<GenerateTask>("generateDocumentation") {
+  quiet.set(true)
   group = "documentation"
   description = "Generates adoc file containing API documentation"
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
