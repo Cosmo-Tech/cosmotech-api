@@ -40,7 +40,7 @@ plugins {
   id("com.github.jk1.dependency-license-report") version "3.1.4"
   id("org.jetbrains.kotlinx.kover") version "0.9.8"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
-  id("org.openapi.generator") version "7.23.0" apply false
+  id("org.openapi.generator") version "7.24.0" apply false
   id("com.google.cloud.tools.jib") version "3.5.3" apply false
   id("org.cyclonedx.bom") version "3.2.4"
 }
@@ -468,6 +468,7 @@ subprojects {
     }
 
     tasks.withType<GenerateTask> {
+      quiet.set(true)
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
       outputDir.set(openApiServerSourcesGenerationDir)
       templateDir.set("${rootDir}/openapi/templates")
