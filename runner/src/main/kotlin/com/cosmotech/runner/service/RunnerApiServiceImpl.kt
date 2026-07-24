@@ -13,6 +13,10 @@ import com.cosmotech.common.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.common.rbac.PERMISSION_WRITE
 import com.cosmotech.common.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.common.rbac.getRunnerRolesDefinition
+import com.cosmotech.common.security.keycloak.KeycloakClient
+import com.cosmotech.common.security.keycloak.KeycloakMemberGroup
+import com.cosmotech.common.security.keycloak.KeycloakMemberUser
+import com.cosmotech.common.security.keycloak.KeycloakMembers
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.runner.RunnerApiServiceInterface
@@ -21,6 +25,9 @@ import com.cosmotech.runner.domain.LastRunInfo
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerCreateRequest
+import com.cosmotech.runner.domain.RunnerMemberGroup
+import com.cosmotech.runner.domain.RunnerMemberUser
+import com.cosmotech.runner.domain.RunnerMembers
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerStatus
@@ -36,6 +43,7 @@ internal class RunnerApiServiceImpl(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val runnerServiceManager: RunnerServiceManager,
     private val datasetApiServiceInterface: DatasetApiServiceInterface,
+    private val keycloak: KeycloakClient,
 ) : RunnerApiServiceInterface {
 
   private val logger = LoggerFactory.getLogger(RunnerApiServiceImpl::class.java)
@@ -301,6 +309,18 @@ internal class RunnerApiServiceImpl(
     return runnerInstance.getRunnerDataObject().security
   }
 
+  override fun getRunnerMembers(
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+  ): RunnerMembers {
+    val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
+    val runnerInstance =
+        runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
+    val rbacSecurity = runnerInstance.getRunnerDataObject().security.toGenericSecurity(runnerId)
+    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toRunnerMembers()
+  }
+
   @EventListener(RunDeleted::class)
   fun onRunDeleted(runDeleted: RunDeleted) {
     val runnerService =
@@ -334,3 +354,14 @@ internal class RunnerApiServiceImpl(
     getRunnerAttachedToDataset.response = runnerId
   }
 }
+
+fun KeycloakMembers.toRunnerMembers() =
+    RunnerMembers(
+        users = this.users.map { it.toRunnerMemberUser() }.toMutableList(),
+        groups = this.groups.map { it.toRunnerMemberGroup() }.toMutableList(),
+    )
+
+fun KeycloakMemberUser.toRunnerMemberUser() = RunnerMemberUser(id = this.id, role = this.role)
+
+fun KeycloakMemberGroup.toRunnerMemberGroup() =
+    RunnerMemberGroup(id = this.id, role = this.role, users = this.users.toMutableList())

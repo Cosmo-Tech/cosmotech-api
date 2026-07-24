@@ -19,6 +19,10 @@ import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.rbac.getCommonRolesDefinition
 import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
+import com.cosmotech.common.security.keycloak.KeycloakClient
+import com.cosmotech.common.security.keycloak.KeycloakMemberGroup
+import com.cosmotech.common.security.keycloak.KeycloakMemberUser
+import com.cosmotech.common.security.keycloak.KeycloakMembers
 import com.cosmotech.common.utils.ResourceScanner
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
@@ -30,6 +34,9 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCreateRequest
 import com.cosmotech.dataset.domain.DatasetEditInfo
+import com.cosmotech.dataset.domain.DatasetMemberGroup
+import com.cosmotech.dataset.domain.DatasetMemberUser
+import com.cosmotech.dataset.domain.DatasetMembers
 import com.cosmotech.dataset.domain.DatasetPart
 import com.cosmotech.dataset.domain.DatasetPartCreateRequest
 import com.cosmotech.dataset.domain.DatasetPartTypeEnum
@@ -70,6 +77,7 @@ class DatasetServiceImpl(
     private val datasetPartManagementFactory: DatasetPartManagementFactory,
     private val resourceScanner: ResourceScanner,
     private val readerJdbcTemplate: JdbcTemplate,
+    private val keycloak: KeycloakClient,
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   override fun getVerifiedDataset(
@@ -416,6 +424,17 @@ class DatasetServiceImpl(
     val rbacAccessControl =
         csmRbac.getAccessControl(dataset.security.toGenericSecurity(datasetId), identityId)
     return DatasetAccessControl(id = rbacAccessControl.id, role = rbacAccessControl.role)
+  }
+
+  override fun getDatasetMembers(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+  ): DatasetMembers {
+    val dataset =
+        getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ_SECURITY)
+    val rbacSecurity = dataset.security.toGenericSecurity(datasetId)
+    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toDatasetMembers()
   }
 
   fun updateSecurityVisibility(dataset: Dataset): Dataset {
@@ -1115,3 +1134,14 @@ fun RbacSecurity.toResourceSecurity() =
         this.default,
         this.accessControlList.map { DatasetAccessControl(it.id, it.role) }.toMutableList(),
     )
+
+fun KeycloakMembers.toDatasetMembers() =
+    DatasetMembers(
+        users = this.users.map { it.toDatasetMemberUser() }.toMutableList(),
+        groups = this.groups.map { it.toDatasetMemberGroup() }.toMutableList(),
+    )
+
+fun KeycloakMemberUser.toDatasetMemberUser() = DatasetMemberUser(id = this.id, role = this.role)
+
+fun KeycloakMemberGroup.toDatasetMemberGroup() =
+    DatasetMemberGroup(id = this.id, role = this.role, users = this.users.toMutableList())

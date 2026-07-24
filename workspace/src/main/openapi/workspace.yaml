@@ -576,6 +576,34 @@ paths:
                   $ref: '#/components/examples/WorkspaceUsers'
         "404":
           description: The Workspace or the User specified is unknown or you don't have access to them
+  /organizations/{organization_id}/workspaces/{workspace_id}/members:
+    parameters:
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+    get:
+      operationId: getWorkspaceMembers
+      tags:
+        - workspace
+      description: "Retrieve detailed information about members of a workspace."
+      summary: Get the members of a Workspace
+      responses:
+        "200":
+          description: The Workspace members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMembers'
+              examples:
+                BreweryWorkspaceMembers:
+                  $ref: '#/components/examples/BreweryWorkspaceMembers'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMembers'
+              examples:
+                BreweryWorkspaceMembers:
+                  $ref: '#/components/examples/BreweryWorkspaceMembers'
+        "404":
+          description: The Workspace specified is unknown or you don't have access to it
 
 components:
   securitySchemes:
@@ -891,6 +919,55 @@ components:
         - timestamp
         - userId
 
+    WorkspaceMembers:
+      type: object
+      description: The Workspace members, including users and groups
+      properties:
+        users:
+          type: array
+          description: The list of users in the workspace
+          items:
+            $ref: '#/components/schemas/WorkspaceMemberUser'
+        groups:
+          type: array
+          description: The list of groups in the workspace
+          items:
+            $ref: '#/components/schemas/WorkspaceMemberGroup'
+
+    WorkspaceMemberUser:
+      type: object
+      description: A user member of the workspace
+      properties:
+        id:
+          type: string
+          description: The user id
+        role:
+          type: string
+          description: The user role in the workspace
+      required:
+        - id
+        - role
+
+    WorkspaceMemberGroup:
+      type: object
+      description: A group member of the workspace
+      properties:
+        id:
+          type: string
+          description: The group id
+        role:
+          type: string
+          description: The group role in the workspace
+        users:
+          type: array
+          description: The list of users in the group
+          items:
+            type: string
+      required:
+        - id
+        - role
+        - users
+
   examples:
     BreweryWorkspace:
       summary: Brewery Workspace
@@ -1065,3 +1142,18 @@ components:
         - alice.doe@cosmotech.com
         - bob.doe@cosmotech.com
         - charlie.smith@cosmotech.com
+    BreweryWorkspaceMembers:
+      summary: Brewery Workspace members
+      description: Example of workspace members
+      value:
+        users:
+          - id: alice.doe@cosmotech.com
+            role: admin
+          - id: bob.doe@cosmotech.com
+            role: editor
+        groups:
+          - id: group-analysts
+            role: viewer
+            users:
+              - charlie.smith@cosmotech.com
+              - diana.jones@cosmotech.com

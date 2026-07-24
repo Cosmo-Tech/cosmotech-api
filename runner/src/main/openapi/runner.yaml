@@ -493,6 +493,35 @@ paths:
         "404":
           description: the Runner specified is unknown or you don't have access to it
 
+  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/members:
+    parameters:
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/runnerId'
+    get:
+      operationId: getRunnerMembers
+      tags:
+        - runner
+      description: "Retrieve detailed information about members of a runner."
+      summary: Get the members of a Runner
+      responses:
+        "200":
+          description: The Runner members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunnerMembers'
+              examples:
+                BreweryRunnerMembers:
+                  $ref: '#/components/examples/BreweryRunnerMembers'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/RunnerMembers'
+              examples:
+                BreweryRunnerMembers:
+                  $ref: '#/components/examples/BreweryRunnerMembers'
+        "404":
+          description: the Runner specified is unknown or you don't have access to it
 
 components:
   securitySchemes:
@@ -949,6 +978,55 @@ components:
         - bases
         - parameter
 
+    RunnerMembers:
+      type: object
+      description: The Runner members, including users and groups
+      properties:
+        users:
+          type: array
+          description: The list of users in the runner
+          items:
+            $ref: '#/components/schemas/RunnerMemberUser'
+        groups:
+          type: array
+          description: The list of groups in the runner
+          items:
+            $ref: '#/components/schemas/RunnerMemberGroup'
+
+    RunnerMemberUser:
+      type: object
+      description: A user member of the runner
+      properties:
+        id:
+          type: string
+          description: The user id
+        role:
+          type: string
+          description: The user role in the runner
+      required:
+        - id
+        - role
+
+    RunnerMemberGroup:
+      type: object
+      description: A group member of the runner
+      properties:
+        id:
+          type: string
+          description: The group id
+        role:
+          type: string
+          description: The group role in the runner
+        users:
+          type: array
+          description: The list of users in the group
+          items:
+            type: string
+      required:
+        - id
+        - role
+        - users
+
   examples:
     BreweryRunnerIn:
       summary: Brewery Runner input example
@@ -1235,3 +1313,18 @@ components:
         - delete
         - write
         - createchildren
+    BreweryRunnerMembers:
+      summary: Brewery Runner members
+      description: Example of runner members
+      value:
+        users:
+          - id: alice.doe@cosmotech.com
+            role: admin
+          - id: bob.doe@cosmotech.com
+            role: editor
+        groups:
+          - id: group-analysts
+            role: viewer
+            users:
+              - charlie.smith@cosmotech.com
+              - diana.jones@cosmotech.com

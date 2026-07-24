@@ -54,6 +54,10 @@ csm:
       allowedTenants:
         - "[fill-this-value]" # NAMESPACE
     identityProvider:
+      admin:
+        clientId: "[fill-this-value]"
+        username: "[fill-this-value]"
+        password: "[fill-this-value]"
       tls:
         enabled: true
         bundle: "keycloak"

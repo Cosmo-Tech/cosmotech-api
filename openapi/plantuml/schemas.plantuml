@@ -68,6 +68,22 @@ entity DatasetEditInfo {
     * userId: String
 }
 
+entity DatasetMemberGroup {
+    * id: String
+    * role: String
+    * users: List<String>
+}
+
+entity DatasetMemberUser {
+    * id: String
+    * role: String
+}
+
+entity DatasetMembers {
+    users: List<DatasetMemberUser>
+    groups: List<DatasetMemberGroup>
+}
+
 entity DatasetPart {
     * id: String
     * name: String
@@ -145,6 +161,22 @@ entity OrganizationCreateRequest {
 entity OrganizationEditInfo {
     * timestamp: Long
     * userId: String
+}
+
+entity OrganizationMemberGroup {
+    * id: String
+    * role: String
+    * users: List<String>
+}
+
+entity OrganizationMemberUser {
+    * id: String
+    * role: String
+}
+
+entity OrganizationMembers {
+    users: List<OrganizationMemberUser>
+    groups: List<OrganizationMemberGroup>
 }
 
 entity OrganizationRole {
@@ -404,6 +436,22 @@ entity RunnerEditInfo {
     * userId: String
 }
 
+entity RunnerMemberGroup {
+    * id: String
+    * role: String
+    * users: List<String>
+}
+
+entity RunnerMemberUser {
+    * id: String
+    * role: String
+}
+
+entity RunnerMembers {
+    users: List<RunnerMemberUser>
+    groups: List<RunnerMemberGroup>
+}
+
 entity RunnerResourceSizing {
     * requests: ResourceSizeInfo
     * limits: ResourceSizeInfo
@@ -553,6 +601,22 @@ entity WorkspaceFile {
     * fileName: String
 }
 
+entity WorkspaceMemberGroup {
+    * id: String
+    * role: String
+    * users: List<String>
+}
+
+entity WorkspaceMemberUser {
+    * id: String
+    * role: String
+}
+
+entity WorkspaceMembers {
+    users: List<WorkspaceMemberUser>
+    groups: List<WorkspaceMemberGroup>
+}
+
 entity WorkspaceRole {
     * role: String
 }
@@ -590,7 +654,11 @@ RunnerCreateRequest -- RunnerSecurity : security
 DatasetSecurity -- "0..*" DatasetAccessControl : accessControlList
 ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
+RunnerMembers -- "0..*" RunnerMemberUser : users
+RunnerMembers -- "0..*" RunnerMemberGroup : groups
 SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
+DatasetMembers -- "0..*" DatasetMemberUser : users
+DatasetMembers -- "0..*" DatasetMemberGroup : groups
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 WorkspaceCreateRequest -- WorkspaceSolution : solution
 WorkspaceCreateRequest -- WorkspaceSecurity : security
@@ -621,6 +689,8 @@ RunTemplate -- RunTemplateResourceSizing : runSizing
 DatasetUpdateRequest -- "0..*" DatasetPartCreateRequest : parts
 RunTemplateCreateRequest -- RunTemplateResourceSizing : runSizing
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
+OrganizationMembers -- "0..*" OrganizationMemberUser : users
+OrganizationMembers -- "0..*" OrganizationMemberGroup : groups
 RunStatusNode -- RunResourceRequested : resourcesDuration
 WorkspaceUpdateRequest -- WorkspaceSolution : solution
 DatasetPart -- DatasetEditInfo : createInfo
@@ -631,6 +701,8 @@ Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates
 Solution -- SolutionSecurity : security
+WorkspaceMembers -- "0..*" WorkspaceMemberUser : users
+WorkspaceMembers -- "0..*" WorkspaceMemberGroup : groups
 Dataset -- "0..*" DatasetPart : parts
 Dataset -- DatasetEditInfo : createInfo
 Dataset -- DatasetEditInfo : updateInfo

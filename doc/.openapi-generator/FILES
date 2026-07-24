@@ -15,6 +15,9 @@ Models/Dataset.md
 Models/DatasetAccessControl.md
 Models/DatasetCreateRequest.md
 Models/DatasetEditInfo.md
+Models/DatasetMemberGroup.md
+Models/DatasetMemberUser.md
+Models/DatasetMembers.md
 Models/DatasetPart.md
 Models/DatasetPartCreateRequest.md
 Models/DatasetPartTypeEnum.md
@@ -27,6 +30,9 @@ Models/Organization.md
 Models/OrganizationAccessControl.md
 Models/OrganizationCreateRequest.md
 Models/OrganizationEditInfo.md
+Models/OrganizationMemberGroup.md
+Models/OrganizationMemberUser.md
+Models/OrganizationMembers.md
 Models/OrganizationRole.md
 Models/OrganizationSecurity.md
 Models/OrganizationUpdateRequest.md
@@ -54,6 +60,9 @@ Models/RunnerAccessControl.md
 Models/RunnerCreateRequest.md
 Models/RunnerDatasets.md
 Models/RunnerEditInfo.md
+Models/RunnerMemberGroup.md
+Models/RunnerMemberUser.md
+Models/RunnerMembers.md
 Models/RunnerResourceSizing.md
 Models/RunnerRole.md
 Models/RunnerRunTemplateParameterValue.md
@@ -73,6 +82,9 @@ Models/WorkspaceAccessControl.md
 Models/WorkspaceCreateRequest.md
 Models/WorkspaceEditInfo.md
 Models/WorkspaceFile.md
+Models/WorkspaceMemberGroup.md
+Models/WorkspaceMemberUser.md
+Models/WorkspaceMembers.md
 Models/WorkspaceRole.md
 Models/WorkspaceSecurity.md
 Models/WorkspaceSolution.md

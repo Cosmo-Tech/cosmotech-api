@@ -10,6 +10,7 @@ All URIs are relative to *http://localhost:8080*
 | [**deleteRunnerAccessControl**](RunnerApi.md#deleteRunnerAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Remove the specified access from the given Runner |
 | [**getRunner**](RunnerApi.md#getRunner) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Get the details of a runner |
 | [**getRunnerAccessControl**](RunnerApi.md#getRunnerAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Get a control access for the Runner |
+| [**getRunnerMembers**](RunnerApi.md#getRunnerMembers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/members | Get the members of a Runner |
 | [**getRunnerSecurity**](RunnerApi.md#getRunnerSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security | Get the Runner security information |
 | [**listRunnerPermissions**](RunnerApi.md#listRunnerPermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/permissions/{role} | Get the Runner permission by given role |
 | [**listRunnerSecurityUsers**](RunnerApi.md#listRunnerSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/users | Get the Runner security users list |
@@ -184,6 +185,35 @@ Get a control access for the Runner
 ### Return type
 
 [**RunnerAccessControl**](../Models/RunnerAccessControl.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json, application/yaml
+
+<a name="getRunnerMembers"></a>
+# **getRunnerMembers**
+> RunnerMembers getRunnerMembers(organization\_id, workspace\_id, runner\_id)
+
+Get the members of a Runner
+
+    Retrieve detailed information about members of a runner.
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+
+### Return type
+
+[**RunnerMembers**](../Models/RunnerMembers.md)
 
 ### Authorization
 

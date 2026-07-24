@@ -83,6 +83,62 @@ paths:
                 TwoOrganizations:
                   $ref: '#/components/examples/TwoOrganizations'
 
+  /organizations/members:
+    get:
+      operationId: listKeycloakMembers
+      tags:
+        - organization
+      summary: Get ALL Keycloak members list
+      responses:
+        "200":
+          description: The ALL members list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationMembers'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/OrganizationMembers'
+  /organizations/groups:
+    get:
+      operationId: listKeycloakGroups
+      tags:
+        - organization
+      summary: Get the list of all groups
+      responses:
+        "200":
+          description: The list of all groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+            application/yaml:
+              schema:
+                type: array
+                items:
+                    type: string
+  /organizations/{organization_id}/members:
+    parameters:
+      - $ref: '#/components/parameters/organizationId'
+    get:
+      operationId: getOrganizationMembers
+      tags:
+        - organization
+      description: "Retrieve detailed information about members of an organization."
+      summary: Get the members of an Organization
+      responses:
+        "200":
+          description: The Organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationMembers'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/OrganizationMembers'
+
   /organizations/{organization_id}:
     parameters:
       - $ref: '#/components/parameters/organizationId'
@@ -590,6 +646,55 @@ components:
           description: The Organization Role
       required:
         - role
+
+    OrganizationMembers:
+      type: object
+      description: The Organization members, including users and groups
+      properties:
+        users:
+          type: array
+          description: The list of users in the organization
+          items:
+            $ref: '#/components/schemas/OrganizationMemberUser'
+        groups:
+          type: array
+          description: The list of groups in the organization
+          items:
+            $ref: '#/components/schemas/OrganizationMemberGroup'
+
+    OrganizationMemberUser:
+      type: object
+      description: A user member of the organization
+      properties:
+        id:
+          type: string
+          description: The user id
+        role:
+          type: string
+          description: The user role in the organization
+      required:
+        - id
+        - role
+
+    OrganizationMemberGroup:
+      type: object
+      description: A group member of the organization
+      properties:
+        id:
+          type: string
+          description: The group id
+        role:
+          type: string
+          description: The user role in the organization
+        users:
+          type: array
+          description: The list of users in the group
+          items:
+            type: string
+      required:
+        - id
+        - role
+        - users
 
     ComponentRolePermissions:
       type: object

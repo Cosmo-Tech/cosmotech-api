@@ -18,6 +18,10 @@ import com.cosmotech.common.rbac.getAllRolesDefinition
 import com.cosmotech.common.rbac.getCommonRolesDefinition
 import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
+import com.cosmotech.common.security.keycloak.KeycloakClient
+import com.cosmotech.common.security.keycloak.KeycloakMemberGroup
+import com.cosmotech.common.security.keycloak.KeycloakMemberUser
+import com.cosmotech.common.security.keycloak.KeycloakMembers
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
@@ -27,6 +31,9 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationCreateRequest
 import com.cosmotech.organization.domain.OrganizationEditInfo
+import com.cosmotech.organization.domain.OrganizationMemberGroup
+import com.cosmotech.organization.domain.OrganizationMemberUser
+import com.cosmotech.organization.domain.OrganizationMembers
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationUpdateRequest
@@ -40,6 +47,7 @@ import org.springframework.stereotype.Service
 class OrganizationServiceImpl(
     private val csmRbac: CsmRbac,
     private val csmAdmin: CsmAdmin,
+    private val keycloak: KeycloakClient,
     private val organizationRepository: OrganizationRepository,
 ) : CsmPhoenixService(), OrganizationApiServiceInterface {
 
@@ -72,6 +80,21 @@ class OrganizationServiceImpl(
     }
     result.forEach { it.security = updateSecurityVisibility(it).security }
     return result
+  }
+
+  override fun listKeycloakGroups(): List<String> {
+    // open to all users, no permission check needed
+    return keycloak.getAllGroups().map { it.name }
+  }
+
+  override fun listKeycloakMembers(): OrganizationMembers {
+    return keycloak.listKeycloakMembers().toOrganizationMembers()
+  }
+
+  override fun getOrganizationMembers(organizationId: String): OrganizationMembers {
+    val organization = getVerifiedOrganization(organizationId, PERMISSION_READ_SECURITY)
+    val rbacSecurity = organization.security.toGenericSecurity(organizationId)
+    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toOrganizationMembers()
   }
 
   override fun getOrganization(organizationId: String): Organization {
@@ -323,4 +346,20 @@ fun RbacSecurity.toResourceSecurity() =
     OrganizationSecurity(
         this.default,
         this.accessControlList.map { OrganizationAccessControl(it.id, it.role) }.toMutableList(),
+    )
+
+fun KeycloakMemberUser.toOrganizationMemberUser() =
+    OrganizationMemberUser(id = this.id, role = this.role)
+
+fun KeycloakMemberGroup.toOrganizationMemberGroup() =
+    OrganizationMemberGroup(
+        id = this.id,
+        role = this.role,
+        users = this.users.toMutableList(),
+    )
+
+fun KeycloakMembers.toOrganizationMembers() =
+    OrganizationMembers(
+        users = this.users.map { it.toOrganizationMemberUser() }.toMutableList(),
+        groups = this.groups.map { it.toOrganizationMemberGroup() }.toMutableList(),
     )

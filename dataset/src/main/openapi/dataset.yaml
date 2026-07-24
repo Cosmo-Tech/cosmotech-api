@@ -873,6 +873,36 @@ paths:
           description: Dataset specified is not found or you don't have access to it
 
 
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/members:
+    parameters:
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
+    get:
+      operationId: getDatasetMembers
+      tags:
+        - dataset
+      description: "Retrieve detailed information about members of a dataset."
+      summary: Get the members of a Dataset
+      responses:
+        "200":
+          description: The Dataset members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetMembers'
+              examples:
+                BreweryDatasetMembers:
+                  $ref: '#/components/examples/BreweryDatasetMembers'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/DatasetMembers'
+              examples:
+                BreweryDatasetMembers:
+                  $ref: '#/components/examples/BreweryDatasetMembers'
+        "404":
+          description: The Dataset specified is unknown or you don't have access to it
+
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -1248,6 +1278,55 @@ components:
         - timestamp
         - userId
 
+    DatasetMembers:
+      type: object
+      description: The Dataset members, including users and groups
+      properties:
+        users:
+          type: array
+          description: The list of users in the dataset
+          items:
+            $ref: '#/components/schemas/DatasetMemberUser'
+        groups:
+          type: array
+          description: The list of groups in the dataset
+          items:
+            $ref: '#/components/schemas/DatasetMemberGroup'
+
+    DatasetMemberUser:
+      type: object
+      description: A user member of the dataset
+      properties:
+        id:
+          type: string
+          description: The user id
+        role:
+          type: string
+          description: The user role in the dataset
+      required:
+        - id
+        - role
+
+    DatasetMemberGroup:
+      type: object
+      description: A group member of the dataset
+      properties:
+        id:
+          type: string
+          description: The group id
+        role:
+          type: string
+          description: The group role in the dataset
+        users:
+          type: array
+          description: The list of users in the group
+          items:
+            type: string
+      required:
+        - id
+        - role
+        - users
+
   examples:
     DatasetExample:
       summary: Dataset example
@@ -1520,3 +1599,20 @@ components:
       value:
         - sales
         - 2024
+
+    BreweryDatasetMembers:
+      summary: Brewery Dataset members
+      description: Example of dataset members
+      value:
+        users:
+          - id: alice.doe@cosmotech.com
+            role: admin
+          - id: bob.doe@cosmotech.com
+            role: editor
+        groups:
+          - id: group-analysts
+            role: viewer
+            users:
+              - charlie.smith@cosmotech.com
+              - diana.jones@cosmotech.com
+
