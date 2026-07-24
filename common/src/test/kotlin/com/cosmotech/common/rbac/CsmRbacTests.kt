@@ -92,6 +92,12 @@ class CsmRbacTests {
           userGroup = CUSTOM_USER_GROUP,
           viewerGroup = CUSTOM_VIEWER_GROUP,
           serverBaseUrl = "http://localhost:8080/",
+          admin =
+              CsmPlatformProperties.CsmIdentityProvider.CsmIdentityProviderAdmin(
+                  clientId = "my_admin_client_id",
+                  username = "my_admin_username",
+                  password = "my_admin_password",
+              ),
           identity =
               CsmPlatformProperties.CsmIdentityProvider.CsmIdentity(
                   tenantId = "my_tenant_id",

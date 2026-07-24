@@ -335,6 +335,8 @@ subprojects {
 
     implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:$awsSpringVersion"))
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringVersion")
+    // Source: https://mvnrepository.com/artifact/org.keycloak/keycloak-admin-client
+    implementation("org.keycloak:keycloak-admin-client:26.0.10")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))

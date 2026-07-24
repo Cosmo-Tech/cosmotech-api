@@ -227,6 +227,9 @@ data class CsmPlatformProperties(
   )
 
   data class CsmIdentityProvider(
+      /** Identity provider admin access configuration */
+      val admin: CsmIdentityProviderAdmin,
+
       /** Scopes */
       val defaultScopes: Map<String, String> = emptyMap(),
 
@@ -263,6 +266,12 @@ data class CsmPlatformProperties(
       /** TLS Platform bundle config */
       val tls: TLSConfig = TLSConfig(),
   ) {
+    data class CsmIdentityProviderAdmin(
+        val clientId: String,
+        val username: String,
+        val password: String,
+    )
+
     data class CsmIdentity(
 
         /** Tenant/realm's identifier: default cosmotech */

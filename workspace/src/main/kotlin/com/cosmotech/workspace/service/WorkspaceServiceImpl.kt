@@ -21,6 +21,10 @@ import com.cosmotech.common.rbac.getPermissions
 import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
 import com.cosmotech.common.security.coroutine.SecurityCoroutineContext
+import com.cosmotech.common.security.keycloak.KeycloakClient
+import com.cosmotech.common.security.keycloak.KeycloakMemberGroup
+import com.cosmotech.common.security.keycloak.KeycloakMemberUser
+import com.cosmotech.common.security.keycloak.KeycloakMembers
 import com.cosmotech.common.utils.ResourceScanner
 import com.cosmotech.common.utils.compareToAndMutateIfNeeded
 import com.cosmotech.common.utils.constructPageRequest
@@ -35,6 +39,9 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceCreateRequest
 import com.cosmotech.workspace.domain.WorkspaceEditInfo
 import com.cosmotech.workspace.domain.WorkspaceFile
+import com.cosmotech.workspace.domain.WorkspaceMemberGroup
+import com.cosmotech.workspace.domain.WorkspaceMemberUser
+import com.cosmotech.workspace.domain.WorkspaceMembers
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceUpdateRequest
@@ -73,6 +80,7 @@ internal class WorkspaceServiceImpl(
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
     private val workspaceRepository: WorkspaceRepository,
+    private val keycloak: KeycloakClient,
 ) : CsmPhoenixService(), WorkspaceApiServiceInterface {
 
   override fun listWorkspaces(organizationId: String, page: Int?, size: Int?): List<Workspace> {
@@ -537,6 +545,12 @@ internal class WorkspaceServiceImpl(
     return csmRbac.getEntities(workspace.security.toGenericSecurity(workspaceId))
   }
 
+  override fun getWorkspaceMembers(organizationId: String, workspaceId: String): WorkspaceMembers {
+    val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
+    val rbacSecurity = workspace.security.toGenericSecurity(workspaceId)
+    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toWorkspaceMembers()
+  }
+
   fun updateSecurityVisibility(workspace: Workspace): Workspace {
     if (
         csmRbac
@@ -587,3 +601,14 @@ fun RbacSecurity.toResourceSecurity() =
         this.default,
         this.accessControlList.map { WorkspaceAccessControl(it.id, it.role) }.toMutableList(),
     )
+
+fun KeycloakMembers.toWorkspaceMembers() =
+    WorkspaceMembers(
+        users = this.users.map { it.toWorkspaceMemberUser() }.toMutableList(),
+        groups = this.groups.map { it.toWorkspaceMemberGroup() }.toMutableList(),
+    )
+
+fun KeycloakMemberUser.toWorkspaceMemberUser() = WorkspaceMemberUser(id = this.id, role = this.role)
+
+fun KeycloakMemberGroup.toWorkspaceMemberGroup() =
+    WorkspaceMemberGroup(id = this.id, role = this.role, users = this.users.toMutableList())

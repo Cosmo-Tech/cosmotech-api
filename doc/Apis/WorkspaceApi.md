@@ -14,6 +14,7 @@ All URIs are relative to *http://localhost:8080*
 | [**getWorkspace**](WorkspaceApi.md#getWorkspace) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of a workspace |
 | [**getWorkspaceAccessControl**](WorkspaceApi.md#getWorkspaceAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Get a control access for the Workspace |
 | [**getWorkspaceFile**](WorkspaceApi.md#getWorkspaceFile) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files/download | Download the Workspace File specified |
+| [**getWorkspaceMembers**](WorkspaceApi.md#getWorkspaceMembers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/members | Get the members of a Workspace |
 | [**getWorkspaceSecurity**](WorkspaceApi.md#getWorkspaceSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security | Get the Workspace security information |
 | [**listWorkspaceFiles**](WorkspaceApi.md#listWorkspaceFiles) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files | List all Workspace files |
 | [**listWorkspaceRolePermissions**](WorkspaceApi.md#listWorkspaceRolePermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role} | Get the Workspace permission by given role |
@@ -305,6 +306,34 @@ Download the Workspace File specified
 
 - **Content-Type**: Not defined
 - **Accept**: application/octet-stream
+
+<a name="getWorkspaceMembers"></a>
+# **getWorkspaceMembers**
+> WorkspaceMembers getWorkspaceMembers(organization\_id, workspace\_id)
+
+Get the members of a Workspace
+
+    Retrieve detailed information about members of a workspace.
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| The Organization identifier | [default to null] |
+| **workspace\_id** | **String**| The Workspace identifier | [default to null] |
+
+### Return type
+
+[**WorkspaceMembers**](../Models/WorkspaceMembers.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json, application/yaml
 
 <a name="getWorkspaceSecurity"></a>
 # **getWorkspaceSecurity**

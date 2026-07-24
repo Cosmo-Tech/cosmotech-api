@@ -84,6 +84,12 @@ class ContainerFactoryTests {
             tokenUrl = "http://this_is_a_fake_token_url.com",
             containerScopes = mapOf("/.default" to "Default Scope"),
             serverBaseUrl = "http://localhost:8080",
+            admin =
+                CsmPlatformProperties.CsmIdentityProvider.CsmIdentityProviderAdmin(
+                    clientId = "my_admin_client_id",
+                    username = "my_admin_username",
+                    password = "my_admin_password",
+                ),
             identity =
                 CsmPlatformProperties.CsmIdentityProvider.CsmIdentity(
                     tenantId = "my_tenant_id",

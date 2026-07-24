@@ -16,6 +16,7 @@ All URIs are relative to *http://localhost:8080*
 *DatasetApi* | [**downloadDatasetPart**](Apis/DatasetApi.md#downloadDatasetPart) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/download | Download data from a dataset part |
 *DatasetApi* | [**getDataset**](Apis/DatasetApi.md#getDataset) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id} | Retrieve a Dataset |
 *DatasetApi* | [**getDatasetAccessControl**](Apis/DatasetApi.md#getDatasetAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id} | Get a control access for the Dataset |
+*DatasetApi* | [**getDatasetMembers**](Apis/DatasetApi.md#getDatasetMembers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/members | Get the members of a Dataset |
 *DatasetApi* | [**getDatasetPart**](Apis/DatasetApi.md#getDatasetPart) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id} | Retrieve a data part of a Dataset |
 *DatasetApi* | [**listDatasetParts**](Apis/DatasetApi.md#listDatasetParts) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts | Retrieve all dataset parts of a Dataset |
 *DatasetApi* | [**listDatasetSecurityUsers**](Apis/DatasetApi.md#listDatasetSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/users | Get the Dataset security users list |
@@ -35,8 +36,11 @@ All URIs are relative to *http://localhost:8080*
 *OrganizationApi* | [**deleteOrganizationAccessControl**](Apis/OrganizationApi.md#deleteOrganizationAccessControl) | **DELETE** /organizations/{organization_id}/security/access/{identity_id} | Remove the specified access from the given Organization |
 *OrganizationApi* | [**getOrganization**](Apis/OrganizationApi.md#getOrganization) | **GET** /organizations/{organization_id} | Get the details of an Organization |
 *OrganizationApi* | [**getOrganizationAccessControl**](Apis/OrganizationApi.md#getOrganizationAccessControl) | **GET** /organizations/{organization_id}/security/access/{identity_id} | Get a control access for the Organization |
+*OrganizationApi* | [**getOrganizationMembers**](Apis/OrganizationApi.md#getOrganizationMembers) | **GET** /organizations/{organization_id}/members | Get the members of an Organization |
 *OrganizationApi* | [**getOrganizationPermissions**](Apis/OrganizationApi.md#getOrganizationPermissions) | **GET** /organizations/{organization_id}/permissions/{role} | Get the Organization permissions by given role |
 *OrganizationApi* | [**getOrganizationSecurity**](Apis/OrganizationApi.md#getOrganizationSecurity) | **GET** /organizations/{organization_id}/security | Get the Organization security information |
+*OrganizationApi* | [**listKeycloakGroups**](Apis/OrganizationApi.md#listKeycloakGroups) | **GET** /organizations/groups | Get the list of all groups |
+*OrganizationApi* | [**listKeycloakMembers**](Apis/OrganizationApi.md#listKeycloakMembers) | **GET** /organizations/members | Get ALL Keycloak members list |
 *OrganizationApi* | [**listOrganizationSecurityUsers**](Apis/OrganizationApi.md#listOrganizationSecurityUsers) | **GET** /organizations/{organization_id}/security/users | Get the Organization security users list |
 *OrganizationApi* | [**listOrganizations**](Apis/OrganizationApi.md#listOrganizations) | **GET** /organizations | List all Organizations |
 *OrganizationApi* | [**listPermissions**](Apis/OrganizationApi.md#listPermissions) | **GET** /organizations/permissions | Get all permissions per components |
@@ -54,6 +58,7 @@ All URIs are relative to *http://localhost:8080*
 *RunnerApi* | [**deleteRunnerAccessControl**](Apis/RunnerApi.md#deleteRunnerAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Remove the specified access from the given Runner |
 *RunnerApi* | [**getRunner**](Apis/RunnerApi.md#getRunner) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Get the details of a runner |
 *RunnerApi* | [**getRunnerAccessControl**](Apis/RunnerApi.md#getRunnerAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Get a control access for the Runner |
+*RunnerApi* | [**getRunnerMembers**](Apis/RunnerApi.md#getRunnerMembers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/members | Get the members of a Runner |
 *RunnerApi* | [**getRunnerSecurity**](Apis/RunnerApi.md#getRunnerSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security | Get the Runner security information |
 *RunnerApi* | [**listRunnerPermissions**](Apis/RunnerApi.md#listRunnerPermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/permissions/{role} | Get the Runner permission by given role |
 *RunnerApi* | [**listRunnerSecurityUsers**](Apis/RunnerApi.md#listRunnerSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/users | Get the Runner security users list |
@@ -100,6 +105,7 @@ All URIs are relative to *http://localhost:8080*
 *WorkspaceApi* | [**getWorkspace**](Apis/WorkspaceApi.md#getWorkspace) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of a workspace |
 *WorkspaceApi* | [**getWorkspaceAccessControl**](Apis/WorkspaceApi.md#getWorkspaceAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Get a control access for the Workspace |
 *WorkspaceApi* | [**getWorkspaceFile**](Apis/WorkspaceApi.md#getWorkspaceFile) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files/download | Download the Workspace File specified |
+*WorkspaceApi* | [**getWorkspaceMembers**](Apis/WorkspaceApi.md#getWorkspaceMembers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/members | Get the members of a Workspace |
 *WorkspaceApi* | [**getWorkspaceSecurity**](Apis/WorkspaceApi.md#getWorkspaceSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security | Get the Workspace security information |
 *WorkspaceApi* | [**listWorkspaceFiles**](Apis/WorkspaceApi.md#listWorkspaceFiles) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files | List all Workspace files |
 *WorkspaceApi* | [**listWorkspaceRolePermissions**](Apis/WorkspaceApi.md#listWorkspaceRolePermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role} | Get the Workspace permission by given role |
@@ -123,6 +129,9 @@ All URIs are relative to *http://localhost:8080*
  - [DatasetAccessControl](./Models/DatasetAccessControl.md)
  - [DatasetCreateRequest](./Models/DatasetCreateRequest.md)
  - [DatasetEditInfo](./Models/DatasetEditInfo.md)
+ - [DatasetMemberGroup](./Models/DatasetMemberGroup.md)
+ - [DatasetMemberUser](./Models/DatasetMemberUser.md)
+ - [DatasetMembers](./Models/DatasetMembers.md)
  - [DatasetPart](./Models/DatasetPart.md)
  - [DatasetPartCreateRequest](./Models/DatasetPartCreateRequest.md)
  - [DatasetPartTypeEnum](./Models/DatasetPartTypeEnum.md)
@@ -135,6 +144,9 @@ All URIs are relative to *http://localhost:8080*
  - [OrganizationAccessControl](./Models/OrganizationAccessControl.md)
  - [OrganizationCreateRequest](./Models/OrganizationCreateRequest.md)
  - [OrganizationEditInfo](./Models/OrganizationEditInfo.md)
+ - [OrganizationMemberGroup](./Models/OrganizationMemberGroup.md)
+ - [OrganizationMemberUser](./Models/OrganizationMemberUser.md)
+ - [OrganizationMembers](./Models/OrganizationMembers.md)
  - [OrganizationRole](./Models/OrganizationRole.md)
  - [OrganizationSecurity](./Models/OrganizationSecurity.md)
  - [OrganizationUpdateRequest](./Models/OrganizationUpdateRequest.md)
@@ -162,6 +174,9 @@ All URIs are relative to *http://localhost:8080*
  - [RunnerCreateRequest](./Models/RunnerCreateRequest.md)
  - [RunnerDatasets](./Models/RunnerDatasets.md)
  - [RunnerEditInfo](./Models/RunnerEditInfo.md)
+ - [RunnerMemberGroup](./Models/RunnerMemberGroup.md)
+ - [RunnerMemberUser](./Models/RunnerMemberUser.md)
+ - [RunnerMembers](./Models/RunnerMembers.md)
  - [RunnerResourceSizing](./Models/RunnerResourceSizing.md)
  - [RunnerRole](./Models/RunnerRole.md)
  - [RunnerRunTemplateParameterValue](./Models/RunnerRunTemplateParameterValue.md)
@@ -181,6 +196,9 @@ All URIs are relative to *http://localhost:8080*
  - [WorkspaceCreateRequest](./Models/WorkspaceCreateRequest.md)
  - [WorkspaceEditInfo](./Models/WorkspaceEditInfo.md)
  - [WorkspaceFile](./Models/WorkspaceFile.md)
+ - [WorkspaceMemberGroup](./Models/WorkspaceMemberGroup.md)
+ - [WorkspaceMemberUser](./Models/WorkspaceMemberUser.md)
+ - [WorkspaceMembers](./Models/WorkspaceMembers.md)
  - [WorkspaceRole](./Models/WorkspaceRole.md)
  - [WorkspaceSecurity](./Models/WorkspaceSecurity.md)
  - [WorkspaceSolution](./Models/WorkspaceSolution.md)
