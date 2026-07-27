@@ -117,6 +117,7 @@ tasks.register<GenerateTask>("openApiTypescriptGenerate") {
   additionalProperties.set(
       mapOf(
           "npmName" to "@cosmotech/api-ts",
+          "httpUserAgent" to "cosmotech-api-typescript/${project.version}",
       )
   )
 }
@@ -160,6 +161,7 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
           "projectName" to "cosmotech-api",
           "packageName" to "cosmotech_api",
           "pythonAttrNoneIfUnset" to true,
+          "httpUserAgent" to "cosmotech-api-python/${project.version}",
       )
   )
 }
