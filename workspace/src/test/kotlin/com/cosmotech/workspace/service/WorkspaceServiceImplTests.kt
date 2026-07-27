@@ -16,6 +16,7 @@ import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.rbac.ROLE_USER
 import com.cosmotech.common.rbac.ROLE_VALIDATOR
 import com.cosmotech.common.rbac.ROLE_VIEWER
+import com.cosmotech.common.security.keycloak.KeycloakClient
 import com.cosmotech.common.utils.ResourceScanner
 import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
@@ -108,6 +109,8 @@ class WorkspaceServiceImplTests {
   private var workspaceRepository: WorkspaceRepository = mockk(relaxed = true)
 
   @InjectMockKs private lateinit var workspaceServiceImpl: WorkspaceServiceImpl
+
+  @Suppress("unused") @InjectMockKs private lateinit var keycloakClient: KeycloakClient
 
   @BeforeEach
   fun beforeEach() {

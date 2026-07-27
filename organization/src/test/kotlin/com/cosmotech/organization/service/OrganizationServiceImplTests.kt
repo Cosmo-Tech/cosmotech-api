@@ -16,6 +16,7 @@ import com.cosmotech.common.rbac.ROLE_VALIDATOR
 import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
+import com.cosmotech.common.security.keycloak.KeycloakClient
 import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
@@ -61,6 +62,8 @@ class OrganizationServiceImplTests {
 
   @MockK private var organizationRepository: OrganizationRepository = mockk(relaxed = true)
   @InjectMockKs lateinit var organizationApiService: OrganizationServiceImpl
+
+  @Suppress("unused") @InjectMockKs private lateinit var keycloakClient: KeycloakClient
 
   @BeforeEach
   fun setUp() {
