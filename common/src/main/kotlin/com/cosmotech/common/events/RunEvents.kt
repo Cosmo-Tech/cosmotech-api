@@ -10,7 +10,7 @@ enum class RunType(val value: String) {
 class RunStart(publisher: Any, val runnerData: Any, val runType: RunType) :
     CsmRequestResponseEvent<String>(publisher)
 
-class RunStop(publisher: Any, val runnerData: Any) : CsmEvent(publisher)
+class RunStop(publisher: Any, val runnerData: Any) : CsmRequestResponseEvent<String>(publisher)
 
 class AskRunStatusEvent(
     publisher: Any,

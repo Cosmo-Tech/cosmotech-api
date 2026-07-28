@@ -343,6 +343,7 @@ class RunServiceImpl(
     workflowService.stopWorkflow(run)
     val stoppedRun = run.copy(state = RunState.Failed)
     runRepository.save(stoppedRun)
+    runStopRequest.response = stoppedRun.id
   }
 
   private fun Run.hasPermission(permission: String) = apply {

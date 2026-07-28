@@ -4,14 +4,12 @@ package com.cosmotech.runner.service
 
 import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.events.CleanUpRun
-import com.cosmotech.common.events.HasRunningRuns
 import com.cosmotech.common.events.RunStart
 import com.cosmotech.common.events.RunStop
 import com.cosmotech.common.events.RunType
 import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.events.RunnerPropagateDelete
 import com.cosmotech.common.events.UpdateRunnerStatus
-import com.cosmotech.common.exceptions.CsmClientException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmRbac
@@ -122,15 +120,6 @@ class RunnerService(
 
   fun archiveInstance(runnerInstance: RunnerInstance) {
     val runner = runnerInstance.getRunnerDataObject()
-
-    // Check there are no running runs
-    val hasRunningRuns = HasRunningRuns(this, runner.organizationId, runner.workspaceId, runner.id)
-    this.eventPublisher.publishEvent(hasRunningRuns)
-    if (hasRunningRuns.response == true) {
-      throw CsmClientException(
-          "Can't delete runner ${runner.id}: at least one run is still running"
-      )
-    }
 
     // Update parent and root references to deleted runner
     val newRoots = mutableListOf<Runner>()
@@ -290,10 +279,12 @@ class RunnerService(
     return CreatedRun(id = runId)
   }
 
-  fun stopLastRunOf(runnerInstance: RunnerInstance) {
+  fun stopLastRunOf(runnerInstance: RunnerInstance): String? {
     val runner = runnerInstance.getRunnerDataObject()
-    runner.lastRunInfo.lastRunId ?: return // No run to stop
-    this.eventPublisher.publishEvent(RunStop(this, runner))
+    runner.lastRunInfo.lastRunId ?: return "No run" // No run to stop
+    val runStopEvent = RunStop(this, runner)
+    this.eventPublisher.publishEvent(runStopEvent)
+    return runStopEvent.response
   }
 
   fun cleanupArchived() {
