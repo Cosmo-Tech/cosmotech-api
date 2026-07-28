@@ -403,7 +403,7 @@ internal class WorkspaceServiceImpl(
     }
   }
 
-  fun deleteAllS3WorkspaceObjects(organizationId: String, workspace: Workspace) {
+  private fun deleteAllS3WorkspaceObjects(organizationId: String, workspace: Workspace) {
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
     val workspaceFiles = getWorkspaceFiles(organizationId, workspace.id)
     if (workspaceFiles.isEmpty()) {
@@ -551,7 +551,7 @@ internal class WorkspaceServiceImpl(
     return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toWorkspaceMembers()
   }
 
-  fun updateSecurityVisibility(workspace: Workspace): Workspace {
+  private fun updateSecurityVisibility(workspace: Workspace): Workspace {
     if (
         csmRbac
             .check(workspace.security.toGenericSecurity(workspace.id), PERMISSION_READ_SECURITY)

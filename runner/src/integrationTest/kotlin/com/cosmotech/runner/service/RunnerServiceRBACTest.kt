@@ -4742,6 +4742,76 @@ class RunnerServiceRBACTest : CsmTestBase() {
             }
           }
 
+  @TestFactory
+  fun `test RBAC getRunnerMembers`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_VALIDATOR to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            dynamicTest("Test RBAC getRunnerMembers : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+              val organization =
+                  makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.createOrganization(organization)
+              val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+              val workspace =
+                  makeWorkspaceCreateRequest(
+                      solutionId = solutionSaved.id,
+                      userId = TEST_USER_MAIL,
+                      role = ROLE_ADMIN,
+                  )
+              val workspaceSaved =
+                  workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+              val dataset = makeDataset(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      dataset,
+                      emptyArray(),
+                  )
+              val runner =
+                  makeRunnerWithRole(
+                      solutionId = solutionSaved.id,
+                      datasetList = mutableListOf(datasetSaved.id),
+                      userId = TEST_USER_MAIL,
+                      role = role,
+                  )
+              val runnerSaved =
+                  runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      runnerApiService.getRunnerMembers(
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          runnerSaved.id,
+                      )
+                    }
+                assertEquals(
+                    "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message,
+                )
+              } else {
+                assertDoesNotThrow {
+                  runnerApiService.getRunnerMembers(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                      runnerSaved.id,
+                  )
+                }
+              }
+            }
+          }
+
   fun makeDataset(name: String = "my_dataset_test", userId: String, role: String) =
       DatasetCreateRequest(
           name = name,

@@ -641,7 +641,23 @@ class SolutionServiceImpl(
     return solution
   }
 
-  fun updateSecurityVisibility(solution: Solution): Solution {
+  fun save(solution: Solution): Solution {
+    solution.updateInfo =
+        SolutionEditInfo(
+            timestamp = Instant.now().toEpochMilli(),
+            userId = getCurrentAccountIdentifier(csmPlatformProperties),
+        )
+
+    return solutionRepository.save(solution)
+  }
+
+  override fun getSolutionMembers(organizationId: String, solutionId: String): SolutionMembers {
+    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ_SECURITY)
+    val rbacSecurity = solution.security.toGenericSecurity(solutionId)
+    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toSolutionMembers()
+  }
+
+  private fun updateSecurityVisibility(solution: Solution): Solution {
     if (
         csmRbac
             .check(solution.security.toGenericSecurity(solution.id), PERMISSION_READ_SECURITY)
@@ -668,7 +684,7 @@ class SolutionServiceImpl(
     return solution
   }
 
-  fun fillSdkVersion(solution: Solution) =
+  private fun fillSdkVersion(solution: Solution) =
       solution.copy(
           sdkVersion =
               containerRegistryService.getImageLabel(
@@ -678,7 +694,7 @@ class SolutionServiceImpl(
               )
       )
 
-  fun convertToRunTemplateParameter(
+  private fun convertToRunTemplateParameter(
       runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest
   ): RunTemplateParameter {
     return RunTemplateParameter(
@@ -693,7 +709,7 @@ class SolutionServiceImpl(
     )
   }
 
-  fun convertToRunTemplateParameterGroup(
+  private fun convertToRunTemplateParameterGroup(
       runTemplateParameterGroupCreateRequest: RunTemplateParameterGroupCreateRequest
   ): RunTemplateParameterGroup {
     return RunTemplateParameterGroup(
@@ -705,7 +721,9 @@ class SolutionServiceImpl(
     )
   }
 
-  fun convertToRunTemplate(runTemplateCreateRequest: RunTemplateCreateRequest): RunTemplate {
+  private fun convertToRunTemplate(
+      runTemplateCreateRequest: RunTemplateCreateRequest
+  ): RunTemplate {
     runTemplateCreateRequest.runSizing?.let {
       validateResourceSizing(
           RunTemplateCreateRequest::runSizing.name,
@@ -763,22 +781,6 @@ class SolutionServiceImpl(
     require(duplicatedFieldIds.isEmpty()) {
       "One or several solution items have same id : ${duplicatedFieldIds.joinToString(",")}"
     }
-  }
-
-  fun save(solution: Solution): Solution {
-    solution.updateInfo =
-        SolutionEditInfo(
-            timestamp = Instant.now().toEpochMilli(),
-            userId = getCurrentAccountIdentifier(csmPlatformProperties),
-        )
-
-    return solutionRepository.save(solution)
-  }
-
-  override fun getSolutionMembers(organizationId: String, solutionId: String): SolutionMembers {
-    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ_SECURITY)
-    val rbacSecurity = solution.security.toGenericSecurity(solutionId)
-    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toSolutionMembers()
   }
 }
 

@@ -2056,6 +2056,62 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
             }
           }
 
+  @TestFactory
+  fun `test RBAC getWorkspaceMembers`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC listWorkspaceMembers : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+              val organizationSaved =
+                  organizationApiService.createOrganization(
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  )
+              val solutionSaved =
+                  solutionApiService.createSolution(
+                      organizationSaved.id,
+                      makeSolution(organizationSaved.id),
+                  )
+              val workspaceSaved =
+                  workspaceApiService.createWorkspace(
+                      organizationSaved.id,
+                      makeWorkspaceCreateRequest(
+                          organizationSaved.id,
+                          solutionSaved.id,
+                          id = TEST_USER_MAIL,
+                          role = role,
+                      ),
+                  )
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      workspaceApiService.getWorkspaceMembers(
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                      )
+                    }
+                assertEquals(
+                    "RBAC ${workspaceSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message,
+                )
+              } else {
+                assertDoesNotThrow {
+                  workspaceApiService.getWorkspaceMembers(
+                      organizationSaved.id,
+                      workspaceSaved.id,
+                  )
+                }
+              }
+            }
+          }
+
   fun makeOrganizationCreateRequest(id: String, role: String) =
       OrganizationCreateRequest(
           name = "Organization",

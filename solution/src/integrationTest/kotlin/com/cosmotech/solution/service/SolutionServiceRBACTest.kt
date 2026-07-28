@@ -1935,6 +1935,50 @@ class SolutionServiceRBACTest : CsmTestBase() {
             }
           }
 
+  @TestFactory
+  fun `test RBAC getSolutionMembers`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC getSolutionMembers : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization =
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organizationSaved = organizationApiService.createOrganization(organization)
+              val solution = makeSolutionWithRole(organizationSaved.id, TEST_USER_MAIL, role = role)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.getSolutionMembers(
+                          organizationSaved.id,
+                          solutionSaved.id,
+                      )
+                    }
+                assertEquals(
+                    "RBAC ${solutionSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message,
+                )
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.getSolutionMembers(
+                      organizationSaved.id,
+                      solutionSaved.id,
+                  )
+                }
+              }
+            }
+          }
+
   fun makeOrganizationCreateRequest(
       id: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN,

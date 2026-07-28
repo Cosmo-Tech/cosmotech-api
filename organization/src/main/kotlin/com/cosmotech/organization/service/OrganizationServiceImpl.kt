@@ -91,10 +91,9 @@ class OrganizationServiceImpl(
 
   override fun listKeycloakMembers(): OrganizationMembers {
     // only be accessible by Platform.admin users
-    if(!csmAdmin.verifyCurrentRolesAdmin()) {
-       throw CsmAccessForbiddenException(
-          "User does not have permission $ROLE_PLATFORM_ADMIN"
-      )}
+    if (!csmAdmin.verifyCurrentRolesAdmin()) {
+      throw CsmAccessForbiddenException("User does not have permission $ROLE_PLATFORM_ADMIN")
+    }
     return keycloak.listKeycloakMembers().toOrganizationMembers()
   }
 
