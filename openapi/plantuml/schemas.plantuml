@@ -538,6 +538,22 @@ entity SolutionEditInfo {
     * userId: String
 }
 
+entity SolutionMemberGroup {
+    * id: String
+    * role: String
+    * users: List<String>
+}
+
+entity SolutionMemberUser {
+    * id: String
+    * role: String
+}
+
+entity SolutionMembers {
+    users: List<SolutionMemberUser>
+    groups: List<SolutionMemberGroup>
+}
+
 entity SolutionRole {
     * role: String
 }
@@ -713,6 +729,8 @@ Run -- "0..*" RunContainer : containers
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 RunnerResourceSizing -- ResourceSizeInfo : requests
 RunnerResourceSizing -- ResourceSizeInfo : limits
+SolutionMembers -- "0..*" SolutionMemberUser : users
+SolutionMembers -- "0..*" SolutionMemberGroup : groups
 Workspace -- WorkspaceEditInfo : createInfo
 Workspace -- WorkspaceEditInfo : updateInfo
 Workspace -- WorkspaceSolution : solution

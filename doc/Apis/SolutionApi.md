@@ -17,6 +17,7 @@ All URIs are relative to *http://localhost:8080*
 | [**getRunTemplate**](SolutionApi.md#getRunTemplate) | **GET** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Retrieve a solution run templates |
 | [**getSolution**](SolutionApi.md#getSolution) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution |
 | [**getSolutionAccessControl**](SolutionApi.md#getSolutionAccessControl) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Get solution access control |
+| [**getSolutionMembers**](SolutionApi.md#getSolutionMembers) | **GET** /organizations/{organization_id}/solutions/{solution_id}/members | Get the members of a Solution |
 | [**getSolutionParameter**](SolutionApi.md#getSolutionParameter) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Get the details of a solution parameter |
 | [**getSolutionParameterGroup**](SolutionApi.md#getSolutionParameterGroup) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id} | Get details of a solution parameter group |
 | [**getSolutionSecurity**](SolutionApi.md#getSolutionSecurity) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security | Get solution security information |
@@ -377,6 +378,34 @@ Get solution access control
 ### Return type
 
 [**SolutionAccessControl**](../Models/SolutionAccessControl.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json, application/yaml
+
+<a name="getSolutionMembers"></a>
+# **getSolutionMembers**
+> SolutionMembers getSolutionMembers(organization\_id, solution\_id)
+
+Get the members of a Solution
+
+    Retrieve detailed information about members of a solution.
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+
+### Return type
+
+[**SolutionMembers**](../Models/SolutionMembers.md)
 
 ### Authorization
 

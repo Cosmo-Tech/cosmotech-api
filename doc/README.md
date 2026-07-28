@@ -81,6 +81,7 @@ All URIs are relative to *http://localhost:8080*
 *SolutionApi* | [**getRunTemplate**](Apis/SolutionApi.md#getRunTemplate) | **GET** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Retrieve a solution run templates |
 *SolutionApi* | [**getSolution**](Apis/SolutionApi.md#getSolution) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution |
 *SolutionApi* | [**getSolutionAccessControl**](Apis/SolutionApi.md#getSolutionAccessControl) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id} | Get solution access control |
+*SolutionApi* | [**getSolutionMembers**](Apis/SolutionApi.md#getSolutionMembers) | **GET** /organizations/{organization_id}/solutions/{solution_id}/members | Get the members of a Solution |
 *SolutionApi* | [**getSolutionParameter**](Apis/SolutionApi.md#getSolutionParameter) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id} | Get the details of a solution parameter |
 *SolutionApi* | [**getSolutionParameterGroup**](Apis/SolutionApi.md#getSolutionParameterGroup) | **GET** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id} | Get details of a solution parameter group |
 *SolutionApi* | [**getSolutionSecurity**](Apis/SolutionApi.md#getSolutionSecurity) | **GET** /organizations/{organization_id}/solutions/{solution_id}/security | Get solution security information |
@@ -188,6 +189,9 @@ All URIs are relative to *http://localhost:8080*
  - [SolutionAccessControl](./Models/SolutionAccessControl.md)
  - [SolutionCreateRequest](./Models/SolutionCreateRequest.md)
  - [SolutionEditInfo](./Models/SolutionEditInfo.md)
+ - [SolutionMemberGroup](./Models/SolutionMemberGroup.md)
+ - [SolutionMemberUser](./Models/SolutionMemberUser.md)
+ - [SolutionMembers](./Models/SolutionMembers.md)
  - [SolutionRole](./Models/SolutionRole.md)
  - [SolutionSecurity](./Models/SolutionSecurity.md)
  - [SolutionUpdateRequest](./Models/SolutionUpdateRequest.md)

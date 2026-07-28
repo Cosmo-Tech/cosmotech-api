@@ -17,6 +17,10 @@ import com.cosmotech.common.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
+import com.cosmotech.common.security.keycloak.KeycloakClient
+import com.cosmotech.common.security.keycloak.KeycloakMemberGroup
+import com.cosmotech.common.security.keycloak.KeycloakMemberUser
+import com.cosmotech.common.security.keycloak.KeycloakMembers
 import com.cosmotech.common.utils.compareToAndMutateIfNeeded
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
@@ -38,6 +42,9 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionCreateRequest
 import com.cosmotech.solution.domain.SolutionEditInfo
+import com.cosmotech.solution.domain.SolutionMemberGroup
+import com.cosmotech.solution.domain.SolutionMemberUser
+import com.cosmotech.solution.domain.SolutionMembers
 import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.solution.domain.SolutionUpdateRequest
@@ -57,6 +64,7 @@ class SolutionServiceImpl(
     private val csmRbac: CsmRbac,
     private val csmAdmin: CsmAdmin,
     private val containerRegistryService: ContainerRegistryService,
+    private val keycloak: KeycloakClient,
 ) : CsmPhoenixService(), SolutionApiServiceInterface {
 
   override fun listSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
@@ -766,6 +774,12 @@ class SolutionServiceImpl(
 
     return solutionRepository.save(solution)
   }
+
+  override fun getSolutionMembers(organizationId: String, solutionId: String): SolutionMembers {
+    val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ_SECURITY)
+    val rbacSecurity = solution.security.toGenericSecurity(solutionId)
+    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toSolutionMembers()
+  }
 }
 
 fun SolutionSecurity?.toGenericSecurity(solutionId: String) =
@@ -781,3 +795,14 @@ fun RbacSecurity.toResourceSecurity() =
         this.default,
         this.accessControlList.map { SolutionAccessControl(it.id, it.role) }.toMutableList(),
     )
+
+fun KeycloakMembers.toSolutionMembers() =
+    SolutionMembers(
+        users = this.users.map { it.toSolutionMemberUser() }.toMutableList(),
+        groups = this.groups.map { it.toSolutionMemberGroup() }.toMutableList(),
+    )
+
+fun KeycloakMemberUser.toSolutionMemberUser() = SolutionMemberUser(id = this.id, role = this.role)
+
+fun KeycloakMemberGroup.toSolutionMemberGroup() =
+    SolutionMemberGroup(id = this.id, role = this.role, users = this.users.toMutableList())

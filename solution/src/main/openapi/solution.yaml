@@ -865,6 +865,35 @@ paths:
         "404":
           description: Solution or user not found or insufficient access rights
 
+  /organizations/{organization_id}/solutions/{solution_id}/members:
+    parameters:
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/solutionId'
+    get:
+      operationId: getSolutionMembers
+      tags:
+        - solution
+      description: "Retrieve detailed information about members of a solution."
+      summary: Get the members of a Solution
+      responses:
+        "200":
+          description: The Solution members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolutionMembers'
+              examples:
+                BrewerySolutionMembers:
+                  $ref: '#/components/examples/BrewerySolutionMembers'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/SolutionMembers'
+              examples:
+                BrewerySolutionMembers:
+                  $ref: '#/components/examples/BrewerySolutionMembers'
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -1576,6 +1605,55 @@ components:
         - timestamp
         - userId
 
+    SolutionMembers:
+      type: object
+      description: The Solution members, including users and groups
+      properties:
+        users:
+          type: array
+          description: The list of users in the solution
+          items:
+            $ref: '#/components/schemas/SolutionMemberUser'
+        groups:
+          type: array
+          description: The list of groups in the solution
+          items:
+            $ref: '#/components/schemas/SolutionMemberGroup'
+
+    SolutionMemberUser:
+      type: object
+      description: A user member of the solution
+      properties:
+        id:
+          type: string
+          description: The user id
+        role:
+          type: string
+          description: The user role in the solution
+      required:
+        - id
+        - role
+
+    SolutionMemberGroup:
+      type: object
+      description: A group member of the solution
+      properties:
+        id:
+          type: string
+          description: The group id
+        role:
+          type: string
+          description: The group role in the solution
+        users:
+          type: array
+          description: The list of users in the group
+          items:
+            type: string
+      required:
+        - id
+        - role
+        - users
+
   examples:
     BreweryCreate:
       summary: Brewery Solution creation request
@@ -1911,3 +1989,18 @@ components:
         computeSize: small
         parameterGroups:
           - group1
+    BrewerySolutionMembers:
+      summary: Brewery Solution members
+      description: Example of solution members
+      value:
+        users:
+          - id: alice.doe@cosmotech.com
+            role: admin
+          - id: bob.doe@cosmotech.com
+            role: editor
+        groups:
+          - id: group-analysts
+            role: viewer
+            users:
+              - charlie.smith@cosmotech.com
+              - diana.jones@cosmotech.com
