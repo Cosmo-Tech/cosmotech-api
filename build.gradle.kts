@@ -64,6 +64,7 @@ val apiValidationVersion = "3.1.1"
 val kubernetesClientVersion = "22.0.0"
 val orgJsonVersion = "20260719"
 val testNgVersion = "7.12.0"
+val testContainerKeycloakVersion = "4.3.1"
 val testContainersRedisVersion = "2.2.4"
 val testContainersPostgreSQLVersion = "2.0.5"
 val testContainersLocalStackVersion = "1.21.4"
@@ -349,6 +350,7 @@ subprojects {
     testImplementation(
         "org.testcontainers:testcontainers-postgresql:$testContainersPostgreSQLVersion"
     )
+    implementation("com.github.dasniko:testcontainers-keycloak:$testContainerKeycloakVersion")
     testImplementation("org.testcontainers:localstack:$testContainersLocalStackVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 

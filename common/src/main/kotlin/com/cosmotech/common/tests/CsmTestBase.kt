@@ -3,6 +3,7 @@
 package com.cosmotech.common.tests
 
 import com.redis.testcontainers.RedisContainer
+import dasniko.testcontainers.keycloak.KeycloakContainer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -10,10 +11,12 @@ import org.junit.jupiter.api.TestInstance
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.postgresql.PostgreSQLContainer.POSTGRESQL_PORT
 import org.testcontainers.utility.MountableFile
+
 
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -42,11 +45,19 @@ open class CsmTestBase {
                 )
             )
 
+    const val KEYCLOAK_TENANT_ID = "test-cosmotech"
+    val keycloakServer: KeycloakContainer =
+        KeycloakContainer("quay.io/keycloak/keycloak:latest")
+          .withRealmImportFile("$KEYCLOAK_TENANT_ID.json")
+          .waitingFor(Wait.forLogMessage(".*Listening on.*", 1))
+
+
     init {
       redisServer.start()
       postgres.start()
       seaweedServer.start()
       seaweedServer.execInContainer("echo \"s3.bucket.create -name test-bucket\" | weed shell")
+      keycloakServer.start()
     }
 
     @JvmStatic
@@ -55,6 +66,7 @@ open class CsmTestBase {
       initPostgresConfiguration(registry)
       initRedisConfiguration(registry)
       initS3Configuration(registry)
+      initKeycloakConfiguration(registry)
     }
 
     private fun initRedisConfiguration(registry: DynamicPropertyRegistry) {
@@ -85,6 +97,13 @@ open class CsmTestBase {
       registry.add("csm.platform.databases.data.host") { postgres.host }
       registry.add("csm.platform.databases.data.port") { postgres.getMappedPort(POSTGRESQL_PORT) }
     }
+
+    private fun initKeycloakConfiguration(registry: DynamicPropertyRegistry) {
+      registry.add("csm.platform.identityProvider.serverBaseUrl") { "http://localhost:${keycloakServer.httpPort}" }
+      registry.add("csm.platform.identityProvider.authorizationUrl") { keycloakServer.getAuthorizationEndpoint(KEYCLOAK_TENANT_ID) }
+      registry.add("csm.platform.identityProvider.tokenUrl") { keycloakServer.getTokenEndpoint(KEYCLOAK_TENANT_ID) }
+      registry.add("csm.platform.identityProvider.identity.tenantId") { KEYCLOAK_TENANT_ID }
+    }
   }
 
   @BeforeAll
@@ -92,6 +111,7 @@ open class CsmTestBase {
     redisServer.start()
     seaweedServer.start()
     postgres.start()
+    keycloakServer.start()
   }
 
   @BeforeEach
@@ -104,5 +124,6 @@ open class CsmTestBase {
     postgres.stop()
     seaweedServer.stop()
     redisServer.stop()
+    keycloakServer.stop()
   }
 }
