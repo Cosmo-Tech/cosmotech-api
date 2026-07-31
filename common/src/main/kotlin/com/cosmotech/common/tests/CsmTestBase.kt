@@ -17,7 +17,6 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.postgresql.PostgreSQLContainer.POSTGRESQL_PORT
 import org.testcontainers.utility.MountableFile
 
-
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 open class CsmTestBase {
@@ -48,9 +47,8 @@ open class CsmTestBase {
     const val KEYCLOAK_TENANT_ID = "test-cosmotech"
     val keycloakServer: KeycloakContainer =
         KeycloakContainer("quay.io/keycloak/keycloak:latest")
-          .withRealmImportFile("$KEYCLOAK_TENANT_ID.json")
-          .waitingFor(Wait.forLogMessage(".*Listening on.*", 1))
-
+            .withRealmImportFile("$KEYCLOAK_TENANT_ID.json")
+            .waitingFor(Wait.forLogMessage(".*Listening on.*", 1))
 
     init {
       redisServer.start()
@@ -99,9 +97,15 @@ open class CsmTestBase {
     }
 
     private fun initKeycloakConfiguration(registry: DynamicPropertyRegistry) {
-      registry.add("csm.platform.identityProvider.serverBaseUrl") { "http://localhost:${keycloakServer.httpPort}" }
-      registry.add("csm.platform.identityProvider.authorizationUrl") { keycloakServer.getAuthorizationEndpoint(KEYCLOAK_TENANT_ID) }
-      registry.add("csm.platform.identityProvider.tokenUrl") { keycloakServer.getTokenEndpoint(KEYCLOAK_TENANT_ID) }
+      registry.add("csm.platform.identityProvider.serverBaseUrl") {
+        "http://localhost:${keycloakServer.httpPort}"
+      }
+      registry.add("csm.platform.identityProvider.authorizationUrl") {
+        keycloakServer.getAuthorizationEndpoint(KEYCLOAK_TENANT_ID)
+      }
+      registry.add("csm.platform.identityProvider.tokenUrl") {
+        keycloakServer.getTokenEndpoint(KEYCLOAK_TENANT_ID)
+      }
       registry.add("csm.platform.identityProvider.identity.tenantId") { KEYCLOAK_TENANT_ID }
     }
   }
