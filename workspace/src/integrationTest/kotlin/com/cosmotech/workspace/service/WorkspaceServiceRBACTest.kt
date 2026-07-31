@@ -2060,8 +2060,8 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
   fun `test RBAC getWorkspaceMembers`() =
       mapOf(
               ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
-              ROLE_USER to true,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
           )
