@@ -4796,10 +4796,17 @@ class RunnerServiceRBACTest : CsmTestBase() {
                           runnerSaved.id,
                       )
                     }
-                assertEquals(
-                    "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
-                    exception.message,
-                )
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ",
+                      exception.message,
+                  )
+                } else {
+                  assertEquals(
+                      "RBAC ${runnerSaved.id} - User does not have permission $PERMISSION_READ_SECURITY",
+                      exception.message,
+                  )
+                }
               } else {
                 assertDoesNotThrow {
                   runnerApiService.getRunnerMembers(
