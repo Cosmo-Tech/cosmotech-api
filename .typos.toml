@@ -2,3 +2,8 @@
 testng = "testng"
 Groupe = "Groupe"
 AKS = "AKS"
+
+[files]
+extend-exclude = [
+  "common/src/main/resources/test-cosmotech.json", # Keycloak test import
+]
