@@ -100,6 +100,9 @@ tasks.register<GenerateTask>("openApiTypescriptGenerate") {
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
   outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/typescript")
+  // Template override with fix for https://github.com/OpenAPITools/openapi-generator/issues/24523
+  // This can be removed once 7.25 is available and used
+  templateDir.set("${rootDir}/openapi/templates/typescript")
   generatorName.set("typescript-axios")
   additionalProperties.set(
       mapOf(
