@@ -26,15 +26,15 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // implementations/configurations in a 'buildSrc' included build.
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
-val kotlinVersion = "2.2"
+val kotlinVersion = "2.3"
 
 plugins {
-  val kotlinCompleteVersion = "2.2.21"
+  val kotlinCompleteVersion = "2.3.21"
   kotlin("jvm") version kotlinCompleteVersion
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.2"
   id("com.diffplug.spotless") version "8.7.0"
-  id("org.springframework.boot") version "4.0.7" apply false
+  id("org.springframework.boot") version "4.1.0" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "12.2.2"
   id("com.github.jk1.dependency-license-report") version "3.1.4"
@@ -55,7 +55,7 @@ version = scmVersion.version
 val jacksonBom = "3.2.0"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 21
-val redisOmSpringVersion = "2.0.7"
+val redisOmSpringVersion = "2.0.8"
 val kotlinCoroutinesVersion = "1.11.0"
 val springDocVersion = "3.0.3"
 val swaggerParserVersion = "2.1.45"
@@ -276,7 +276,7 @@ subprojects {
 
   dependencies {
     // https://youtrack.jetbrains.com/issue/KT-71057/POM-file-unusable-after-upgrading-to-2.0.20-from-2.0.10
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.2.21"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.3.21"))
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
