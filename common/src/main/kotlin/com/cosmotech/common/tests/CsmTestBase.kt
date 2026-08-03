@@ -112,10 +112,10 @@ open class CsmTestBase {
 
   @BeforeAll
   fun beforeAll() {
+    keycloakServer.start()
     redisServer.start()
     seaweedServer.start()
     postgres.start()
-    keycloakServer.start()
   }
 
   @BeforeEach

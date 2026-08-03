@@ -318,7 +318,7 @@ internal class RunnerApiServiceImpl(
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
     val rbacSecurity = runnerInstance.getRunnerDataObject().security.toGenericSecurity(runnerId)
-    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toRunnerMembers()
+    return keycloak.listRBACMembers(rbacSecurity.accessControlList).toRunnerMembers()
   }
 
   @EventListener(RunDeleted::class)

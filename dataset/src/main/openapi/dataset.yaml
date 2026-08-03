@@ -1287,11 +1287,16 @@ components:
           description: The list of users in the dataset
           items:
             $ref: '#/components/schemas/DatasetMemberUser'
+          default: []
         groups:
           type: array
           description: The list of groups in the dataset
           items:
             $ref: '#/components/schemas/DatasetMemberGroup'
+          default: []
+      required:
+        - users
+        - groups
 
     DatasetMemberUser:
       type: object

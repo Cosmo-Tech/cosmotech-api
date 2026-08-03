@@ -928,11 +928,16 @@ components:
           description: The list of users in the workspace
           items:
             $ref: '#/components/schemas/WorkspaceMemberUser'
+          default: []
         groups:
           type: array
           description: The list of groups in the workspace
           items:
             $ref: '#/components/schemas/WorkspaceMemberGroup'
+          default: []
+      required:
+        - users
+        - groups
 
     WorkspaceMemberUser:
       type: object

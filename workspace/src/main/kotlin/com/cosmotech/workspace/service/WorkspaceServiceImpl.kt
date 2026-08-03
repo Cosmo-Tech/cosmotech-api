@@ -548,7 +548,7 @@ internal class WorkspaceServiceImpl(
   override fun getWorkspaceMembers(organizationId: String, workspaceId: String): WorkspaceMembers {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ_SECURITY)
     val rbacSecurity = workspace.security.toGenericSecurity(workspaceId)
-    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toWorkspaceMembers()
+    return keycloak.listRBACMembers(rbacSecurity.accessControlList).toWorkspaceMembers()
   }
 
   private fun updateSecurityVisibility(workspace: Workspace): Workspace {

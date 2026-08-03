@@ -1614,11 +1614,16 @@ components:
           description: The list of users in the solution
           items:
             $ref: '#/components/schemas/SolutionMemberUser'
+          default: []
         groups:
           type: array
           description: The list of groups in the solution
           items:
             $ref: '#/components/schemas/SolutionMemberGroup'
+          default: []
+      required:
+        - users
+        - groups
 
     SolutionMemberUser:
       type: object

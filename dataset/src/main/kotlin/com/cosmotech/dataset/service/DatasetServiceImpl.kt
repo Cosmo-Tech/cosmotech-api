@@ -434,7 +434,7 @@ class DatasetServiceImpl(
     val dataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ_SECURITY)
     val rbacSecurity = dataset.security.toGenericSecurity(datasetId)
-    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toDatasetMembers()
+    return keycloak.listRBACMembers(rbacSecurity.accessControlList).toDatasetMembers()
   }
 
   fun updateSecurityVisibility(dataset: Dataset): Dataset {
