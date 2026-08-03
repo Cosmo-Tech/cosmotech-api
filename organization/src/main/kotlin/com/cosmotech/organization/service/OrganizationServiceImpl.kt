@@ -100,7 +100,7 @@ class OrganizationServiceImpl(
   override fun getOrganizationMembers(organizationId: String): OrganizationMembers {
     val organization = getVerifiedOrganization(organizationId, PERMISSION_READ_SECURITY)
     val rbacSecurity = organization.security.toGenericSecurity(organizationId)
-    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toOrganizationMembers()
+    return keycloak.listRBACMembers(rbacSecurity.accessControlList).toOrganizationMembers()
   }
 
   override fun getOrganization(organizationId: String): Organization {

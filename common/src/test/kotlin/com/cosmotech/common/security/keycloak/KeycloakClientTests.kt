@@ -182,11 +182,11 @@ class KeycloakClientTests {
   }
 
   // ---------------------------------------------------------------------------
-  // listCosmotechMembers
+  // listRBACMembers
   // ---------------------------------------------------------------------------
 
   @Test
-  fun `listCosmotechMembers returns users and groups present in the ACL`() {
+  fun `listRBACMembers returns users and groups present in the ACL`() {
     val publicGroup =
         makeGroup("analysts", id = "id-analysts", attributes = mapOf("public" to listOf("true")))
     val otherPublicGroup =
@@ -215,7 +215,7 @@ class KeycloakClientTests {
             RbacAccessControl("analysts", "viewer"),
         )
 
-    val result = keycloakClient.listCosmotechMembers(acl)
+    val result = keycloakClient.listRBACMembers(acl)
 
     // alice is in ACL and in getAllUsers → should be in users
     assertEquals(1, result.users.size)
@@ -230,18 +230,18 @@ class KeycloakClientTests {
   }
 
   @Test
-  fun `listCosmotechMembers returns empty when ACL is empty`() {
+  fun `listRBACMembers returns empty when ACL is empty`() {
     every { groupsResource.count(true) } returns mapOf("count" to 0L)
     every { usersResource.list() } returns emptyList()
 
-    val result = keycloakClient.listCosmotechMembers(emptyList())
+    val result = keycloakClient.listRBACMembers(emptyList())
 
     assertTrue(result.users.isEmpty())
     assertTrue(result.groups.isEmpty())
   }
 
   @Test
-  fun `listCosmotechMembers excludes users not in ACL`() {
+  fun `listRBACMembers excludes users not in ACL`() {
     val aliceUser = makeUser("alice@cosmotech.com")
     val bobUser = makeUser("bob@cosmotech.com")
 
@@ -251,7 +251,7 @@ class KeycloakClientTests {
     // Only alice is in ACL
     val acl = listOf(RbacAccessControl("alice@cosmotech.com", "editor"))
 
-    val result = keycloakClient.listCosmotechMembers(acl)
+    val result = keycloakClient.listRBACMembers(acl)
 
     assertEquals(1, result.users.size)
     assertEquals("alice@cosmotech.com", result.users[0].id)
@@ -259,7 +259,7 @@ class KeycloakClientTests {
   }
 
   @Test
-  fun `listCosmotechMembers deduplicates users within a group`() {
+  fun `listRBACMembers deduplicates users within a group`() {
     val publicGroup =
         makeGroup("analysts", id = "id-analysts", attributes = mapOf("public" to listOf("true")))
     val dupUser = makeUser("dup@cosmotech.com")
@@ -276,7 +276,7 @@ class KeycloakClientTests {
 
     val acl = listOf(RbacAccessControl("analysts", "viewer"))
 
-    val result = keycloakClient.listCosmotechMembers(acl)
+    val result = keycloakClient.listRBACMembers(acl)
 
     assertEquals(1, result.groups.size)
     assertEquals(1, result.groups[0].users.size)

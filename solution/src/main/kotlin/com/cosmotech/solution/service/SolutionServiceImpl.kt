@@ -654,7 +654,7 @@ class SolutionServiceImpl(
   override fun getSolutionMembers(organizationId: String, solutionId: String): SolutionMembers {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ_SECURITY)
     val rbacSecurity = solution.security.toGenericSecurity(solutionId)
-    return keycloak.listCosmotechMembers(rbacSecurity.accessControlList).toSolutionMembers()
+    return keycloak.listRBACMembers(rbacSecurity.accessControlList).toSolutionMembers()
   }
 
   private fun updateSecurityVisibility(solution: Solution): Solution {

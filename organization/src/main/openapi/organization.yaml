@@ -656,11 +656,16 @@ components:
           description: The list of users in the organization
           items:
             $ref: '#/components/schemas/OrganizationMemberUser'
+          default: []
         groups:
           type: array
           description: The list of groups in the organization
           items:
             $ref: '#/components/schemas/OrganizationMemberGroup'
+          default: []
+      required:
+        - users
+        - groups
 
     OrganizationMemberUser:
       type: object

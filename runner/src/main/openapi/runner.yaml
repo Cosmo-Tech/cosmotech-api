@@ -987,11 +987,16 @@ components:
           description: The list of users in the runner
           items:
             $ref: '#/components/schemas/RunnerMemberUser'
+          default: []
         groups:
           type: array
           description: The list of groups in the runner
           items:
             $ref: '#/components/schemas/RunnerMemberGroup'
+          default: []
+      required:
+        - users
+        - groups
 
     RunnerMemberUser:
       type: object

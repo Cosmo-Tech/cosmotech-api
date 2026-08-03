@@ -5,6 +5,9 @@ package com.cosmotech.common.security.keycloak
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.rbac.model.RbacAccessControl
+import com.cosmotech.common.security.ROLE_ORGANIZATION_USER
+import com.cosmotech.common.security.ROLE_ORGANIZATION_VIEWER
+import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.representations.idm.GroupRepresentation
 import org.keycloak.representations.idm.RoleRepresentation
@@ -84,7 +87,7 @@ class KeycloakClient(
     return realmResource.users().list()
   }
 
-  fun listCosmotechMembers(rbac: List<RbacAccessControl>): KeycloakMembers {
+  fun listRBACMembers(rbac: List<RbacAccessControl>): KeycloakMembers {
     val rbacById = rbac.associateBy { it.id }
     val groups = getAllGroups().filter { rbacById.containsKey(it.name) }
     val users = getAllUsers().filter { rbacById.containsKey(it.username) }
@@ -132,8 +135,9 @@ class KeycloakClient(
   private fun extractKeycloakRole(roles: List<String>?): String {
     roles ?: return "None"
     return when {
-      roles.contains("Platform.Admin") -> "Platform.Admin"
-      roles.contains("Organization.User") -> "Organization.User"
+      roles.contains(ROLE_PLATFORM_ADMIN) -> ROLE_PLATFORM_ADMIN
+      roles.contains(ROLE_ORGANIZATION_USER) -> ROLE_ORGANIZATION_USER
+      roles.contains(ROLE_ORGANIZATION_VIEWER) -> ROLE_ORGANIZATION_VIEWER
       else -> "None"
     }
   }
