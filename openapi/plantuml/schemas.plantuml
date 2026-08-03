@@ -80,8 +80,8 @@ entity DatasetMemberUser {
 }
 
 entity DatasetMembers {
-    users: List<DatasetMemberUser>
-    groups: List<DatasetMemberGroup>
+    * users: List<DatasetMemberUser>
+    * groups: List<DatasetMemberGroup>
 }
 
 entity DatasetPart {
@@ -135,6 +135,20 @@ entity DatasetUpdateRequest {
     parts: List<DatasetPartCreateRequest>
 }
 
+entity IAMInfo {
+    * version: IAMInfoVersion
+}
+
+entity IAMInfoVersion {
+    * full: String
+    * release: String
+    * major: Integer
+    * minor: Integer
+    * patch: Integer
+    * label: String
+    * build: String
+}
+
 entity LastRunInfo {
     lastRunId: String
     lastRunStatus: String
@@ -175,8 +189,8 @@ entity OrganizationMemberUser {
 }
 
 entity OrganizationMembers {
-    users: List<OrganizationMemberUser>
-    groups: List<OrganizationMemberGroup>
+    * users: List<OrganizationMemberUser>
+    * groups: List<OrganizationMemberGroup>
 }
 
 entity OrganizationRole {
@@ -448,8 +462,8 @@ entity RunnerMemberUser {
 }
 
 entity RunnerMembers {
-    users: List<RunnerMemberUser>
-    groups: List<RunnerMemberGroup>
+    * users: List<RunnerMemberUser>
+    * groups: List<RunnerMemberGroup>
 }
 
 entity RunnerResourceSizing {
@@ -550,8 +564,8 @@ entity SolutionMemberUser {
 }
 
 entity SolutionMembers {
-    users: List<SolutionMemberUser>
-    groups: List<SolutionMemberGroup>
+    * users: List<SolutionMemberUser>
+    * groups: List<SolutionMemberGroup>
 }
 
 entity SolutionRole {
@@ -629,8 +643,8 @@ entity WorkspaceMemberUser {
 }
 
 entity WorkspaceMembers {
-    users: List<WorkspaceMemberUser>
-    groups: List<WorkspaceMemberGroup>
+    * users: List<WorkspaceMemberUser>
+    * groups: List<WorkspaceMemberGroup>
 }
 
 entity WorkspaceRole {
@@ -729,6 +743,7 @@ Run -- "0..*" RunContainer : containers
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 RunnerResourceSizing -- ResourceSizeInfo : requests
 RunnerResourceSizing -- ResourceSizeInfo : limits
+IAMInfo -- IAMInfoVersion : version
 SolutionMembers -- "0..*" SolutionMemberUser : users
 SolutionMembers -- "0..*" SolutionMemberGroup : groups
 Workspace -- WorkspaceEditInfo : createInfo
