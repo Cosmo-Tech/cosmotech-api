@@ -29,6 +29,7 @@ All URIs are relative to *http://localhost:8080*
 *DatasetApi* | [**updateDatasetAccessControl**](Apis/DatasetApi.md#updateDatasetAccessControl) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset |
 *DatasetApi* | [**updateDatasetDefaultSecurity**](Apis/DatasetApi.md#updateDatasetDefaultSecurity) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default | Set the Dataset default security |
 *DatasetApi* | [**updateDatasetPart**](Apis/DatasetApi.md#updateDatasetPart) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id} | Update existing dataset parts information of a Dataset |
+| *IAMInfoApi* | [**getIAMInfo**](Apis/IAMInfoApi.md#getIAMInfo) | **GET** /iaminfo | Get various information about the API |
 | *MetaApi* | [**about**](Apis/MetaApi.md#about) | **GET** /about | Get various information about the API |
 | *OrganizationApi* | [**createOrganization**](Apis/OrganizationApi.md#createOrganization) | **POST** /organizations | Create a new organization |
 *OrganizationApi* | [**createOrganizationAccessControl**](Apis/OrganizationApi.md#createOrganizationAccessControl) | **POST** /organizations/{organization_id}/security/access | Add a control access to the Organization |
@@ -140,6 +141,8 @@ All URIs are relative to *http://localhost:8080*
  - [DatasetRole](./Models/DatasetRole.md)
  - [DatasetSecurity](./Models/DatasetSecurity.md)
  - [DatasetUpdateRequest](./Models/DatasetUpdateRequest.md)
+ - [IAMInfo](./Models/IAMInfo.md)
+ - [IAMInfoVersion](./Models/IAMInfoVersion.md)
  - [LastRunInfo](./Models/LastRunInfo.md)
  - [Organization](./Models/Organization.md)
  - [OrganizationAccessControl](./Models/OrganizationAccessControl.md)

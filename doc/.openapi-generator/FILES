@@ -1,4 +1,5 @@
 Apis/DatasetApi.md
+Apis/IAMInfoApi.md
 Apis/MetaApi.md
 Apis/OrganizationApi.md
 Apis/RunApi.md
@@ -25,6 +26,8 @@ Models/DatasetPartUpdateRequest.md
 Models/DatasetRole.md
 Models/DatasetSecurity.md
 Models/DatasetUpdateRequest.md
+Models/IAMInfo.md
+Models/IAMInfoVersion.md
 Models/LastRunInfo.md
 Models/Organization.md
 Models/OrganizationAccessControl.md

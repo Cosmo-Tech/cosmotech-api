@@ -13,6 +13,7 @@ plugins {
 
 dependencies {
   implementation(projects.cosmotechMetaApi)
+  implementation(projects.cosmotechIaminfoApi)
   implementation(projects.cosmotechDatasetApi)
   implementation(projects.cosmotechOrganizationApi)
   implementation(projects.cosmotechSolutionApi)
