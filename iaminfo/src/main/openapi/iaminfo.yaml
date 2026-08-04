@@ -12,33 +12,42 @@ tags:
   description: IAMInfo Management
 
 paths:
-  /iaminfo:
+  /iaminfo/members:
     get:
-      operationId: getIAMInfo
+      operationId: listIAMMembers
       tags:
         - IAMInfo
-      description: "Retrieve API version information and build details."
-      summary: Get various information about the API
+      summary: Get ALL IAM members list
       responses:
         "200":
-          description: API information details
+          description: The ALL members list
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IAMInfo'
-              examples:
-                ReleaseIAMInfo:
-                  $ref: '#/components/examples/ReleaseIAMInfo'
-                DirtySnapshotIAMInfo:
-                  $ref: '#/components/examples/DirtySnapshotIAMInfo'
+                $ref: '#/components/schemas/Members'
             application/yaml:
               schema:
-                $ref: '#/components/schemas/IAMInfo'
-              examples:
-                ReleaseIAMInfo:
-                  $ref: '#/components/examples/ReleaseIAMInfo'
-                DirtySnapshotIAMInfo:
-                  $ref: '#/components/examples/DirtySnapshotIAMInfo'
+                $ref: '#/components/schemas/Members'
+  /iaminfo/groups:
+    get:
+      operationId: listIAMGroups
+      tags:
+        - IAMInfo
+      summary: Get the list of all groups
+      responses:
+        "200":
+          description: The list of all groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+            application/yaml:
+              schema:
+                type: array
+                items:
+                  type: string
 
 components:
   securitySchemes:
@@ -51,70 +60,56 @@ components:
           tokenUrl: "https://example.com/token"
           scopes: {}
   schemas:
-    IAMInfo:
+    Members:
       type: object
-      description: Misc information about the api
-      required:
-        - version
+      description: The members, including users and groups
       properties:
-        version:
-          $ref: '#/components/schemas/IAMInfoVersion'
-    IAMInfoVersion:
-      type: object
-      description: API version details
+        users:
+          type: array
+          description: The list of users in the IAM
+          items:
+            $ref: '#/components/schemas/MemberUser'
+          default: []
+        groups:
+          type: array
+          description: The list of groups in the IAM
+          items:
+            $ref: '#/components/schemas/MemberGroup'
+          default: []
       required:
-        - full
-        - release
-        - major
-        - minor
-        - patch
-        - label
-        - build
-      properties:
-        full:
-          type: string
-          description: Full version representation
-        release:
-          type: string
-          description: Release main version representation
-        major:
-          type: integer
-          description: Major version number
-        minor:
-          type: integer
-          description: Minor version number
-        patch:
-          type: integer
-          description: Patch version number
-        label:
-          type: string
-          description: Label version, may be empty
-        build:
-          type: string
-          description: Build VCS id
-  examples:
-    ReleaseIAMInfo:
-      summary: "Released version"
-      description: "Version details for a clean released version"
-      value:
-        version:
-          full: "4.2.0-a6bdbc29"
-          release: "4.2.0"
-          major: 4
-          minor: 2
-          patch: 0
-          label: ""
-          build: "a6bdbc29"
-    DirtySnapshotIAMInfo:
-      summary: "Dirty state snapshot version"
-      description: "Version details for an in development snapshot version"
-      value:
-        version:
-          full: "4.2.0-SNAPSHOT-a6bdbc29"
-          release: "4.2.0"
-          major: 4
-          minor: 2
-          patch: 0
-          label: "SNAPSHOT"
-          build: "a6bdbc29"
+        - users
+        - groups
 
+    MemberUser:
+      type: object
+      description: A user member of the IAM
+      properties:
+        id:
+          type: string
+          description: The user id
+        role:
+          type: string
+          description: The user role in the IAM
+      required:
+        - id
+        - role
+
+    MemberGroup:
+      type: object
+      description: A group member of the IAM
+      properties:
+        id:
+          type: string
+          description: The group id
+        role:
+          type: string
+          description: The user role in the IAM
+        users:
+          type: array
+          description: The list of users in the group
+          items:
+            type: string
+      required:
+        - id
+        - role
+        - users

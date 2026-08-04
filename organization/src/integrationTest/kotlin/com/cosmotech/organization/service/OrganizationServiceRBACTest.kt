@@ -15,7 +15,6 @@ import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.rbac.ROLE_USER
 import com.cosmotech.common.rbac.ROLE_VALIDATOR
 import com.cosmotech.common.rbac.ROLE_VIEWER
-import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.common.tests.CsmTestBase
 import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
@@ -33,7 +32,6 @@ import com.redis.om.spring.indexing.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -93,43 +91,6 @@ class OrganizationServiceRBACTest : CsmTestBase() {
 
               val organizations = organizationApiService.listOrganizations(null, null)
               assertEquals(shouldThrow, organizations.size)
-            }
-          }
-
-  @Test
-  fun `test Platform admin can list keycloak members`() {
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
-    assertDoesNotThrow { organizationApiService.listKeycloakMembers() }
-  }
-
-  // should throw every time, only ROLE_PLATFORM_ADMIN can list keycloak members
-  @TestFactory
-  fun `test RBAC listKeycloakMembers`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to true,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC listKeycloakMembers : $role") {
-              organizationApiService.createOrganization(
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
-              )
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.listKeycloakMembers()
-                    }
-                assertEquals(
-                    "User does not have permission $ROLE_PLATFORM_ADMIN",
-                    exception.message,
-                )
-              } else {
-                assertDoesNotThrow { organizationApiService.listKeycloakMembers() }
-              }
             }
           }
 

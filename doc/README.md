@@ -29,7 +29,8 @@ All URIs are relative to *http://localhost:8080*
 *DatasetApi* | [**updateDatasetAccessControl**](Apis/DatasetApi.md#updateDatasetAccessControl) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset |
 *DatasetApi* | [**updateDatasetDefaultSecurity**](Apis/DatasetApi.md#updateDatasetDefaultSecurity) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default | Set the Dataset default security |
 *DatasetApi* | [**updateDatasetPart**](Apis/DatasetApi.md#updateDatasetPart) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id} | Update existing dataset parts information of a Dataset |
-| *IAMInfoApi* | [**getIAMInfo**](Apis/IAMInfoApi.md#getIAMInfo) | **GET** /iaminfo | Get various information about the API |
+| *IAMInfoApi* | [**listIAMGroups**](Apis/IAMInfoApi.md#listIAMGroups) | **GET** /iaminfo/groups | Get the list of all groups |
+*IAMInfoApi* | [**listIAMMembers**](Apis/IAMInfoApi.md#listIAMMembers) | **GET** /iaminfo/members | Get ALL IAM members list |
 | *MetaApi* | [**about**](Apis/MetaApi.md#about) | **GET** /about | Get various information about the API |
 | *OrganizationApi* | [**createOrganization**](Apis/OrganizationApi.md#createOrganization) | **POST** /organizations | Create a new organization |
 *OrganizationApi* | [**createOrganizationAccessControl**](Apis/OrganizationApi.md#createOrganizationAccessControl) | **POST** /organizations/{organization_id}/security/access | Add a control access to the Organization |
@@ -40,8 +41,6 @@ All URIs are relative to *http://localhost:8080*
 *OrganizationApi* | [**getOrganizationMembers**](Apis/OrganizationApi.md#getOrganizationMembers) | **GET** /organizations/{organization_id}/members | Get the members of an Organization |
 *OrganizationApi* | [**getOrganizationPermissions**](Apis/OrganizationApi.md#getOrganizationPermissions) | **GET** /organizations/{organization_id}/permissions/{role} | Get the Organization permissions by given role |
 *OrganizationApi* | [**getOrganizationSecurity**](Apis/OrganizationApi.md#getOrganizationSecurity) | **GET** /organizations/{organization_id}/security | Get the Organization security information |
-*OrganizationApi* | [**listKeycloakGroups**](Apis/OrganizationApi.md#listKeycloakGroups) | **GET** /organizations/groups | Get the list of all groups |
-*OrganizationApi* | [**listKeycloakMembers**](Apis/OrganizationApi.md#listKeycloakMembers) | **GET** /organizations/members | Get ALL Keycloak members list |
 *OrganizationApi* | [**listOrganizationSecurityUsers**](Apis/OrganizationApi.md#listOrganizationSecurityUsers) | **GET** /organizations/{organization_id}/security/users | Get the Organization security users list |
 *OrganizationApi* | [**listOrganizations**](Apis/OrganizationApi.md#listOrganizations) | **GET** /organizations | List all Organizations |
 *OrganizationApi* | [**listPermissions**](Apis/OrganizationApi.md#listPermissions) | **GET** /organizations/permissions | Get all permissions per components |
@@ -141,9 +140,10 @@ All URIs are relative to *http://localhost:8080*
  - [DatasetRole](./Models/DatasetRole.md)
  - [DatasetSecurity](./Models/DatasetSecurity.md)
  - [DatasetUpdateRequest](./Models/DatasetUpdateRequest.md)
- - [IAMInfo](./Models/IAMInfo.md)
- - [IAMInfoVersion](./Models/IAMInfoVersion.md)
  - [LastRunInfo](./Models/LastRunInfo.md)
+ - [MemberGroup](./Models/MemberGroup.md)
+ - [MemberUser](./Models/MemberUser.md)
+ - [Members](./Models/Members.md)
  - [Organization](./Models/Organization.md)
  - [OrganizationAccessControl](./Models/OrganizationAccessControl.md)
  - [OrganizationCreateRequest](./Models/OrganizationCreateRequest.md)

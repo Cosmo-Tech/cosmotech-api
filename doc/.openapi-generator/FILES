@@ -26,9 +26,10 @@ Models/DatasetPartUpdateRequest.md
 Models/DatasetRole.md
 Models/DatasetSecurity.md
 Models/DatasetUpdateRequest.md
-Models/IAMInfo.md
-Models/IAMInfoVersion.md
 Models/LastRunInfo.md
+Models/MemberGroup.md
+Models/MemberUser.md
+Models/Members.md
 Models/Organization.md
 Models/OrganizationAccessControl.md
 Models/OrganizationCreateRequest.md

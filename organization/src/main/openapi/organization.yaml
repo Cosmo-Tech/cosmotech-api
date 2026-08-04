@@ -83,42 +83,6 @@ paths:
                 TwoOrganizations:
                   $ref: '#/components/examples/TwoOrganizations'
 
-  /organizations/members:
-    get:
-      operationId: listKeycloakMembers
-      tags:
-        - organization
-      summary: Get ALL Keycloak members list
-      responses:
-        "200":
-          description: The ALL members list
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationMembers'
-            application/yaml:
-              schema:
-                $ref: '#/components/schemas/OrganizationMembers'
-  /organizations/groups:
-    get:
-      operationId: listKeycloakGroups
-      tags:
-        - organization
-      summary: Get the list of all groups
-      responses:
-        "200":
-          description: The list of all groups
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-            application/yaml:
-              schema:
-                type: array
-                items:
-                    type: string
   /organizations/{organization_id}/members:
     parameters:
       - $ref: '#/components/parameters/organizationId'

@@ -13,8 +13,6 @@ All URIs are relative to *http://localhost:8080*
 | [**getOrganizationMembers**](OrganizationApi.md#getOrganizationMembers) | **GET** /organizations/{organization_id}/members | Get the members of an Organization |
 | [**getOrganizationPermissions**](OrganizationApi.md#getOrganizationPermissions) | **GET** /organizations/{organization_id}/permissions/{role} | Get the Organization permissions by given role |
 | [**getOrganizationSecurity**](OrganizationApi.md#getOrganizationSecurity) | **GET** /organizations/{organization_id}/security | Get the Organization security information |
-| [**listKeycloakGroups**](OrganizationApi.md#listKeycloakGroups) | **GET** /organizations/groups | Get the list of all groups |
-| [**listKeycloakMembers**](OrganizationApi.md#listKeycloakMembers) | **GET** /organizations/members | Get ALL Keycloak members list |
 | [**listOrganizationSecurityUsers**](OrganizationApi.md#listOrganizationSecurityUsers) | **GET** /organizations/{organization_id}/security/users | Get the Organization security users list |
 | [**listOrganizations**](OrganizationApi.md#listOrganizations) | **GET** /organizations | List all Organizations |
 | [**listPermissions**](OrganizationApi.md#listPermissions) | **GET** /organizations/permissions | Get all permissions per components |
@@ -252,50 +250,6 @@ Get the Organization security information
 ### Return type
 
 [**OrganizationSecurity**](../Models/OrganizationSecurity.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json, application/yaml
-
-<a name="listKeycloakGroups"></a>
-# **listKeycloakGroups**
-> List listKeycloakGroups()
-
-Get the list of all groups
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-**List**
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json, application/yaml
-
-<a name="listKeycloakMembers"></a>
-# **listKeycloakMembers**
-> OrganizationMembers listKeycloakMembers()
-
-Get ALL Keycloak members list
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-[**OrganizationMembers**](../Models/OrganizationMembers.md)
 
 ### Authorization
 

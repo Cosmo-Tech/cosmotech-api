@@ -135,23 +135,25 @@ entity DatasetUpdateRequest {
     parts: List<DatasetPartCreateRequest>
 }
 
-entity IAMInfo {
-    * version: IAMInfoVersion
-}
-
-entity IAMInfoVersion {
-    * full: String
-    * release: String
-    * major: Integer
-    * minor: Integer
-    * patch: Integer
-    * label: String
-    * build: String
-}
-
 entity LastRunInfo {
     lastRunId: String
     lastRunStatus: String
+}
+
+entity MemberGroup {
+    * id: String
+    * role: String
+    * users: List<String>
+}
+
+entity MemberUser {
+    * id: String
+    * role: String
+}
+
+entity Members {
+    * users: List<MemberUser>
+    * groups: List<MemberGroup>
 }
 
 entity Organization {
@@ -702,6 +704,8 @@ SolutionCreateRequest -- SolutionSecurity : security
 SolutionUpdateRequest -- "0..*" RunTemplateParameterCreateRequest : parameters
 SolutionUpdateRequest -- "0..*" RunTemplateParameterGroupCreateRequest : parameterGroups
 SolutionUpdateRequest -- "0..*" RunTemplateCreateRequest : runTemplates
+Members -- "0..*" MemberUser : users
+Members -- "0..*" MemberGroup : groups
 OrganizationCreateRequest -- OrganizationSecurity : security
 Runner -- RunnerEditInfo : createInfo
 Runner -- RunnerEditInfo : updateInfo
@@ -743,7 +747,6 @@ Run -- "0..*" RunContainer : containers
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 RunnerResourceSizing -- ResourceSizeInfo : requests
 RunnerResourceSizing -- ResourceSizeInfo : limits
-IAMInfo -- IAMInfoVersion : version
 SolutionMembers -- "0..*" SolutionMemberUser : users
 SolutionMembers -- "0..*" SolutionMemberGroup : groups
 Workspace -- WorkspaceEditInfo : createInfo

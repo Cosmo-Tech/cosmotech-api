@@ -4,7 +4,6 @@ package com.cosmotech.organization.service
 
 import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.events.OrganizationUnregistered
-import com.cosmotech.common.exceptions.CsmAccessForbiddenException
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.id.generateId
 import com.cosmotech.common.rbac.CsmAdmin
@@ -19,7 +18,6 @@ import com.cosmotech.common.rbac.getAllRolesDefinition
 import com.cosmotech.common.rbac.getCommonRolesDefinition
 import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
-import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.common.security.keycloak.KeycloakClient
 import com.cosmotech.common.security.keycloak.KeycloakMemberGroup
 import com.cosmotech.common.security.keycloak.KeycloakMemberUser
@@ -82,19 +80,6 @@ class OrganizationServiceImpl(
     }
     result.forEach { it.security = updateSecurityVisibility(it).security }
     return result
-  }
-
-  override fun listKeycloakGroups(): List<String> {
-    // open to all users, no permission check needed
-    return keycloak.getAllGroups().map { it.name }
-  }
-
-  override fun listKeycloakMembers(): OrganizationMembers {
-    // only be accessible by Platform.admin users
-    if (!csmAdmin.verifyCurrentRolesAdmin()) {
-      throw CsmAccessForbiddenException("User does not have permission $ROLE_PLATFORM_ADMIN")
-    }
-    return keycloak.listKeycloakMembers().toOrganizationMembers()
   }
 
   override fun getOrganizationMembers(organizationId: String): OrganizationMembers {
