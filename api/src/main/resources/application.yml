@@ -5,6 +5,12 @@ logging:
       OkHttpClient: WARN
 
 spring:
+  ai:
+    mcp:
+      server:
+        name: "cosmotech-api-mcp"
+        version: "1.0.0"
+        protocol: SSE
   data:
     redis:
       host: ${csm.platform.databases.resources.host}

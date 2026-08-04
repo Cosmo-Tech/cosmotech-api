@@ -290,10 +290,11 @@ subprojects {
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.springframework.boot:spring-boot-starter-webmvc") {
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    /*{
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
-    }
-    implementation("org.springframework.boot:spring-boot-starter-jetty")
+    }*/
+    // implementation("org.springframework.boot:spring-boot-starter-jetty")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
@@ -335,6 +336,9 @@ subprojects {
 
     implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:$awsSpringVersion"))
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringVersion")
+
+    // MCP POC
+    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:1.1.7")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))
