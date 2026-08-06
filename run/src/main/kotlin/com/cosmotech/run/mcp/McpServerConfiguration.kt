@@ -19,7 +19,13 @@ class McpServerConfiguration {
       runMcpBridge: RunMcpBridge,
   ): List<ToolCallback> {
     return MethodToolCallbackProvider.builder()
-        .toolObjects(organizationMcpBridge, runnerMcpBridge, workspaceMcpBridge,solutionMcpBridge,runMcpBridge)
+        .toolObjects(
+            organizationMcpBridge,
+            runnerMcpBridge,
+            workspaceMcpBridge,
+            solutionMcpBridge,
+            runMcpBridge,
+        )
         .build()
         .getToolCallbacks()
         .toList()

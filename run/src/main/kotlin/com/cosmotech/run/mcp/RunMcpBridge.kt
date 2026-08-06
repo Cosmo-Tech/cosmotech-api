@@ -11,14 +11,13 @@ import org.springframework.stereotype.Component
 class RunMcpBridge(private val runApiService: RunApiService) {
 
   @Tool(name = "get_run_status", description = "Get the status of a simulation run")
-  fun get_simulation_run_status(
+  fun getSimulationRunStatus(
       @ToolParam(description = "The organization id", required = true) organizationId: String,
       @ToolParam(description = "The workspace id", required = true) workspaceId: String,
       @ToolParam(description = "The runner id", required = true) runnerId: String,
       @ToolParam(description = "The run id", required = true) runId: String,
   ): String {
-    val runStatus = runApiService.getRunStatus(organizationId, workspaceId, runnerId,runId)
+    val runStatus = runApiService.getRunStatus(organizationId, workspaceId, runnerId, runId)
     return "Simulation run status : ${runStatus.state?.value}"
   }
-
 }
