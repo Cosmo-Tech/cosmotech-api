@@ -122,11 +122,17 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_DELETE)
 
+    if (runnerInstance.getRunnerDataObject().status == RunnerStatus.Archived) {
+      throw IllegalStateException(
+          "This runner has already been mark as archived and so is going to be delete"
+      )
+    }
+
+    runnerService.archiveInstance(runnerInstance)
+
     // Set runner status to Archived for future deletion (allow async process)
     runnerInstance.runner.status = RunnerStatus.Archived
     runnerService.saveInstance(runnerInstance.stamp())
-
-    runnerService.archiveInstance(runnerInstance)
   }
 
   override fun listRunners(
