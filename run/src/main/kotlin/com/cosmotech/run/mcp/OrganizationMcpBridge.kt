@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.runner.mcp
+package com.cosmotech.run.mcp
 
 import com.cosmotech.organization.api.OrganizationApiService
 import org.springframework.ai.tool.annotation.Tool

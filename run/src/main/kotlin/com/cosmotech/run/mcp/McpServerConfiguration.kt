@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.runner.mcp
+package com.cosmotech.run.mcp
 
 import org.springframework.ai.tool.ToolCallback
 import org.springframework.ai.tool.method.MethodToolCallbackProvider
@@ -14,10 +14,12 @@ class McpServerConfiguration {
   fun myCustomMcpTools(
       organizationMcpBridge: OrganizationMcpBridge,
       runnerMcpBridge: RunnerMcpBridge,
-      workspaceMcpBridge: WorkspaceMcpBridge
+      workspaceMcpBridge: WorkspaceMcpBridge,
+      solutionMcpBridge: SolutionMcpBridge,
+      runMcpBridge: RunMcpBridge,
   ): List<ToolCallback> {
     return MethodToolCallbackProvider.builder()
-        .toolObjects(organizationMcpBridge,runnerMcpBridge,workspaceMcpBridge)
+        .toolObjects(organizationMcpBridge, runnerMcpBridge, workspaceMcpBridge,solutionMcpBridge,runMcpBridge)
         .build()
         .getToolCallbacks()
         .toList()
