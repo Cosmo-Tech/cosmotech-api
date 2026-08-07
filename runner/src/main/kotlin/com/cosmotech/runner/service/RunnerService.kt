@@ -127,7 +127,7 @@ class RunnerService(
     this.eventPublisher.publishEvent(hasRunningRuns)
     if (hasRunningRuns.response == true) {
       throw CsmClientException(
-        "Can't delete runner ${runner.id}: at least one run is still running"
+          "Can't delete runner ${runner.id}: at least one run is still running"
       )
     }
     // Update parent and root references to deleted runner

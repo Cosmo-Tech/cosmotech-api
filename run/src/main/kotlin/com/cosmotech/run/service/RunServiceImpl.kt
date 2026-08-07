@@ -333,11 +333,10 @@ class RunServiceImpl(
         getRun(runner.organizationId, runner.workspaceId, runner.id, runner.lastRunInfo.lastRunId!!)
     run.hasPermission(PERMISSION_WRITE)
 
-    if (!(run.state!!.isTerminal())) {
+    check(!(run.state!!.isTerminal())) {
       logger.warn(
           "Run ${run.id} is already in a terminal state (${run.state}). It can't be stopped."
       )
-      return // exiting, run already stopped
     }
 
     workflowService.stopWorkflow(run)
