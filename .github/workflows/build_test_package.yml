@@ -199,6 +199,12 @@ jobs:
     env:
       DOCKER_BUILDKIT: 1
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    ## Do not launch scan/push job if the PR is created by dependabot
+    ## This job needs to build a run API image (via jib) that target base image stored in private repository.
+    ## Credentials should not be shared to dependabot (for security reason)
+    ## For PR related to version upgrade, we can skip this job.
+    ## The minimal steps to performed are build/tests.
+    if: ${{ github.actor != 'dependabot[bot]' }}
 
     steps:
       - uses: actions/checkout@v7
