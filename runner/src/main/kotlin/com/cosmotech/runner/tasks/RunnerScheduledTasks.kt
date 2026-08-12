@@ -4,9 +4,12 @@ package com.cosmotech.runner.tasks
 
 import com.cosmotech.runner.service.RunnerService
 import java.util.concurrent.TimeUnit
+import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+
+private val logger = LoggerFactory.getLogger(RunnerScheduledTasks::class.java)
 
 @Component
 @ConditionalOnProperty(
@@ -23,6 +26,7 @@ class RunnerScheduledTasks(
       fixedDelayString = "\${csm.platform.tasks.cleanUpArchivedRunners.delay}",
   )
   fun cleanupArchivedRunners() {
+    logger.debug("Scheduled task: Cleaning up archived runners")
     runnerService.cleanupArchived()
   }
 }

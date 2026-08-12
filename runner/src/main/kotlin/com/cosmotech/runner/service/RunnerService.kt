@@ -301,23 +301,28 @@ class RunnerService(
     val archivedRunners: List<Runner> = runnerRepository.findAllByStatus(RunnerStatus.Archived)
 
     archivedRunners.forEach { runner ->
-      val cleanupEvent = CleanUpRun(this, runner.lastRunInfo.lastRunId!!)
-      this.eventPublisher.publishEvent(cleanupEvent)
-      if (cleanupEvent.response == true) {
-        runnerRepository.delete(runner)
-        val runnerEvent =
-            RunnerDeleted(
-                this,
-                runner.organizationId,
-                runner.workspaceId,
-                runner.datasets.parameter,
-            )
-        this.eventPublisher.publishEvent(runnerEvent)
+      // If a runner has a last run, we need to cleanup the run before deleting the runner
+      if (runner.lastRunInfo.lastRunId != null) {
+        val cleanupEvent = CleanUpRun(this, runner.lastRunInfo.lastRunId!!)
+        this.eventPublisher.publishEvent(cleanupEvent)
+        if (cleanupEvent.response == false)
+            // The cleanup run process is not finished, we will not delete the runner yet
+            return@forEach
       }
+
+      runnerRepository.delete(runner)
+      val runnerEvent =
+          RunnerDeleted(
+              this,
+              runner.organizationId,
+              runner.workspaceId,
+              runner.datasets.parameter,
+          )
+      this.eventPublisher.publishEvent(runnerEvent)
     }
   }
 
-  @Suppress("TooManyFunctions")
+  @Suppress("TooManyFunctions", "LargeClass")
   inner class RunnerInstance {
     private val roleDefinition: RolesDefinition = getRunnerRolesDefinition()
     lateinit var runner: Runner
