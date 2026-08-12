@@ -69,7 +69,7 @@ val testContainersPostgreSQLVersion = "2.0.5"
 val testContainersLocalStackVersion = "1.21.4"
 val commonCompressVersion = "1.28.0"
 val awsSpringVersion = "4.0.2"
-val bcpkixVersion = "1.84"
+val bcpkixVersion = "1.85"
 
 // Checks
 val detektVersion = "1.23.8"
