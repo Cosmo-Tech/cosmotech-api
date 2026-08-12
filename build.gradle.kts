@@ -32,7 +32,7 @@ plugins {
   val kotlinCompleteVersion = "2.2.21"
   kotlin("jvm") version kotlinCompleteVersion
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
-  id("pl.allegro.tech.build.axion-release") version "1.21.2"
+  id("pl.allegro.tech.build.axion-release") version "1.21.3"
   id("com.diffplug.spotless") version "8.9.0"
   id("org.springframework.boot") version "4.0.7" apply false
   id("project-report")
