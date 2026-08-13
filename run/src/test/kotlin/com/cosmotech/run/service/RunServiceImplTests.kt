@@ -111,7 +111,6 @@ class RunServiceImplTests {
 
     verify(exactly = 1) { workflowService.stopWorkflow(run) }
     assertEquals(RunState.Failed, savedRunSlot.captured.state)
-    assertEquals(RUN_ID, runStopRequest.response)
   }
 
   @Test

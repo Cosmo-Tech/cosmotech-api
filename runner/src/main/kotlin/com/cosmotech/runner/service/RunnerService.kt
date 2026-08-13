@@ -285,15 +285,15 @@ class RunnerService(
     val runId = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
     runnerInstance.setLastRunInfo(runId)
     runnerRepository.save(runnerInstance.getRunnerDataObject())
+
     return CreatedRun(id = runId)
   }
 
-  fun stopLastRunOf(runnerInstance: RunnerInstance): String? {
+  fun stopLastRunOf(runnerInstance: RunnerInstance) {
     val runner = runnerInstance.getRunnerDataObject()
-    runner.lastRunInfo.lastRunId ?: return "No run" // No run to stop
+    runner.lastRunInfo.lastRunId ?: return // No run to stop
     val runStopEvent = RunStop(this, runner)
     this.eventPublisher.publishEvent(runStopEvent)
-    return runStopEvent.response
   }
 
   fun cleanupArchived() {
