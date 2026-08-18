@@ -94,6 +94,8 @@ csm:
           associated-role: "Platform.Admin"
           securedUris:
             - "/about"
+            - "/iaminfo/groups"
+            - "/iaminfo/members"
             - "/organizations"
             - "/organizations/permissions"
             - "/organizations/.*"
@@ -162,6 +164,7 @@ csm:
           api-key-header-name: "user.org@test.com"
           associated-role: "Organization.User"
           securedUris:
+            - "/iaminfo/groups"
             - "/organizations"
             - "/organizations/.*"
     argo:
