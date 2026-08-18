@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home.organization
 
+import com.cosmotech.api.home.Constants.ORGANIZATION_USER_EMAIL
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
+import com.cosmotech.api.home.Constants.PRIVATE_GROUP_NAME
+import com.cosmotech.api.home.Constants.PUBLIC_GROUP_NAME
+import com.cosmotech.api.home.Constants.UNKNOWN_IDENTITY
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.createOrganizationAndReturnId
@@ -18,8 +22,12 @@ import com.cosmotech.api.home.organization.OrganizationConstants.RequestContent.
 import com.cosmotech.api.home.withOrganizationUserHeader
 import com.cosmotech.api.home.withPlatformAdminHeader
 import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_EDITOR
 import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.rbac.ROLE_VIEWER
+import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationSecurity
+import org.hamcrest.Matchers.hasItem
 import org.json.JSONObject
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -414,5 +422,62 @@ class OrganizationControllerTests : ControllerTestBase() {
         )
         .andExpect(status().isForbidden)
         .andDo(MockMvcResultHandlers.print())
+  }
+
+  @Test
+  fun get_organization_members() {
+    val organizationSecurity =
+        OrganizationSecurity(
+            default = ROLE_NONE,
+            accessControlList =
+                mutableListOf(
+                    OrganizationAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
+                    OrganizationAccessControl(id = ORGANIZATION_USER_EMAIL, role = ROLE_EDITOR),
+                    OrganizationAccessControl(id = PUBLIC_GROUP_NAME, role = ROLE_VIEWER),
+                    OrganizationAccessControl(id = UNKNOWN_IDENTITY, role = ROLE_EDITOR),
+                    OrganizationAccessControl(id = PRIVATE_GROUP_NAME, role = ROLE_VIEWER),
+                ),
+        )
+    val organizationId =
+        createOrganizationAndReturnId(
+            mvc,
+            constructOrganizationCreateRequest(security = organizationSecurity),
+        )
+
+    mvc.perform(
+            get("/organizations/$organizationId/members")
+                .withPlatformAdminHeader()
+                .accept(MediaType.APPLICATION_JSON)
+        )
+        .andExpect(status().is2xxSuccessful)
+        // users known by Keycloak are returned with their RBAC role
+        .andExpect(jsonPath("$.users").isArray)
+        .andExpect(jsonPath("$.users[?(@.id == '%s')]", PLATFORM_ADMIN_EMAIL).exists())
+        .andExpect(
+            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN)
+        )
+        .andExpect(jsonPath("$.users[?(@.id == '%s')]", ORGANIZATION_USER_EMAIL).exists())
+        .andExpect(
+            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR)
+        )
+        // an identity unknown to Keycloak is never exposed, neither as user nor as group
+        .andExpect(jsonPath("$.users[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
+        // only groups flagged `public=true` are returned, with their role and their members
+        .andExpect(jsonPath("$.groups").isArray)
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PUBLIC_GROUP_NAME).exists())
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')].role", PUBLIC_GROUP_NAME).value(ROLE_VIEWER))
+        .andExpect(
+            jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
+                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL))
+        )
+        .andExpect(
+            jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
+                .value(hasItem<String>(ORGANIZATION_USER_EMAIL))
+        )
+        // a group without the `public=true` attribute is filtered out
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PRIVATE_GROUP_NAME).doesNotExist())
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(document("organizations/{organization_id}/members/GET"))
   }
 }

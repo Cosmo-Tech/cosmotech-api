@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.home.workspace
 
+import com.cosmotech.api.home.Constants.ORGANIZATION_USER_EMAIL
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
+import com.cosmotech.api.home.Constants.PRIVATE_GROUP_NAME
+import com.cosmotech.api.home.Constants.PUBLIC_GROUP_NAME
+import com.cosmotech.api.home.Constants.UNKNOWN_IDENTITY
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.constructOrganizationCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.OrganizationUtils.createOrganizationAndReturnId
@@ -17,11 +21,13 @@ import com.cosmotech.api.home.withPlatformAdminHeader
 import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_KEY
 import com.cosmotech.api.home.workspace.WorkspaceConstants.WORKSPACE_NAME
 import com.cosmotech.common.rbac.ROLE_ADMIN
+import com.cosmotech.common.rbac.ROLE_EDITOR
 import com.cosmotech.common.rbac.ROLE_NONE
 import com.cosmotech.common.rbac.ROLE_VIEWER
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import org.apache.commons.io.IOUtils
+import org.hamcrest.Matchers.hasItem
 import org.hamcrest.core.StringContains.containsString
 import org.json.JSONObject
 import org.junit.jupiter.api.BeforeEach
@@ -852,5 +858,64 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(status().is4xxClientError)
         .andExpect(jsonPath("$.detail").value("Wrong file name does not exist."))
         .andDo(MockMvcResultHandlers.print())
+  }
+
+  @Test
+  fun get_workspace_members() {
+    val workspaceId =
+        createWorkspaceAndReturnId(
+            mvc,
+            organizationId,
+            constructWorkspaceCreateRequest(
+                solutionId = solutionId,
+                security =
+                    WorkspaceSecurity(
+                        default = ROLE_NONE,
+                        accessControlList =
+                            mutableListOf(
+                                WorkspaceAccessControl(PLATFORM_ADMIN_EMAIL, ROLE_ADMIN),
+                                WorkspaceAccessControl(ORGANIZATION_USER_EMAIL, ROLE_EDITOR),
+                                WorkspaceAccessControl(PUBLIC_GROUP_NAME, ROLE_VIEWER),
+                                WorkspaceAccessControl(UNKNOWN_IDENTITY, ROLE_EDITOR),
+                                WorkspaceAccessControl(PRIVATE_GROUP_NAME, ROLE_VIEWER),
+                            ),
+                    ),
+            ),
+        )
+    mvc.perform(
+            get("/organizations/$organizationId/workspaces/$workspaceId/members")
+                .withPlatformAdminHeader()
+                .accept(MediaType.APPLICATION_JSON)
+        )
+        .andExpect(status().is2xxSuccessful)
+        // users known by Keycloak are returned with their RBAC role
+        .andExpect(jsonPath("$.users").isArray)
+        .andExpect(jsonPath("$.users[?(@.id == '%s')]", PLATFORM_ADMIN_EMAIL).exists())
+        .andExpect(
+            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN)
+        )
+        .andExpect(jsonPath("$.users[?(@.id == '%s')]", ORGANIZATION_USER_EMAIL).exists())
+        .andExpect(
+            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR)
+        )
+        // an identity unknown to Keycloak is never exposed, neither as user nor as group
+        .andExpect(jsonPath("$.users[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
+        // only groups flagged `public=true` are returned, with their role and their members
+        .andExpect(jsonPath("$.groups").isArray)
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PUBLIC_GROUP_NAME).exists())
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')].role", PUBLIC_GROUP_NAME).value(ROLE_VIEWER))
+        .andExpect(
+            jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
+                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL))
+        )
+        .andExpect(
+            jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
+                .value(hasItem<String>(ORGANIZATION_USER_EMAIL))
+        )
+        // a group without the `public=true` attribute is filtered out
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PRIVATE_GROUP_NAME).doesNotExist())
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(document("organizations/{organization_id}/workspaces/{workspace_id}/members/GET"))
   }
 }

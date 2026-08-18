@@ -4,6 +4,9 @@ package com.cosmotech.api.home.dataset
 
 import com.cosmotech.api.home.Constants.ORGANIZATION_USER_EMAIL
 import com.cosmotech.api.home.Constants.PLATFORM_ADMIN_EMAIL
+import com.cosmotech.api.home.Constants.PRIVATE_GROUP_NAME
+import com.cosmotech.api.home.Constants.PUBLIC_GROUP_NAME
+import com.cosmotech.api.home.Constants.UNKNOWN_IDENTITY
 import com.cosmotech.api.home.ControllerTestBase
 import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.constructDatasetCreateRequest
 import com.cosmotech.api.home.ControllerTestUtils.DatasetUtils.constructDatasetPartCreateRequest
@@ -48,6 +51,7 @@ import kotlin.test.assertEquals
 import org.apache.commons.io.IOUtils
 import org.hamcrest.Matchers.empty
 import org.hamcrest.Matchers.greaterThan
+import org.hamcrest.Matchers.hasItem
 import org.hamcrest.core.StringContains.containsString
 import org.json.JSONArray
 import org.json.JSONObject
@@ -1546,6 +1550,71 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(
             document(
                 "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default/PATCH"
+            )
+        )
+  }
+
+  @Test
+  fun get_dataset_members() {
+    val datasetSecurity =
+        DatasetSecurity(
+            default = ROLE_NONE,
+            accessControlList =
+                mutableListOf(
+                    DatasetAccessControl(id = PLATFORM_ADMIN_EMAIL, role = ROLE_ADMIN),
+                    DatasetAccessControl(id = ORGANIZATION_USER_EMAIL, role = ROLE_EDITOR),
+                    DatasetAccessControl(id = PUBLIC_GROUP_NAME, role = ROLE_VIEWER),
+                    DatasetAccessControl(id = UNKNOWN_IDENTITY, role = ROLE_EDITOR),
+                    DatasetAccessControl(id = PRIVATE_GROUP_NAME, role = ROLE_VIEWER),
+                ),
+        )
+    val datasetId =
+        createDatasetAndReturnId(
+            mvc,
+            organizationId,
+            workspaceId,
+            constructDatasetCreateRequest(security = datasetSecurity),
+        )
+
+    mvc.perform(
+            get(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/members"
+                )
+                .withPlatformAdminHeader()
+                .accept(MediaType.APPLICATION_JSON)
+        )
+        .andExpect(status().is2xxSuccessful)
+        // users known by Keycloak are returned with their RBAC role
+        .andExpect(jsonPath("$.users").isArray)
+        .andExpect(jsonPath("$.users[?(@.id == '%s')]", PLATFORM_ADMIN_EMAIL).exists())
+        .andExpect(
+            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN)
+        )
+        .andExpect(jsonPath("$.users[?(@.id == '%s')]", ORGANIZATION_USER_EMAIL).exists())
+        .andExpect(
+            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR)
+        )
+        // an identity unknown to Keycloak is never exposed, neither as user nor as group
+        .andExpect(jsonPath("$.users[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
+        // only groups flagged `public=true` are returned, with their role and their members
+        .andExpect(jsonPath("$.groups").isArray)
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PUBLIC_GROUP_NAME).exists())
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')].role", PUBLIC_GROUP_NAME).value(ROLE_VIEWER))
+        .andExpect(
+            jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
+                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL))
+        )
+        .andExpect(
+            jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
+                .value(hasItem<String>(ORGANIZATION_USER_EMAIL))
+        )
+        // a group without the `public=true` attribute is filtered out
+        .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PRIVATE_GROUP_NAME).doesNotExist())
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/members/GET"
             )
         )
   }

@@ -155,7 +155,7 @@ internal fun endpointSecurityReaders(
 ) =
     listOf(
         CsmSecurityEndpointsRolesReader(
-            paths = listOf("/about"),
+            paths = listOf("/about", "/iaminfo/groups"),
             roles =
                 arrayOf(
                     ROLE_ORGANIZATION_USER,
