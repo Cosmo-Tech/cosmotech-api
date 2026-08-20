@@ -41,6 +41,7 @@ val PATHS_DATASETS =
         "/organizations/*/workspaces/*/datasets",
         "/organizations/*/workspaces/*/datasets/search",
         "/organizations/*/workspaces/*/datasets/*",
+        "/organizations/*/workspaces/*/datasets/*/members",
         "/organizations/*/workspaces/*/datasets/*/security",
         "/organizations/*/workspaces/*/datasets/*/security/access",
         "/organizations/*/workspaces/*/datasets/*/security/access/*",
@@ -59,6 +60,7 @@ val PATHS_ORGANIZATIONS =
         "/organizations",
         "/organizations/permissions",
         "/organizations/*",
+        "/organizations/*/members",
         "/organizations/*/permissions/*",
         "/organizations/*/security",
         "/organizations/*/security/access",
@@ -82,7 +84,7 @@ val PATHS_RUNS =
 val PATHS_RUNNERS =
     listOf(
         "/organizations/*/workspaces/*/runners",
-        "/organizations/*/workspaces/*/runners/*",
+        "/organizations/*/workspaces/*/runners/*/members",
         "/organizations/*/workspaces/*/runners/*/permissions/*",
         "/organizations/*/workspaces/*/runners/*/security",
         "/organizations/*/workspaces/*/runners/*/security/access",
@@ -98,6 +100,7 @@ val PATHS_SOLUTIONS =
     listOf(
         "/organizations/*/solutions",
         "/organizations/*/solutions/*",
+        "/organizations/*/solutions/*/members",
         "/organizations/*/solutions/*/parameterGroups",
         "/organizations/*/solutions/*/parameterGroups/*",
         "/organizations/*/solutions/*/parameters",
@@ -124,6 +127,7 @@ val PATHS_WORKSPACES =
     listOf(
         "/organizations/*/workspaces",
         "/organizations/*/workspaces/*",
+        "/organizations/*/workspaces/*/members",
         "/organizations/*/workspaces/*/permissions/*",
         "/organizations/*/workspaces/*/security",
         "/organizations/*/workspaces/*/security/access",
@@ -131,6 +135,13 @@ val PATHS_WORKSPACES =
         "/organizations/*/workspaces/*/security/default",
         "/organizations/*/workspaces/*/security/users",
     )
+
+// Path IAM info
+val PATHS_IAMINFO_GROUPS = listOf("/iaminfo/groups")
+val PATHS_IAMINFO_MEMBERS = listOf("/iaminfo/members")
+
+// Path about
+val PATHS_ABOUT = listOf("/about")
 
 // Endpoints roles
 val endpointSecurityPublic =
@@ -155,7 +166,7 @@ internal fun endpointSecurityReaders(
 ) =
     listOf(
         CsmSecurityEndpointsRolesReader(
-            paths = listOf("/about", "/iaminfo/groups"),
+            paths = PATHS_ABOUT,
             roles =
                 arrayOf(
                     ROLE_ORGANIZATION_USER,
@@ -163,6 +174,22 @@ internal fun endpointSecurityReaders(
                     customOrganizationUser,
                     customOrganizationViewer,
                 ),
+            customAdmin = customOrganizationAdmin,
+        ),
+        CsmSecurityEndpointsRolesReader(
+            paths = PATHS_IAMINFO_GROUPS,
+            roles =
+                arrayOf(
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER,
+                    customOrganizationUser,
+                    customOrganizationViewer,
+                ),
+            customAdmin = customOrganizationAdmin,
+        ),
+        CsmSecurityEndpointsRolesReader(
+            paths = PATHS_IAMINFO_MEMBERS,
+            roles = arrayOf(),
             customAdmin = customOrganizationAdmin,
         ),
         CsmSecurityEndpointsRolesReader(

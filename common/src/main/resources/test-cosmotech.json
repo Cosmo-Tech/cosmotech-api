@@ -371,7 +371,7 @@
     "attributes" : {
       "public" : [ "true" ]
     },
-    "realmRoles" : [ ],
+    "realmRoles" : [ "Organization.Viewer" ],
     "clientRoles" : { },
     "subGroups" : [ ]
   }, {
@@ -444,7 +444,7 @@
     } ],
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-test-cosmotech" ],
+    "realmRoles" : [ "default-roles-test-cosmotech", "Platform.Admin" ],
     "clientRoles" : {
       "realm-management" : [ "view-users", "query-groups", "manage-users" ]
     },
@@ -461,7 +461,7 @@
     "totp" : false,
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-test-cosmotech" ],
+    "realmRoles" : [ "default-roles-test-cosmotech", "Platform.Admin" ],
     "notBefore" : 0,
     "groups" : [ "/test-public-group" ]
   }, {
@@ -475,7 +475,7 @@
     "totp" : false,
     "disableableCredentialTypes" : [ ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "default-roles-test-cosmotech" ],
+    "realmRoles" : [ "default-roles-test-cosmotech", "Organization.User" ],
     "notBefore" : 0,
     "groups" : [ "/test-public-group" ]
   } ],
