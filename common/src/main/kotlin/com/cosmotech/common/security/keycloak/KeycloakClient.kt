@@ -8,6 +8,12 @@ import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.common.security.ROLE_ORGANIZATION_VIEWER
 import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
+import com.cosmotech.common.security.keycloak.KeycloakConstants.FILTER_ATTRIBUTE
+import com.cosmotech.common.security.keycloak.KeycloakConstants.FILTER_VALUE
+import com.cosmotech.common.security.keycloak.KeycloakConstants.GROUP_COUNT_MAP_KEY
+import com.cosmotech.common.security.keycloak.KeycloakConstants.GROUP_SEARCH_EXP
+import com.cosmotech.common.security.keycloak.KeycloakConstants.MAX_PAGE_SIZE
+import com.cosmotech.common.security.keycloak.KeycloakConstants.OFFSET_START
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.representations.idm.GroupRepresentation
 import org.keycloak.representations.idm.RoleRepresentation
@@ -23,10 +29,6 @@ class KeycloakClient(
     val username: String = csmPlatformProperties.identityProvider.admin.username,
     val password: String = csmPlatformProperties.identityProvider.admin.password,
 ) {
-  companion object {
-    const val MAX_PAGE_SIZE = 100
-    const val OFFSET_START = 0
-  }
 
   fun getKeycloakInstance(): Keycloak {
     return Keycloak.getInstance(
@@ -40,20 +42,20 @@ class KeycloakClient(
 
   private fun isGroupPublic(group: GroupRepresentation): Boolean {
     return group.attributes != null &&
-        group.attributes.containsKey("public") &&
-        group.attributes["public"]?.contains("true") == true
+        group.attributes.containsKey(FILTER_ATTRIBUTE) &&
+        group.attributes[FILTER_ATTRIBUTE]?.contains(FILTER_VALUE) == true
   }
 
   private fun getGroupsHierarchy(): List<GroupRepresentation> {
     val keycloak = getKeycloakInstance()
     val realmResource = keycloak.realm(realm)
 
-    val groupCount: Long = realmResource.groups().count(true)["count"]!!
+    val groupCount: Long = realmResource.groups().count(true)[GROUP_COUNT_MAP_KEY]!!
 
     val groups = mutableListOf<GroupRepresentation>()
     var offset = OFFSET_START
     while (offset < groupCount) {
-      groups.addAll(realmResource.groups().groups("*", offset, MAX_PAGE_SIZE, false))
+      groups.addAll(realmResource.groups().groups(GROUP_SEARCH_EXP, offset, MAX_PAGE_SIZE, false))
       offset += MAX_PAGE_SIZE
     }
     return groups
@@ -133,12 +135,12 @@ class KeycloakClient(
   }
 
   private fun extractKeycloakRole(roles: List<String>?): String {
-    roles ?: return "None"
+    roles ?: return ""
     return when {
       roles.contains(ROLE_PLATFORM_ADMIN) -> ROLE_PLATFORM_ADMIN
       roles.contains(ROLE_ORGANIZATION_USER) -> ROLE_ORGANIZATION_USER
       roles.contains(ROLE_ORGANIZATION_VIEWER) -> ROLE_ORGANIZATION_VIEWER
-      else -> "None"
+      else -> ""
     }
   }
 }

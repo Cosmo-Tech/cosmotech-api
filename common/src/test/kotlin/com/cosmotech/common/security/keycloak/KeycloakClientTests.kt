@@ -26,42 +26,30 @@ import org.keycloak.representations.idm.UserRepresentation
 
 class KeycloakClientTests {
 
-  private lateinit var keycloakClient: KeycloakClient
+  private var keycloakClient: KeycloakClient =
+      spyk(
+          KeycloakClient(
+              csmPlatformProperties = mockk(),
+              serverUrl = "http://localhost:8080",
+              realm = "cosmotech",
+              adminClientId = "admin-cli",
+              username = "admin",
+              password = "admin",
+          )
+      )
 
-  // Keycloak admin client chain mocks
-  private lateinit var keycloakInstance: Keycloak
-  private lateinit var realmResource: RealmResource
-  private lateinit var groupsResource: GroupsResource
-  private lateinit var usersResource: UsersResource
+  private var keycloakInstance: Keycloak = mockk<Keycloak>()
+  private var realmResource: RealmResource = mockk<RealmResource>()
+  private var groupsResource: GroupsResource = mockk<GroupsResource>()
+  private var usersResource: UsersResource = mockk<UsersResource>()
 
   @BeforeEach
   fun setUp() {
-    keycloakClient =
-        spyk(
-            KeycloakClient(
-                csmPlatformProperties = mockk(relaxed = true),
-                serverUrl = "http://localhost:8080",
-                realm = "cosmotech",
-                adminClientId = "admin-cli",
-                username = "admin",
-                password = "admin",
-            )
-        )
-
-    keycloakInstance = mockk(relaxed = true)
-    realmResource = mockk(relaxed = true)
-    groupsResource = mockk(relaxed = true)
-    usersResource = mockk(relaxed = true)
-
     every { keycloakClient.getKeycloakInstance() } returns keycloakInstance
     every { keycloakInstance.realm(any()) } returns realmResource
     every { realmResource.groups() } returns groupsResource
     every { realmResource.users() } returns usersResource
   }
-
-  // ---------------------------------------------------------------------------
-  // isGroupPublic — tested indirectly through getAllGroups and getUsersInGroup
-  // ---------------------------------------------------------------------------
 
   @Test
   fun `isGroupPublic - getAllGroups filters out groups without public attribute`() {
@@ -108,7 +96,7 @@ class KeycloakClientTests {
   @Test
   fun `isGroupPublic - getUsersInGroup throws when group is not public`() {
     val privateGroup = makeGroup("private-group", id = "id-private", attributes = null)
-    val groupResource = mockk<GroupResource>(relaxed = true)
+    val groupResource = mockk<GroupResource>()
     every { groupsResource.group("id-private") } returns groupResource
     every { groupResource.toRepresentation() } returns privateGroup
 
@@ -116,10 +104,6 @@ class KeycloakClientTests {
       keycloakClient.getUsersInGroup("id-private")
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // getUsersInGroup
-  // ---------------------------------------------------------------------------
 
   @Test
   fun `getUsersInGroup returns members of a public group`() {
@@ -130,7 +114,7 @@ class KeycloakClientTests {
             makeUser("alice@cosmotech.com"),
             makeUser("bob@cosmotech.com"),
         )
-    val groupResource = mockk<GroupResource>(relaxed = true)
+    val groupResource = mockk<GroupResource>()
     every { groupsResource.group("id-analysts") } returns groupResource
     every { groupResource.toRepresentation() } returns publicGroup
     every { groupResource.members() } returns members
@@ -146,7 +130,7 @@ class KeycloakClientTests {
   fun `getUsersInGroup returns empty list when public group has no members`() {
     val publicGroup =
         makeGroup("empty-group", id = "id-empty", attributes = mapOf("public" to listOf("true")))
-    val groupResource = mockk<GroupResource>(relaxed = true)
+    val groupResource = mockk<GroupResource>()
     every { groupsResource.group("id-empty") } returns groupResource
     every { groupResource.toRepresentation() } returns publicGroup
     every { groupResource.members() } returns emptyList()
@@ -160,7 +144,7 @@ class KeycloakClientTests {
   fun `getUsersInGroup throws CsmResourceNotFoundException for private group`() {
     val privateGroup =
         makeGroup("secret-group", id = "id-secret", attributes = mapOf("public" to listOf("false")))
-    val groupResource = mockk<GroupResource>(relaxed = true)
+    val groupResource = mockk<GroupResource>()
     every { groupsResource.group("id-secret") } returns groupResource
     every { groupResource.toRepresentation() } returns privateGroup
 
@@ -172,7 +156,7 @@ class KeycloakClientTests {
   @Test
   fun `getUsersInGroup throws CsmResourceNotFoundException when group has no attributes`() {
     val noAttrGroup = makeGroup("no-attr-group", id = "id-no-attr", attributes = null)
-    val groupResource = mockk<GroupResource>(relaxed = true)
+    val groupResource = mockk<GroupResource>()
     every { groupsResource.group("id-no-attr") } returns groupResource
     every { groupResource.toRepresentation() } returns noAttrGroup
 
@@ -180,10 +164,6 @@ class KeycloakClientTests {
       keycloakClient.getUsersInGroup("id-no-attr")
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // listRBACMembers
-  // ---------------------------------------------------------------------------
 
   @Test
   fun `listRBACMembers returns users and groups present in the ACL`() {
@@ -204,7 +184,7 @@ class KeycloakClientTests {
     every { usersResource.list() } returns listOf(aliceUser, carolUser)
 
     // getUsersInGroup for analysts group
-    val analystsGroupResource = mockk<GroupResource>(relaxed = true)
+    val analystsGroupResource = mockk<GroupResource>()
     every { groupsResource.group("id-analysts") } returns analystsGroupResource
     every { analystsGroupResource.toRepresentation() } returns publicGroup
     every { analystsGroupResource.members() } returns listOf(bobUser)
@@ -268,7 +248,7 @@ class KeycloakClientTests {
     every { groupsResource.groups(any(), any(), any(), any()) } returns listOf(publicGroup)
     every { usersResource.list() } returns emptyList()
 
-    val analystsGroupResource = mockk<GroupResource>(relaxed = true)
+    val analystsGroupResource = mockk<GroupResource>()
     every { groupsResource.group("id-analysts") } returns analystsGroupResource
     every { analystsGroupResource.toRepresentation() } returns publicGroup
     // Same user appears twice in Keycloak response
@@ -282,10 +262,6 @@ class KeycloakClientTests {
     assertEquals(1, result.groups[0].users.size)
     assertEquals("dup@cosmotech.com", result.groups[0].users[0])
   }
-
-  // ---------------------------------------------------------------------------
-  // listKeycloakMembers
-  // ---------------------------------------------------------------------------
 
   @Test
   fun `listKeycloakMembers returns all users and groups with their Keycloak roles`() {
@@ -304,25 +280,25 @@ class KeycloakClientTests {
     every { usersResource.list() } returns listOf(aliceUser, bobUser)
 
     // getUserRoles for alice → Platform.Admin
-    val aliceUserResource = mockk<UserResource>(relaxed = true)
-    val aliceRoleMapping = mockk<RoleMappingResource>(relaxed = true)
-    val aliceRoleScopeResource = mockk<RoleScopeResource>(relaxed = true)
+    val aliceUserResource = mockk<UserResource>()
+    val aliceRoleMapping = mockk<RoleMappingResource>()
+    val aliceRoleScopeResource = mockk<RoleScopeResource>()
     every { usersResource.get("user-alice") } returns aliceUserResource
     every { aliceUserResource.roles() } returns aliceRoleMapping
     every { aliceRoleMapping.realmLevel() } returns aliceRoleScopeResource
     every { aliceRoleScopeResource.listAll() } returns listOf(makeRole("Platform.Admin"))
 
     // getUserRoles for bob → Organization.User
-    val bobUserResource = mockk<UserResource>(relaxed = true)
-    val bobRoleMapping = mockk<RoleMappingResource>(relaxed = true)
-    val bobRoleScopeResource = mockk<RoleScopeResource>(relaxed = true)
+    val bobUserResource = mockk<UserResource>()
+    val bobRoleMapping = mockk<RoleMappingResource>()
+    val bobRoleScopeResource = mockk<RoleScopeResource>()
     every { usersResource.get("user-bob") } returns bobUserResource
     every { bobUserResource.roles() } returns bobRoleMapping
     every { bobRoleMapping.realmLevel() } returns bobRoleScopeResource
     every { bobRoleScopeResource.listAll() } returns listOf(makeRole("Organization.User"))
 
     // getUsersInGroup for analysts
-    val analystsGroupResource = mockk<GroupResource>(relaxed = true)
+    val analystsGroupResource = mockk<GroupResource>()
     every { groupsResource.group("id-analysts") } returns analystsGroupResource
     every { analystsGroupResource.toRepresentation() } returns publicGroup
     every { analystsGroupResource.members() } returns listOf(aliceUser)
@@ -342,15 +318,15 @@ class KeycloakClientTests {
   }
 
   @Test
-  fun `listKeycloakMembers assigns None role when user has no matching Keycloak roles`() {
+  fun `listKeycloakMembers assigns empty role when user has no matching Keycloak roles`() {
     val unknownUser = makeUser("unknown@cosmotech.com", id = "user-unknown")
 
     every { groupsResource.count(true) } returns mapOf("count" to 0L)
     every { usersResource.list() } returns listOf(unknownUser)
 
-    val unknownUserResource = mockk<UserResource>(relaxed = true)
-    val unknownRoleMapping = mockk<RoleMappingResource>(relaxed = true)
-    val unknownRoleScopeResource = mockk<RoleScopeResource>(relaxed = true)
+    val unknownUserResource = mockk<UserResource>()
+    val unknownRoleMapping = mockk<RoleMappingResource>()
+    val unknownRoleScopeResource = mockk<RoleScopeResource>()
     every { usersResource.get("user-unknown") } returns unknownUserResource
     every { unknownUserResource.roles() } returns unknownRoleMapping
     every { unknownRoleMapping.realmLevel() } returns unknownRoleScopeResource
@@ -360,11 +336,11 @@ class KeycloakClientTests {
 
     assertEquals(1, result.users.size)
     assertEquals("unknown@cosmotech.com", result.users[0].id)
-    assertEquals("None", result.users[0].role)
+    assertEquals("", result.users[0].role)
   }
 
   @Test
-  fun `listKeycloakMembers assigns None role when group has no realmRoles`() {
+  fun `listKeycloakMembers assigns empty role when group has no realmRoles`() {
     val noRolesGroup =
         makeGroup(
             "no-roles-group",
@@ -377,7 +353,7 @@ class KeycloakClientTests {
     every { groupsResource.groups(any(), any(), any(), any()) } returns listOf(noRolesGroup)
     every { usersResource.list() } returns emptyList()
 
-    val noRolesGroupResource = mockk<GroupResource>(relaxed = true)
+    val noRolesGroupResource = mockk<GroupResource>()
     every { groupsResource.group("id-no-roles") } returns noRolesGroupResource
     every { noRolesGroupResource.toRepresentation() } returns noRolesGroup
     every { noRolesGroupResource.members() } returns emptyList()
@@ -386,7 +362,7 @@ class KeycloakClientTests {
 
     assertEquals(1, result.groups.size)
     assertEquals("no-roles-group", result.groups[0].id)
-    assertEquals("None", result.groups[0].role)
+    assertEquals("", result.groups[0].role)
   }
 
   @Test
@@ -419,7 +395,7 @@ class KeycloakClientTests {
 
     // Mock getUsersInGroup for each group
     groups.forEach { group ->
-      val groupResource = mockk<GroupResource>(relaxed = true)
+      val groupResource = mockk<GroupResource>()
       every { groupsResource.group(group.id) } returns groupResource
       every { groupResource.toRepresentation() } returns group
       every { groupResource.members() } returns emptyList()
@@ -431,7 +407,7 @@ class KeycloakClientTests {
   }
 
   // ---------------------------------------------------------------------------
-  // Helpers
+  // Tests Helpers
   // ---------------------------------------------------------------------------
 
   private fun makeGroup(

@@ -71,6 +71,7 @@ val testContainersLocalStackVersion = "1.21.4"
 val commonCompressVersion = "1.28.0"
 val awsSpringVersion = "4.0.2"
 val bcpkixVersion = "1.85"
+val keycloakAdminClientVersion = "26.0.10"
 
 // Checks
 val detektVersion = "1.23.8"
@@ -337,7 +338,7 @@ subprojects {
     implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:$awsSpringVersion"))
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringVersion")
     // Source: https://mvnrepository.com/artifact/org.keycloak/keycloak-admin-client
-    implementation("org.keycloak:keycloak-admin-client:26.0.10")
+    implementation("org.keycloak:keycloak-admin-client:$keycloakAdminClientVersion")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))
