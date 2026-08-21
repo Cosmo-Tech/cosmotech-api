@@ -69,7 +69,7 @@ val testContainersRedisVersion = "2.2.4"
 val testContainersPostgreSQLVersion = "2.0.5"
 val testContainersLocalStackVersion = "1.21.4"
 val commonCompressVersion = "1.28.0"
-val awsSpringVersion = "4.0.2"
+val awsSpringVersion = "4.1.0"
 val bcpkixVersion = "1.85"
 val keycloakAdminClientVersion = "26.0.10"
 
