@@ -71,7 +71,7 @@ val testContainersLocalStackVersion = "1.21.4"
 val commonCompressVersion = "1.28.0"
 val awsSpringVersion = "4.0.2"
 val bcpkixVersion = "1.85"
-val keycloakAdminClientVersion = "26.0.10"
+val keycloakAdminClientVersion = "26.0.12"
 
 // Checks
 val detektVersion = "1.23.8"
