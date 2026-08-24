@@ -78,6 +78,7 @@ val kubernetesClientVersion = "22.0.0"
 val orgJsonVersion = "20240303"
 val jacksonModuleKotlinVersion = "2.18.3"
 val testNgVersion = "7.8.0"
+val postgresqlVersion = "42.7.13"
 
 // Checks
 val detektVersion = "1.23.8"
@@ -87,7 +88,7 @@ val jUnitBomVersion = "5.12.2"
 val mockkVersion = "1.14.0"
 val awaitilityKVersion = "4.2.0"
 val testContainersRedisVersion = "1.6.4"
-val testContainersPostgreSQLVersion = "1.21.3"
+val testContainersPostgreSQLVersion = "1.21.4"
 val springMockkVersion = "4.0.2"
 
 val configBuildDir = "${layout.buildDirectory.get()}/config"
@@ -136,6 +137,17 @@ allprojects {
         force("com.redis.om:redis-om-spring:0.9.11")
         force("redis.clients:jedis:5.2.0")
         force("com.redis:lettucemod:4.3.0")
+        force("org.apache.httpcomponents.core5:httpcore5:5.4.3")
+        force("org.apache.httpcomponents.client5:httpclient5:5.6.4")
+        force("org.apache.httpcomponents.client5:httpclient5-cache:5.6.4")
+        force("org.apache.httpcomponents.client5:httpclient5-fluent:5.6.4")
+        force("org.apache.httpcomponents.core5:httpcore5-h2:5.4.3")
+        force("org.apache.httpcomponents.core5:httpcore5-reactive:5.4.3")
+        force("io.netty:netty-codec:4.2.17.Final")
+        force("io.netty:netty-codec-http:4.2.17.Final")
+        force("io.netty:netty-codec-http2:4.2.17.Final")
+        force("io.netty:netty-codec-dns:4.2.17.Final")
+        force("com.fasterxml.jackson.core:jackson-databind:2.22.2")
       }
     }
   }
@@ -322,7 +334,7 @@ subprojects {
       exclude(group = "redis.clients", module = "jedis")
     }
     implementation("org.springframework:spring-jdbc")
-    implementation("org.postgresql:postgresql")
+    implementation("org.postgresql:postgresql:${postgresqlVersion}")
 
     implementation("org.json:json:${orgJsonVersion}")
 
