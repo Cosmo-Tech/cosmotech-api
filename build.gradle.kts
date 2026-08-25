@@ -40,7 +40,7 @@ plugins {
   id("com.github.jk1.dependency-license-report") version "3.1.4"
   id("org.jetbrains.kotlinx.kover") version "0.9.9"
   id("io.gitlab.arturbosch.detekt") version "1.23.8"
-  id("org.openapi.generator") version "7.24.0" apply false
+  id("org.openapi.generator") version "7.25.0" apply false
   id("com.google.cloud.tools.jib") version "3.5.4" apply false
   id("org.cyclonedx.bom") version "3.4.1"
 }
@@ -502,6 +502,14 @@ subprojects {
               "useTags" to true,
               "beanQualifiers" to true,
               "modelMutable" to true,
+              // Set 'generateJson*Annotations' to false to keep the previous behavior around null
+              // The current behavior around non-required and nullable fields (mostly accepting null
+              // values on non-nullable but non-required fields) is wrong in respect to the actual
+              // openapi specification file
+              // However making the server behave correctly would be a breaking change in behavior
+              // To be investigated and fixed in the next major version (6?)
+              "generateJsonIncludeAnnotations" to false,
+              "generateJsonSetterNullsAnnotations" to false,
           )
       )
     }
