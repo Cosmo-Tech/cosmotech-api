@@ -368,6 +368,7 @@ subprojects {
 
     // MCP POC
     implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:1.1.7")
+    implementation("org.springaicommunity:mcp-server-security:0.1.14")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))

@@ -76,7 +76,8 @@ open class RedisConfig {
 
 // Workaround for this issue in redis-om-spring
 // https://github.com/redis/redis-om-spring/issues/769#issuecomment-5399376418
-// It is not a long term fix as based some properties are defined as deprecated since Spring Data Redis 4.1
+// It is not a long term fix as based some properties are defined as deprecated since Spring Data
+// Redis 4.1
 @Component
 class LegacyJedisClientPostProcessor : BeanPostProcessor {
 

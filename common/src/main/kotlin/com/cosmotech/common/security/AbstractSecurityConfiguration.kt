@@ -4,6 +4,7 @@ package com.cosmotech.common.security
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.security.filters.ApiKeyAuthenticationFilter
+import org.springaicommunity.mcp.security.server.config.McpServerOAuth2Configurer
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
@@ -384,6 +385,13 @@ abstract class AbstractSecurityConfiguration {
           }
 
           requests.anyRequest().authenticated()
+        }
+        .with(McpServerOAuth2Configurer.mcpServerOAuth2()) { mcpAuthorization ->
+          mcpAuthorization.authorizationServer(
+              "https://aks-dev-joy.azure.platform.cosmotech.com/keycloak/realms/tenant-sphinx"
+          )
+          // TODO: set to true to enforce security
+          mcpAuthorization.validateAudienceClaim(false)
         }
   }
 }
