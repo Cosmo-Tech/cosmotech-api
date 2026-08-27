@@ -39,9 +39,8 @@ csm:
   platform:
     identityProvider:
       admin:
-        clientId: "admin-cli"
-        username: "admin"
-        password: "admin"
+        clientId: "admin-client"
+        clientSecret: "admin"
       authorizationUrl: "http://fake_url:8080/authorize"
       tokenUrl: "http://fake_url:8080/token"
       containerScopes:

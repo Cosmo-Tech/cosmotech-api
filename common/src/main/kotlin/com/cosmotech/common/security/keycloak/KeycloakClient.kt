@@ -14,7 +14,9 @@ import com.cosmotech.common.security.keycloak.KeycloakConstants.GROUP_COUNT_MAP_
 import com.cosmotech.common.security.keycloak.KeycloakConstants.GROUP_SEARCH_EXP
 import com.cosmotech.common.security.keycloak.KeycloakConstants.MAX_PAGE_SIZE
 import com.cosmotech.common.security.keycloak.KeycloakConstants.OFFSET_START
+import org.keycloak.OAuth2Constants
 import org.keycloak.admin.client.Keycloak
+import org.keycloak.admin.client.KeycloakBuilder
 import org.keycloak.representations.idm.GroupRepresentation
 import org.keycloak.representations.idm.RoleRepresentation
 import org.keycloak.representations.idm.UserRepresentation
@@ -25,19 +27,18 @@ class KeycloakClient(
     private val csmPlatformProperties: CsmPlatformProperties,
     val serverUrl: String = csmPlatformProperties.identityProvider.serverBaseUrl,
     val realm: String = csmPlatformProperties.identityProvider.identity.tenantId,
-    val adminClientId: String = csmPlatformProperties.identityProvider.admin.clientId,
-    val username: String = csmPlatformProperties.identityProvider.admin.username,
-    val password: String = csmPlatformProperties.identityProvider.admin.password,
+    val clientId: String = csmPlatformProperties.identityProvider.admin.clientId,
+    val clientSecret: String = csmPlatformProperties.identityProvider.admin.clientSecret,
 ) {
 
   fun getKeycloakInstance(): Keycloak {
-    return Keycloak.getInstance(
-        serverUrl,
-        realm,
-        username,
-        password,
-        adminClientId,
-    )
+    return KeycloakBuilder.builder()
+        .serverUrl(serverUrl)
+        .realm(realm)
+        .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+        .clientId(clientId)
+        .clientSecret(clientSecret)
+        .build()
   }
 
   private fun isGroupPublic(group: GroupRepresentation): Boolean {
