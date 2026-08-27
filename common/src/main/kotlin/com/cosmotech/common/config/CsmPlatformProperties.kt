@@ -267,9 +267,10 @@ data class CsmPlatformProperties(
       val tls: TLSConfig = TLSConfig(),
   ) {
     data class CsmIdentityProviderAdmin(
+        /** Admin Client Id */
         val clientId: String,
-        val username: String,
-        val password: String,
+        /** Admin Client secret */
+        val clientSecret: String,
     )
 
     data class CsmIdentity(

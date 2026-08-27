@@ -95,8 +95,7 @@ class CsmRbacTests {
           admin =
               CsmPlatformProperties.CsmIdentityProvider.CsmIdentityProviderAdmin(
                   clientId = "my_admin_client_id",
-                  username = "my_admin_username",
-                  password = "my_admin_password",
+                  clientSecret = "my_admin_client_secret",
               ),
           identity =
               CsmPlatformProperties.CsmIdentityProvider.CsmIdentity(

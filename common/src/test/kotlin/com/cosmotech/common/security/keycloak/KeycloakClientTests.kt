@@ -32,9 +32,8 @@ class KeycloakClientTests {
               csmPlatformProperties = mockk(),
               serverUrl = "http://localhost:8080",
               realm = "cosmotech",
-              adminClientId = "admin-cli",
-              username = "admin",
-              password = "admin",
+              clientId = "admin-cli",
+              clientSecret = "admin",
           )
       )
 
