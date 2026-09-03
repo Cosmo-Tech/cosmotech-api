@@ -34,7 +34,7 @@ plugins {
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.3"
   id("com.diffplug.spotless") version "8.10.1"
-  id("org.springframework.boot") version "4.1.0" apply false
+  id("org.springframework.boot") version "4.1.1" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "13.0.0"
   id("com.github.jk1.dependency-license-report") version "3.1.4"
@@ -240,6 +240,10 @@ subprojects {
     // This is so we can easily map results onto their source files in tools like GitHub Code
     // Scanning
     basePath = rootDir.absolutePath
+    // Force task execution on JDK 21
+    javaToolchains.launcherFor {
+      languageVersion.set(JavaLanguageVersion.of(21))
+    }
     reports {
       html {
         // observe findings in your browser with structure and code snippets
