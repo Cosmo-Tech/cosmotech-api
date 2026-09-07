@@ -3,13 +3,15 @@
 package com.cosmotech.common.utils
 
 import com.cosmotech.common.exceptions.CsmAccessForbiddenException
-import java.io.BufferedInputStream
 import java.io.InputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
-import org.apache.tika.config.TikaConfig
+import org.apache.commons.io.input.CloseShieldInputStream
+import org.apache.tika.config.loader.TikaLoader
+import org.apache.tika.io.TikaInputStream
 import org.apache.tika.metadata.Metadata
 import org.apache.tika.metadata.TikaCoreProperties
+import org.apache.tika.parser.ParseContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -26,19 +28,26 @@ class ResourceScanner {
       inputStream: InputStream,
       authorizedMimeTypes: List<String>,
   ) {
-    val tika = TikaConfig()
-    this.scanStream(tika, inputStream, fileName, authorizedMimeTypes)
+    val tika = TikaLoader.loadDefault()
+    // Detection consumes the stream, so it must be wrapped in a rewindable TikaInputStream in
+    // order to be readable again when scanning the entries of an archive
+    // See
+    // https://tika.apache.org/docs/4.0.x/migration-to-4x/migrating-to-4x.html#tika-input-stream-spi
+    TikaInputStream.get(inputStream).use {
+      this.scanStream(tika, it, fileName, authorizedMimeTypes)
+    }
   }
 
   private fun scanStream(
-      tika: TikaConfig,
-      inputStream: InputStream,
+      tika: TikaLoader,
+      inputStream: TikaInputStream,
       name: String,
       authorizedMimeTypes: List<String>,
   ) {
     val metadata = Metadata()
     metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name)
-    val mimetype = tika.detector.detect(BufferedInputStream(inputStream), metadata)
+    val parseContext = ParseContext()
+    val mimetype = tika.loadDetectors().detect(inputStream, metadata, parseContext)
     this.validateMimeType(mimetype.toString(), name, authorizedMimeTypes)
     this.logger.info("Detected type for file $name: $mimetype")
     if (mimetype.subtype == ZIP_MIME_TYPE) {
@@ -48,7 +57,7 @@ class ResourceScanner {
   }
 
   private fun recurseScanZipFile(
-      tika: TikaConfig,
+      tika: TikaLoader,
       zipInputStream: ZipInputStream,
       fileName: String,
       authorizedMimeTypes: List<String>,
@@ -66,9 +75,14 @@ class ResourceScanner {
         this.logger.debug("Directory detected")
       } else {
         this.logger.debug("File detected")
-        val bufferedStream = BufferedInputStream(zipInputStream)
         val name = entry?.name ?: ENTRY_NAME_UNKNOWN
-        this.scanStream(tika, bufferedStream, name, authorizedMimeTypes)
+        // Shielded so that closing the wrapper does not close the zip stream being iterated over
+        // We do not want to close the whole stream after reading the first entry in the archive
+        // See
+        // https://commons.apache.org/proper/commons-io/apidocs/org/apache/commons/io/input/CloseShieldInputStream.html
+        TikaInputStream.get(CloseShieldInputStream.wrap(zipInputStream)).use {
+          this.scanStream(tika, it, name, authorizedMimeTypes)
+        }
       }
     }
 
