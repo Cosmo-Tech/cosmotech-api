@@ -29,7 +29,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 val kotlinVersion = "2.4"
 
 plugins {
-  val kotlinCompleteVersion = "2.4.10"
+  val kotlinCompleteVersion = "2.4.20"
   kotlin("jvm") version kotlinCompleteVersion
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.3"
@@ -219,14 +219,16 @@ subprojects {
     }
   }
 
-  val integrationTestImplementation by configurations.getting {
-    extendsFrom(configurations.testImplementation.get())
-  }
+  val integrationTestImplementation =
+      configurations.getByName("integrationTestImplementation") {
+        extendsFrom(configurations.testImplementation.get())
+      }
 
   @Suppress("UNUSED_VARIABLE")
-  val integrationTestRuntimeOnly by configurations.getting {
-    extendsFrom(configurations.testRuntimeOnly.get())
-  }
+  val integrationTestRuntimeOnly =
+      configurations.getByName("integrationTestRuntimeOnly") {
+        extendsFrom(configurations.testRuntimeOnly.get())
+      }
 
   tasks.withType<Detekt>().configureEach {
     buildUponDefaultConfig = true // preconfigure defaults
@@ -282,7 +284,7 @@ subprojects {
 
   dependencies {
     // https://youtrack.jetbrains.com/issue/KT-71057/POM-file-unusable-after-upgrading-to-2.0.20-from-2.0.10
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.4.10"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.4.20"))
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
