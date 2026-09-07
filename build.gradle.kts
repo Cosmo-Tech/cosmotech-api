@@ -77,6 +77,8 @@ val keycloakAdminClientVersion = "26.0.12"
 val springdocOpenapiMcpVersion = "3.2.0"
 val springAiStarterMcpVersion = "2.0.2"
 val springAiSecurityMcpVersion = "0.1.14"
+// Not managed by the Spring Boot BOM; must stay aligned with the OpenTelemetry SDK it manages
+val openTelemetryInstrumentationVersion = "2.21.0-alpha"
 
 // Checks
 val detektVersion = "2.0.0-alpha.6"
@@ -338,6 +340,12 @@ subprojects {
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
+    // Observability: OpenTelemetry traces/logs through Micrometer, correlated with the metrics
+    // above
+    implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
+    implementation(
+        "io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:$openTelemetryInstrumentationVersion"
+    )
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml")

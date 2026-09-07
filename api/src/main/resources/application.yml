@@ -3,8 +3,14 @@ logging:
     com.cosmotech: INFO
     http3:
       OkHttpClient: WARN
+  pattern:
+    # %correlationId is contributed by Micrometer Tracing: [application,traceId,spanId]
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %correlationId%logger{36} - %msg%n"
+  include-application-name: true
 
 spring:
+  application:
+    name: cosmotech-api
   security:
     debug: false
   ai:
@@ -62,6 +68,51 @@ management:
         include: "*"
   server:
     port: 8081
+  # spring-boot-starter-opentelemetry pulls in micrometer-registry-otlp, which is auto-enabled;
+  # metrics keep using the existing Prometheus registry (below), and there is no OTLP metrics
+  # receiver configured on the collector side (e.g. Jaeger only ingests traces on :4318), so this
+  # must stay disabled independently of OTEL_EXPORT_ENABLED to avoid "404" publish failures.
+  otlp:
+    metrics:
+      export:
+        enabled: false
+  # Tags added to every span and log resource, for multi-instance drill-down (metrics keep
+  # using the existing Prometheus registry and its own management.metrics.tags, untouched here)
+  observations:
+    key-values:
+      deployment.environment.name: "${DEPLOYMENT_ENVIRONMENT:local}"
+  metrics:
+    tags:
+      deployment.environment.name: "${DEPLOYMENT_ENVIRONMENT:local}"
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        http.client.requests: true
+      slo:
+        http.server.requests: "50ms,100ms,250ms,500ms,1s,2s,5s"
+  tracing:
+    sampling:
+      probability: "${OTEL_TRACES_SAMPLER_ARG:1.0}"
+    # Nothing is shipped unless OTEL_EXPORT_ENABLED=true; spans/logs are still collected
+    # in-process and visible through the actuator endpoints.
+    export:
+      enabled: "${OTEL_EXPORT_ENABLED:false}"
+  logging:
+    export:
+      otlp:
+        enabled: "${OTEL_EXPORT_ENABLED:false}"
+  opentelemetry:
+    resource-attributes:
+      service.namespace: cosmotech
+      deployment.environment.name: "${DEPLOYMENT_ENVIRONMENT:local}"
+    tracing:
+      export:
+        otlp:
+          endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces"
+    logging:
+      export:
+        otlp:
+          endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/logs"
 
 server:
   jetty:
@@ -206,3 +257,29 @@ api:
   swagger-ui:
     base-path: ${server.servlet.context-path}
   version: ${csm.platform.api.version}
+
+---
+# In dev, compose.yaml starts a Jaeger container and Spring Boot injects its OTLP endpoint,
+# so span export can be turned on out of the box. Jaeger only ingests traces: metrics and
+# logs stay local (actuator/console).
+spring:
+  config:
+    activate:
+      on-profile: "dev"
+management:
+  tracing:
+    export:
+      enabled: true
+
+---
+# Any profile other than 'dev' (prod, docker, ...) switches to JSON console logs,
+# meant to be scraped by log aggregators (ELK, Loki, ...); MDC fields set by
+# AccessLogGlobalFilter are automatically included as top-level JSON keys.
+spring:
+  config:
+    activate:
+      on-profile: "!dev"
+logging:
+  structured:
+    format:
+      console: logstash
