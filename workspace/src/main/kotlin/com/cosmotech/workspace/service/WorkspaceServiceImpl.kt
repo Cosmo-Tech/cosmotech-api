@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.service
 
-import com.amazonaws.SdkClientException
 import com.cosmotech.common.CsmPhoenixService
 import com.cosmotech.common.events.OrganizationUnregistered
 import com.cosmotech.common.events.WorkspaceDeleted
@@ -61,6 +60,7 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.awscore.exception.AwsServiceException
+import software.amazon.awssdk.core.exception.SdkClientException
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException
