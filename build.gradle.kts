@@ -26,10 +26,10 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // implementations/configurations in a 'buildSrc' included build.
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
-val kotlinVersion = "2.3"
+val kotlinVersion = "2.4"
 
 plugins {
-  val kotlinCompleteVersion = "2.3.21"
+  val kotlinCompleteVersion = "2.4.10"
   kotlin("jvm") version kotlinCompleteVersion
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.3"
@@ -54,7 +54,7 @@ version = scmVersion.version
 // Dependencies version
 val jacksonBom = "3.2.2"
 val springOauthAutoConfigureVersion = "2.6.8"
-val kotlinJvmTarget = 21
+val kotlinJvmTarget = 25
 val redisOmSpringVersion = "2.0.10"
 val kotlinCoroutinesVersion = "1.11.0"
 val springDocVersion = "3.1.0"
@@ -127,8 +127,8 @@ allprojects {
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
 
   java {
-    targetCompatibility = JavaVersion.VERSION_21
-    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_25
+    sourceCompatibility = JavaVersion.VERSION_25
     toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
   }
   repositories {
@@ -233,7 +233,7 @@ subprojects {
     allRules = false // activate all available (even unstable) rules.
     autoCorrect = true
     config.from(file("$rootDir/.detekt/detekt.yaml"))
-    jvmTarget = kotlinJvmTarget.toString()
+    jvmTarget = "21"
     ignoreFailures = project.findProperty("detekt.ignoreFailures")?.toString()?.toBoolean() ?: false
     // Specify the base path for file paths in the formatted reports.
     // If not set, all file paths reported will be absolute file path.
@@ -282,7 +282,7 @@ subprojects {
 
   dependencies {
     // https://youtrack.jetbrains.com/issue/KT-71057/POM-file-unusable-after-upgrading-to-2.0.20-from-2.0.10
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.3.21"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.4.10"))
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
@@ -384,11 +384,11 @@ subprojects {
   kotlin {
     compilerOptions {
       languageVersion.set(KotlinVersion.fromVersion(kotlinVersion))
-      freeCompilerArgs = listOf("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+      freeCompilerArgs = listOf("-Xjsr305=strict")
       jvmTarget.set(JvmTarget.fromTarget(kotlinJvmTarget.toString()))
       java {
-        targetCompatibility = JavaVersion.VERSION_21
-        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_25
+        sourceCompatibility = JavaVersion.VERSION_25
         toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
       }
     }
