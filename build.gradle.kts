@@ -43,6 +43,7 @@ plugins {
   id("org.openapi.generator") version "7.25.0" apply false
   id("com.google.cloud.tools.jib") version "3.5.4" apply false
   id("org.cyclonedx.bom") version "3.4.1"
+  id("org.sonarqube") version "7.5.0.8588"
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -123,6 +124,7 @@ allprojects {
   apply(plugin = "project-report")
   apply(plugin = "org.owasp.dependencycheck")
   apply(plugin = "org.cyclonedx.bom")
+  apply(plugin = "org.sonarqube")
 
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
 
@@ -180,6 +182,23 @@ allprojects {
     projectType = APPLICATION
     jsonOutput.set(file("build/reports/cosmotech-api-bom.json"))
     xmlOutput.set(file("build/reports/cosmotech-api-bom.xml"))
+  }
+
+  // Run an analysis
+  // ./gradlew sonar -Dsonar.token=yourAuthenticationToken
+  sonar {
+    properties {
+      var sonarProjectKey =
+          project.findProperty("sonar.projectKey")?.toString() ?: System.getenv("SONAR_PROJECT_KEY")
+      var sonarHostUrl =
+          project.findProperty("sonar.host.url")?.toString() ?: System.getenv("SONAR_HOST_URL")
+      var sonarProjectName =
+          project.findProperty("sonar.projectName")?.toString()
+              ?: System.getenv("SONAR_PROJECT_NAME")
+      property("sonar.projectKey", sonarProjectKey)
+      property("sonar.host.url", sonarHostUrl)
+      property("sonar.projectName", sonarProjectName)
+    }
   }
 }
 
