@@ -80,15 +80,24 @@ open class CsmTestBase {
       val containerIp =
           seaweedServer.containerInfo.networkSettings.networks.entries.elementAt(0).value.ipAddress
               ?: "cannot_find_seaweed_container_ip"
-      val seaweedEnvMap = seaweedServer.envMap
+      val seaweedEnvMap = seaweedServer.envMap.toMap()
       registry.add("spring.cloud.aws.s3.endpoint") { "http://$containerIp:8333" }
-      registry.add("spring.cloud.aws.credentials.access-key") {
-        seaweedEnvMap["AWS_ACCESS_KEY_ID"]!!
+      val accessKey = seaweedEnvMap["AWS_ACCESS_KEY_ID"]
+      if (accessKey != null) {
+        registry.add("spring.cloud.aws.credentials.access-key") {
+          accessKey
+        }
       }
-      registry.add("spring.cloud.aws.credentials.secret-key") {
-        seaweedEnvMap["AWS_SECRET_ACCESS_KEY"]!!
+      val accessSecret = seaweedEnvMap["AWS_SECRET_ACCESS_KEY"]
+      if (accessSecret != null) {
+        registry.add("spring.cloud.aws.credentials.secret-key") {
+          accessSecret
+        }
       }
-      registry.add("spring.cloud.aws.s3.region") { seaweedEnvMap["S3_REGION"]!! }
+      val s3Region = seaweedEnvMap["S3_REGION"]
+      if (s3Region != null) {
+        registry.add("spring.cloud.aws.s3.region") { s3Region }
+      }
     }
 
     private fun initPostgresConfiguration(registry: DynamicPropertyRegistry) {

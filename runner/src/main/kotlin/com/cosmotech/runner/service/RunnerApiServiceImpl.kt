@@ -130,10 +130,8 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_DELETE)
 
-    if (runnerInstance.getRunnerDataObject().status == RunnerStatus.Archived) {
-      throw IllegalStateException(
-          "This runner has already been mark as archived and so is going to be delete"
-      )
+    check(runnerInstance.getRunnerDataObject().status != RunnerStatus.Archived) {
+      "This runner has already been mark as archived and so is going to be delete"
     }
 
     runnerService.archiveInstance(runnerInstance)
@@ -161,8 +159,8 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_LAUNCH)
 
-    if (runnerInstance.getRunnerDataObject().status == RunnerStatus.Archived) {
-      throw IllegalStateException("This runner is archived and can not be launched")
+    check(runnerInstance.getRunnerDataObject().status != RunnerStatus.Archived) {
+      "This runner is archived and can not be launched"
     }
     return runnerService.startRunWith(runnerInstance, RunType.Run)
   }

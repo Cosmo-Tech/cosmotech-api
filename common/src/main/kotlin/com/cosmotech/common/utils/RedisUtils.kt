@@ -20,12 +20,12 @@ fun constructPageRequest(page: Int?, size: Int?, defaultPageSize: Int): PageRequ
 
 fun <T> findAllPaginated(
     maxResult: Int,
-    findAllLambda: (pageRequest: PageRequest) -> MutableList<T>,
+    findAllLambda: (pageRequest: PageRequest) -> List<T>,
 ): MutableList<T> {
   var pageRequest = PageRequest.ofSize(maxResult)
-  var list = mutableListOf<T>()
+  val list = mutableListOf<T>()
   do {
-    var objectList = findAllLambda(pageRequest)
+    val objectList = findAllLambda(pageRequest)
     pageRequest = pageRequest.next()
     list.addAll(objectList)
   } while (objectList.isNotEmpty())

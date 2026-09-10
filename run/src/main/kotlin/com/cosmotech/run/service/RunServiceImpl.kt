@@ -174,7 +174,7 @@ class RunServiceImpl(
 
       val defaultPageSize = csmPlatformProperties.databases.resources.run.defaultPageSize
       val pageRequest = PageRequest.ofSize(defaultPageSize)
-      val runs =
+      val runs: List<Run> =
           runRepository
               .findByRunnerId(run.organizationId!!, run.workspaceId!!, run.runnerId!!, pageRequest)
               .toList()

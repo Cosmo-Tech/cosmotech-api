@@ -215,7 +215,7 @@ class DatasetServiceImpl(
     eventPublisher.publishEvent(getRunnerAttachedToDatasetEvent)
 
     val datasetAttachedToRunnerId = getRunnerAttachedToDatasetEvent.response
-    require(datasetAttachedToRunnerId == null || datasetAttachedToRunnerId.isEmpty()) {
+    require(datasetAttachedToRunnerId.isNullOrEmpty()) {
       "Dataset $datasetId is defined as a runner dataset ($datasetAttachedToRunnerId). It cannot be deleted"
     }
 

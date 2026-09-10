@@ -646,7 +646,7 @@ class RunnerService(
     private fun useOnlyDefinedParameterValues(
         solutionId: String,
         runTemplateId: String,
-        parametersValues: MutableList<RunnerRunTemplateParameterValue>?,
+        parametersValues: List<RunnerRunTemplateParameterValue>?,
     ): MutableList<RunnerRunTemplateParameterValue> {
       if (parametersValues.isNullOrEmpty()) return mutableListOf()
 
@@ -826,9 +826,9 @@ class RunnerService(
               .orElseThrow {
                 IllegalArgumentException("Parent Id $parentId define on $runnerId does not exists")
               }
-      val parentBaseDatasets = parentRunner.datasets.bases
+      val parentBaseDatasets = parentRunner.datasets.bases.toList()
       if (parentBaseDatasets.isNotEmpty() && newDatasetList == null) {
-        this.runner.datasets.bases = parentBaseDatasets
+        this.runner.datasets.bases = parentBaseDatasets.toMutableList()
       }
     }
 
