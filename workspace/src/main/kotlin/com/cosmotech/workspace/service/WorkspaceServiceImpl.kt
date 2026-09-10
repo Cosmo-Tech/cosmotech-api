@@ -343,7 +343,8 @@ internal class WorkspaceServiceImpl(
     val organizationId = organizationUnregistered.organizationId
     val pageable: Pageable =
         Pageable.ofSize(csmPlatformProperties.databases.resources.workspace.defaultPageSize)
-    val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
+    val workspaces: List<Workspace> =
+        workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
     workspaces.forEach {
       deleteAllS3WorkspaceObjects(organizationId, it)
       workspaceRepository.delete(it)

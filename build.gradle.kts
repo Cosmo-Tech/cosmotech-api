@@ -376,7 +376,7 @@ subprojects {
     testImplementation(
         "org.testcontainers:testcontainers-postgresql:$testContainersPostgreSQLVersion"
     )
-    implementation("com.github.dasniko:testcontainers-keycloak:$testContainerKeycloakVersion")
+    testImplementation("com.github.dasniko:testcontainers-keycloak:$testContainerKeycloakVersion")
     testImplementation("org.testcontainers:localstack:$testContainersLocalStackVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 

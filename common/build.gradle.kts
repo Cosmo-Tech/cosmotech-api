@@ -11,6 +11,7 @@ val tikaVersion = "4.0.0"
 val springPlatformBomVersion = "4.1.1"
 val jUnitBomVersion = "6.1.3"
 val testContainersJupiterVersion = "1.21.4"
+val testContainerKeycloakVersion = "4.3.1"
 
 dependencies {
   implementation("org.apache.httpcomponents.client5:httpclient5")
@@ -20,6 +21,7 @@ dependencies {
   implementation("org.hashids:hashids:${hashidsVersion}")
   implementation("com.redis:testcontainers-redis:${testContainersRedisVersion}")
   implementation("org.testcontainers:testcontainers-postgresql:${testContainersPostgreSQLVersion}")
+  implementation("com.github.dasniko:testcontainers-keycloak:${testContainerKeycloakVersion}")
   implementation("org.apache.tika:tika-core:${tikaVersion}")
   implementation("org.apache.tika:tika-serialization:${tikaVersion}")
   implementation("org.springframework.boot:spring-boot-starter-test")

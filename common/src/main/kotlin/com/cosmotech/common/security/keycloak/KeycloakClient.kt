@@ -51,14 +51,17 @@ class KeycloakClient(
     val keycloak = getKeycloakInstance()
     val realmResource = keycloak.realm(realm)
 
-    val groupCount: Long = realmResource.groups().count(true)[GROUP_COUNT_MAP_KEY]!!
+    val groupCount: Long? = realmResource.groups().count(true)[GROUP_COUNT_MAP_KEY]
 
     val groups = mutableListOf<GroupRepresentation>()
-    var offset = OFFSET_START
-    while (offset < groupCount) {
-      groups.addAll(realmResource.groups().groups(GROUP_SEARCH_EXP, offset, MAX_PAGE_SIZE, false))
-      offset += MAX_PAGE_SIZE
+    if (groupCount != null) {
+      var offset = OFFSET_START
+      while (offset < groupCount) {
+        groups.addAll(realmResource.groups().groups(GROUP_SEARCH_EXP, offset, MAX_PAGE_SIZE, false))
+        offset += MAX_PAGE_SIZE
+      }
     }
+
     return groups
   }
 
@@ -99,14 +102,14 @@ class KeycloakClient(
             users.map { user ->
               KeycloakMemberUser(
                   id = user.username,
-                  role = rbacById[user.username]!!.role,
+                  role = rbacById[user.username]?.role ?: "",
               )
             },
         groups =
             groups.map { group ->
               KeycloakMemberGroup(
                   id = group.name,
-                  role = rbacById[group.name]!!.role,
+                  role = rbacById[group.name]?.role ?: "",
                   users = getUsersInGroup(group.id).map { it.username }.distinct(),
               )
             },

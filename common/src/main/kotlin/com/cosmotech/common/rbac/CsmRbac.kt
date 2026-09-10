@@ -277,15 +277,14 @@ open class CsmRbac(
 
   internal fun getEntityRole(rbacSecurity: RbacSecurity, entity: String): String {
     return rbacSecurity.accessControlList
-        .firstOrNull { it.id.lowercase() == entity.lowercase() }
+        .firstOrNull { it.id.equals(entity, ignoreCase = true) }
         ?.role ?: rbacSecurity.default
   }
 
   internal fun getAdminCount(rbacSecurity: RbacSecurity, rolesDefinition: RolesDefinition): Int {
     return rbacSecurity.accessControlList
         .map { it.role }
-        .filter { it == this.getAdminRole(rolesDefinition) }
-        .count()
+        .count { it == this.getAdminRole(rolesDefinition) }
   }
 
   internal fun verifyRoleOrThrow(
