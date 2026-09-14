@@ -71,7 +71,7 @@ val testContainersPostgreSQLVersion = "2.0.5"
 val testContainersLocalStackVersion = "1.21.4"
 val commonCompressVersion = "1.28.0"
 val awsSpringVersion = "4.1.1"
-val bcpkixVersion = "1.85"
+val bcpkixVersion = "1.86"
 val keycloakAdminClientVersion = "26.0.12"
 
 // Checks
