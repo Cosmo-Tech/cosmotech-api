@@ -365,9 +365,10 @@ subprojects {
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringVersion")
     // Source: https://mvnrepository.com/artifact/org.keycloak/keycloak-admin-client
     implementation("org.keycloak:keycloak-admin-client:$keycloakAdminClientVersion")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-mcp:3.1.1")
 
     // MCP POC
-    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:1.1.7")
+    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.1")
     implementation("org.springaicommunity:mcp-server-security:0.1.14")
 
     testImplementation(kotlin("test"))

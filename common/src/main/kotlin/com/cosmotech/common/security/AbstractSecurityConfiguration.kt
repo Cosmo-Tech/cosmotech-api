@@ -144,6 +144,15 @@ val PATHS_IAMINFO_MEMBERS = listOf("/iaminfo/members")
 // Path about
 val PATHS_ABOUT = listOf("/about")
 
+// Endpoints MCP
+val endpointSecurityMcp =
+    listOf(
+        "/mcp",
+        "/mcp-ui/**",
+        "/api/mcp-admin/**",
+    )
+
+
 // Endpoints roles
 val endpointSecurityPublic =
     listOf(
@@ -153,6 +162,8 @@ val endpointSecurityPublic =
         "/",
         "/swagger-ui.html",
         "/swagger-ui/**",
+        "/mcp-ui/**",
+        "/api/mcp-admin/**",
         "/openapi.*",
         "/openapi/*",
         "/openapi",
@@ -316,6 +327,7 @@ internal fun endpointSecurityWriters(
         ),
     )
 
+@Suppress("LongMethod")
 abstract class AbstractSecurityConfiguration {
 
   fun getOAuth2ResourceServer(
@@ -341,6 +353,12 @@ abstract class AbstractSecurityConfiguration {
           csmPlatformProperties.authorization.allowedApiKeyConsumers.forEach { apiKeyConsumer ->
             csrfConfigurer.ignoringRequestMatchers(
                 RequestHeaderRequestMatcher(apiKeyConsumer.apiKeyHeaderName)
+            )
+          }
+          // MCP clients authenticate with a stateless Bearer JWT and never send a CSRF token
+          endpointSecurityMcp.forEach { path ->
+            csrfConfigurer.ignoringRequestMatchers(
+                PathPatternRequestMatcher.withDefaults().matcher(path)
             )
           }
         }
@@ -387,9 +405,14 @@ abstract class AbstractSecurityConfiguration {
           requests.anyRequest().authenticated()
         }
         .with(McpServerOAuth2Configurer.mcpServerOAuth2()) { mcpAuthorization ->
-          mcpAuthorization.authorizationServer(
-              "https://aks-dev-joy.azure.platform.cosmotech.com/keycloak/realms/tenant-sphinx"
-          )
+          val issuerUri =
+              "${csmPlatformProperties.identityProvider.serverBaseUrl}/realms/${csmPlatformProperties.identityProvider.identity.tenantId}"
+          mcpAuthorization.authorizationServer(issuerUri)
+          mcpAuthorization.protectedResourceMetadataCustomizer { metadata ->
+            metadata.authorizationServer(issuerUri)
+            metadata.scopes {
+                scopes -> scopes.addAll(listOf("mcp")) }
+          }
           // TODO: set to true to enforce security
           mcpAuthorization.validateAudienceClaim(false)
         }
