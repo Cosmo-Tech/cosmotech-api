@@ -167,6 +167,13 @@ csm:
         delay: 300
 
 springdoc:
+  ai:
+    mcp:
+      paths-to-exclude:
+        - /iaminfo/members
+        - /iaminfo/groups
+      enabled: true
+      dashboard-enabled : true
   # See https://springdoc.org/#properties
   api-docs:
     path: /openapi
