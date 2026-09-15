@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 
 private const val DEFAULT_ENTRY_POINT = "entrypoint.py"
-private const val csmSimulationId = "simulationrunid"
+private const val CSM_SIMULATION_ID = "simulationrunid"
 private const val ORGANIZATION_ID = "Organization_id"
 private const val WORKSPACE_ID = "Workspace_id"
 
@@ -267,7 +267,7 @@ class WorkflowBuildersTests {
                 .name("applyparameterscontainer")
                 .template("applyparameterscontainer")
                 .dependencies(
-                    listOf("fetchdatasetcontainer-1", "fetchscenarioparameterscontainer")
+                    listOf("fetchdatasetcontainer-1", "fetchscenarioparameterscontainer"),
                 ),
             IoArgoprojWorkflowV1alpha1DAGTask()
                 .name("validatedatacontainer")
@@ -429,7 +429,7 @@ class WorkflowBuildersTests {
                 V1PersistentVolumeClaimSpec()
                     .accessModes(emptyList())
                     .storageClassName(null)
-                    .resources(V1VolumeResourceRequirements().requests(emptyMap()))
+                    .resources(V1VolumeResourceRequirements().requests(emptyMap())),
             )
     val expected = listOf(dataDir)
     assertEquals(expected, workflowSpec.volumeClaimTemplates)
@@ -452,8 +452,8 @@ class WorkflowBuildersTests {
                     .storageClassName("cosmotech-api-test-phoenix")
                     .resources(
                         V1VolumeResourceRequirements()
-                            .requests(mapOf("storage" to Quantity("300Gi")))
-                    )
+                            .requests(mapOf("storage" to Quantity("300Gi"))),
+                    ),
             )
     val expected = listOf(dataDir)
     assertEquals(expected, workflowSpec.volumeClaimTemplates)
@@ -609,7 +609,7 @@ class WorkflowBuildersTests {
         RunStartContainers(
             nodeLabel = "basicpool",
             containers = listOf(getRunContainerEntrypoint()),
-            csmSimulationId = csmSimulationId,
+            csmSimulationId = CSM_SIMULATION_ID,
         )
     return sc
   }
@@ -619,7 +619,7 @@ class WorkflowBuildersTests {
         RunStartContainers(
             nodeLabel = "highcpupool",
             containers = listOf(getRunContainerEntrypoint("runcontainer")),
-            csmSimulationId = csmSimulationId,
+            csmSimulationId = CSM_SIMULATION_ID,
         )
     return sc
   }
@@ -628,7 +628,7 @@ class WorkflowBuildersTests {
     val sc =
         RunStartContainers(
             containers = listOf(getRunContainerEntrypoint("runcontainer")),
-            csmSimulationId = csmSimulationId,
+            csmSimulationId = CSM_SIMULATION_ID,
         )
     return sc
   }
@@ -648,7 +648,7 @@ class WorkflowBuildersTests {
                     getRunContainerEntrypoint("runcontainer"),
                     getRunContainerEntrypoint("postruncontainer"),
                 ),
-            csmSimulationId = csmSimulationId,
+            csmSimulationId = CSM_SIMULATION_ID,
         )
     return sc
   }
@@ -683,7 +683,7 @@ class WorkflowBuildersTests {
                     getRunContainerEntrypoint("runcontainer"),
                     getRunContainerEntrypoint("postruncontainer"),
                 ),
-            csmSimulationId = csmSimulationId,
+            csmSimulationId = CSM_SIMULATION_ID,
         )
     return sc
   }
@@ -703,7 +703,7 @@ class WorkflowBuildersTests {
                     getRunContainerEntrypoint("runcontainer"),
                     getRunContainerEntrypoint("postruncontainer"),
                 ),
-            csmSimulationId = csmSimulationId,
+            csmSimulationId = CSM_SIMULATION_ID,
         )
     return sc
   }
@@ -724,7 +724,7 @@ class WorkflowBuildersTests {
                     getRunContainerEntrypoint("runcontainer"),
                     getRunContainerEntrypoint("postruncontainer"),
                 ),
-            csmSimulationId = csmSimulationId,
+            csmSimulationId = CSM_SIMULATION_ID,
         )
     return sc
   }
@@ -742,7 +742,7 @@ class WorkflowBuildersTests {
                         dependencies = listOf("Diamond-B", "Diamond-C"),
                     ),
                 ),
-            csmSimulationId = csmSimulationId,
+            csmSimulationId = CSM_SIMULATION_ID,
         )
     return sc
   }

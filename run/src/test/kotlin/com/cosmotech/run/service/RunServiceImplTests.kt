@@ -44,9 +44,13 @@ private const val RUN_ID = "run-runid"
 class RunServiceImplTests {
 
   @Suppress("unused") @MockK private lateinit var containerFactory: RunContainerFactory
+
   @MockK private lateinit var workflowService: WorkflowService
+
   @MockK private lateinit var runnerApiService: RunnerApiServiceInterface
+
   @MockK private lateinit var runRepository: RunRepository
+
   @Suppress("unused") @RelaxedMockK private lateinit var csmRbac: CsmRbac
 
   @InjectMockKs private lateinit var runServiceImpl: RunServiceImpl

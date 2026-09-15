@@ -17,12 +17,11 @@ class InstantTypeAdapter : TypeAdapter<Instant>() {
     }
   }
 
-  override fun read(`in`: JsonReader): Instant? {
-    return if (`in`.peek() == JsonToken.NULL) {
-      `in`.nextNull()
-      null
-    } else {
-      Instant.parse(`in`.nextString())
-    }
-  }
+  override fun read(`in`: JsonReader): Instant? =
+      if (`in`.peek() == JsonToken.NULL) {
+        `in`.nextNull()
+        null
+      } else {
+        Instant.parse(`in`.nextString())
+      }
 }

@@ -103,9 +103,8 @@ class SolutionServiceImpl(
     return result.map { fillSdkVersion(updateSecurityVisibility(it)) }
   }
 
-  override fun getSolution(organizationId: String, solutionId: String): Solution {
-    return fillSdkVersion(updateSecurityVisibility(getVerifiedSolution(organizationId, solutionId)))
-  }
+  override fun getSolution(organizationId: String, solutionId: String): Solution =
+      fillSdkVersion(updateSecurityVisibility(getVerifiedSolution(organizationId, solutionId)))
 
   override fun isRunTemplateExist(
       organizationId: String,
@@ -222,7 +221,7 @@ class SolutionServiceImpl(
     val solutionRunTemplate =
         solution.runTemplates.firstOrNull { it.id == runTemplateId }
             ?: throw CsmResourceNotFoundException(
-                "Solution run template with id $runTemplateId does not exist"
+                "Solution run template with id $runTemplateId does not exist",
             )
     return solutionRunTemplate
   }
@@ -257,7 +256,7 @@ class SolutionServiceImpl(
           executionTimeout = runTemplateUpdateRequest.executionTimeout ?: this.executionTimeout
         }
         ?: throw CsmResourceNotFoundException(
-            "Solution run template with id $runTemplateId does not exist"
+            "Solution run template with id $runTemplateId does not exist",
         )
 
     val solutionSaved = save(existingSolution)
@@ -274,7 +273,7 @@ class SolutionServiceImpl(
 
     if (!existingSolution.runTemplates.removeIf { it.id == runTemplateId }) {
       throw CsmResourceNotFoundException(
-          "Solution run template with id $runTemplateId does not exist"
+          "Solution run template with id $runTemplateId does not exist",
       )
     }
     save(existingSolution)
@@ -443,7 +442,7 @@ class SolutionServiceImpl(
     val solutionParameterGroup =
         solution.parameterGroups.firstOrNull { it.id == parameterGroupId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter group with id $parameterGroupId does not exist"
+                "Solution parameter group with id $parameterGroupId does not exist",
             )
     return solutionParameterGroup
   }
@@ -454,7 +453,6 @@ class SolutionServiceImpl(
       parameterGroupId: String,
       runTemplateParameterGroupUpdateRequest: RunTemplateParameterGroupUpdateRequest,
   ): RunTemplateParameterGroup {
-
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     existingSolution.parameterGroups
         .find { it.id == parameterGroupId }
@@ -466,7 +464,7 @@ class SolutionServiceImpl(
           parameters = runTemplateParameterGroupUpdateRequest.parameters ?: this.parameters
         }
         ?: throw CsmResourceNotFoundException(
-            "Solution parameter group with id $parameterGroupId does not exist"
+            "Solution parameter group with id $parameterGroupId does not exist",
         )
 
     val solutionSaved = save(existingSolution)
@@ -483,7 +481,7 @@ class SolutionServiceImpl(
     val solutionParameterGroup =
         solution.parameterGroups.firstOrNull { it.id == parameterGroupId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter group with id $parameterGroupId does not exist"
+                "Solution parameter group with id $parameterGroupId does not exist",
             )
     solution.parameterGroups.remove(solutionParameterGroup)
     save(solution)
@@ -505,7 +503,6 @@ class SolutionServiceImpl(
       solutionId: String,
       runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest,
   ): RunTemplateParameter {
-
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
     val parameterIdAlreadyExist =
@@ -531,7 +528,6 @@ class SolutionServiceImpl(
       parameterId: String,
       runTemplateParameterUpdateRequest: RunTemplateParameterUpdateRequest,
   ): RunTemplateParameter {
-
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     existingSolution.parameters
         .find { it.id == parameterId }
@@ -545,7 +541,7 @@ class SolutionServiceImpl(
           additionalData = runTemplateParameterUpdateRequest.additionalData ?: this.additionalData
         }
         ?: throw CsmResourceNotFoundException(
-            "Solution parameter with id $parameterId does not exist"
+            "Solution parameter with id $parameterId does not exist",
         )
 
     val solutionSaved = save(existingSolution)
@@ -562,7 +558,7 @@ class SolutionServiceImpl(
     val solutionParameter =
         solution.parameters.firstOrNull { it.id == parameterId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter with id $parameterId does not exist"
+                "Solution parameter with id $parameterId does not exist",
             )
     return solutionParameter
   }
@@ -576,7 +572,7 @@ class SolutionServiceImpl(
     val solutionParameter =
         solution.parameters.firstOrNull { it.id == parameterId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter with id $parameterId does not exist"
+                "Solution parameter with id $parameterId does not exist",
             )
 
     solution.parameters.remove(solutionParameter)
@@ -634,7 +630,7 @@ class SolutionServiceImpl(
     val solution =
         solutionRepository.findBy(organizationId, solutionId).orElseThrow {
           CsmResourceNotFoundException(
-              "Solution '$solutionId' not found in Organization '$organizationId'"
+              "Solution '$solutionId' not found in Organization '$organizationId'",
           )
         }
     csmRbac.verify(solution.security.toGenericSecurity(solutionId), requiredPermission)
@@ -678,7 +674,7 @@ class SolutionServiceImpl(
               SolutionSecurity(
                   default = solution.security.default,
                   accessControlList = accessControlList,
-              )
+              ),
       )
     }
     return solution
@@ -691,35 +687,33 @@ class SolutionServiceImpl(
                   solution.repository,
                   solution.version,
                   "com.cosmotech.sdk-version",
-              )
+              ),
       )
 
   private fun convertToRunTemplateParameter(
-      runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest
-  ): RunTemplateParameter {
-    return RunTemplateParameter(
-        id = runTemplateParameterCreateRequest.id,
-        description = runTemplateParameterCreateRequest.description,
-        varType = runTemplateParameterCreateRequest.varType,
-        labels = runTemplateParameterCreateRequest.labels,
-        defaultValue = runTemplateParameterCreateRequest.defaultValue,
-        minValue = runTemplateParameterCreateRequest.minValue,
-        maxValue = runTemplateParameterCreateRequest.maxValue,
-        additionalData = runTemplateParameterCreateRequest.additionalData,
-    )
-  }
+      runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest,
+  ): RunTemplateParameter =
+      RunTemplateParameter(
+          id = runTemplateParameterCreateRequest.id,
+          description = runTemplateParameterCreateRequest.description,
+          varType = runTemplateParameterCreateRequest.varType,
+          labels = runTemplateParameterCreateRequest.labels,
+          defaultValue = runTemplateParameterCreateRequest.defaultValue,
+          minValue = runTemplateParameterCreateRequest.minValue,
+          maxValue = runTemplateParameterCreateRequest.maxValue,
+          additionalData = runTemplateParameterCreateRequest.additionalData,
+      )
 
   private fun convertToRunTemplateParameterGroup(
-      runTemplateParameterGroupCreateRequest: RunTemplateParameterGroupCreateRequest
-  ): RunTemplateParameterGroup {
-    return RunTemplateParameterGroup(
-        id = runTemplateParameterGroupCreateRequest.id,
-        description = runTemplateParameterGroupCreateRequest.description,
-        labels = runTemplateParameterGroupCreateRequest.labels,
-        additionalData = runTemplateParameterGroupCreateRequest.additionalData,
-        parameters = runTemplateParameterGroupCreateRequest.parameters!!,
-    )
-  }
+      runTemplateParameterGroupCreateRequest: RunTemplateParameterGroupCreateRequest,
+  ): RunTemplateParameterGroup =
+      RunTemplateParameterGroup(
+          id = runTemplateParameterGroupCreateRequest.id,
+          description = runTemplateParameterGroupCreateRequest.description,
+          labels = runTemplateParameterGroupCreateRequest.labels,
+          additionalData = runTemplateParameterGroupCreateRequest.additionalData,
+          parameters = runTemplateParameterGroupCreateRequest.parameters!!,
+      )
 
   private fun convertToRunTemplate(
       runTemplateCreateRequest: RunTemplateCreateRequest
@@ -752,7 +746,6 @@ class SolutionServiceImpl(
       parameterGroups: MutableList<RunTemplateParameterGroupCreateRequest>?,
       runTemplates: MutableList<RunTemplateCreateRequest>?,
   ) {
-
     val duplicatedFieldIds = mutableListOf<String>()
 
     if (

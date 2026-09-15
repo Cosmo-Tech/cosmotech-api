@@ -44,9 +44,8 @@ class PostgresConfiguration(val csmPlatformProperties: CsmPlatformProperties) {
   }
 }
 
-fun JdbcTemplate.existTable(name: String): Boolean {
-  return this.queryForList(
-          "select * from pg_tables where schemaname='$DATASET_INPUTS_SCHEMA' and tablename = '$name';"
-      )
-      .isNotEmpty()
-}
+fun JdbcTemplate.existTable(name: String): Boolean =
+    this.queryForList(
+            "select * from pg_tables where schemaname='$DATASET_INPUTS_SCHEMA' and tablename = '$name';",
+        )
+        .isNotEmpty()

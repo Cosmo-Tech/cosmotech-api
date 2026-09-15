@@ -15,7 +15,7 @@ interface DatasetPartRepository : RedisDocumentRepository<DatasetPart, String> {
 
   @Query(
       "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} " +
-          "@datasetId:{\$datasetId} @id:{\$datasetPartId}"
+          "@datasetId:{\$datasetId} @id:{\$datasetPartId}",
   )
   fun findBy(
       @Sanitize @Param("organizationId") organizationId: String,
@@ -26,7 +26,7 @@ interface DatasetPartRepository : RedisDocumentRepository<DatasetPart, String> {
 
   @Query(
       "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} " +
-          "@datasetId:{\$datasetId} @tags:{\$tags}"
+          "@datasetId:{\$datasetId} @tags:{\$tags}",
   )
   fun findDatasetPartByTags(
       @Sanitize @Param("organizationId") organizationId: String,

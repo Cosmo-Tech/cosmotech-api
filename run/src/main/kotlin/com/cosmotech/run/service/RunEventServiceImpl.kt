@@ -20,7 +20,7 @@ class RunEventServiceImpl(private val runApiService: RunApiServiceInterface) :
 
     val runStatus = runApiService.getRunStatus(organizationId, workspaceId, runnerId, runId)
     askRunStatusEvent.response =
-        runStatus.state?.value ?: throw IllegalStateException("Run ${runId} doesn't have state")
+        runStatus.state?.value ?: throw IllegalStateException("Run $runId doesn't have state")
   }
 
   override fun hasRunningRuns(hasRunningRuns: HasRunningRuns) {

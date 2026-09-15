@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile
  */
 @Component
 class DatasetPartManagementFactory(
-    private val datasetPartManagementServices: Map<String, DatasetPartManagementService>
+    private val datasetPartManagementServices: Map<String, DatasetPartManagementService>,
 ) {
 
   /**
@@ -35,7 +35,7 @@ class DatasetPartManagementFactory(
   fun getDatasetPartManagementService(implementation: String): DatasetPartManagementService =
       datasetPartManagementServices[implementation]
           ?: throw IllegalStateException(
-              "No implementation found for DatasetPartManagementService with name '$implementation'"
+              "No implementation found for DatasetPartManagementService with name '$implementation'",
           )
 
   fun storeData(datasetPart: DatasetPart, file: MultipartFile, overwrite: Boolean = false) {

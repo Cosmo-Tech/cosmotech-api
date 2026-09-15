@@ -31,7 +31,7 @@ fun String.sanitizeForRedis(): String {
   var sanitizedString = this
   ",./;'[]-=<>?:{}|_+!@#%^&*()`~ "
       .forEach { sanitizedString = sanitizedString.replace(it.toString(), "\\\\$it") }
-  "\"$".forEach { sanitizedString = sanitizedString.replace(it.toString(), "\\\\\\${it}") }
+  "\"$".forEach { sanitizedString = sanitizedString.replace(it.toString(), "\\\\\\$it") }
   return sanitizedString
 }
 

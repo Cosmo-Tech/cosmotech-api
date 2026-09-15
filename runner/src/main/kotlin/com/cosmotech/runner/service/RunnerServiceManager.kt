@@ -10,7 +10,5 @@ abstract class RunnerServiceManager {
 
   @Lookup abstract fun createRunnerService(): RunnerService
 
-  fun getRunnerService(): RunnerService {
-    return createRunnerService()
-  }
+  fun getRunnerService(): RunnerService = createRunnerService()
 }

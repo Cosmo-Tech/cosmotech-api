@@ -36,6 +36,7 @@ const val SCOPE_SOLUTION_WRITE = "SCOPE_csm.solution.write"
 const val SCOPE_WORKSPACE_WRITE = "SCOPE_csm.workspace.write"
 const val SCOPE_RUN_WRITE = "SCOPE_csm.run.write"
 const val SCOPE_RUNNER_WRITE = "SCOPE_csm.runner.write"
+
 // Path Datasets
 val PATHS_DATASETS =
     listOf(
@@ -151,7 +152,6 @@ val endpointSecurityMcp =
         "/mcp-ui/**",
         "/api/mcp-admin/**",
     )
-
 
 // Endpoints roles
 val endpointSecurityPublic =
@@ -337,7 +337,6 @@ abstract class AbstractSecurityConfiguration {
       organizationViewerGroup: String,
       csmPlatformProperties: CsmPlatformProperties,
   ): HttpSecurity {
-
     val corsHttpMethodsAllowed =
         HttpMethod.values().filterNot { it == HttpMethod.TRACE }.map(HttpMethod::name)
 
@@ -352,13 +351,13 @@ abstract class AbstractSecurityConfiguration {
         .csrf { csrfConfigurer ->
           csmPlatformProperties.authorization.allowedApiKeyConsumers.forEach { apiKeyConsumer ->
             csrfConfigurer.ignoringRequestMatchers(
-                RequestHeaderRequestMatcher(apiKeyConsumer.apiKeyHeaderName)
+                RequestHeaderRequestMatcher(apiKeyConsumer.apiKeyHeaderName),
             )
           }
           // MCP clients authenticate with a stateless Bearer JWT and never send a CSRF token
           endpointSecurityMcp.forEach { path ->
             csrfConfigurer.ignoringRequestMatchers(
-                PathPatternRequestMatcher.withDefaults().matcher(path)
+                PathPatternRequestMatcher.withDefaults().matcher(path),
             )
           }
         }
@@ -367,7 +366,7 @@ abstract class AbstractSecurityConfiguration {
               DelegatingSecurityContextRepository(
                   RequestAttributeSecurityContextRepository(),
                   HttpSessionSecurityContextRepository(),
-              )
+              ),
           )
         }
         .addFilterBefore(
@@ -377,14 +376,14 @@ abstract class AbstractSecurityConfiguration {
         .authorizeHttpRequests { requests ->
           requests
               .requestMatchers(
-                  PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.OPTIONS, "/**")
+                  PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.OPTIONS, "/**"),
               )
               .permitAll()
           // Public paths
           endpointSecurityPublic.forEach { path ->
             requests
                 .requestMatchers(
-                    PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, path)
+                    PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, path),
                 )
                 .permitAll()
           }
@@ -410,8 +409,7 @@ abstract class AbstractSecurityConfiguration {
           mcpAuthorization.authorizationServer(issuerUri)
           mcpAuthorization.protectedResourceMetadataCustomizer { metadata ->
             metadata.authorizationServer(issuerUri)
-            metadata.scopes {
-                scopes -> scopes.addAll(listOf("mcp")) }
+            metadata.scopes { scopes -> scopes.addAll(listOf("mcp")) }
           }
           // TODO: set to true to enforce security
           mcpAuthorization.validateAudienceClaim(false)
@@ -428,7 +426,7 @@ internal class CsmSecurityEndpointsRolesWriter(
   @Suppress("SpreadOperator")
   fun applyRoles(
       requests:
-          AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+          AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry,
   ) {
     val authoritiesList = addAdminRolesIfNotAlreadyDefined(this.roles)
     this.paths.forEach { path ->
@@ -438,7 +436,7 @@ internal class CsmSecurityEndpointsRolesWriter(
           .requestMatchers(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.PATCH, path))
           .hasAnyAuthority(*authoritiesList.toTypedArray())
           .requestMatchers(
-              PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.DELETE, path)
+              PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.DELETE, path),
           )
           .hasAnyAuthority(*authoritiesList.toTypedArray())
     }
@@ -465,7 +463,7 @@ internal class CsmSecurityEndpointsRolesReader(
   @Suppress("SpreadOperator")
   fun applyRoles(
       requests:
-          AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+          AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry,
   ) {
     val authoritiesList = addAdminRolesIfNotAlreadyDefined(this.roles)
     this.paths.forEach { path ->

@@ -6,11 +6,8 @@ sealed class CsmRequestResponseEvent<T>(publisher: Any) : CsmEvent(publisher) {
   var response: T? = null
 }
 
-class WorkflowStatusRequest(
-    publisher: Any,
-    val workflowId: String,
-    val workflowName: String,
-) : CsmRequestResponseEvent<String>(publisher)
+class WorkflowStatusRequest(publisher: Any, val workflowId: String, val workflowName: String) :
+    CsmRequestResponseEvent<String>(publisher)
 
 class WorkflowPhaseToStateRequest(
     publisher: Any,
