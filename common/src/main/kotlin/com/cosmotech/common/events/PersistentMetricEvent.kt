@@ -4,7 +4,4 @@ package com.cosmotech.common.events
 
 import com.cosmotech.common.metrics.PersistentMetric
 
-class PersistentMetricEvent(
-    publisher: Any,
-    val metric: PersistentMetric,
-) : CsmEvent(publisher)
+class PersistentMetricEvent(publisher: Any, val metric: PersistentMetric) : CsmEvent(publisher)

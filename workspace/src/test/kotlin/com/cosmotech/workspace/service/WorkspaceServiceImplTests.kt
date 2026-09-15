@@ -83,9 +83,11 @@ const val S3_BUCKET_NAME = "test-bucket"
 class WorkspaceServiceImplTests {
 
   @MockK private lateinit var solutionService: SolutionApiServiceInterface
+
   @RelaxedMockK private lateinit var organizationService: OrganizationApiServiceInterface
 
   @Suppress("unused") @RelaxedMockK private lateinit var s3Client: S3Client
+
   @RelaxedMockK private lateinit var s3Template: S3Template
 
   @RelaxedMockK private lateinit var workspaceFile: MultipartFile
@@ -95,6 +97,7 @@ class WorkspaceServiceImplTests {
   @Suppress("unused")
   @MockK
   private var csmPlatformProperties: CsmPlatformProperties = mockk(relaxed = true)
+
   @Suppress("unused") @MockK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
 
   @Suppress("unused") @SpyK private var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
@@ -104,6 +107,7 @@ class WorkspaceServiceImplTests {
   @Suppress("unused")
   @MockK
   private var organizationRepository: OrganizationRepository = mockk(relaxed = true)
+
   @Suppress("unused")
   @MockK
   private var workspaceRepository: WorkspaceRepository = mockk(relaxed = true)
@@ -678,46 +682,44 @@ class WorkspaceServiceImplTests {
   fun mockOrganization(
       username: String = CONNECTED_DEFAULT_USER,
       role: String = ROLE_ADMIN,
-  ): Organization {
-    return Organization(
-        id = "organizationId",
-        name = "Organization Name",
-        createInfo = OrganizationEditInfo(0, ""),
-        updateInfo = OrganizationEditInfo(0, ""),
-        security =
-            OrganizationSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        OrganizationAccessControl(id = username, role = role),
-                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
-                    ),
-            ),
-    )
-  }
+  ): Organization =
+      Organization(
+          id = "organizationId",
+          name = "Organization Name",
+          createInfo = OrganizationEditInfo(0, ""),
+          updateInfo = OrganizationEditInfo(0, ""),
+          security =
+              OrganizationSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          OrganizationAccessControl(id = username, role = role),
+                          OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                      ),
+              ),
+      )
 
-  fun mockSolution(organizationId: String): Solution {
-    return Solution(
-        id = "solutionId",
-        key = UUID.randomUUID().toString(),
-        name = "My solution",
-        organizationId = organizationId,
-        createInfo = SolutionEditInfo(0, ""),
-        updateInfo = SolutionEditInfo(0, ""),
-        version = "1.0.0",
-        repository = "repository",
-        parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
-        parameterGroups =
-            mutableListOf(RunTemplateParameterGroup(id = "group", parameters = mutableListOf())),
-        runTemplates =
-            mutableListOf(RunTemplate(id = "template", parameterGroups = mutableListOf())),
-        security =
-            SolutionSecurity(
-                ROLE_ADMIN,
-                mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN)),
-            ),
-    )
-  }
+  fun mockSolution(organizationId: String): Solution =
+      Solution(
+          id = "solutionId",
+          key = UUID.randomUUID().toString(),
+          name = "My solution",
+          organizationId = organizationId,
+          createInfo = SolutionEditInfo(0, ""),
+          updateInfo = SolutionEditInfo(0, ""),
+          version = "1.0.0",
+          repository = "repository",
+          parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
+          parameterGroups =
+              mutableListOf(RunTemplateParameterGroup(id = "group", parameters = mutableListOf())),
+          runTemplates =
+              mutableListOf(RunTemplate(id = "template", parameterGroups = mutableListOf())),
+          security =
+              SolutionSecurity(
+                  ROLE_ADMIN,
+                  mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN)),
+              ),
+      )
 
   private fun mockWorkspaceCreateRequest(
       solutionId: String,
@@ -746,27 +748,26 @@ class WorkspaceServiceImplTests {
       workspaceName: String,
       roleName: String = CONNECTED_ADMIN_USER,
       role: String = ROLE_ADMIN,
-  ): Workspace {
-    return Workspace(
-        id = UUID.randomUUID().toString(),
-        key = UUID.randomUUID().toString(),
-        name = workspaceName,
-        solution =
-            WorkspaceSolution(
-                solutionId = solutionId,
-            ),
-        organizationId = organizationId,
-        createInfo = WorkspaceEditInfo(0, ""),
-        updateInfo = WorkspaceEditInfo(0, ""),
-        security =
-            WorkspaceSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        WorkspaceAccessControl(id = roleName, role = role),
-                        WorkspaceAccessControl("2$roleName", "viewer"),
-                    ),
-            ),
-    )
-  }
+  ): Workspace =
+      Workspace(
+          id = UUID.randomUUID().toString(),
+          key = UUID.randomUUID().toString(),
+          name = workspaceName,
+          solution =
+              WorkspaceSolution(
+                  solutionId = solutionId,
+              ),
+          organizationId = organizationId,
+          createInfo = WorkspaceEditInfo(0, ""),
+          updateInfo = WorkspaceEditInfo(0, ""),
+          security =
+              WorkspaceSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          WorkspaceAccessControl(id = roleName, role = role),
+                          WorkspaceAccessControl("2$roleName", "viewer"),
+                      ),
+              ),
+      )
 }

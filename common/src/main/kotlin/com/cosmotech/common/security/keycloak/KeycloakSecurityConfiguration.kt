@@ -62,6 +62,7 @@ internal open class KeycloakSecurityConfiguration(
       csmPlatformProperties.identityProvider.viewerGroup ?: ROLE_ORGANIZATION_VIEWER
 
   @Value("\${csm.platform.identityProvider.tls.enabled}") private var tlsEnabled: Boolean = false
+
   @Value("\${csm.platform.identityProvider.tls.bundle}") private var tlsBundle: String = ""
 
   @Bean(name = ["KeycloakFilterChain"])
@@ -79,7 +80,7 @@ internal open class KeycloakSecurityConfiguration(
             run {
               jwt.decoder(keycloakJwtDecoder(oAuth2ResourceServerProperties, csmPlatformProperties))
               jwt.jwtAuthenticationConverter(
-                  KeycloakJwtAuthenticationConverter(csmPlatformProperties)
+                  KeycloakJwtAuthenticationConverter(csmPlatformProperties),
               )
             }
           }
@@ -95,15 +96,17 @@ internal open class KeycloakSecurityConfiguration(
   ): JwtDecoder {
     val jwtProperties = oAuth2ResourceServerProperties.jwt
     val nimbusJwtDecoderBuilder =
-        NimbusJwtDecoder.withJwkSetUri(jwtProperties.jwkSetUri!!).jwsAlgorithms {
-            signatureAlgorithms: MutableSet<SignatureAlgorithm> ->
-          for (algorithm in jwtProperties.jwsAlgorithms) {
-            signatureAlgorithms.add(SignatureAlgorithm.from(algorithm)!!)
-          }
-        }
+        NimbusJwtDecoder.withJwkSetUri(
+                jwtProperties.jwkSetUri!!,
+            )
+            .jwsAlgorithms { signatureAlgorithms: MutableSet<SignatureAlgorithm> ->
+              for (algorithm in jwtProperties.jwsAlgorithms) {
+                signatureAlgorithms.add(SignatureAlgorithm.from(algorithm)!!)
+              }
+            }
     if (tlsEnabled) {
       nimbusJwtDecoderBuilder.restOperations(
-          restTemplateBuilder.sslBundle(sslBundles.getBundle(tlsBundle)).build()
+          restTemplateBuilder.sslBundle(sslBundles.getBundle(tlsBundle)).build(),
       )
     }
     val nimbusJwtDecoder = nimbusJwtDecoderBuilder.build()
@@ -116,7 +119,7 @@ internal open class KeycloakSecurityConfiguration(
     if (targetAudiences.isNotEmpty() && "*" !in targetAudiences) {
       val audienceValidator =
           JwtClaimValidator(JwtClaimNames.AUD) { aud: List<String> ->
-              !Collections.disjoint(aud, targetAudiences)
+            !Collections.disjoint(aud, targetAudiences)
           }
       validators.add(audienceValidator)
     }
@@ -129,7 +132,7 @@ internal open class KeycloakSecurityConfiguration(
     if ("*" in allowedTenants) {
       logger.info(
           "All tenants allowed to authenticate, since the following property contains a wildcard " +
-              "element: csm.platform.authorization.allowed-tenants"
+              "element: csm.platform.authorization.allowed-tenants",
       )
     } else {
       // Validate against the list of allowed tenants
@@ -159,7 +162,7 @@ class KeycloakJwtGrantedAuthoritiesConverter(
   override fun convert(jwt: Jwt): Collection<GrantedAuthority> {
     val extractAuthorities = mutableListOf<GrantedAuthority>()
     extractAuthorities.addAll(
-        convertRolesToAuthorities(jwt.claims, csmPlatformProperties.authorization.rolesJwtClaim)
+        convertRolesToAuthorities(jwt.claims, csmPlatformProperties.authorization.rolesJwtClaim),
     )
     return extractAuthorities
   }

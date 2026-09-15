@@ -46,7 +46,6 @@ class RelationalDatasetPartManagementService(
 
   @Suppress("NestedBlockDepth")
   fun storeData(inputStream: InputStream, datasetPart: DatasetPart, overwrite: Boolean) {
-
     val tableExists = writerJdbcTemplate.existTable(datasetPart.id)
 
     require(!tableExists || overwrite) {
@@ -69,7 +68,7 @@ class RelationalDatasetPartManagementService(
             val prepareStatement =
                 connection.prepareStatement(
                     "CREATE TABLE IF NOT EXISTS $tableName ${constructSQLColumnsValues(headers)};" +
-                        "GRANT SELECT ON $tableName to \"$readerUserName\";"
+                        "GRANT SELECT ON $tableName to \"$readerUserName\";",
                 )
             prepareStatement.execute()
           }
@@ -97,7 +96,8 @@ class RelationalDatasetPartManagementService(
       "Duplicate headers found in dataset part file"
     }
     require(headers.all { Regex("[a-zA-Z0-9_\"\' ]+").matches(it) }) {
-      "Invalid header name found in dataset part file: header name must match [a-zA-Z0-9_\"\' ]+ (found: ${headers})"
+      "Invalid header name found in dataset part file: header name must match [a-zA-Z0-9_\"\' ]+ " +
+          "(found: $headers)"
     }
 
     return headers

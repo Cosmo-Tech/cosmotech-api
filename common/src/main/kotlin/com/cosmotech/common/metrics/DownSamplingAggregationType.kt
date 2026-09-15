@@ -19,19 +19,18 @@ enum class DownSamplingAggregationType(val value: String) {
   VARS("var.s"),
 }
 
-fun DownSamplingAggregationType.toRedisAggregation(): AggregationType {
-  return when (this) {
-    DownSamplingAggregationType.AVG -> AggregationType.AVG
-    DownSamplingAggregationType.SUM -> AggregationType.SUM
-    DownSamplingAggregationType.MIN -> AggregationType.MIN
-    DownSamplingAggregationType.MAX -> AggregationType.MAX
-    DownSamplingAggregationType.RANGE -> AggregationType.RANGE
-    DownSamplingAggregationType.COUNT -> AggregationType.COUNT
-    DownSamplingAggregationType.FIRST -> AggregationType.FIRST
-    DownSamplingAggregationType.LAST -> AggregationType.LAST
-    DownSamplingAggregationType.STDP -> AggregationType.STD_P
-    DownSamplingAggregationType.STDS -> AggregationType.STD_S
-    DownSamplingAggregationType.VARP -> AggregationType.VAR_P
-    DownSamplingAggregationType.VARS -> AggregationType.VAR_S
-  }
-}
+fun DownSamplingAggregationType.toRedisAggregation(): AggregationType =
+    when (this) {
+      DownSamplingAggregationType.AVG -> AggregationType.AVG
+      DownSamplingAggregationType.SUM -> AggregationType.SUM
+      DownSamplingAggregationType.MIN -> AggregationType.MIN
+      DownSamplingAggregationType.MAX -> AggregationType.MAX
+      DownSamplingAggregationType.RANGE -> AggregationType.RANGE
+      DownSamplingAggregationType.COUNT -> AggregationType.COUNT
+      DownSamplingAggregationType.FIRST -> AggregationType.FIRST
+      DownSamplingAggregationType.LAST -> AggregationType.LAST
+      DownSamplingAggregationType.STDP -> AggregationType.STD_P
+      DownSamplingAggregationType.STDS -> AggregationType.STD_S
+      DownSamplingAggregationType.VARP -> AggregationType.VAR_P
+      DownSamplingAggregationType.VARS -> AggregationType.VAR_S
+    }

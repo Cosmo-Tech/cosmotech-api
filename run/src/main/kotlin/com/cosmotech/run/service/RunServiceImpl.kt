@@ -113,25 +113,29 @@ class RunServiceImpl(
   fun getRunStatus(run: Run): RunStatus {
     val runStatus = this.workflowService.getRunStatus(run)
     return runStatus.copy(
-        state = mapWorkflowPhaseToRunStatus(phase = runStatus.phase, runId = run.id)
+        state = mapWorkflowPhaseToRunStatus(phase = runStatus.phase, runId = run.id),
     )
   }
 
-  private fun mapWorkflowPhaseToRunStatus(phase: String?, runId: String?): RunState {
-    return when (phase) {
-      "Pending",
-      "Running" -> RunState.Running
-      "Succeeded" -> RunState.Successful
-      "Skipped",
-      "Failed",
-      "Error",
-      "Omitted" -> RunState.Failed
-      else -> {
-        logger.warn("Unhandled state response for job {}: {} => Returning Unknown", runId, phase)
-        RunState.Unknown
+  private fun mapWorkflowPhaseToRunStatus(phase: String?, runId: String?): RunState =
+      when (phase) {
+        "Pending",
+        "Running",
+        -> RunState.Running
+
+        "Succeeded" -> RunState.Successful
+
+        "Skipped",
+        "Failed",
+        "Error",
+        "Omitted",
+        -> RunState.Failed
+
+        else -> {
+          logger.warn("Unhandled state response for job {}: {} => Returning Unknown", runId, phase)
+          RunState.Unknown
+        }
       }
-    }
-  }
 
   override fun getRun(
       organizationId: String,
@@ -146,7 +150,7 @@ class RunServiceImpl(
             .orElseThrow {
               throw CsmResourceNotFoundException(
                   "Run '$runId' not found in Organization '$organizationId', " +
-                      "Workspace '$workspaceId' and Runner '$runnerId'"
+                      "Workspace '$workspaceId' and Runner '$runnerId'",
               )
             }
             .withStateInformation()
@@ -169,7 +173,6 @@ class RunServiceImpl(
 
   private fun deleteRun(run: Run) {
     try {
-
       workflowService.stopWorkflow(run)
 
       val defaultPageSize = csmPlatformProperties.databases.resources.run.defaultPageSize
@@ -224,9 +227,7 @@ class RunServiceImpl(
       workspaceId: String,
       runnerId: String,
       runId: String,
-  ): RunStatus {
-    return getRunStatus(this.getRun(organizationId, workspaceId, runnerId, runId))
-  }
+  ): RunStatus = getRunStatus(this.getRun(organizationId, workspaceId, runnerId, runId))
 
   @EventListener(RunStart::class)
   fun onRunStart(runStartRequest: RunStart) {
@@ -295,7 +296,7 @@ class RunServiceImpl(
             "[workspaceId=${run.workspaceId}]" +
             "[runnerId=${run.runnerId}]" +
             "[runId=${run.id}] has been launched by " +
-            "[ownerId=${run.createInfo.userId}]"
+            "[ownerId=${run.createInfo.userId}]",
     )
     return runRepository.save(run)
   }
@@ -313,7 +314,7 @@ class RunServiceImpl(
               .orElseThrow {
                 throw CsmResourceNotFoundException(
                     "Run '$runId' not found in Organization '$organizationId', " +
-                        "Workspace '$workspaceId' and Runner '$runnerId'"
+                        "Workspace '$workspaceId' and Runner '$runnerId'",
                 )
               }
               .withStateInformation()
@@ -335,7 +336,7 @@ class RunServiceImpl(
 
     check(!(run.state!!.isTerminal())) {
       logger.warn(
-          "Run ${run.id} is already in a terminal state (${run.state}). It can't be stopped."
+          "Run ${run.id} is already in a terminal state (${run.state}). It can't be stopped.",
       )
     }
 

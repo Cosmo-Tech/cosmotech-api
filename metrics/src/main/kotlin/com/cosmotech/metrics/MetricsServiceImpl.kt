@@ -94,7 +94,7 @@ class MetricsServiceImpl(
   ) {
     val metricLabels = getMetricLabels(commonLabels)
     logger.debug(
-        "Creating Redis TS: $key with retention: $metricRetention and ${metricLabels.count()} labels"
+        "Creating Redis TS: $key with retention: $metricRetention and ${metricLabels.count()} labels",
     )
     unifiedJedis.tsCreate(
         key,
@@ -120,7 +120,7 @@ class MetricsServiceImpl(
     val downSamplingBucketDuration = getDownSamplingBucketDuration(metric)
     logger.debug(
         "Creating Redis DownSampling TS: $downSamplingKey with retention: $metricRetention " +
-            "and ${downSamplingMetricLabels.count()} labels"
+            "and ${downSamplingMetricLabels.count()} labels",
     )
     unifiedJedis.tsCreate(
         downSamplingKey,
@@ -131,7 +131,7 @@ class MetricsServiceImpl(
     )
     logger.debug(
         "Creating Redis DownSampling TS rule: from $key to $downSamplingKey, " +
-            "aggregation: ${metric.downSamplingAggregation.value}, bucketDuration: $downSamplingBucketDuration"
+            "aggregation: ${metric.downSamplingAggregation.value}, bucketDuration: $downSamplingBucketDuration",
     )
     unifiedJedis.tsCreateRule(
         key,

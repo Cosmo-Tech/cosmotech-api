@@ -17,9 +17,7 @@ private val logger = LoggerFactory.getLogger(RunnerScheduledTasks::class.java)
     havingValue = "true",
     matchIfMissing = false,
 )
-class RunnerScheduledTasks(
-    private val runnerService: RunnerService,
-) {
+class RunnerScheduledTasks(private val runnerService: RunnerService) {
 
   @Scheduled(
       timeUnit = TimeUnit.SECONDS,

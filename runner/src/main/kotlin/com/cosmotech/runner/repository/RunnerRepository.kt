@@ -48,7 +48,7 @@ interface RunnerRepository : RedisDocumentRepository<Runner, String> {
   ): Page<Runner>
 
   @Query(
-      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @datasets_parameter:{\$datasetId}"
+      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @datasets_parameter:{\$datasetId}",
   )
   fun findByOrganizationIdAndWorkspaceIdAndDatasetsParameterValue(
       @Sanitize @Param("organizationId") organizationId: String,
@@ -57,7 +57,5 @@ interface RunnerRepository : RedisDocumentRepository<Runner, String> {
   ): Optional<Runner>
 
   @Query("(@status:{\$status})")
-  fun findAllByStatus(
-      @Sanitize @Param("status") status: RunnerStatus,
-  ): List<Runner>
+  fun findAllByStatus(@Sanitize @Param("status") status: RunnerStatus): List<Runner>
 }

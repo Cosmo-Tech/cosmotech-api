@@ -37,30 +37,28 @@ open class RedisConfig {
   @Value("\${spring.data.redis.password}") private lateinit var twincachePassword: String
 
   @Bean
-  open fun csmJedisClientConfig(sslBundles: SslBundles): JedisClientConfig {
-    return if (tlsEnabled && tlsBundle.isNotBlank()) {
-      DefaultJedisClientConfig.builder()
-          .ssl(tlsEnabled)
-          .sslSocketFactory(sslBundles.getBundle(tlsBundle).createSslContext().socketFactory)
-          .password(twincachePassword)
-          .timeoutMillis(Protocol.DEFAULT_TIMEOUT)
-          .build()
-    } else {
-      DefaultJedisClientConfig.builder()
-          .ssl(tlsEnabled)
-          .password(twincachePassword)
-          .timeoutMillis(Protocol.DEFAULT_TIMEOUT)
-          .build()
-    }
-  }
+  open fun csmJedisClientConfig(sslBundles: SslBundles): JedisClientConfig =
+      if (tlsEnabled && tlsBundle.isNotBlank()) {
+        DefaultJedisClientConfig.builder()
+            .ssl(tlsEnabled)
+            .sslSocketFactory(sslBundles.getBundle(tlsBundle).createSslContext().socketFactory)
+            .password(twincachePassword)
+            .timeoutMillis(Protocol.DEFAULT_TIMEOUT)
+            .build()
+      } else {
+        DefaultJedisClientConfig.builder()
+            .ssl(tlsEnabled)
+            .password(twincachePassword)
+            .timeoutMillis(Protocol.DEFAULT_TIMEOUT)
+            .build()
+      }
 
   @Bean
-  open fun unifiedJedis(csmJedisClientConfig: JedisClientConfig): UnifiedJedis {
-    return RedisClient.builder()
-        .clientConfig(csmJedisClientConfig)
-        .hostAndPort(HostAndPort(twincacheHost, twincachePort.toInt()))
-        .build()
-  }
+  open fun unifiedJedis(csmJedisClientConfig: JedisClientConfig): UnifiedJedis =
+      RedisClient.builder()
+          .clientConfig(csmJedisClientConfig)
+          .hostAndPort(HostAndPort(twincacheHost, twincachePort.toInt()))
+          .build()
 
   @Bean
   fun redisTemplate(

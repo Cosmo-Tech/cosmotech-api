@@ -57,10 +57,13 @@ class OrganizationServiceImplTests {
   @Suppress("unused")
   @MockK
   private var csmPlatformProperties: CsmPlatformProperties = mockk(relaxed = true)
+
   @Suppress("unused") @MockK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
+
   @SpyK private var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
 
   @MockK private var organizationRepository: OrganizationRepository = mockk(relaxed = true)
+
   @InjectMockKs lateinit var organizationApiService: OrganizationServiceImpl
 
   @Suppress("unused") @InjectMockKs private lateinit var keycloakClient: KeycloakClient
@@ -369,24 +372,23 @@ class OrganizationServiceImplTests {
     }
   }
 
-  fun makeOrganizationRequestWithRole(name: String, role: String): Organization {
-    return Organization(
-        id = "o-123456789",
-        name = "test-orga",
-        createInfo = OrganizationEditInfo(0, ""),
-        updateInfo = OrganizationEditInfo(0, ""),
-        security =
-            OrganizationSecurity(
-                default = "none",
-                accessControlList =
-                    mutableListOf(
-                        OrganizationAccessControl(name, role),
-                        OrganizationAccessControl("2$name", "viewer"),
-                        OrganizationAccessControl("admin", ROLE_ADMIN),
-                    ),
-            ),
-    )
-  }
+  fun makeOrganizationRequestWithRole(name: String, role: String): Organization =
+      Organization(
+          id = "o-123456789",
+          name = "test-orga",
+          createInfo = OrganizationEditInfo(0, ""),
+          updateInfo = OrganizationEditInfo(0, ""),
+          security =
+              OrganizationSecurity(
+                  default = "none",
+                  accessControlList =
+                      mutableListOf(
+                          OrganizationAccessControl(name, role),
+                          OrganizationAccessControl("2$name", "viewer"),
+                          OrganizationAccessControl("admin", ROLE_ADMIN),
+                      ),
+              ),
+      )
 
   fun getMockOrganization(): Organization {
     val security =
