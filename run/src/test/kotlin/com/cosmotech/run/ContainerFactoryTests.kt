@@ -80,6 +80,12 @@ class ContainerFactoryTests {
             baseUrl = "https://api.cosmotech.com",
             version = "v1",
             basePath = "basepath",
+            mcp =
+                CsmPlatformProperties.Api.CsmMcp(
+                    enabled = false,
+                    dashboardEnabled = false,
+                    pathsToExclude = emptyList(),
+                ),
         )
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(

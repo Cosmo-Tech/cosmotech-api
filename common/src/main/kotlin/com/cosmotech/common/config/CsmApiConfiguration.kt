@@ -4,12 +4,10 @@ package com.cosmotech.common.config
 
 import com.cosmotech.common.utils.jsonObjectMapper
 import com.cosmotech.common.utils.yamlObjectMapper
-import io.swagger.v3.oas.models.PathItem
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
-import org.springdoc.ai.customizers.McpToolCustomizer
 import org.springframework.boot.EnvironmentPostProcessor
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
@@ -90,14 +88,6 @@ open class CsmApiConfiguration {
             .withYamlConverter(yamlHttpMessageConverter())
             .withJsonConverter(jsonHttpMessageConverter())
       }
-
-  @Bean
-  fun excludeDeleteMcpEndpoints(): McpToolCustomizer = McpToolCustomizer { context, _, method, _ ->
-    if (method == PathItem.HttpMethod.DELETE) {
-      context.isExclude = true
-    }
-    context
-  }
 }
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
