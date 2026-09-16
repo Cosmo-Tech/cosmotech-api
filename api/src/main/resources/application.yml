@@ -77,6 +77,11 @@ csm:
       base-path: /
       base-url: "http://cosmotech-api-${csm.platform.api.version}:8080"
       version: latest
+      mcp:
+        dashboard-enabled: false
+        enabled: false
+        paths-to-exclude:
+          - "changeme"
     event-publisher:
       type: in_process
     metrics:
@@ -169,11 +174,10 @@ csm:
 springdoc:
   ai:
     mcp:
-      paths-to-exclude:
-        - /iaminfo/members
-        - /iaminfo/groups
-      enabled: true
-      dashboard-enabled : true
+      base-url: ${csm.platform.api.base-url}
+      paths-to-exclude: ${csm.platform.api.mcp.paths-to-exclude}
+      enabled: ${csm.platform.api.mcp.enabled}
+      dashboard-enabled : ${csm.platform.api.mcp.dashboard-enabled}
   # See https://springdoc.org/#properties
   api-docs:
     path: /openapi
