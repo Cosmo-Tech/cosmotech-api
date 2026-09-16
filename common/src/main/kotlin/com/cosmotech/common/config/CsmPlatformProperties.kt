@@ -200,25 +200,17 @@ data class CsmPlatformProperties(
        */
       val basePath: String,
 
-      /**
-       * Define Mcp configuration
-       */
+      /** Define Mcp configuration */
       val mcp: CsmMcp,
   ) {
-      data class CsmMcp(
-          /**
-           * Enable MCP endpoints generation (on /mcp)
-           */
-          val enabled: Boolean = false,
-          /**
-           * Enable MCP UI dashboards (on /mcp-ui)
-           */
-          val dashboardEnabled: Boolean = false,
-          /**
-           * List all excluded path from MCP generation
-           */
-          val pathsToExclude: List<String> = emptyList(),
-      )
+    data class CsmMcp(
+        /** Enable MCP endpoints generation (on /mcp) */
+        val enabled: Boolean = false,
+        /** Enable MCP UI dashboards (on /mcp-ui) */
+        val dashboardEnabled: Boolean = false,
+        /** List all excluded path from MCP generation */
+        val pathsToExclude: List<String> = emptyList(),
+    )
   }
 
   data class EventPublisher(val type: Type) {
