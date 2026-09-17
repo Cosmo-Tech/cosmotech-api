@@ -43,8 +43,8 @@ class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformPro
           .baseUrl(baseUrl)
           .requestFactory(
               HttpComponentsClientHttpRequestFactory(
-                  HttpClientBuilder.create().disableRedirectHandling().build(),
-              ),
+                  HttpClientBuilder.create().disableRedirectHandling().build()
+              )
           )
           .build()
 

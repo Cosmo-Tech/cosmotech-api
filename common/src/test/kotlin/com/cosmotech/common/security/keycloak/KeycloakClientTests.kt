@@ -34,7 +34,7 @@ class KeycloakClientTests {
               realm = "cosmotech",
               clientId = "admin-cli",
               clientSecret = "admin",
-          ),
+          )
       )
 
   private var keycloakInstance: Keycloak = mockk<Keycloak>()

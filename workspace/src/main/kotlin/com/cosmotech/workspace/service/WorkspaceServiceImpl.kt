@@ -262,7 +262,7 @@ internal class WorkspaceServiceImpl(
                       csmPlatformProperties.s3.bucketName,
                       "$organizationId/$workspaceId/$WORKSPACE_FILES_BASE_FOLDER/$fileName",
                   )
-                  .inputStream,
+                  .inputStream
           )
     } catch (exception: NoSuchKeyException) {
       throw CsmResourceNotFoundException("$fileName does not exist.", exception)
@@ -284,7 +284,7 @@ internal class WorkspaceServiceImpl(
     require(file.originalFilename?.isBlank() != true) { "File name must not be blank" }
     require(
         file.originalFilename?.contains("..") != true &&
-            file.originalFilename?.startsWith("/") != true,
+            file.originalFilename?.startsWith("/") != true
     ) {
       "Invalid filename: '${file.originalFilename}'. " +
           "File name should neither contains '..' nor and starts by '/'."
@@ -466,7 +466,7 @@ internal class WorkspaceServiceImpl(
     val workspace =
         workspaceRepository.findBy(organizationId, workspaceId).orElseThrow {
           CsmResourceNotFoundException(
-              "Workspace '$workspaceId' not found in Organization '$organizationId'",
+              "Workspace '$workspaceId' not found in Organization '$organizationId'"
           )
         }
     csmRbac.verify(workspace.security.toGenericSecurity(workspaceId), requiredPermission)
@@ -573,7 +573,7 @@ internal class WorkspaceServiceImpl(
               WorkspaceSecurity(
                   default = workspace.security.default,
                   accessControlList = accessControlList,
-              ),
+              )
       )
     }
     return workspace

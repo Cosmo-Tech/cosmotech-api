@@ -194,7 +194,7 @@ class RunContainerFactory(
             solutionContainer = true,
             nodeLabel = nodeLabel,
             runSizing = customSizing.toContainerResourceSizing(),
-        ),
+        )
     )
 
     val generateName = "${runId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
@@ -220,7 +220,7 @@ class RunContainerFactory(
         runTemplate.id == runTemplateId
       }
           ?: throw IllegalStateException(
-              "RunTemplateId '$runTemplateId' not found in Solution '${solution.id}'",
+              "RunTemplateId '$runTemplateId' not found in Solution '${solution.id}'"
           )
 
   private fun getImageName(registry: String, repository: String, version: String? = null): String {
@@ -250,7 +250,7 @@ internal fun getMinimalCommonEnvVars(
           TWIN_CACHE_PORT to (twinCacheInfo.port),
           TWIN_CACHE_PASSWORD to (twinCacheInfo.password),
           TWIN_CACHE_USERNAME to (twinCacheInfo.username),
-      ),
+      )
   )
   val containerScopes = getContainerScopes(csmPlatformProperties)
   val commonEnvVars =

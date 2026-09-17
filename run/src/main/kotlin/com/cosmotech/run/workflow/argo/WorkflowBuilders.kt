@@ -78,7 +78,7 @@ internal fun buildTemplate(
           V1VolumeMount()
               .name(VOLUME_CLAIM_COAL)
               .mountPath(VOLUME_COAL_PATH + "/" + VOLUME_COAL_FILE_NAME)
-              .subPath(VOLUME_COAL_FILE_NAME),
+              .subPath(VOLUME_COAL_FILE_NAME)
       )
   val secretVolumeMount =
       csmPlatformProperties.argo.workflows.secrets.map { secret ->
@@ -153,7 +153,7 @@ private fun buildContainer(
           .resources(
               V1ResourceRequirements()
                   .requests(sizingInfo.getRequestsMap())
-                  .limits(sizingInfo.getLimitsMap()),
+                  .limits(sizingInfo.getLimitsMap())
           )
 
   if (workspaceId.isNullOrBlank()) return container
@@ -164,9 +164,9 @@ private fun buildContainer(
               .secretRef(
                   V1SecretEnvSource()
                       .name("$organizationId-$workspaceId".lowercase())
-                      .optional(true),
-              ),
-      ),
+                      .optional(true)
+              )
+      )
   )
 }
 
@@ -194,7 +194,7 @@ internal fun buildWorkflowSpec(
               csmPlatformProperties.argo.imagePullSecrets
                   ?.filterNot(String::isBlank)
                   ?.map(V1LocalObjectReference()::name)
-                  ?.ifEmpty { null },
+                  ?.ifEmpty { null }
           )
           .tolerations(listOf(V1Toleration().key("vendor").value("cosmotech").effect("NoSchedule")))
           .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
@@ -210,8 +210,8 @@ internal fun buildWorkflowSpec(
                           .name("$organizationId-$workspaceId-coal-config")
                           .addItemsItem(
                               V1KeyToPath().key(VOLUME_COAL_FILE_NAME).path(VOLUME_COAL_FILE_NAME),
-                          ),
-                  ),
+                          )
+                  )
           )
 
   if (csmPlatformProperties.argo.workflows.secrets.isNotEmpty()) {
@@ -227,17 +227,17 @@ internal fun buildWorkflowSpec(
                           .items(
                               secret.keyPath.map { secretKeyPath ->
                                 V1KeyToPath().key(secretKeyPath.key).path(secretKeyPath.path)
-                              },
-                          ),
+                              }
+                          )
                   )
-            },
+            }
         )
   }
 
   if (csmPlatformProperties.argo.workflows.ignoreNodeSelector == false) {
     workflowSpec =
         workflowSpec.nodeSelector(
-            mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute"),
+            mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
         )
   }
 
@@ -258,7 +258,7 @@ internal fun buildWorkflow(
         .metadata(
             V1ObjectMeta()
                 .generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME)
-                .labels(startContainers.labels),
+                .labels(startContainers.labels)
         )
         .spec(
             buildWorkflowSpec(
@@ -268,7 +268,7 @@ internal fun buildWorkflow(
                 startContainers,
                 executionTimeout,
                 alwaysPull,
-            ),
+            )
         )
 
 private fun buildEntrypointTemplate(
@@ -317,12 +317,12 @@ private fun buildVolumeClaims(
                         null
                       } else {
                         workflowsConfig.storageClass
-                      },
+                      }
                   )
                   .resources(
                       V1VolumeResourceRequirements()
-                          .requests(workflowsConfig.requests.mapValues { Quantity(it.value) }),
-                  ),
+                          .requests(workflowsConfig.requests.mapValues { Quantity(it.value) })
+                  )
           )
   return listOf(dataDir)
 }

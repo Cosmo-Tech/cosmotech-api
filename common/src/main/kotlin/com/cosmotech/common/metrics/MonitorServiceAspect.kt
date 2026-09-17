@@ -48,7 +48,7 @@ class MonitorServiceAspect(
       )
 
   @Pointcut(
-      "within(@org.springframework.web.bind.annotation.RestController *) && within(com.cosmotech..*Controller)",
+      "within(@org.springframework.web.bind.annotation.RestController *) && within(com.cosmotech..*Controller)"
   )
   fun cosmotechPointcut() {
     // Empty function block to define a pointcut

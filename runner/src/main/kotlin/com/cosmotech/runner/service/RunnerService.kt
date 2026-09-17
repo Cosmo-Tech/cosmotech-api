@@ -127,7 +127,7 @@ class RunnerService(
     this.eventPublisher.publishEvent(hasRunningRuns)
     if (hasRunningRuns.response == true) {
       throw CsmClientException(
-          "Can't delete runner ${runner.id}: at least one run is still running",
+          "Can't delete runner ${runner.id}: at least one run is still running"
       )
     }
     // Update parent and root references to deleted runner
@@ -199,9 +199,7 @@ class RunnerService(
           .getOrNull()
 
   fun saveInstance(runnerInstance: RunnerInstance): Runner =
-      runnerRepository.save(
-          runnerInstance.getRunnerDataObject(),
-      )
+      runnerRepository.save(runnerInstance.getRunnerDataObject())
 
   fun getNewInstance(): RunnerInstance {
     val runnerInstance = RunnerInstance()
@@ -213,7 +211,7 @@ class RunnerService(
         runnerRepository.findBy(organization!!.id, workspace!!.id, runnerId).orElseThrow {
           CsmResourceNotFoundException(
               "Runner '$runnerId' not found in Organization '${organization!!.id}' and " +
-                  "Workspace '${workspace!!.id}'",
+                  "Workspace '${workspace!!.id}'"
           )
         }
     if (
@@ -382,7 +380,7 @@ class RunnerService(
               workspace!!.id,
               workspace!!.solution.solutionId,
               runner.runTemplateId,
-          ),
+          )
       ) {
         "Run Template not found: ${runner.runTemplateId}"
       }
@@ -481,7 +479,7 @@ class RunnerService(
               updateInfo = this.runner.updateInfo,
               organizationId = this.runner.organizationId,
               workspaceId = this.runner.workspaceId,
-          ),
+          )
       )
     }
 
@@ -547,7 +545,7 @@ class RunnerService(
               status = this.runner.status,
               validationStatus =
                   runnerUpdateRequest.validationStatus ?: this.runner.validationStatus,
-          ),
+          )
       )
     }
 
@@ -695,7 +693,7 @@ class RunnerService(
             .forEach { parameterId ->
               logger.debug(
                   "Creating dataset part from parent for parameter $parameterId " +
-                      "in Dataset ${runner.datasets.parameter}",
+                      "in Dataset ${runner.datasets.parameter}"
               )
               val parentDatasetParameter = parentDatasetParameters[parameterId]
               if (parentDatasetParameter != null) {
@@ -709,7 +707,7 @@ class RunnerService(
               } else {
                 logger.warn(
                     "Parameter '$parameterId' not found in parent Dataset '$parentId' parameters: " +
-                        "No dataset part will be created",
+                        "No dataset part will be created"
                 )
               }
             }
@@ -900,7 +898,7 @@ class RunnerService(
         )
 
     private fun constructParametersValues(
-        runTemplateParameters: List<RunTemplateParameter>,
+        runTemplateParameters: List<RunTemplateParameter>
     ): List<RunnerRunTemplateParameterValue> {
       val runnerParameters = mutableListOf<RunnerRunTemplateParameterValue>()
 
@@ -917,7 +915,7 @@ class RunnerService(
                     parameterId = runTemplateParameter.id,
                     varType = runTemplateParameter.varType,
                     value = defaultParameterValue ?: "",
-                ),
+                )
             )
           }
 
@@ -949,7 +947,7 @@ class RunnerService(
                         parameterId,
                         defaultParameterPartId,
                         runner.id,
-                    ),
+                    )
                 )
               }
             }
@@ -997,7 +995,7 @@ class RunnerService(
                 parametersValuesList.add(parameterValue)
               } else {
                 logger.warn(
-                    "Parameter '$parameterId' not found in parent Runner '$parentId' parameters values",
+                    "Parameter '$parameterId' not found in parent Runner '$parentId' parameters values"
                 )
               }
             }

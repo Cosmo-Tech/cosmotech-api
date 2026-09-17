@@ -68,7 +68,7 @@ class RelationalDatasetPartManagementService(
             val prepareStatement =
                 connection.prepareStatement(
                     "CREATE TABLE IF NOT EXISTS $tableName ${constructSQLColumnsValues(headers)};" +
-                        "GRANT SELECT ON $tableName to \"$readerUserName\";",
+                        "GRANT SELECT ON $tableName to \"$readerUserName\";"
                 )
             prepareStatement.execute()
           }

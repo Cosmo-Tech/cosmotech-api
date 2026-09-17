@@ -39,7 +39,7 @@ open class CsmApiConfiguration {
   @Bean(name = ["csm-in-process-event-executor"])
   open fun inProcessEventHandlerExecutor(): Executor =
       Executors.newCachedThreadPool(
-          BasicThreadFactory.builder().namingPattern("csm-event-handler-%d").build(),
+          BasicThreadFactory.builder().namingPattern("csm-event-handler-%d").build()
       )
 
   fun yamlHttpMessageConverter(): JacksonYamlHttpMessageConverter {
