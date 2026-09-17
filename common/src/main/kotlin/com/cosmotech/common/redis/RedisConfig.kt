@@ -3,15 +3,12 @@
 package com.cosmotech.common.redis
 
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.boot.ssl.SslBundles
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.RedisConnectionFactory
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer
-import org.springframework.stereotype.Component
 import redis.clients.jedis.DefaultJedisClientConfig
 import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.JedisClientConfig
@@ -69,20 +66,5 @@ open class RedisConfig {
     template.defaultSerializer = GenericJacksonJsonRedisSerializer(jsonObjectMapper)
     template.connectionFactory = connectionFactory
     return template
-  }
-}
-
-// Workaround for this issue in redis-om-spring
-// https://github.com/redis/redis-om-spring/issues/769#issuecomment-5399376418
-// It is not a long term fix as based some properties are defined as deprecated since Spring Data
-// Redis 4.1
-@Component
-class LegacyJedisClientPostProcessor : BeanPostProcessor {
-
-  override fun postProcessBeforeInitialization(bean: Any, beanName: String): Any {
-    if (bean is JedisConnectionFactory) {
-      bean.isUseUnifiedJedis = false
-    }
-    return bean
   }
 }
