@@ -18,12 +18,6 @@ The Cosmo Tech Cloud Platform API exposes a [REST](https://en.wikipedia.org/wiki
 
 It is written in [Kotlin](https://kotlinlang.org/), makes use of the [Spring Boot framework](https://spring.io/projects/spring-boot), and is built with [Gradle](https://gradle.org/).
 
-## Swagger UI
-
-This API is continuously deployed at the following URLs, so you can easily explore it :
-- Dev Environment: https://dev.api.cosmotech.com/
-- Staging Environment: https://staging.api.cosmotech.com/
-
 ## Client Libraries
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-cosmotech--api--typescript--client-blue)](https://github.com/Cosmo-Tech/cosmotech-api-typescript-client)
@@ -37,7 +31,7 @@ Note that the repositories for all these client libraries are automatically upda
 
 #### JDK
 
-As this project uses both Gradle and Kotlin, a [Java JDK](https://adoptium.net/temurin/releases/?variant=openjdk21&jvmVariant=hotspot) (version 21 or higher) is required.
+As this project uses both Gradle and Kotlin, a [Java JDK](https://adoptium.net/temurin/releases/?variant=openjdk21&jvmVariant=hotspot) (version 25 or higher) is required.
 
 We recommend installing your JDK with [SDKMAN!](https://sdkman.io/), a tool for managing parallel versions of multiple Software Development Kits on most Unix-based systems.
 
@@ -45,9 +39,9 @@ To check your JDK version, run `java -version` :
 
 ```shell
 ❯ java -version
-openjdk 21.0.1 2023-10-17 LTS
-OpenJDK Runtime Environment Temurin-21.0.1+12 (build 21.0.1+12-LTS)
-OpenJDK 64-Bit Server VM Temurin-21.0.1+12 (build 21.0.1+12-LTS, mixed mode, sharing)
+openjdk version "25" 2025-09-16 LTS
+OpenJDK Runtime Environment Temurin-25+36 (build 25+36-LTS)
+OpenJDK 64-Bit Server VM Temurin-25+36 (build 25+36-LTS, mixed mode, sharing)
 ```
 
 #### GitHub Packages
@@ -192,7 +186,7 @@ To run a local analysis with Detekt, simply run the `detekt` Gradle task:
 ./gradlew detekt
 ```
 
-You will then find the reports for the different sub-projects in the `build/reports/detekt` folder, under different formats: Plain text, HTML, and [SARIF](https://sarifweb.azurewebsites.net/).
+You will then find the reports for the different subprojects in the `build/reports/detekt` folder, under different formats: Plain text, HTML, and [SARIF](https://sarifweb.azurewebsites.net/).
 
 
 #### Vulnerability report
@@ -214,6 +208,74 @@ Then run the dependency check task which can take about 10 minutes:
 ```
 
 an html report will be generated under `/build/reports`
+
+
+## MCP (Model Context Protocol)
+
+The API can expose its REST operations as MCP tools through the Springdoc OpenAPI MCP
+bridge. Each MCP tool is generated from an OpenAPI operation and invokes the corresponding
+HTTP endpoint of this API. MCP therefore does not add a separate business API: the connected
+agent uses the same authentication, authorization, validation, and tenant rules as a REST
+client.
+
+### Configuration
+
+MCP is disabled by default. Enable it in the active Spring configuration, for example in
+`config/application-dev.yml`:
+
+```yaml
+csm:
+  platform:
+    api:
+      base-url: "http://localhost:8080"
+      mcp:
+        enabled: true
+        dashboard-enabled: false
+        paths-to-exclude: []
+```
+
+These settings have the following effects:
+
+- `csm.platform.api.mcp.enabled` enables the MCP endpoint at `/mcp`.
+- `csm.platform.api.mcp.dashboard-enabled` enables the optional MCP dashboard at `/mcp-ui`.
+- `csm.platform.api.mcp.paths-to-exclude` removes matching API paths from the generated MCP
+  tools. Use it to avoid exposing operations that an agent should not call.
+- The MCP server uses the API `base-url`; when the API is behind a reverse proxy, configure
+  the externally reachable URL and `base-path` consistently.
+- MCP clients must authenticate with a bearer JWT accepted by the configured identity
+  provider and with the `mcp` scope. The usual API roles and tenant restrictions still apply.
+
+The generated tools use `snake_case` names derived from the OpenAPI `operationId`, such as
+`list_organizations`, `get_organization`, and `create_organization`. The OpenAPI-to-MCP
+bridge returns the HTTP response body as the tool result. Consequently, an HTTP `4xx` or
+`5xx` response can look like a successful MCP execution: the agent must inspect the response
+body and treat a `status` greater than or equal to `400`, or an error-shaped `title`/`detail`,
+as a failed operation.
+
+For the complete calling rules, see the [MCP agent guidelines](doc/mcp-agent-guidelines.md).
+
+### Simple usage
+
+Once the API is running with MCP enabled, configure an MCP-compatible agent with the
+`/mcp` URL and the required bearer token. A simple read-only request can be phrased as:
+
+> List the organizations available to me. After calling the tool, inspect the response body
+> and report an error if it contains an HTTP error status or an error detail.
+
+The agent should call `list_organizations`, inspect the returned content, and only then
+present the result. For a change, apply the same rule and verify it independently:
+
+1. Call `create_organization` with the requested organization data.
+2. Inspect the response for an HTTP error, even if the MCP call itself reports no protocol
+   error.
+3. Call `get_organization` or `list_organizations` to confirm that the organization exists
+   with the expected values.
+4. Report the creation only after this verification. If the response contains `status`,
+   `title`, or `detail` indicating an HTTP error, report the status and message instead.
+
+This verification is required because MCP tool success and HTTP request success are not
+equivalent in the current bridge implementation.
+
 
 ## License
 
