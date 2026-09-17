@@ -409,10 +409,8 @@ abstract class AbstractSecurityConfiguration {
           mcpAuthorization.authorizationServer(issuerUri)
           mcpAuthorization.protectedResourceMetadataCustomizer { metadata ->
             metadata.authorizationServer(issuerUri)
-            metadata.scopes { scopes -> scopes.addAll(listOf("mcp")) }
+            metadata.scope("mcp")
           }
-          // TODO: set to true to enforce security
-          mcpAuthorization.validateAudienceClaim(false)
         }
   }
 }
