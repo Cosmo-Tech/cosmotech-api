@@ -267,7 +267,7 @@ class WorkflowBuildersTests {
                 .name("applyparameterscontainer")
                 .template("applyparameterscontainer")
                 .dependencies(
-                    listOf("fetchdatasetcontainer-1", "fetchscenarioparameterscontainer"),
+                    listOf("fetchdatasetcontainer-1", "fetchscenarioparameterscontainer")
                 ),
             IoArgoprojWorkflowV1alpha1DAGTask()
                 .name("validatedatacontainer")
@@ -429,7 +429,7 @@ class WorkflowBuildersTests {
                 V1PersistentVolumeClaimSpec()
                     .accessModes(emptyList())
                     .storageClassName(null)
-                    .resources(V1VolumeResourceRequirements().requests(emptyMap())),
+                    .resources(V1VolumeResourceRequirements().requests(emptyMap()))
             )
     val expected = listOf(dataDir)
     assertEquals(expected, workflowSpec.volumeClaimTemplates)
@@ -452,7 +452,7 @@ class WorkflowBuildersTests {
                     .storageClassName("cosmotech-api-test-phoenix")
                     .resources(
                         V1VolumeResourceRequirements()
-                            .requests(mapOf("storage" to Quantity("300Gi"))),
+                            .requests(mapOf("storage" to Quantity("300Gi")))
                     ),
             )
     val expected = listOf(dataDir)

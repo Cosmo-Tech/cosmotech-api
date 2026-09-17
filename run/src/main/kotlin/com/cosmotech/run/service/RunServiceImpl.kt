@@ -113,7 +113,7 @@ class RunServiceImpl(
   fun getRunStatus(run: Run): RunStatus {
     val runStatus = this.workflowService.getRunStatus(run)
     return runStatus.copy(
-        state = mapWorkflowPhaseToRunStatus(phase = runStatus.phase, runId = run.id),
+        state = mapWorkflowPhaseToRunStatus(phase = runStatus.phase, runId = run.id)
     )
   }
 
@@ -150,7 +150,7 @@ class RunServiceImpl(
             .orElseThrow {
               throw CsmResourceNotFoundException(
                   "Run '$runId' not found in Organization '$organizationId', " +
-                      "Workspace '$workspaceId' and Runner '$runnerId'",
+                      "Workspace '$workspaceId' and Runner '$runnerId'"
               )
             }
             .withStateInformation()
@@ -296,7 +296,7 @@ class RunServiceImpl(
             "[workspaceId=${run.workspaceId}]" +
             "[runnerId=${run.runnerId}]" +
             "[runId=${run.id}] has been launched by " +
-            "[ownerId=${run.createInfo.userId}]",
+            "[ownerId=${run.createInfo.userId}]"
     )
     return runRepository.save(run)
   }
@@ -314,7 +314,7 @@ class RunServiceImpl(
               .orElseThrow {
                 throw CsmResourceNotFoundException(
                     "Run '$runId' not found in Organization '$organizationId', " +
-                        "Workspace '$workspaceId' and Runner '$runnerId'",
+                        "Workspace '$workspaceId' and Runner '$runnerId'"
                 )
               }
               .withStateInformation()
@@ -336,7 +336,7 @@ class RunServiceImpl(
 
     check(!(run.state!!.isTerminal())) {
       logger.warn(
-          "Run ${run.id} is already in a terminal state (${run.state}). It can't be stopped.",
+          "Run ${run.id} is already in a terminal state (${run.state}). It can't be stopped."
       )
     }
 

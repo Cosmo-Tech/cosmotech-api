@@ -86,8 +86,8 @@ class MetaServiceImplTests {
                                   "full" to data.full,
                                   "release" to data.release,
                                   "build" to data.build,
-                              ),
-                      ),
+                              )
+                      )
                   )
 
               assertEquals(data, metaApiService.about().version)

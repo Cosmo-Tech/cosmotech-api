@@ -41,7 +41,7 @@ open class CsmTestBase {
                     "AWS_SECRET_ACCESS_KEY" to "test",
                     "S3_BUCKET" to "test-bucket",
                     "S3_REGION" to "us-east-1",
-                ),
+                )
             )
 
     const val KEYCLOAK_TENANT_ID = "test-cosmotech"

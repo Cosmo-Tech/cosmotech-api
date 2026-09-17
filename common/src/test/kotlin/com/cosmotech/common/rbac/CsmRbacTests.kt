@@ -276,7 +276,7 @@ class CsmRbacTests {
             PERM_READ,
             listOf(userWriterRole, userReaderRole),
             rolesDefinition,
-        ),
+        )
     )
   }
 
@@ -298,7 +298,7 @@ class CsmRbacTests {
   @Test
   fun `verify permission write for user writer KO`() {
     assertFalse(
-        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_READER, emptyList()),
+        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_READER, emptyList())
     )
   }
 
@@ -321,7 +321,7 @@ class CsmRbacTests {
   fun `add new reader user and verify read permission OK`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList())
     )
   }
 
@@ -329,7 +329,7 @@ class CsmRbacTests {
   fun `add new reader user and verify write permission KO`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     assertFalse(
-        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_NEW_READER, emptyList())
     )
   }
 
@@ -370,7 +370,7 @@ class CsmRbacTests {
             rolesDefinition,
         )
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_IN_PARENT, emptyList()),
+        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_IN_PARENT, emptyList())
     )
   }
 
@@ -396,7 +396,7 @@ class CsmRbacTests {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     rbac.removeEntity(rbacSecurity, USER_NEW_READER, rolesDefinition)
     assertFalse(
-        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList())
     )
   }
 
@@ -407,7 +407,7 @@ class CsmRbacTests {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     rbac.removeEntity(rbacSecurity, USER_NEW_READER, rolesDefinition)
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList())
     )
   }
 
@@ -418,7 +418,7 @@ class CsmRbacTests {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     rbac.removeEntity(rbacSecurity, USER_NEW_READER, rolesDefinition)
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_ADMIN, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUser(rbacSecurity, PERM_ADMIN, rolesDefinition, USER_NEW_READER, emptyList())
     )
   }
 
@@ -426,7 +426,7 @@ class CsmRbacTests {
   fun `update existing new user and verify write permission OK`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userWriterRole, rolesDefinition)
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_NEW_READER, emptyList())
     )
   }
 
@@ -434,7 +434,7 @@ class CsmRbacTests {
   fun `update existing new user and verify read permission OK`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList())
     )
   }
 
@@ -677,7 +677,7 @@ class CsmRbacTests {
     assertTrue(
         resourceSecurity.accessControlList.any {
           it.id == USER_ADMIN && it.role == rolesDefinition.adminRole
-        },
+        }
     )
   }
 
@@ -693,7 +693,7 @@ class CsmRbacTests {
         }) &&
             (resourceSecurity.accessControlList.any {
               it.id == USER_ADMIN_2 && it.role == rolesDefinition.adminRole
-            }),
+            })
     )
   }
 
@@ -765,7 +765,7 @@ class CsmRbacTests {
   fun `add ACL entry when default role is admin with only one admin defined`() =
       listOf(ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).map { role ->
         DynamicTest.dynamicTest(
-            "add ACL entry $role when default role is admin (with only one admin defined)",
+            "add ACL entry $role when default role is admin (with only one admin defined)"
         ) {
           val rbacDefinition =
               RbacSecurity(
@@ -773,7 +773,7 @@ class CsmRbacTests {
                   default = ROLE_ADMIN,
                   accessControlList =
                       mutableListOf(
-                          RbacAccessControl(id = "test.user@test.com", role = ROLE_ADMIN),
+                          RbacAccessControl(id = "test.user@test.com", role = ROLE_ADMIN)
                       ),
               )
           val newUserId = "whatever.user@test.com"
@@ -781,8 +781,8 @@ class CsmRbacTests {
           assertTrue(rbacDefinition.accessControlList.size == 2)
           assertTrue(
               rbacDefinition.accessControlList.contains(
-                  RbacAccessControl(id = newUserId, role = role),
-              ),
+                  RbacAccessControl(id = newUserId, role = role)
+              )
           )
         }
       }
@@ -820,8 +820,8 @@ class CsmRbacTests {
                   assertTrue(rbacDefinition.accessControlList.size == 1)
                   assertTrue(
                       rbacDefinition.accessControlList.contains(
-                          RbacAccessControl(id = userId, role = role),
-                      ),
+                          RbacAccessControl(id = userId, role = role)
+                      )
                   )
                 }
               }
@@ -832,7 +832,7 @@ class CsmRbacTests {
   fun `remove ACL entry when default role is admin with only one admin defined`() =
       listOf(ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).map { role ->
         DynamicTest.dynamicTest(
-            "remove ACL entry $role when default role is admin (with only one admin defined)",
+            "remove ACL entry $role when default role is admin (with only one admin defined)"
         ) {
           val userId = "test.user@test.com"
           val rbacDefinition =
@@ -857,7 +857,7 @@ class CsmRbacTests {
   fun `remove ACL entry when default role is admin with an admin and another user defined`() =
       listOf(ROLE_VIEWER, ROLE_USER, ROLE_EDITOR, ROLE_ADMIN).map { role ->
         DynamicTest.dynamicTest(
-            "remove ACL entry $role when default role is admin (with only one admin defined)",
+            "remove ACL entry $role when default role is admin (with only one admin defined)"
         ) {
           val userId = "test.user@test.com"
           val rbacDefinition =
@@ -875,8 +875,8 @@ class CsmRbacTests {
             assertTrue(rbacDefinition.accessControlList.size == 1)
             assertTrue(
                 rbacDefinition.accessControlList.contains(
-                    RbacAccessControl(id = USER_ADMIN, role = ROLE_ADMIN),
-                ),
+                    RbacAccessControl(id = USER_ADMIN, role = ROLE_ADMIN)
+                )
             )
           }
         }
@@ -1072,7 +1072,7 @@ class CsmRbacTests {
             getCommonRolesDefinition(),
             APP_REG_ID,
             emptyList(),
-        ),
+        )
     )
   }
 
@@ -1082,7 +1082,7 @@ class CsmRbacTests {
     val security = rbac.initSecurity(inputSecurity)
     assertEquals(
         inputSecurity.copy(
-            accessControlList = mutableListOf(RbacAccessControl(USER_NOTIN, ROLE_ADMIN)),
+            accessControlList = mutableListOf(RbacAccessControl(USER_NOTIN, ROLE_ADMIN))
         ),
         security,
     )
@@ -1099,7 +1099,7 @@ class CsmRbacTests {
                   RbacAccessControl(USER_READER, ROLE_USER),
                   RbacAccessControl(USER_READER, ROLE_ADMIN),
               ),
-          ),
+          )
       )
     }
   }
@@ -1115,7 +1115,7 @@ class CsmRbacTests {
     val security = rbac.initSecurity(inputSecurity)
     assertEquals(
         inputSecurity.copy(
-            accessControlList = mutableListOf(RbacAccessControl(USER_NOTIN, ROLE_ADMIN)),
+            accessControlList = mutableListOf(RbacAccessControl(USER_NOTIN, ROLE_ADMIN))
         ),
         security,
     )
@@ -1136,7 +1136,7 @@ class CsmRbacTests {
                 mutableListOf(
                     RbacAccessControl(USER_READER, ROLE_USER),
                     RbacAccessControl(USER_NOTIN, ROLE_ADMIN),
-                ),
+                )
         ),
         security,
     )

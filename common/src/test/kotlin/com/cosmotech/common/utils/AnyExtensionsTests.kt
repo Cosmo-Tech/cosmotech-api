@@ -174,7 +174,7 @@ class AnyExtensionsTests {
 
     val changes =
         myDataClassObj.compareToAndMutateIfNeeded(
-            MyDataClass("id2", listOf("attr2", "attr3", "attr4"), false),
+            MyDataClass("id2", listOf("attr2", "attr3", "attr4"), false)
         )
 
     assertEquals(2, changes.size)
@@ -194,7 +194,7 @@ class AnyExtensionsTests {
 
     val changes =
         myDataClassObj.compareToAndMutateIfNeeded(
-            MyDataClass("id2", listOf("attr2", "attr1"), false),
+            MyDataClass("id2", listOf("attr2", "attr1"), false)
         )
 
     assertEquals(1, changes.size)

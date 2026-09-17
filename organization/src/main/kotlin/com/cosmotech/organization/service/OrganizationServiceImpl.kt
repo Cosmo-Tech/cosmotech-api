@@ -309,7 +309,7 @@ class OrganizationServiceImpl(
               OrganizationSecurity(
                   default = organization.security.default,
                   accessControlList = accessControlList,
-              ),
+              )
       )
     }
     return organization

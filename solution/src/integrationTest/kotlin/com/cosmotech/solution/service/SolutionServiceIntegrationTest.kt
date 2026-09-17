@@ -1152,7 +1152,10 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             runTemplates = solutionRunTemplates,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterNameUpdated", varType = "int")
+                    RunTemplateParameterCreateRequest(
+                        id = "parameterNameUpdated",
+                        varType = "int",
+                    )
                 ),
             url = newUrl,
             version = newVersion,

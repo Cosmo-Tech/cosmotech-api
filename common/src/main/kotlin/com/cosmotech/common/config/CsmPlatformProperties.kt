@@ -50,7 +50,7 @@ data class CsmPlatformProperties(
 
   data class CsmTasks(
       /** Clean up archived runners task */
-      val cleanUpArchivedRunners: CsmTask = CsmTask(),
+      val cleanUpArchivedRunners: CsmTask = CsmTask()
   ) {
     data class CsmTask(
         /** Enabled or disabled the task */
@@ -216,7 +216,7 @@ data class CsmPlatformProperties(
   data class EventPublisher(val type: Type) {
     enum class Type {
       /** In-process, via Spring Application Events */
-      IN_PROCESS,
+      IN_PROCESS
     }
   }
 
@@ -349,7 +349,7 @@ data class CsmPlatformProperties(
 
       data class PageSizing(
           /** Max result for a single page */
-          val defaultPageSize: Int = 50,
+          val defaultPageSize: Int = 50
       )
     }
 
@@ -375,7 +375,7 @@ data class CsmPlatformProperties(
 
   data class CsmRbac(
       /** Enable Rbac */
-      val enabled: Boolean = false,
+      val enabled: Boolean = false
   )
 
   data class Upload(

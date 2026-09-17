@@ -12,13 +12,11 @@ internal fun Run.withoutSensitiveData(): Run = this.copy(containers = null)
 internal fun RunState.isTerminal() =
     when (this) {
       RunState.Failed,
-      RunState.Successful,
-      -> true
+      RunState.Successful -> true
 
       RunState.Unknown,
       RunState.Running,
-      RunState.NotStarted,
-      -> false
+      RunState.NotStarted -> false
     }
 
 internal fun RunContainer.getNodeLabelSize(): Map<String, String> {
