@@ -321,10 +321,6 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    /*{
-      exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
-    }*/
-    // implementation("org.springframework.boot:spring-boot-starter-jetty")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api

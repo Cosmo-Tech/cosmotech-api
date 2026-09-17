@@ -114,7 +114,7 @@ internal open class KeycloakSecurityConfiguration(
     val validators = mutableListOf(JwtValidators.createDefaultWithIssuer(issuerUri))
     // Audience
     val targetAudiences = jwtProperties.audiences.filter { it.isNotBlank() }
-    if (targetAudiences.isNotEmpty() && "*" !in targetAudiences) {
+    if ("*" !in targetAudiences) {
       val audienceValidator =
           JwtClaimValidator(JwtClaimNames.AUD) { aud: List<String> ->
             !Collections.disjoint(aud, targetAudiences)

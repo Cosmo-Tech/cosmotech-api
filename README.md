@@ -18,6 +18,11 @@ The Cosmo Tech Cloud Platform API exposes a [REST](https://en.wikipedia.org/wiki
 
 It is written in [Kotlin](https://kotlinlang.org/), makes use of the [Spring Boot framework](https://spring.io/projects/spring-boot), and is built with [Gradle](https://gradle.org/).
 
+## Swagger UI
+
+This API is continuously deployed at the following URLs, so you can easily explore it :
+- CI Environment: https://aks-dev-joy.azure.platform.cosmotech.com/tenant-api-ci/api/swagger-ui/index.html
+
 ## Client Libraries
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-cosmotech--api--typescript--client-blue)](https://github.com/Cosmo-Tech/cosmotech-api-typescript-client)
