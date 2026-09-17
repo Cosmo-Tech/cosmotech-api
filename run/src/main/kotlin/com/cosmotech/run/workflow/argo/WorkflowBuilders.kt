@@ -143,7 +143,6 @@ private fun buildContainer(
     organizationId: String,
     workspaceId: String?,
 ): V1Container {
-
   val container =
       V1Container()
           .image(runContainer.image)
@@ -208,9 +207,9 @@ internal fun buildWorkflowSpec(
                   .configMap(
                       V1ConfigMapVolumeSource()
                           .optional(true)
-                          .name("${organizationId}-${workspaceId}-coal-config")
+                          .name("$organizationId-$workspaceId-coal-config")
                           .addItemsItem(
-                              V1KeyToPath().key(VOLUME_COAL_FILE_NAME).path(VOLUME_COAL_FILE_NAME)
+                              V1KeyToPath().key(VOLUME_COAL_FILE_NAME).path(VOLUME_COAL_FILE_NAME),
                           )
                   )
           )
@@ -314,8 +313,11 @@ private fun buildVolumeClaims(
               V1PersistentVolumeClaimSpec()
                   .accessModes(workflowsConfig.accessModes)
                   .storageClassName(
-                      if (workflowsConfig.storageClass.isNullOrBlank()) null
-                      else workflowsConfig.storageClass
+                      if (workflowsConfig.storageClass.isNullOrBlank()) {
+                        null
+                      } else {
+                        workflowsConfig.storageClass
+                      }
                   )
                   .resources(
                       V1VolumeResourceRequirements()

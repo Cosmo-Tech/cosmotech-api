@@ -30,7 +30,6 @@ class ApiKeyAuthenticationFilter(val csmPlatformProperties: CsmPlatformPropertie
     }
 
     if (matchingApiKeyHeaderRequests.isNotEmpty()) {
-
       val matchingApiKeyConsumer = matchingApiKeyHeaderRequests.firstOrNull { apiKeyConsumer ->
         request.getHeader(apiKeyConsumer.apiKeyHeaderName) == apiKeyConsumer.apiKey
       }
@@ -112,11 +111,7 @@ class ApiKeyAuthentication(
     this.isAuthenticated = true
   }
 
-  override fun getCredentials(): Any? {
-    return null
-  }
+  override fun getCredentials(): Any? = null
 
-  override fun getPrincipal(): Any {
-    return apiKeyName
-  }
+  override fun getPrincipal(): Any = apiKeyName
 }

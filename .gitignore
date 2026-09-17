@@ -45,6 +45,8 @@ out/
 openapi/plantuml/.openapi-generator/
 openapi/openapi.yaml
 doc/generated-snippets
+doc/licenses/*
+!doc/licenses/index.html
 
 ### Personal directory ###
 perso

@@ -17,10 +17,8 @@ import com.cosmotech.iaminfo.domain.Members
 import org.springframework.stereotype.Service
 
 @Service
-class IAMInfoServiceImpl(
-    private val keycloak: KeycloakClient,
-    private val csmAdmin: CsmAdmin,
-) : CsmPhoenixService(), IAMInfoApiServiceInterface {
+class IAMInfoServiceImpl(private val keycloak: KeycloakClient, private val csmAdmin: CsmAdmin) :
+    CsmPhoenixService(), IAMInfoApiServiceInterface {
   override fun listIAMGroups(): List<String> {
     // open to all users, no permission check needed
     return keycloak.getAllGroups().map { it.name }

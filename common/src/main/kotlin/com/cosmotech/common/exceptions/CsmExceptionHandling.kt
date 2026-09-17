@@ -229,7 +229,5 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
       headers: HttpHeaders,
       status: HttpStatusCode,
       request: WebRequest,
-  ): ResponseEntity<Any>? {
-    return super.handleExceptionInternal(ex, ex.body, headers, status, request)
-  }
+  ): ResponseEntity<Any>? = super.handleExceptionInternal(ex, ex.body, headers, status, request)
 }

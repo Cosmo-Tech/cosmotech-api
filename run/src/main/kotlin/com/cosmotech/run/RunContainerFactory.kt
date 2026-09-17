@@ -137,7 +137,6 @@ class RunContainerFactory(
       workflowType: String,
       runType: RunType = RunType.Run,
   ): RunStartContainers {
-
     check(runner.runTemplateId.isNotBlank()) { "Runner runTemplateId cannot be blank" }
 
     val template = getRunTemplate(solution, (runner.runTemplateId))
@@ -216,12 +215,13 @@ class RunContainerFactory(
     )
   }
 
-  private fun getRunTemplate(solution: Solution, runTemplateId: String): RunTemplate {
-    return solution.runTemplates.find { runTemplate -> runTemplate.id == runTemplateId }
-        ?: throw IllegalStateException(
-            "RunTemplateId '$runTemplateId' not found in Solution '${solution.id}'"
-        )
-  }
+  private fun getRunTemplate(solution: Solution, runTemplateId: String): RunTemplate =
+      solution.runTemplates.find { runTemplate ->
+        runTemplate.id == runTemplateId
+      }
+          ?: throw IllegalStateException(
+              "RunTemplateId '$runTemplateId' not found in Solution '${solution.id}'"
+          )
 
   private fun getImageName(registry: String, repository: String, version: String? = null): String {
     var imageRef = if (registry.isNotEmpty()) "$registry/" else ""
@@ -236,14 +236,12 @@ class RunContainerFactory(
  *
  * @return all scopes defined join by ","
  */
-internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): String {
-  return csmPlatformProperties.identityProvider.containerScopes.keys.joinToString(separator = " ")
-}
+internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): String =
+    csmPlatformProperties.identityProvider.containerScopes.keys.joinToString(separator = " ")
 
 internal fun getMinimalCommonEnvVars(
     csmPlatformProperties: CsmPlatformProperties
 ): Map<String, String> {
-
   val twinCacheEnvVars: MutableMap<String, String> = mutableMapOf()
   val twinCacheInfo = csmPlatformProperties.databases.resources
   twinCacheEnvVars.putAll(
@@ -279,7 +277,6 @@ internal fun getCommonEnvVars(
     runnerId: String,
     runId: String,
 ): MutableMap<String, String> {
-
   val minimalEnvVars = getMinimalCommonEnvVars(csmPlatformProperties)
 
   val commonEnvVars =

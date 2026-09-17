@@ -11,7 +11,6 @@ private const val MIN_HASH_LENGTH = 0
 private const val ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 fun generateId(scope: String, prependPrefix: String? = null): String {
-
   require(scope.isNotBlank()) { "scope must not be blank" }
 
   // We do not intend to decode generated IDs afterwards => we can safely generate a unique salt.

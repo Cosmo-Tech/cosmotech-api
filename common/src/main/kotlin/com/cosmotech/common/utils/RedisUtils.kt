@@ -9,14 +9,13 @@ import org.springframework.data.domain.PageRequest
 
 const val BULK_QUERY_KEY = "bulkQuery"
 
-fun constructPageRequest(page: Int?, size: Int?, defaultPageSize: Int): PageRequest? {
-  return when {
-    page != null && size != null -> PageRequest.of(page, size)
-    page != null && size == null -> PageRequest.of(page, defaultPageSize)
-    page == null && size != null -> PageRequest.of(0, size)
-    else -> null
-  }
-}
+fun constructPageRequest(page: Int?, size: Int?, defaultPageSize: Int): PageRequest? =
+    when {
+      page != null && size != null -> PageRequest.of(page, size)
+      page != null && size == null -> PageRequest.of(page, defaultPageSize)
+      page == null && size != null -> PageRequest.of(0, size)
+      else -> null
+    }
 
 fun <T> findAllPaginated(
     maxResult: Int,
@@ -32,9 +31,7 @@ fun <T> findAllPaginated(
   return list
 }
 
-fun redisGraphKey(graphId: String, version: String): String {
-  return "$graphId:$version"
-}
+fun redisGraphKey(graphId: String, version: String): String = "$graphId:$version"
 
 fun bulkQueryKey(graphId: String, query: String, version: String?): Pair<ByteArray, String> {
   val redisGraphKey = if (version != null) redisGraphKey(graphId, version) else graphId
@@ -42,9 +39,8 @@ fun bulkQueryKey(graphId: String, query: String, version: String?): Pair<ByteArr
   return Pair("$BULK_QUERY_KEY:$bulkQueryHash".toByteArray(StandardCharsets.UTF_8), bulkQueryHash)
 }
 
-fun bulkQueryKey(bulkQueryHash: String): ByteArray {
-  return "$BULK_QUERY_KEY:$bulkQueryHash".toByteArray(StandardCharsets.UTF_8)
-}
+fun bulkQueryKey(bulkQueryHash: String): ByteArray =
+    "$BULK_QUERY_KEY:$bulkQueryHash".toByteArray(StandardCharsets.UTF_8)
 
 fun getLocalDateNow(pattern: String = "yyyy/MM/dd - HH:mm:ss"): String {
   val current = LocalDateTime.now()

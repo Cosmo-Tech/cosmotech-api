@@ -121,9 +121,8 @@ internal class WorkspaceServiceImpl(
     return result
   }
 
-  override fun getWorkspace(organizationId: String, workspaceId: String): Workspace {
-    return updateSecurityVisibility(getVerifiedWorkspace(organizationId, workspaceId))
-  }
+  override fun getWorkspace(organizationId: String, workspaceId: String): Workspace =
+      updateSecurityVisibility(getVerifiedWorkspace(organizationId, workspaceId))
 
   override fun createWorkspace(
       organizationId: String,
@@ -287,7 +286,8 @@ internal class WorkspaceServiceImpl(
         file.originalFilename?.contains("..") != true &&
             file.originalFilename?.startsWith("/") != true
     ) {
-      "Invalid filename: '${file.originalFilename}'. File name should neither contains '..' nor and starts by '/'."
+      "Invalid filename: '${file.originalFilename}'. " +
+          "File name should neither contains '..' nor and starts by '/'."
     }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
 
@@ -353,7 +353,7 @@ internal class WorkspaceServiceImpl(
   }
 
   private fun getWorkspaceFiles(organizationId: String, workspaceId: String): List<WorkspaceFile> {
-    val prefix = "${organizationId}/${workspaceId}/$WORKSPACE_FILES_BASE_FOLDER/"
+    val prefix = "$organizationId/$workspaceId/$WORKSPACE_FILES_BASE_FOLDER/"
     val listObjectsRequest =
         ListObjectsV2Request.builder()
             .bucket(csmPlatformProperties.s3.bucketName)

@@ -4,6 +4,7 @@ package com.cosmotech.common.security
 
 import com.cosmotech.common.config.CsmPlatformProperties
 import com.cosmotech.common.security.filters.ApiKeyAuthenticationFilter
+import org.springaicommunity.mcp.security.server.config.McpServerOAuth2Configurer
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
@@ -35,6 +36,7 @@ const val SCOPE_SOLUTION_WRITE = "SCOPE_csm.solution.write"
 const val SCOPE_WORKSPACE_WRITE = "SCOPE_csm.workspace.write"
 const val SCOPE_RUN_WRITE = "SCOPE_csm.run.write"
 const val SCOPE_RUNNER_WRITE = "SCOPE_csm.runner.write"
+
 // Path Datasets
 val PATHS_DATASETS =
     listOf(
@@ -143,6 +145,14 @@ val PATHS_IAMINFO_MEMBERS = listOf("/iaminfo/members")
 // Path about
 val PATHS_ABOUT = listOf("/about")
 
+// Endpoints MCP
+val endpointSecurityMcp =
+    listOf(
+        "/mcp",
+        "/mcp-ui/**",
+        "/api/mcp-admin/**",
+    )
+
 // Endpoints roles
 val endpointSecurityPublic =
     listOf(
@@ -152,6 +162,8 @@ val endpointSecurityPublic =
         "/",
         "/swagger-ui.html",
         "/swagger-ui/**",
+        "/mcp-ui/**",
+        "/api/mcp-admin/**",
         "/openapi.*",
         "/openapi/*",
         "/openapi",
@@ -315,6 +327,7 @@ internal fun endpointSecurityWriters(
         ),
     )
 
+@Suppress("LongMethod")
 abstract class AbstractSecurityConfiguration {
 
   fun getOAuth2ResourceServer(
@@ -324,7 +337,6 @@ abstract class AbstractSecurityConfiguration {
       organizationViewerGroup: String,
       csmPlatformProperties: CsmPlatformProperties,
   ): HttpSecurity {
-
     val corsHttpMethodsAllowed =
         HttpMethod.values().filterNot { it == HttpMethod.TRACE }.map(HttpMethod::name)
 
@@ -340,6 +352,12 @@ abstract class AbstractSecurityConfiguration {
           csmPlatformProperties.authorization.allowedApiKeyConsumers.forEach { apiKeyConsumer ->
             csrfConfigurer.ignoringRequestMatchers(
                 RequestHeaderRequestMatcher(apiKeyConsumer.apiKeyHeaderName)
+            )
+          }
+          // MCP clients authenticate with a stateless Bearer JWT and never send a CSRF token
+          endpointSecurityMcp.forEach { path ->
+            csrfConfigurer.ignoringRequestMatchers(
+                PathPatternRequestMatcher.withDefaults().matcher(path),
             )
           }
         }
@@ -384,6 +402,15 @@ abstract class AbstractSecurityConfiguration {
           }
 
           requests.anyRequest().authenticated()
+        }
+        .with(McpServerOAuth2Configurer.mcpServerOAuth2()) { mcpAuthorization ->
+          val issuerUri =
+              "${csmPlatformProperties.identityProvider.serverBaseUrl}/realms/${csmPlatformProperties.identityProvider.identity.tenantId}"
+          mcpAuthorization.authorizationServer(issuerUri)
+          mcpAuthorization.protectedResourceMetadataCustomizer { metadata ->
+            metadata.authorizationServer(issuerUri)
+            metadata.scope("mcp")
+          }
         }
   }
 }

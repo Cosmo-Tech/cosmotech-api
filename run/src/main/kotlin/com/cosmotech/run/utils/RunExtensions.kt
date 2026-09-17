@@ -13,6 +13,7 @@ internal fun RunState.isTerminal() =
     when (this) {
       RunState.Failed,
       RunState.Successful -> true
+
       RunState.Unknown,
       RunState.Running,
       RunState.NotStarted -> false

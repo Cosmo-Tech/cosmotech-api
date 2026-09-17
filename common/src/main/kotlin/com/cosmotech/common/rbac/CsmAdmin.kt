@@ -22,7 +22,6 @@ class CsmAdmin(val csmPlatformProperties: CsmPlatformProperties) {
     return roles.any { it == ROLE_PLATFORM_ADMIN || it == customAdminGroup }
   }
 
-  fun verifyCurrentRolesAdmin(): Boolean {
-    return this.verifyRolesAdmin(getCurrentAuthenticatedRoles(this.csmPlatformProperties))
-  }
+  fun verifyCurrentRolesAdmin(): Boolean =
+      this.verifyRolesAdmin(getCurrentAuthenticatedRoles(this.csmPlatformProperties))
 }

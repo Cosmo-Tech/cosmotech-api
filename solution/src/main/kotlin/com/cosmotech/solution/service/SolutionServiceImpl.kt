@@ -103,9 +103,8 @@ class SolutionServiceImpl(
     return result.map { fillSdkVersion(updateSecurityVisibility(it)) }
   }
 
-  override fun getSolution(organizationId: String, solutionId: String): Solution {
-    return fillSdkVersion(updateSecurityVisibility(getVerifiedSolution(organizationId, solutionId)))
-  }
+  override fun getSolution(organizationId: String, solutionId: String): Solution =
+      fillSdkVersion(updateSecurityVisibility(getVerifiedSolution(organizationId, solutionId)))
 
   override fun isRunTemplateExist(
       organizationId: String,
@@ -454,7 +453,6 @@ class SolutionServiceImpl(
       parameterGroupId: String,
       runTemplateParameterGroupUpdateRequest: RunTemplateParameterGroupUpdateRequest,
   ): RunTemplateParameterGroup {
-
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     existingSolution.parameterGroups
         .find { it.id == parameterGroupId }
@@ -505,7 +503,6 @@ class SolutionServiceImpl(
       solutionId: String,
       runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest,
   ): RunTemplateParameter {
-
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
 
     val parameterIdAlreadyExist =
@@ -531,7 +528,6 @@ class SolutionServiceImpl(
       parameterId: String,
       runTemplateParameterUpdateRequest: RunTemplateParameterUpdateRequest,
   ): RunTemplateParameter {
-
     val existingSolution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
     existingSolution.parameters
         .find { it.id == parameterId }
@@ -695,31 +691,29 @@ class SolutionServiceImpl(
       )
 
   private fun convertToRunTemplateParameter(
-      runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest
-  ): RunTemplateParameter {
-    return RunTemplateParameter(
-        id = runTemplateParameterCreateRequest.id,
-        description = runTemplateParameterCreateRequest.description,
-        varType = runTemplateParameterCreateRequest.varType,
-        labels = runTemplateParameterCreateRequest.labels,
-        defaultValue = runTemplateParameterCreateRequest.defaultValue,
-        minValue = runTemplateParameterCreateRequest.minValue,
-        maxValue = runTemplateParameterCreateRequest.maxValue,
-        additionalData = runTemplateParameterCreateRequest.additionalData,
-    )
-  }
+      runTemplateParameterCreateRequest: RunTemplateParameterCreateRequest,
+  ): RunTemplateParameter =
+      RunTemplateParameter(
+          id = runTemplateParameterCreateRequest.id,
+          description = runTemplateParameterCreateRequest.description,
+          varType = runTemplateParameterCreateRequest.varType,
+          labels = runTemplateParameterCreateRequest.labels,
+          defaultValue = runTemplateParameterCreateRequest.defaultValue,
+          minValue = runTemplateParameterCreateRequest.minValue,
+          maxValue = runTemplateParameterCreateRequest.maxValue,
+          additionalData = runTemplateParameterCreateRequest.additionalData,
+      )
 
   private fun convertToRunTemplateParameterGroup(
-      runTemplateParameterGroupCreateRequest: RunTemplateParameterGroupCreateRequest
-  ): RunTemplateParameterGroup {
-    return RunTemplateParameterGroup(
-        id = runTemplateParameterGroupCreateRequest.id,
-        description = runTemplateParameterGroupCreateRequest.description,
-        labels = runTemplateParameterGroupCreateRequest.labels,
-        additionalData = runTemplateParameterGroupCreateRequest.additionalData,
-        parameters = runTemplateParameterGroupCreateRequest.parameters!!,
-    )
-  }
+      runTemplateParameterGroupCreateRequest: RunTemplateParameterGroupCreateRequest,
+  ): RunTemplateParameterGroup =
+      RunTemplateParameterGroup(
+          id = runTemplateParameterGroupCreateRequest.id,
+          description = runTemplateParameterGroupCreateRequest.description,
+          labels = runTemplateParameterGroupCreateRequest.labels,
+          additionalData = runTemplateParameterGroupCreateRequest.additionalData,
+          parameters = runTemplateParameterGroupCreateRequest.parameters!!,
+      )
 
   private fun convertToRunTemplate(
       runTemplateCreateRequest: RunTemplateCreateRequest
@@ -752,7 +746,6 @@ class SolutionServiceImpl(
       parameterGroups: MutableList<RunTemplateParameterGroupCreateRequest>?,
       runTemplates: MutableList<RunTemplateCreateRequest>?,
   ) {
-
     val duplicatedFieldIds = mutableListOf<String>()
 
     if (

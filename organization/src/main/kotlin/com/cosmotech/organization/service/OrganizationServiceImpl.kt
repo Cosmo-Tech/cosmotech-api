@@ -88,9 +88,8 @@ class OrganizationServiceImpl(
     return keycloak.listRBACMembers(rbacSecurity.accessControlList).toOrganizationMembers()
   }
 
-  override fun getOrganization(organizationId: String): Organization {
-    return updateSecurityVisibility(getVerifiedOrganization(organizationId, PERMISSION_READ))
-  }
+  override fun getOrganization(organizationId: String): Organization =
+      updateSecurityVisibility(getVerifiedOrganization(organizationId, PERMISSION_READ))
 
   override fun createOrganization(
       organizationCreateRequest: OrganizationCreateRequest
@@ -155,9 +154,10 @@ class OrganizationServiceImpl(
     }
   }
 
-  override fun listPermissions(): List<ComponentRolePermissions> {
-    return getAllRolesDefinition().mapNotNull { ComponentRolePermissions(it.key, it.value) }
-  }
+  override fun listPermissions(): List<ComponentRolePermissions> =
+      getAllRolesDefinition().mapNotNull {
+        ComponentRolePermissions(it.key, it.value)
+      }
 
   override fun getOrganizationPermissions(organizationId: String, role: String): List<String> {
     getVerifiedOrganization(organizationId, PERMISSION_READ_SECURITY)

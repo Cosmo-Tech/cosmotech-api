@@ -72,26 +72,22 @@ open class CsmApiConfiguration {
   }
 
   @Bean
-  fun customClientConvertersCustomizer(): ClientHttpMessageConvertersCustomizer {
-    return ClientHttpMessageConvertersCustomizer {
-        clientBuilder: HttpMessageConverters.ClientBuilder ->
-      clientBuilder
-          .addCustomConverter(resourceHttpMessageConverter())
-          .withYamlConverter(yamlHttpMessageConverter())
-          .withJsonConverter(jsonHttpMessageConverter())
-    }
-  }
+  fun customClientConvertersCustomizer(): ClientHttpMessageConvertersCustomizer =
+      ClientHttpMessageConvertersCustomizer { clientBuilder: HttpMessageConverters.ClientBuilder ->
+        clientBuilder
+            .addCustomConverter(resourceHttpMessageConverter())
+            .withYamlConverter(yamlHttpMessageConverter())
+            .withJsonConverter(jsonHttpMessageConverter())
+      }
 
   @Bean
-  fun customServerConvertersCustomizer(): ServerHttpMessageConvertersCustomizer {
-    return ServerHttpMessageConvertersCustomizer {
-        serverBuilder: HttpMessageConverters.ServerBuilder ->
-      serverBuilder
-          .addCustomConverter(resourceHttpMessageConverter())
-          .withYamlConverter(yamlHttpMessageConverter())
-          .withJsonConverter(jsonHttpMessageConverter())
-    }
-  }
+  fun customServerConvertersCustomizer(): ServerHttpMessageConvertersCustomizer =
+      ServerHttpMessageConvertersCustomizer { serverBuilder: HttpMessageConverters.ServerBuilder ->
+        serverBuilder
+            .addCustomConverter(resourceHttpMessageConverter())
+            .withYamlConverter(yamlHttpMessageConverter())
+            .withJsonConverter(jsonHttpMessageConverter())
+      }
 }
 
 @Order(Ordered.HIGHEST_PRECEDENCE)

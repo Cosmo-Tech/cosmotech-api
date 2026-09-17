@@ -8,10 +8,9 @@ import com.cosmotech.runner.domain.Runner
 
 // for compatibility
 // USE RunnerInstance.getSecurity instead
-fun Runner.getRbac(): RbacSecurity {
-  return RbacSecurity(
-      this.id,
-      this.security.default,
-      this.security.accessControlList.map { RbacAccessControl(it.id, it.role) }.toMutableList(),
-  )
-}
+fun Runner.getRbac(): RbacSecurity =
+    RbacSecurity(
+        this.id,
+        this.security.default,
+        this.security.accessControlList.map { RbacAccessControl(it.id, it.role) }.toMutableList(),
+    )

@@ -68,54 +68,50 @@ data class RolesDefinition(
     val adminRole: String = ROLE_ADMIN,
 )
 
-fun getAllRolesDefinition(): Map<String, MutableMap<String, MutableList<String>>> {
-  return mapOf(
-      "organization" to
-          getCommonRolesDefinition()
-              .permissions
-              .mapValues { it.value.toMutableList() }
-              .toMutableMap(),
-      "workspace" to
-          getCommonRolesDefinition()
-              .permissions
-              .mapValues { it.value.toMutableList() }
-              .toMutableMap(),
-      "runner" to
-          getRunnerRolesDefinition()
-              .permissions
-              .mapValues { it.value.toMutableList() }
-              .toMutableMap(),
-  )
-}
+fun getAllRolesDefinition(): Map<String, MutableMap<String, MutableList<String>>> =
+    mapOf(
+        "organization" to
+            getCommonRolesDefinition()
+                .permissions
+                .mapValues { it.value.toMutableList() }
+                .toMutableMap(),
+        "workspace" to
+            getCommonRolesDefinition()
+                .permissions
+                .mapValues { it.value.toMutableList() }
+                .toMutableMap(),
+        "runner" to
+            getRunnerRolesDefinition()
+                .permissions
+                .mapValues { it.value.toMutableList() }
+                .toMutableMap(),
+    )
 
-fun getPermissions(role: String, rolesDefinition: RolesDefinition): List<String> {
-  return rolesDefinition.permissions[role] ?: mutableListOf()
-}
+fun getPermissions(role: String, rolesDefinition: RolesDefinition): List<String> =
+    rolesDefinition.permissions[role] ?: mutableListOf()
 
-fun getCommonRolesDefinition(): RolesDefinition {
-  return RolesDefinition(
-      permissions =
-          mutableMapOf(
-              ROLE_NONE to NO_PERMISSIONS,
-              ROLE_VIEWER to COMMON_ROLE_READER_PERMISSIONS,
-              ROLE_USER to COMMON_ROLE_USER_PERMISSIONS,
-              ROLE_EDITOR to COMMON_ROLE_EDITOR_PERMISSIONS,
-              ROLE_ADMIN to COMMON_ROLE_ADMIN_PERMISSIONS,
-          ),
-      adminRole = ROLE_ADMIN,
-  )
-}
+fun getCommonRolesDefinition(): RolesDefinition =
+    RolesDefinition(
+        permissions =
+            mutableMapOf(
+                ROLE_NONE to NO_PERMISSIONS,
+                ROLE_VIEWER to COMMON_ROLE_READER_PERMISSIONS,
+                ROLE_USER to COMMON_ROLE_USER_PERMISSIONS,
+                ROLE_EDITOR to COMMON_ROLE_EDITOR_PERMISSIONS,
+                ROLE_ADMIN to COMMON_ROLE_ADMIN_PERMISSIONS,
+            ),
+        adminRole = ROLE_ADMIN,
+    )
 
-fun getRunnerRolesDefinition(): RolesDefinition {
-  return RolesDefinition(
-      permissions =
-          mutableMapOf(
-              ROLE_NONE to NO_PERMISSIONS,
-              ROLE_VIEWER to RUNNER_ROLE_VIEWER_PERMISSIONS,
-              ROLE_EDITOR to RUNNER_ROLE_EDITOR_PERMISSIONS,
-              ROLE_VALIDATOR to RUNNER_ROLE_VALIDATOR_PERMISSIONS,
-              ROLE_ADMIN to RUNNER_ROLE_ADMIN_PERMISSIONS,
-          ),
-      adminRole = ROLE_ADMIN,
-  )
-}
+fun getRunnerRolesDefinition(): RolesDefinition =
+    RolesDefinition(
+        permissions =
+            mutableMapOf(
+                ROLE_NONE to NO_PERMISSIONS,
+                ROLE_VIEWER to RUNNER_ROLE_VIEWER_PERMISSIONS,
+                ROLE_EDITOR to RUNNER_ROLE_EDITOR_PERMISSIONS,
+                ROLE_VALIDATOR to RUNNER_ROLE_VALIDATOR_PERMISSIONS,
+                ROLE_ADMIN to RUNNER_ROLE_ADMIN_PERMISSIONS,
+            ),
+        adminRole = ROLE_ADMIN,
+    )

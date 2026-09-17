@@ -31,21 +31,19 @@ class KeycloakClient(
     val clientSecret: String = csmPlatformProperties.identityProvider.admin.clientSecret,
 ) {
 
-  fun getKeycloakInstance(): Keycloak {
-    return KeycloakBuilder.builder()
-        .serverUrl(serverUrl)
-        .realm(realm)
-        .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-        .clientId(clientId)
-        .clientSecret(clientSecret)
-        .build()
-  }
+  fun getKeycloakInstance(): Keycloak =
+      KeycloakBuilder.builder()
+          .serverUrl(serverUrl)
+          .realm(realm)
+          .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+          .clientId(clientId)
+          .clientSecret(clientSecret)
+          .build()
 
-  private fun isGroupPublic(group: GroupRepresentation): Boolean {
-    return group.attributes != null &&
-        group.attributes.containsKey(FILTER_ATTRIBUTE) &&
-        group.attributes[FILTER_ATTRIBUTE]?.contains(FILTER_VALUE) == true
-  }
+  private fun isGroupPublic(group: GroupRepresentation): Boolean =
+      group.attributes != null &&
+          group.attributes.containsKey(FILTER_ATTRIBUTE) &&
+          group.attributes[FILTER_ATTRIBUTE]?.contains(FILTER_VALUE) == true
 
   private fun getGroupsHierarchy(): List<GroupRepresentation> {
     val keycloak = getKeycloakInstance()

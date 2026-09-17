@@ -58,9 +58,13 @@ class ContainerFactoryTests {
   @MockK(relaxed = true) private lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @MockK private lateinit var runnerService: RunnerApiService
+
   @MockK private lateinit var workspaceService: WorkspaceApiService
+
   @MockK private lateinit var solutionService: SolutionApiService
+
   @MockK private lateinit var organizationService: OrganizationApiService
+
   @MockK private lateinit var containerRegistryService: ContainerRegistryService
 
   private lateinit var factory: RunContainerFactory
@@ -76,6 +80,12 @@ class ContainerFactoryTests {
             baseUrl = "https://api.cosmotech.com",
             version = "v1",
             basePath = "basepath",
+            mcp =
+                CsmPlatformProperties.Api.CsmMcp(
+                    enabled = false,
+                    dashboardEnabled = false,
+                    pathsToExclude = emptyList(),
+                ),
         )
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(
@@ -158,12 +168,12 @@ class ContainerFactoryTests {
             workflowType = WORKFLOW_TYPE_RUN,
         )
 
-    val run_container =
+    val runContainer =
         getRunContainer(solution, organization, workspace, runner, runTemplate, CSM_SIMULATION_ID)
 
     assertNotNull(containerStart)
     assertEquals(1, containerStart.containers.size)
-    assertEquals(run_container, containerStart.containers[0])
+    assertEquals(runContainer, containerStart.containers[0])
   }
 
   private fun getRunContainer(
@@ -173,128 +183,122 @@ class ContainerFactoryTests {
       runner: Runner,
       runTemplate: RunTemplate,
       runId: String,
-  ): RunContainer {
+  ): RunContainer =
+      RunContainer(
+          name = CONTAINER_CSM_ORC,
+          image = "twinengines.azurecr.io/" + solution.repository + ":" + solution.version,
+          envVars =
+              mapOf(
+                  "IDP_CLIENT_ID" to csmPlatformProperties.identityProvider.identity.clientId,
+                  "IDP_CLIENT_SECRET" to
+                      csmPlatformProperties.identityProvider.identity.clientSecret,
+                  "IDP_BASE_URL" to csmPlatformProperties.identityProvider.serverBaseUrl,
+                  "IDP_TENANT_ID" to csmPlatformProperties.identityProvider.identity.tenantId,
+                  "CSM_API_URL" to csmPlatformProperties.api.baseUrl,
+                  "CSM_API_SCOPE" to "/.default",
+                  "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                  "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                  "CSM_OUTPUT_ABSOLUTE_PATH" to "/pkg/share/Simulation/Output",
+                  "CSM_TEMP_ABSOLUTE_PATH" to "/usr/tmp",
+                  "TWIN_CACHE_HOST" to csmPlatformProperties.databases.resources.host,
+                  "TWIN_CACHE_PORT" to csmPlatformProperties.databases.resources.port,
+                  "TWIN_CACHE_PASSWORD" to csmPlatformProperties.databases.resources.password,
+                  "TWIN_CACHE_USERNAME" to csmPlatformProperties.databases.resources.username,
+                  "CSM_SIMULATION_ID" to CSM_SIMULATION_ID,
+                  "CSM_ORGANIZATION_ID" to organization.id,
+                  "CSM_WORKSPACE_ID" to workspace.id,
+                  "CSM_RUNNER_ID" to runner.id,
+                  "CSM_RUN_ID" to runId,
+                  "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
+                  "CSM_RUN_TYPE" to RunType.Run.value,
+              ),
+          entrypoint = "entrypoint.py",
+          nodeLabel = runTemplate.computeSize!!.removeSuffix("pool"),
+          runSizing =
+              ContainerResourceSizing(
+                  requests = ContainerResourceSizeInfo(cpu = "70", memory = "130Gi"),
+                  limits = ContainerResourceSizeInfo(cpu = "70", memory = "130Gi"),
+              ),
+          solutionContainer = true,
+      )
 
-    return RunContainer(
-        name = CONTAINER_CSM_ORC,
-        image = "twinengines.azurecr.io/" + solution.repository + ":" + solution.version,
-        envVars =
-            mapOf(
-                "IDP_CLIENT_ID" to csmPlatformProperties.identityProvider.identity.clientId,
-                "IDP_CLIENT_SECRET" to csmPlatformProperties.identityProvider.identity.clientSecret,
-                "IDP_BASE_URL" to csmPlatformProperties.identityProvider.serverBaseUrl,
-                "IDP_TENANT_ID" to csmPlatformProperties.identityProvider.identity.tenantId,
-                "CSM_API_URL" to csmPlatformProperties.api.baseUrl,
-                "CSM_API_SCOPE" to "/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "CSM_OUTPUT_ABSOLUTE_PATH" to "/pkg/share/Simulation/Output",
-                "CSM_TEMP_ABSOLUTE_PATH" to "/usr/tmp",
-                "TWIN_CACHE_HOST" to csmPlatformProperties.databases.resources.host,
-                "TWIN_CACHE_PORT" to csmPlatformProperties.databases.resources.port,
-                "TWIN_CACHE_PASSWORD" to csmPlatformProperties.databases.resources.password,
-                "TWIN_CACHE_USERNAME" to csmPlatformProperties.databases.resources.username,
-                "CSM_SIMULATION_ID" to CSM_SIMULATION_ID,
-                "CSM_ORGANIZATION_ID" to organization.id,
-                "CSM_WORKSPACE_ID" to workspace.id,
-                "CSM_RUNNER_ID" to runner.id,
-                "CSM_RUN_ID" to runId,
-                "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
-                "CSM_RUN_TYPE" to RunType.Run.value,
-            ),
-        entrypoint = "entrypoint.py",
-        nodeLabel = runTemplate.computeSize!!.removeSuffix("pool"),
-        runSizing =
-            ContainerResourceSizing(
-                requests = ContainerResourceSizeInfo(cpu = "70", memory = "130Gi"),
-                limits = ContainerResourceSizeInfo(cpu = "70", memory = "130Gi"),
-            ),
-        solutionContainer = true,
-    )
-  }
+  private fun getRunner(): Runner =
+      Runner(
+          id = "RunnerId",
+          name = "TestRunner",
+          runTemplateId = CSM_RUN_TEMPLATE_ID,
+          datasets = RunnerDatasets(bases = mutableListOf("1", "2"), parameter = "3"),
+          solutionId = "solution",
+          organizationId = "organization",
+          workspaceId = "workspace",
+          createInfo = RunnerEditInfo(timestamp = Instant.now().toEpochMilli(), userId = "user"),
+          updateInfo = RunnerEditInfo(timestamp = Instant.now().toEpochMilli(), userId = "user"),
+          parametersValues =
+              mutableListOf(
+                  RunnerRunTemplateParameterValue(parameterId = "param1", value = "value1"),
+                  RunnerRunTemplateParameterValue(parameterId = "param2", value = "value2"),
+              ),
+          validationStatus = RunnerValidationStatus.Draft,
+          lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
+          status = RunnerStatus.Ok,
+          security =
+              RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))),
+      )
 
-  private fun getRunner(): Runner {
-    return Runner(
-        id = "RunnerId",
-        name = "TestRunner",
-        runTemplateId = CSM_RUN_TEMPLATE_ID,
-        datasets = RunnerDatasets(bases = mutableListOf("1", "2"), parameter = "3"),
-        solutionId = "solution",
-        organizationId = "organization",
-        workspaceId = "workspace",
-        createInfo = RunnerEditInfo(timestamp = Instant.now().toEpochMilli(), userId = "user"),
-        updateInfo = RunnerEditInfo(timestamp = Instant.now().toEpochMilli(), userId = "user"),
-        parametersValues =
-            mutableListOf(
-                RunnerRunTemplateParameterValue(parameterId = "param1", value = "value1"),
-                RunnerRunTemplateParameterValue(parameterId = "param2", value = "value2"),
-            ),
-        validationStatus = RunnerValidationStatus.Draft,
-        lastRunInfo = LastRunInfo(lastRunId = null, lastRunStatus = LastRunStatus.NotStarted),
-        status = RunnerStatus.Ok,
-        security =
-            RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))),
-    )
-  }
+  private fun getRunTemplate(): RunTemplate =
+      RunTemplate(
+          id = CSM_RUN_TEMPLATE_ID,
+          name = "Test Run",
+          computeSize = "highcpupool",
+          parameterGroups = mutableListOf(),
+      )
 
-  private fun getRunTemplate(): RunTemplate {
-    return RunTemplate(
-        id = CSM_RUN_TEMPLATE_ID,
-        name = "Test Run",
-        computeSize = "highcpupool",
-        parameterGroups = mutableListOf(),
-    )
-  }
+  private fun getSolution(): Solution =
+      Solution(
+          id = "1",
+          key = "TestSolution",
+          name = "Test Solution",
+          createInfo = SolutionEditInfo(0, ""),
+          updateInfo = SolutionEditInfo(0, ""),
+          repository = "cosmotech/testsolution_simulator",
+          version = "1.0.0",
+          runTemplates = mutableListOf(getRunTemplate()),
+          parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
+          parameterGroups =
+              mutableListOf(
+                  RunTemplateParameterGroup(id = "parameter", parameters = mutableListOf()),
+              ),
+          organizationId = "Organizationid",
+          security = SolutionSecurity(ROLE_ADMIN, mutableListOf()),
+      )
 
-  private fun getSolution(): Solution {
-    return Solution(
-        id = "1",
-        key = "TestSolution",
-        name = "Test Solution",
-        createInfo = SolutionEditInfo(0, ""),
-        updateInfo = SolutionEditInfo(0, ""),
-        repository = "cosmotech/testsolution_simulator",
-        version = "1.0.0",
-        runTemplates = mutableListOf(getRunTemplate()),
-        parameters = mutableListOf(RunTemplateParameter("parameter", "string")),
-        parameterGroups =
-            mutableListOf(
-                RunTemplateParameterGroup(id = "parameter", parameters = mutableListOf())
-            ),
-        organizationId = "Organizationid",
-        security = SolutionSecurity(ROLE_ADMIN, mutableListOf()),
-    )
-  }
+  private fun getWorkspace(): Workspace =
+      Workspace(
+          id = "Workspaceid",
+          key = "Test",
+          organizationId = "organizationId",
+          createInfo = WorkspaceEditInfo(0, ""),
+          updateInfo = WorkspaceEditInfo(0, ""),
+          name = "Test Workspace",
+          description = "Test Workspace Description",
+          version = "1.0.0",
+          solution =
+              WorkspaceSolution(
+                  solutionId = "1",
+              ),
+          security = WorkspaceSecurity(default = ROLE_ADMIN, accessControlList = mutableListOf()),
+      )
 
-  private fun getWorkspace(): Workspace {
-    return Workspace(
-        id = "Workspaceid",
-        key = "Test",
-        organizationId = "organizationId",
-        createInfo = WorkspaceEditInfo(0, ""),
-        updateInfo = WorkspaceEditInfo(0, ""),
-        name = "Test Workspace",
-        description = "Test Workspace Description",
-        version = "1.0.0",
-        solution =
-            WorkspaceSolution(
-                solutionId = "1",
-            ),
-        security = WorkspaceSecurity(default = ROLE_ADMIN, accessControlList = mutableListOf()),
-    )
-  }
-
-  private fun getOrganization(): Organization {
-    return Organization(
-        id = "Organizationid",
-        name = "Organization Test",
-        createInfo = OrganizationEditInfo(0, ""),
-        updateInfo = OrganizationEditInfo(0, ""),
-        security =
-            OrganizationSecurity(
-                ROLE_ADMIN,
-                mutableListOf(OrganizationAccessControl("user", ROLE_ADMIN)),
-            ),
-    )
-  }
+  private fun getOrganization(): Organization =
+      Organization(
+          id = "Organizationid",
+          name = "Organization Test",
+          createInfo = OrganizationEditInfo(0, ""),
+          updateInfo = OrganizationEditInfo(0, ""),
+          security =
+              OrganizationSecurity(
+                  ROLE_ADMIN,
+                  mutableListOf(OrganizationAccessControl("user", ROLE_ADMIN)),
+              ),
+      )
 }

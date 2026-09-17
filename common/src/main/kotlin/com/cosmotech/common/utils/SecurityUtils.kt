@@ -21,62 +21,59 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 
 fun getCurrentAuthentication(): Authentication? = SecurityContextHolder.getContext().authentication
 
-fun getCurrentAuthenticatedUserName(configuration: CsmPlatformProperties): String {
-  return getValueFromAuthenticatedToken(configuration) {
-    try {
-      val jwtClaimsSet = JWTParser.parse(it).jwtClaimsSet
-      jwtClaimsSet.getStringClaim(configuration.authorization.principalJwtClaim)
-          ?: jwtClaimsSet.getStringClaim(configuration.authorization.applicationIdJwtClaim)
-          ?: throw IllegalStateException("User Authentication not found in Security Context")
-    } catch (e: ParseException) {
-      JSONObjectUtils.parse(it)[configuration.authorization.principalJwtClaim] as String
+fun getCurrentAuthenticatedUserName(configuration: CsmPlatformProperties): String =
+    getValueFromAuthenticatedToken(configuration) {
+      try {
+        val jwtClaimsSet = JWTParser.parse(it).jwtClaimsSet
+        jwtClaimsSet.getStringClaim(configuration.authorization.principalJwtClaim)
+            ?: jwtClaimsSet.getStringClaim(configuration.authorization.applicationIdJwtClaim)
+            ?: throw IllegalStateException("User Authentication not found in Security Context")
+      } catch (e: ParseException) {
+        JSONObjectUtils.parse(it)[configuration.authorization.principalJwtClaim] as String
+      }
     }
-  }
-}
 
-fun getCurrentAuthenticatedIssuer(configuration: CsmPlatformProperties): String {
-  return getValueFromAuthenticatedToken(configuration) {
-    try {
-      JWTParser.parse(it).jwtClaimsSet.issuer
-    } catch (e: ParseException) {
-      JSONObjectUtils.parse(it)[JWTClaimNames.ISSUER] as String
+fun getCurrentAuthenticatedIssuer(configuration: CsmPlatformProperties): String =
+    getValueFromAuthenticatedToken(configuration) {
+      try {
+        JWTParser.parse(it).jwtClaimsSet.issuer
+      } catch (e: ParseException) {
+        JSONObjectUtils.parse(it)[JWTClaimNames.ISSUER] as String
+      }
     }
-  }
-}
 
-fun getCurrentAccountIdentifier(configuration: CsmPlatformProperties): String {
-  return getValueFromAuthenticatedToken(configuration) {
-    try {
-      val jwtClaimsSet = JWTParser.parse(it).jwtClaimsSet
-      jwtClaimsSet.getStringClaim(configuration.authorization.mailJwtClaim)
-          ?: jwtClaimsSet.getStringClaim(configuration.authorization.applicationIdJwtClaim)
-    } catch (e: ParseException) {
-      JSONObjectUtils.parse(it)[configuration.authorization.mailJwtClaim] as String
+fun getCurrentAccountIdentifier(configuration: CsmPlatformProperties): String =
+    getValueFromAuthenticatedToken(configuration) {
+      try {
+        val jwtClaimsSet = JWTParser.parse(it).jwtClaimsSet
+        jwtClaimsSet.getStringClaim(configuration.authorization.mailJwtClaim)
+            ?: jwtClaimsSet.getStringClaim(configuration.authorization.applicationIdJwtClaim)
+      } catch (e: ParseException) {
+        JSONObjectUtils.parse(it)[configuration.authorization.mailJwtClaim] as String
+      }
     }
-  }
-}
 
-fun getCurrentAccountGroups(configuration: CsmPlatformProperties): List<String> {
-  return getValueFromAuthenticatedToken(configuration) {
-    try {
-      val jwt = JWTParser.parse(it)
-      jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.groupJwtClaim) ?: emptyList()
-    } catch (e: ParseException) {
-      JSONObjectUtils.parse(it)[configuration.authorization.groupJwtClaim] as List<String>
+fun getCurrentAccountGroups(configuration: CsmPlatformProperties): List<String> =
+    getValueFromAuthenticatedToken(configuration) {
+      try {
+        val jwt = JWTParser.parse(it)
+        jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.groupJwtClaim)
+            ?: emptyList()
+      } catch (e: ParseException) {
+        JSONObjectUtils.parse(it)[configuration.authorization.groupJwtClaim] as List<String>
+      }
     }
-  }
-}
 
-fun getCurrentAuthenticatedRoles(configuration: CsmPlatformProperties): List<String> {
-  return getValueFromAuthenticatedToken(configuration) {
-    try {
-      val jwt = JWTParser.parse(it)
-      jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.rolesJwtClaim) ?: emptyList()
-    } catch (e: ParseException) {
-      JSONObjectUtils.parse(it)[configuration.authorization.rolesJwtClaim] as List<String>
+fun getCurrentAuthenticatedRoles(configuration: CsmPlatformProperties): List<String> =
+    getValueFromAuthenticatedToken(configuration) {
+      try {
+        val jwt = JWTParser.parse(it)
+        jwt.jwtClaimsSet.getStringListClaim(configuration.authorization.rolesJwtClaim)
+            ?: emptyList()
+      } catch (e: ParseException) {
+        JSONObjectUtils.parse(it)[configuration.authorization.rolesJwtClaim] as List<String>
+      }
     }
-  }
-}
 
 fun <T> getValueFromAuthenticatedToken(
     configuration: CsmPlatformProperties,

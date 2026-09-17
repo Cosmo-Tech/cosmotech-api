@@ -1,12 +1,13 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
 import com.diffplug.gradle.spotless.SpotlessExtension
+import com.diffplug.spotless.kotlin.KtfmtStep
 import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.*
-import com.github.jk1.license.task.ReportTask
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
-import io.gitlab.arturbosch.detekt.Detekt
+import dev.detekt.gradle.Detekt
+import dev.detekt.gradle.extensions.FailOnSeverity
 import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.cyclonedx.gradle.CyclonedxDirectTask
@@ -39,7 +40,7 @@ plugins {
   id("org.owasp.dependencycheck") version "13.0.0"
   id("com.github.jk1.dependency-license-report") version "3.1.4"
   id("org.jetbrains.kotlinx.kover") version "0.9.9"
-  id("io.gitlab.arturbosch.detekt") version "1.23.8"
+  id("dev.detekt") version "2.0.0-alpha.6"
   id("org.openapi.generator") version "7.25.0" apply false
   id("com.google.cloud.tools.jib") version "3.5.4" apply false
   id("org.cyclonedx.bom") version "3.4.1"
@@ -75,7 +76,8 @@ val bcpkixVersion = "1.86"
 val keycloakAdminClientVersion = "26.0.12"
 
 // Checks
-val detektVersion = "1.23.8"
+val detektVersion = "2.0.0-alpha.6"
+val detektKotlinVersion = "2.4.10"
 
 // Tests
 val jUnitBomVersion = "6.1.3"
@@ -97,6 +99,7 @@ dependencyCheck {
 }
 
 licenseReport {
+  outputDir = "$rootDir/doc/licenses"
   allowedLicensesFile =
       "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/allowed-licenses.json"
   val bundle =
@@ -120,7 +123,7 @@ buildscript {
 allprojects {
   apply(plugin = "com.diffplug.spotless")
   apply(plugin = "org.jetbrains.kotlin.jvm")
-  apply(plugin = "io.gitlab.arturbosch.detekt")
+  apply(plugin = "dev.detekt")
   apply(plugin = "project-report")
   apply(plugin = "org.owasp.dependencycheck")
   apply(plugin = "org.cyclonedx.bom")
@@ -164,12 +167,16 @@ allprojects {
       licenseHeader(licenseHeaderComment)
     }
     kotlin {
-      ktfmt()
+      ktfmt().configure {
+        it.setTrailingCommaManagementStrategy(KtfmtStep.TrailingCommaManagementStrategy.ONLY_ADD)
+      }
       target("**/*.kt")
       licenseHeader(licenseHeaderComment)
     }
     kotlinGradle {
-      ktfmt()
+      ktfmt().configure {
+        it.setTrailingCommaManagementStrategy(KtfmtStep.TrailingCommaManagementStrategy.ONLY_ADD)
+      }
       target("**/*.kts")
       licenseHeader(licenseHeaderComment, "(import |// no-import)")
     }
@@ -253,18 +260,15 @@ subprojects {
     buildUponDefaultConfig = true // preconfigure defaults
     allRules = false // activate all available (even unstable) rules.
     autoCorrect = true
+    failOnSeverity = FailOnSeverity.Warning
     config.from(file("$rootDir/.detekt/detekt.yaml"))
-    jvmTarget = "21"
+    jvmTarget = kotlinJvmTarget.toString()
     ignoreFailures = project.findProperty("detekt.ignoreFailures")?.toString()?.toBoolean() ?: false
     // Specify the base path for file paths in the formatted reports.
     // If not set, all file paths reported will be absolute file path.
     // This is so we can easily map results onto their source files in tools like GitHub Code
     // Scanning
     basePath = rootDir.absolutePath
-    // Force task execution on JDK 21
-    javaToolchains.launcherFor {
-      languageVersion.set(JavaLanguageVersion.of(21))
-    }
     reports {
       html {
         // observe findings in your browser with structure and code snippets
@@ -273,14 +277,14 @@ subprojects {
             file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.html")
         )
       }
-      xml {
+      checkstyle {
         // checkstyle like format mainly for integrations like Jenkins
         required.set(false)
         outputLocation.set(
             file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.xml")
         )
       }
-      txt {
+      markdown {
         // similar to the console output, contains issue signature to manually edit baseline files
         required.set(true)
         outputLocation.set(
@@ -304,9 +308,8 @@ subprojects {
   dependencies {
     // https://youtrack.jetbrains.com/issue/KT-71057/POM-file-unusable-after-upgrading-to-2.0.20-from-2.0.10
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.4.20"))
-    detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
-    detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
+    detekt("dev.detekt:detekt-cli:$detektVersion")
+    detektPlugins("dev.detekt:detekt-rules-libraries:$detektVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
@@ -317,10 +320,11 @@ subprojects {
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.springframework.boot:spring-boot-starter-webmvc") {
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    /*{
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
-    }
-    implementation("org.springframework.boot:spring-boot-starter-jetty")
+    }*/
+    // implementation("org.springframework.boot:spring-boot-starter-jetty")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("tools.jackson.dataformat:jackson-dataformat-yaml")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
@@ -364,6 +368,11 @@ subprojects {
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringVersion")
     // Source: https://mvnrepository.com/artifact/org.keycloak/keycloak-admin-client
     implementation("org.keycloak:keycloak-admin-client:$keycloakAdminClientVersion")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-mcp:3.1.1")
+
+    // MCP POC
+    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.1")
+    implementation("org.springaicommunity:mcp-server-security:0.1.14")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))
@@ -390,6 +399,16 @@ subprojects {
         "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
     )
   }
+
+  configurations
+      .matching { it.name in setOf("detekt", "detektPlugins") }
+      .configureEach {
+        resolutionStrategy.eachDependency {
+          if (requested.group == "org.jetbrains.kotlin") {
+            useVersion(detektKotlinVersion)
+          }
+        }
+      }
 
   tasks.withType<KotlinCompile> {
     if (openApiDefinitionFile.exists()) {
@@ -687,7 +706,10 @@ val copySubProjectsDetektReportsTasks = subprojects.flatMap { subProject ->
   }
 }
 
-tasks.getByName("detekt") { shouldRunAfter(*copySubProjectsDetektReportsTasks.toTypedArray()) }
+tasks.getByName("detekt") {
+  dependsOn(subprojects.map { "${it.path}:detekt" })
+  shouldRunAfter(*copySubProjectsDetektReportsTasks.toTypedArray())
+}
 
 extensions.configure<KoverProjectExtension>("kover") {
   reports {
@@ -711,9 +733,10 @@ kover {
 }
 
 // https://github.com/jk1/Gradle-License-Report/blob/master/README.md
-tasks.register<ReportTask>("generateLicenseDoc") {
+tasks.register("generateLicenseDoc") {
   group = "license"
   description = "Generate Licenses report"
+  dependsOn("generateLicenseReport")
 }
 
 tasks.register("generateAllReports") {

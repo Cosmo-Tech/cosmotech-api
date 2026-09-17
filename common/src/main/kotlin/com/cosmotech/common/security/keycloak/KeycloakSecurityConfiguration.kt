@@ -62,6 +62,7 @@ internal open class KeycloakSecurityConfiguration(
       csmPlatformProperties.identityProvider.viewerGroup ?: ROLE_ORGANIZATION_VIEWER
 
   @Value("\${csm.platform.identityProvider.tls.enabled}") private var tlsEnabled: Boolean = false
+
   @Value("\${csm.platform.identityProvider.tls.bundle}") private var tlsBundle: String = ""
 
   @Bean(name = ["KeycloakFilterChain"])
@@ -112,12 +113,14 @@ internal open class KeycloakSecurityConfiguration(
     val issuerUri = jwtProperties.issuerUri!!
     val validators = mutableListOf(JwtValidators.createDefaultWithIssuer(issuerUri))
     // Audience
-    val audienceValidator =
-        JwtClaimValidator(JwtClaimNames.AUD) { aud: List<String> ->
-          !Collections.disjoint(aud, jwtProperties.audiences)
-        }
-
-    validators.add(audienceValidator)
+    val targetAudiences = jwtProperties.audiences.filter { it.isNotBlank() }
+    if (targetAudiences.isNotEmpty() && "*" !in targetAudiences) {
+      val audienceValidator =
+          JwtClaimValidator(JwtClaimNames.AUD) { aud: List<String> ->
+            !Collections.disjoint(aud, targetAudiences)
+          }
+      validators.add(audienceValidator)
+    }
 
     // Tenant
     // With the assumption that 1 tenant = 1 realm (which cannot be the case once multi-tenancy will

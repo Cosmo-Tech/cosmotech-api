@@ -96,14 +96,13 @@ internal class RunArgoWorkflowService(
     }
   }
 
-  private fun getWorkflowStatus(workflowName: String): IoArgoprojWorkflowV1alpha1WorkflowStatus? {
-    return try {
-      this.getActiveWorkflow(workflowName)?.status
-    } catch (apiException: ApiException) {
-      logger.warn("Could not retrieve status for workflow '{}'", workflowName, apiException)
-      null
-    }
-  }
+  private fun getWorkflowStatus(workflowName: String): IoArgoprojWorkflowV1alpha1WorkflowStatus? =
+      try {
+        this.getActiveWorkflow(workflowName)?.status
+      } catch (apiException: ApiException) {
+        logger.warn("Could not retrieve status for workflow '{}'", workflowName, apiException)
+        null
+      }
 
   private fun getActiveWorkflow(workflowName: String): IoArgoprojWorkflowV1alpha1Workflow? {
     var workflow: IoArgoprojWorkflowV1alpha1Workflow? = null
@@ -187,9 +186,7 @@ internal class RunArgoWorkflowService(
     }
   }
 
-  override fun findWorkflowStatusByLabel(
-      labelSelector: String,
-  ): List<WorkflowStatus> {
+  override fun findWorkflowStatusByLabel(labelSelector: String): List<WorkflowStatus> {
     val workflowList = findWorkflowListByLabel(labelSelector)
 
     return workflowList.map { workflow ->
@@ -207,27 +204,25 @@ internal class RunArgoWorkflowService(
   }
 
   internal fun findWorkflowListByLabel(
-      labelSelector: String,
-  ): List<IoArgoprojWorkflowV1alpha1Workflow> {
-
-    return newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
-        .workflowServiceListWorkflows(
-            csmPlatformProperties.argo.workflows.namespace,
-            labelSelector,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-        )
-        .items
-  }
+      labelSelector: String
+  ): List<IoArgoprojWorkflowV1alpha1Workflow> =
+      newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
+          .workflowServiceListWorkflows(
+              csmPlatformProperties.argo.workflows.namespace,
+              labelSelector,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+          )
+          .items
 
   override fun getRunStatus(run: Run): RunStatus {
     val runId = run.id
@@ -259,7 +254,7 @@ internal class RunArgoWorkflowService(
                     .get()
                     .uri(
                         "/api/v1/workflows/${csmPlatformProperties.argo.workflows.namespace}" +
-                            "/$workflowName/log?podName=${podName}&logOptions.container=main"
+                            "/$workflowName/log?podName=$podName&logOptions.container=main"
                     )
                     .retrieve()
                     .body(String::class.java)
@@ -335,44 +330,47 @@ internal class RunArgoWorkflowService(
   private fun buildRunStatusFromWorkflowStatus(
       run: Run,
       workflowStatus: IoArgoprojWorkflowV1alpha1WorkflowStatus?,
-  ): RunStatus {
-    return RunStatus(
-        id = run.id,
-        organizationId = run.organizationId,
-        workspaceId = run.workspaceId,
-        runnerId = run.runnerId,
-        workflowId = run.workflowId,
-        workflowName = run.workflowName,
-        startTime = workflowStatus?.startedAt?.toString(),
-        endTime = workflowStatus?.finishedAt?.toString(),
-        phase =
-            if (run.state == RunState.Failed) RunState.Failed.toString() else workflowStatus?.phase,
-        progress = workflowStatus?.progress,
-        message = workflowStatus?.message,
-        estimatedDuration = workflowStatus?.estimatedDuration,
-        nodes =
-            workflowStatus?.nodes?.values?.map { nodeStatus ->
-              RunStatusNode(
-                  id = nodeStatus.id,
-                  name = nodeStatus.name,
-                  containerName = nodeStatus.displayName,
-                  estimatedDuration = nodeStatus.estimatedDuration,
-                  resourcesDuration =
-                      RunResourceRequested(
-                          nodeStatus.resourcesDuration?.get("cpu"),
-                          nodeStatus.resourcesDuration?.get("memory"),
-                      ),
-                  outboundNodes = nodeStatus.outboundNodes,
-                  hostNodeName = nodeStatus.hostNodeName,
-                  message = nodeStatus.message,
-                  phase = nodeStatus.phase,
-                  progress = nodeStatus.progress,
-                  startTime = nodeStatus.startedAt?.toString(),
-                  endTime = nodeStatus.finishedAt?.toString(),
-              )
-            },
-    )
-  }
+  ): RunStatus =
+      RunStatus(
+          id = run.id,
+          organizationId = run.organizationId,
+          workspaceId = run.workspaceId,
+          runnerId = run.runnerId,
+          workflowId = run.workflowId,
+          workflowName = run.workflowName,
+          startTime = workflowStatus?.startedAt?.toString(),
+          endTime = workflowStatus?.finishedAt?.toString(),
+          phase =
+              if (run.state == RunState.Failed) {
+                RunState.Failed.toString()
+              } else {
+                workflowStatus?.phase
+              },
+          progress = workflowStatus?.progress,
+          message = workflowStatus?.message,
+          estimatedDuration = workflowStatus?.estimatedDuration,
+          nodes =
+              workflowStatus?.nodes?.values?.map { nodeStatus ->
+                RunStatusNode(
+                    id = nodeStatus.id,
+                    name = nodeStatus.name,
+                    containerName = nodeStatus.displayName,
+                    estimatedDuration = nodeStatus.estimatedDuration,
+                    resourcesDuration =
+                        RunResourceRequested(
+                            nodeStatus.resourcesDuration?.get("cpu"),
+                            nodeStatus.resourcesDuration?.get("memory"),
+                        ),
+                    outboundNodes = nodeStatus.outboundNodes,
+                    hostNodeName = nodeStatus.hostNodeName,
+                    message = nodeStatus.message,
+                    phase = nodeStatus.phase,
+                    progress = nodeStatus.progress,
+                    startTime = nodeStatus.startedAt?.toString(),
+                    endTime = nodeStatus.finishedAt?.toString(),
+                )
+              },
+      )
 
   // Should be handled synchronously
   @EventListener(WorkflowStatusRequest::class)

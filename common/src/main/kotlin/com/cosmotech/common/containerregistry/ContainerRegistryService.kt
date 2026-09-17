@@ -101,13 +101,15 @@ class ContainerRegistryService(private val csmPlatformProperties: CsmPlatformPro
       // If we need to follow a redirect, do it without the initial 'Authorization' header or Azure
       // Blob Storage will complain
       val blob =
-          if (blobResponse.statusCode.is3xxRedirection)
-              restClient
-                  .get()
-                  .uri(URI(blobResponse.headers.getFirst(HttpHeaders.LOCATION) ?: ""))
-                  .retrieve()
-                  .body<String>()!!
-          else blobResponse.body!!
+          if (blobResponse.statusCode.is3xxRedirection) {
+            restClient
+                .get()
+                .uri(URI(blobResponse.headers.getFirst(HttpHeaders.LOCATION) ?: ""))
+                .retrieve()
+                .body<String>()!!
+          } else {
+            blobResponse.body!!
+          }
 
       return JSONObject(blob)
           .getJSONObject("config")

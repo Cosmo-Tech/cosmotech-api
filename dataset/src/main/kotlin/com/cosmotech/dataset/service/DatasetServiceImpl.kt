@@ -226,11 +226,10 @@ class DatasetServiceImpl(
     }
   }
 
-  override fun getDataset(organizationId: String, workspaceId: String, datasetId: String): Dataset {
-    return updateSecurityVisibility(
-        getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ)
-    )
-  }
+  override fun getDataset(organizationId: String, workspaceId: String, datasetId: String): Dataset =
+      updateSecurityVisibility(
+          getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ),
+      )
 
   override fun getDatasetAccessControl(
       organizationId: String,
@@ -250,7 +249,6 @@ class DatasetServiceImpl(
       workspaceId: String,
       datasetId: String,
   ): List<String> {
-
     val dataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ_SECURITY)
 
@@ -315,7 +313,6 @@ class DatasetServiceImpl(
       datasetId: String,
       identityId: String,
   ) {
-
     val dataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
@@ -330,7 +327,6 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetRole: DatasetRole,
   ): DatasetSecurity {
-
     val dataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
@@ -405,7 +401,6 @@ class DatasetServiceImpl(
       identityId: String,
       datasetRole: DatasetRole,
   ): DatasetAccessControl {
-
     val dataset =
         getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_WRITE_SECURITY)
     csmRbac.checkEntityExists(
@@ -674,16 +669,15 @@ class DatasetServiceImpl(
   }
 
   private fun validateParameters(parametersToValidate: Map<String, List<String>?>) {
-
     parametersToValidate.forEach { (parameterName, parameterValues) ->
       if (parameterValues != null) {
         require(parameterValues.all { Regex("[a-zA-Z0-9_*!\' ]+").matches(it) }) {
           "Invalid parameter value found in '$parameterName': " +
-              "parameter name must match [a-zA-Z0-9_*!\' ]+ (found: ${parameterValues})"
+              "parameter name must match [a-zA-Z0-9_*!\' ]+ (found: $parameterValues)"
         }
         require(parameterValues.all { it.trim() != "*" && it.trim() != "!" }) {
           "Invalid parameter value found in '$parameterName': " +
-              "parameter name must not be \"*\" or \"!\" (found: ${parameterValues})"
+              "parameter name must not be \"*\" or \"!\" (found: $parameterValues)"
         }
       }
     }
@@ -737,20 +731,19 @@ class DatasetServiceImpl(
       aggregationFunction: AggregationType?,
       castType: String?,
       orderable: Boolean = false,
-  ): String {
-    return columnNames?.joinToString(separator = ",") { columnName ->
-      if (aggregationFunction != null) {
-        createAggregationClause(aggregationFunction.name.lowercase(), columnName, castType)
-      } else {
-        if (orderable) {
-          createOrderClause(columnName)
+  ): String =
+      columnNames?.joinToString(separator = ",") { columnName ->
+        if (aggregationFunction != null) {
+          createAggregationClause(aggregationFunction.name.lowercase(), columnName, castType)
         } else {
-          val (isMarkedAsDistinct, actualColumnName) = getDistinctData(columnName)
-          createDistinctClause(isMarkedAsDistinct, actualColumnName)
+          if (orderable) {
+            createOrderClause(columnName)
+          } else {
+            val (isMarkedAsDistinct, actualColumnName) = getDistinctData(columnName)
+            createDistinctClause(isMarkedAsDistinct, actualColumnName)
+          }
         }
-      }
-    } ?: ""
-  }
+      } ?: ""
 
   private fun createOrderClause(columnName: String): String {
     val isMarkedAsDesc = columnName.startsWith(ORDER_DESC_COLUMN_CHAR)
@@ -769,13 +762,12 @@ class DatasetServiceImpl(
           columnSpec.substringBeforeLast(DISTINCT_COLUMN_CHAR),
       )
 
-  private fun createDistinctClause(isDistinct: Boolean, columnName: String): String {
-    return "%s %s"
-        .format(
-            if (isDistinct) COLUMN_DISTINCT_KEYWORD.uppercase() else "",
-            StringUtils.wrapIfMissing(columnName, "\""),
-        )
-  }
+  private fun createDistinctClause(isDistinct: Boolean, columnName: String): String =
+      "%s %s"
+          .format(
+              if (isDistinct) COLUMN_DISTINCT_KEYWORD.uppercase() else "",
+              StringUtils.wrapIfMissing(columnName, "\""),
+          )
 
   private fun createAggregationClause(
       aggFunction: String,
@@ -986,7 +978,8 @@ class DatasetServiceImpl(
     val dataset =
         datasetRepository.findBy(organizationId, workspaceId, datasetParameterId).orElseThrow {
           CsmResourceNotFoundException(
-              "Dataset '$datasetParameterId' not found in Organization '$organizationId' and Workspace '$workspaceId'"
+              "Dataset '$datasetParameterId' not found in Organization '$organizationId' " +
+                  "and Workspace '$workspaceId'"
           )
         }
 
@@ -1015,7 +1008,7 @@ class DatasetServiceImpl(
 
     require(!originalFilename.isNullOrBlank()) { "File name must not be null or blank" }
     require(!originalFilename.contains("..") && !originalFilename.startsWith("/")) {
-      "Invalid filename: '${originalFilename}'. File name should neither contains '..' nor starts by '/'."
+      "Invalid filename: '$originalFilename'. File name should neither contains '..' nor starts by '/'."
     }
     if (isDBFile) {
       resourceScanner.scanMimeTypes(originalFilename, file.inputStream, listOf("text/csv"))

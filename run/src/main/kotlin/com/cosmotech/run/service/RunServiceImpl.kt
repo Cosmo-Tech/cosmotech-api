@@ -117,21 +117,25 @@ class RunServiceImpl(
     )
   }
 
-  private fun mapWorkflowPhaseToRunStatus(phase: String?, runId: String?): RunState {
-    return when (phase) {
-      "Pending",
-      "Running" -> RunState.Running
-      "Succeeded" -> RunState.Successful
-      "Skipped",
-      "Failed",
-      "Error",
-      "Omitted" -> RunState.Failed
-      else -> {
-        logger.warn("Unhandled state response for job {}: {} => Returning Unknown", runId, phase)
-        RunState.Unknown
+  private fun mapWorkflowPhaseToRunStatus(phase: String?, runId: String?): RunState =
+      when (phase) {
+        "Pending",
+        "Running",
+        -> RunState.Running
+
+        "Succeeded" -> RunState.Successful
+
+        "Skipped",
+        "Failed",
+        "Error",
+        "Omitted",
+        -> RunState.Failed
+
+        else -> {
+          logger.warn("Unhandled state response for job {}: {} => Returning Unknown", runId, phase)
+          RunState.Unknown
+        }
       }
-    }
-  }
 
   override fun getRun(
       organizationId: String,
@@ -169,7 +173,6 @@ class RunServiceImpl(
 
   private fun deleteRun(run: Run) {
     try {
-
       workflowService.stopWorkflow(run)
 
       val defaultPageSize = csmPlatformProperties.databases.resources.run.defaultPageSize
@@ -224,9 +227,7 @@ class RunServiceImpl(
       workspaceId: String,
       runnerId: String,
       runId: String,
-  ): RunStatus {
-    return getRunStatus(this.getRun(organizationId, workspaceId, runnerId, runId))
-  }
+  ): RunStatus = getRunStatus(this.getRun(organizationId, workspaceId, runnerId, runId))
 
   @EventListener(RunStart::class)
   fun onRunStart(runStartRequest: RunStart) {
