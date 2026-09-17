@@ -3,7 +3,6 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.*
-import com.github.jk1.license.task.ReportTask
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
 import dev.detekt.gradle.Detekt
@@ -99,6 +98,7 @@ dependencyCheck {
 }
 
 licenseReport {
+  outputDir = "$rootDir/doc/licenses"
   allowedLicensesFile =
       "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/refs/heads/main/config/allowed-licenses.json"
   val bundle =
@@ -728,9 +728,10 @@ kover {
 }
 
 // https://github.com/jk1/Gradle-License-Report/blob/master/README.md
-tasks.register<ReportTask>("generateLicenseDoc") {
+tasks.register("generateLicenseDoc") {
   group = "license"
   description = "Generate Licenses report"
+  dependsOn("generateLicenseReport")
 }
 
 tasks.register("generateAllReports") {
