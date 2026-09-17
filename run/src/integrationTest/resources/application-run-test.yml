@@ -67,6 +67,11 @@ csm:
       base-path: /
       base-url: "http://fake_url:8080"
       version: latest
+      mcp:
+        dashboard-enabled: false
+        enabled: false
+        paths-to-exclude:
+          - "[fill-this-value]"
     event-publisher:
       type: in_process
     images:
