@@ -113,7 +113,7 @@ buildscript {
     // here is some relative links:
     // issue : https://github.com/GoogleContainerTools/jib/issues/3714
     // PR: https://github.com/GoogleContainerTools/jib/pull/3717
-    classpath("com.github.luben:zstd-jni:1.5.7-16")
+    classpath("com.github.luben:zstd-jni:1.5.7-17")
   }
 }
 
