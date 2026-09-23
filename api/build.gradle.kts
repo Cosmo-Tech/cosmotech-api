@@ -120,6 +120,7 @@ tasks.register<GenerateTask>("openApiTypescriptGenerate") {
       mapOf(
           "npmName" to "@cosmotech/api-ts",
           "httpUserAgent" to "cosmotech-api-typescript/${project.version}",
+          "licenseName" to "CosmoTech",
       )
   )
 }
