@@ -74,6 +74,9 @@ val commonCompressVersion = "1.28.0"
 val awsSpringVersion = "4.1.1"
 val bcpkixVersion = "1.86"
 val keycloakAdminClientVersion = "26.0.12"
+val springdocOpenapiMcpVersion = "3.1.1"
+val springAiStarterMcpVersion = "2.0.1"
+val springAiSecurityMcpVersion = "0.1.14"
 
 // Checks
 val detektVersion = "2.0.0-alpha.6"
@@ -375,11 +378,11 @@ subprojects {
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringVersion")
     // Source: https://mvnrepository.com/artifact/org.keycloak/keycloak-admin-client
     implementation("org.keycloak:keycloak-admin-client:$keycloakAdminClientVersion")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-mcp:3.1.1")
-
-    // MCP POC
-    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc:2.0.1")
-    implementation("org.springaicommunity:mcp-server-security:0.1.14")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-mcp:$springdocOpenapiMcpVersion")
+    implementation(
+        "org.springframework.ai:spring-ai-starter-mcp-server-webmvc:$springAiStarterMcpVersion"
+    )
+    implementation("org.springaicommunity:mcp-server-security:$springAiSecurityMcpVersion")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))
