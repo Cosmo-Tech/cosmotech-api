@@ -131,6 +131,17 @@ allprojects {
 
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
 
+  configurations {
+    all {
+      resolutionStrategy {
+        // CVE-2026-68525, CVE-2026-65905, CVE-2026-65182
+        force("org.apache.tomcat.embed:tomcat-embed-core:11.0.26")
+        force("org.apache.tomcat.embed:tomcat-embed-el:11.0.26")
+        force("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.26")
+      }
+    }
+  }
+
   java {
     targetCompatibility = JavaVersion.VERSION_25
     sourceCompatibility = JavaVersion.VERSION_25
