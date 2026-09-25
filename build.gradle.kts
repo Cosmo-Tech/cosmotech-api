@@ -54,7 +54,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 // Dependencies version
-val jacksonBom = "3.2.2"
+val jacksonBom = "3.2.3"
 val springOauthAutoConfigureVersion = "2.6.8"
 val kotlinJvmTarget = 25
 val redisOmSpringVersion = "2.0.10"
