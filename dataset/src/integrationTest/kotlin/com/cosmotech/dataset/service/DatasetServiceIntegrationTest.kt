@@ -1000,6 +1000,71 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
+  fun `test listDatasets as workspace admin`() {
+
+    workspace =
+        WorkspaceCreateRequest(
+            key = UUID.randomUUID().toString(),
+            name = "SDCOSMO-3806 - list datasets as workspace admin",
+            solution =
+                WorkspaceSolution(
+                    solutionId = solutionSaved.id,
+                ),
+        )
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+    val datasetCreateRequest =
+        DatasetCreateRequest(
+            name = "Dataset Test that should not be seen",
+            security =
+                DatasetSecurity(
+                    default = ROLE_NONE,
+                    accessControlList =
+                        mutableListOf(
+                            DatasetAccessControl(id = CONNECTED_DEFAULT_USER, role = "admin")
+                        ),
+                ),
+        )
+
+    datasetApiService.createDataset(
+        organizationSaved.id,
+        workspaceSaved.id,
+        datasetCreateRequest,
+        arrayOf(),
+    )
+
+    val datasetCreateRequest2 = DatasetCreateRequest(name = "Dataset Test 2")
+
+    val createDataset2 =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest2,
+            arrayOf(),
+        )
+
+    var retrievedDatasetList =
+        datasetApiService.listDatasets(organizationSaved.id, workspaceSaved.id, null, null)
+
+    assertNotNull(retrievedDatasetList)
+    assertTrue(retrievedDatasetList.size == 1)
+    assertEquals(mutableListOf(createDataset2), retrievedDatasetList)
+
+    retrievedDatasetList =
+        datasetApiService.listDatasets(organizationSaved.id, workspaceSaved.id, 0, 1)
+
+    assertNotNull(retrievedDatasetList)
+    assertTrue(retrievedDatasetList.size == 1)
+    assertEquals(mutableListOf(createDataset2), retrievedDatasetList)
+
+    retrievedDatasetList =
+        datasetApiService.listDatasets(organizationSaved.id, workspaceSaved.id, 1, 5)
+
+    assertNotNull(retrievedDatasetList)
+    assertTrue(retrievedDatasetList.isEmpty())
+  }
+
+  @Test
   fun `test deleteDatasetAccessControl`() {
     val datasetCreateRequest =
         DatasetCreateRequest(

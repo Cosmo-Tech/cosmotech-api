@@ -8,6 +8,7 @@ import com.cosmotech.common.events.GetRunnerAttachedToDataset
 import com.cosmotech.common.events.RunnerDeleted
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.id.generateId
+import com.cosmotech.common.rbac.CsmAdmin
 import com.cosmotech.common.rbac.CsmRbac
 import com.cosmotech.common.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.common.rbac.PERMISSION_DELETE
@@ -16,7 +17,6 @@ import com.cosmotech.common.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.common.rbac.PERMISSION_WRITE
 import com.cosmotech.common.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.common.rbac.ROLE_NONE
-import com.cosmotech.common.rbac.getCommonRolesDefinition
 import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
 import com.cosmotech.common.security.keycloak.KeycloakClient
@@ -78,6 +78,7 @@ class DatasetServiceImpl(
     private val resourceScanner: ResourceScanner,
     private val readerJdbcTemplate: JdbcTemplate,
     private val keycloak: KeycloakClient,
+    private val csmAdmin: CsmAdmin,
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
 
   override fun getVerifiedDataset(
@@ -261,14 +262,10 @@ class DatasetServiceImpl(
       page: Int?,
       size: Int?,
   ): List<Dataset> {
-    val workspace = workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
+    workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     val defaultPageSize = csmPlatformProperties.databases.resources.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
-    val isAdmin =
-        csmRbac.isAdmin(
-            workspace.security.toGenericSecurity(workspaceId),
-            getCommonRolesDefinition(),
-        )
+    val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
     val result: MutableList<Dataset>
     val rbacEnabled = !isAdmin && this.csmPlatformProperties.rbac.enabled
     if (pageable == null) {
