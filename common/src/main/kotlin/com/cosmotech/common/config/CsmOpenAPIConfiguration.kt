@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.security.OAuthFlow
 import io.swagger.v3.oas.models.security.OAuthFlows
 import io.swagger.v3.oas.models.security.Scopes
+import io.swagger.v3.oas.models.servers.Server
 import io.swagger.v3.parser.OpenAPIV3Parser
 import java.io.BufferedReader
 import org.springframework.beans.factory.annotation.Value
@@ -46,9 +47,7 @@ open class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformPropert
     val fullVersion = getAboutInfo().getJSONObject("version").getString("full")
     openAPI.info.description += " ($fullVersion)"
 
-    // Remove any set of servers already defined in the input openapi.yaml,
-    // so as to have the base URL auto-generated based on the incoming requests
-    openAPI.servers = listOf()
+    configureServers(openAPI, csmPlatformProperties.api.openApiServerUrl)
 
     val scopes = Scopes()
     scopes.putAll(csmPlatformProperties.identityProvider.defaultScopes)
@@ -65,5 +64,10 @@ open class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformPropert
     openAPI.components.securitySchemes["oAuth2AuthCode"]?.flows(authorizationCodeFlow)
 
     return openAPI
+  }
+
+  internal fun configureServers(openAPI: OpenAPI, serverUrl: String) {
+    openAPI.servers =
+        serverUrl.takeIf { it.isNotBlank() }?.let { listOf(Server().url(it)) } ?: emptyList()
   }
 }

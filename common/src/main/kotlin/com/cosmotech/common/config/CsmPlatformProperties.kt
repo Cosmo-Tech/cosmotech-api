@@ -202,6 +202,9 @@ data class CsmPlatformProperties(
 
       /** Define Mcp configuration */
       val mcp: CsmMcp,
+
+      /** Public server URL advertised by OpenAPI; empty keeps request-based discovery. */
+      val openApiServerUrl: String = "",
   ) {
     data class CsmMcp(
         /** Enable MCP endpoints generation (on /mcp) */
