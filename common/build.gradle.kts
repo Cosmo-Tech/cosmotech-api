@@ -11,7 +11,7 @@ val tikaVersion = "4.1.0"
 val springPlatformBomVersion = "4.1.1"
 val jUnitBomVersion = "6.1.3"
 val testContainersJupiterVersion = "1.21.4"
-val testContainerKeycloakVersion = "4.3.1"
+val testContainerKeycloakVersion = "4.4.0"
 
 dependencies {
   implementation("org.apache.httpcomponents.client5:httpclient5")
