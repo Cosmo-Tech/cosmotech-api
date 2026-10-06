@@ -9,6 +9,9 @@ Cosmo Tech Platform API
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` | default behavior is a pod anti-affinity, which prevents pods from co-locating on a same node |
+| api.compression.enabled | bool | `true` |  |
+| api.compression.mimeTypes | string | `"application/octet-stream,text/csv,text/plain,application/json"` |  |
+| api.compression.minResponseSize | string | `"1MB"` |  |
 | api.multiTenant | bool | `true` |  |
 | api.probes.liveness.failureThreshold | int | `5` |  |
 | api.probes.liveness.timeoutSeconds | int | `10` |  |

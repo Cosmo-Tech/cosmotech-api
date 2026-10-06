@@ -101,6 +101,10 @@ api:
     enabled: true
     namespace: "cosmotech-monitoring"
     additionalLabels: {}
+  compression:
+    enabled: true
+    minResponseSize: 1MB
+    mimeTypes: "application/octet-stream,text/csv,text/plain,application/json"
 
 ingress:
   enabled: false
