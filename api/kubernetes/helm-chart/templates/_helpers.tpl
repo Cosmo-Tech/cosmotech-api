@@ -118,6 +118,10 @@ server:
   undertow:
     accesslog:
       enabled: false
+  compression:
+    enabled: {{ .Values.api.compression.enabled }}
+    min-response-size: {{ .Values.api.compression.minResponseSize }}
+    mime-types: {{ .Values.api.compression.mimeTypes }}
 
 management:
   endpoint:
