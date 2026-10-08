@@ -41,7 +41,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClientResponseException
 
-internal const val WORKFLOW_TYPE_RUN = "container-run"
 
 @Service
 @Suppress("TooManyFunctions")
@@ -240,7 +239,6 @@ class RunServiceImpl(
             runner.organizationId,
             runner.workspaceId,
             runner.id,
-            WORKFLOW_TYPE_RUN,
             runId,
             runType,
         )

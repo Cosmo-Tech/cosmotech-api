@@ -144,6 +144,7 @@ csm:
       host: "localhost:5000"
       username: "default"
       password: "my-wonderful-password"
+      checkSolutionImage: false
     s3:
       endpointUrl: "http://localhost:9000"
       bucketName: "test-bucket"
