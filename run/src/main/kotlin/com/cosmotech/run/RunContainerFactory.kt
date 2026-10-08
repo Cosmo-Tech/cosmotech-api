@@ -62,6 +62,7 @@ private const val GENERATE_NAME_SUFFIX = "-"
 
 internal const val CSM_JOB_ID_LABEL_KEY = "cosmotech.com/job_id"
 internal const val WORKFLOW_TYPE_LABEL = "cosmotech.com/workflowtype"
+internal const val RUN_TEMPLATE_TAGS = "cosmotech.com/runTemplateTags"
 internal const val ORGANIZATION_ID_LABEL = "cosmotech.com/organizationId"
 internal const val WORKSPACE_ID_LABEL = "cosmotech.com/workspaceId"
 internal const val RUNNER_ID_LABEL = "cosmotech.com/runnerId"
@@ -89,7 +90,6 @@ class RunContainerFactory(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      workflowType: String,
       runId: String,
       runType: RunType = RunType.Run,
   ): StartInfo {
@@ -115,7 +115,6 @@ class RunContainerFactory(
                 solution,
                 runId,
                 runId,
-                workflowType,
                 runType,
             ),
         runner = runner,
@@ -134,7 +133,6 @@ class RunContainerFactory(
       solution: Solution,
       runId: String,
       csmSimulationId: String,
-      workflowType: String,
       runType: RunType = RunType.Run,
   ): RunStartContainers {
     check(runner.runTemplateId.isNotBlank()) { "Runner runTemplateId cannot be blank" }
@@ -207,7 +205,8 @@ class RunContainerFactory(
         labels =
             mapOf(
                 CSM_JOB_ID_LABEL_KEY to runId,
-                WORKFLOW_TYPE_LABEL to workflowType,
+                WORKFLOW_TYPE_LABEL to "container-$runType",
+                RUN_TEMPLATE_TAGS to (template.tags?.joinToString(separator = ",") ?: ""),
                 ORGANIZATION_ID_LABEL to organization.id,
                 WORKSPACE_ID_LABEL to workspace.id,
                 RUNNER_ID_LABEL to runner.id,
