@@ -14,7 +14,6 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.run.domain.ContainerResourceSizeInfo
 import com.cosmotech.run.domain.ContainerResourceSizing
 import com.cosmotech.run.domain.RunContainer
-import com.cosmotech.run.service.WORKFLOW_TYPE_RUN
 import com.cosmotech.runner.api.RunnerApiService
 import com.cosmotech.runner.domain.LastRunInfo
 import com.cosmotech.runner.domain.LastRunInfo.LastRunStatus
@@ -165,7 +164,6 @@ class ContainerFactoryTests {
             solution = getSolution(),
             runId = CSM_SIMULATION_ID,
             csmSimulationId = CSM_SIMULATION_ID,
-            workflowType = WORKFLOW_TYPE_RUN,
         )
 
     val runContainer =
