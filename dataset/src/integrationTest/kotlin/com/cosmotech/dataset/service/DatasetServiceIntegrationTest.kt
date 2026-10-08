@@ -2192,6 +2192,28 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
   }
 
   @Test
+  fun `test getDatasetSecurity`() {
+
+    val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")
+
+    val createDataset =
+        datasetApiService.createDataset(
+            organizationSaved.id,
+            workspaceSaved.id,
+            datasetCreateRequest,
+            arrayOf(),
+        )
+    val retrievedDatasetSecurity =
+        datasetApiService.getDatasetSecurity(
+            organizationSaved.id,
+            workspaceSaved.id,
+            createDataset.id,
+        )
+
+    assertEquals(createDataset.security, retrievedDatasetSecurity)
+  }
+
+  @Test
   fun `test getDatasetPart`() {
 
     val datasetCreateRequest = DatasetCreateRequest(name = "Dataset Test")

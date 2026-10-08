@@ -246,6 +246,34 @@ paths:
           description: Insufficient permissions on organization, workspace or dataset
         "404":
           description: Organization or workspace or dataset specified is not found
+  /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security:
+    parameters:
+      - $ref: '#/components/parameters/organizationId'
+      - $ref: '#/components/parameters/workspaceId'
+      - $ref: '#/components/parameters/datasetId'
+    get:
+      operationId: getDatasetSecurity
+      tags:
+        - dataset
+      summary: Get the security information for a Dataset
+      responses:
+        "200":
+          description: The Dataset security
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetSecurity'
+              examples:
+                DatasetSecurityExample:
+                  $ref: '#/components/examples/DatasetSecurityExample'
+            application/yaml:
+              schema:
+                $ref: '#/components/schemas/DatasetSecurity'
+              examples:
+                DatasetSecurityExample:
+                  $ref: '#/components/examples/DatasetSecurityExample'
+        "404":
+          description: The Dataset or user specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default:
     parameters:
       - $ref: '#/components/parameters/organizationId'

@@ -232,6 +232,16 @@ class DatasetServiceImpl(
           getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ),
       )
 
+  override fun getDatasetSecurity(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String,
+  ): DatasetSecurity {
+    val dataset =
+        getVerifiedDataset(organizationId, workspaceId, datasetId, PERMISSION_READ_SECURITY)
+    return dataset.security
+  }
+
   override fun getDatasetAccessControl(
       organizationId: String,
       workspaceId: String,

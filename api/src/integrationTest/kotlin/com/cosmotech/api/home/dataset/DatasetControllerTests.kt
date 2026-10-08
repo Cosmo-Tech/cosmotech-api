@@ -493,6 +493,48 @@ class DatasetControllerTests : ControllerTestBase() {
   }
 
   @Test
+  fun get_dataset_security() {
+
+    val datasetSecurity =
+        DatasetSecurity(
+            default = ROLE_NONE,
+            accessControlList =
+                mutableListOf(
+                    DatasetAccessControl(role = ROLE_ADMIN, id = PLATFORM_ADMIN_EMAIL),
+                    DatasetAccessControl(role = ROLE_EDITOR, id = ORGANIZATION_USER_EMAIL),
+                ),
+        )
+
+    val datasetId =
+        createDatasetAndReturnId(
+            mvc,
+            organizationId,
+            workspaceId,
+            constructDatasetCreateRequest(security = datasetSecurity),
+        )
+
+    mvc.perform(
+            get(
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security"
+                )
+                .withPlatformAdminHeader()
+                .accept(MediaType.APPLICATION_JSON)
+        )
+        .andExpect(status().is2xxSuccessful)
+        .andExpect(jsonPath("$.default").value(ROLE_NONE))
+        .andExpect(jsonPath("$.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
+        .andExpect(jsonPath("$.accessControlList[0].role").value(ROLE_ADMIN))
+        .andExpect(jsonPath("$.accessControlList[1].id").value(ORGANIZATION_USER_EMAIL))
+        .andExpect(jsonPath("$.accessControlList[1].role").value(ROLE_EDITOR))
+        .andDo(MockMvcResultHandlers.print())
+        .andDo(
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/GET"
+            )
+        )
+  }
+
+  @Test
   fun get_dataset_access_control() {
 
     val datasetSecurity =

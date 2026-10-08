@@ -15,6 +15,7 @@ All URIs are relative to *http://localhost:8080*
 | [**getDatasetAccessControl**](DatasetApi.md#getDatasetAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id} | Get a control access for the Dataset |
 | [**getDatasetMembers**](DatasetApi.md#getDatasetMembers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/members | Get the members of a Dataset |
 | [**getDatasetPart**](DatasetApi.md#getDatasetPart) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id} | Retrieve a data part of a Dataset |
+| [**getDatasetSecurity**](DatasetApi.md#getDatasetSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security | Get the security information for a Dataset |
 | [**listDatasetParts**](DatasetApi.md#listDatasetParts) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts | Retrieve all dataset parts of a Dataset |
 | [**listDatasetSecurityUsers**](DatasetApi.md#listDatasetSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/users | Get the Dataset security users list |
 | [**listDatasets**](DatasetApi.md#listDatasets) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/datasets | Retrieve a list of defined Dataset |
@@ -340,6 +341,33 @@ Retrieve a data part of a Dataset
 ### Return type
 
 [**DatasetPart**](../Models/DatasetPart.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json, application/yaml
+
+<a name="getDatasetSecurity"></a>
+# **getDatasetSecurity**
+> DatasetSecurity getDatasetSecurity(organization\_id, workspace\_id, dataset\_id)
+
+Get the security information for a Dataset
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+
+### Return type
+
+[**DatasetSecurity**](../Models/DatasetSecurity.md)
 
 ### Authorization
 
