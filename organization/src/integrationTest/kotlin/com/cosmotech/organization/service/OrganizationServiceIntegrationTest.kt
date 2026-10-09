@@ -455,6 +455,66 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                       ),
               ),
               ComponentRolePermissions(
+                  component = "solution",
+                  roles =
+                      mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
+                          ROLE_VIEWER to mutableListOf(PERMISSION_READ),
+                          ROLE_USER to
+                              mutableListOf(
+                                  PERMISSION_READ,
+                                  PERMISSION_READ_SECURITY,
+                                  PERMISSION_CREATE_CHILDREN,
+                              ),
+                          ROLE_EDITOR to
+                              mutableListOf(
+                                  PERMISSION_READ,
+                                  PERMISSION_READ_SECURITY,
+                                  PERMISSION_CREATE_CHILDREN,
+                                  PERMISSION_WRITE,
+                              ),
+                          ROLE_ADMIN to
+                              mutableListOf(
+                                  PERMISSION_READ,
+                                  PERMISSION_READ_SECURITY,
+                                  PERMISSION_CREATE_CHILDREN,
+                                  PERMISSION_WRITE,
+                                  PERMISSION_WRITE_SECURITY,
+                                  PERMISSION_DELETE,
+                              ),
+                      ),
+              ),
+              ComponentRolePermissions(
+                  component = "dataset",
+                  roles =
+                      mutableMapOf(
+                          ROLE_NONE to mutableListOf<String>(),
+                          ROLE_VIEWER to mutableListOf(PERMISSION_READ),
+                          ROLE_USER to
+                              mutableListOf(
+                                  PERMISSION_READ,
+                                  PERMISSION_READ_SECURITY,
+                                  PERMISSION_CREATE_CHILDREN,
+                              ),
+                          ROLE_EDITOR to
+                              mutableListOf(
+                                  PERMISSION_READ,
+                                  PERMISSION_READ_SECURITY,
+                                  PERMISSION_CREATE_CHILDREN,
+                                  PERMISSION_WRITE,
+                              ),
+                          ROLE_ADMIN to
+                              mutableListOf(
+                                  PERMISSION_READ,
+                                  PERMISSION_READ_SECURITY,
+                                  PERMISSION_CREATE_CHILDREN,
+                                  PERMISSION_WRITE,
+                                  PERMISSION_WRITE_SECURITY,
+                                  PERMISSION_DELETE,
+                              ),
+                      ),
+              ),
+              ComponentRolePermissions(
                   component = "runner",
                   roles =
                       mutableMapOf(
@@ -1603,6 +1663,66 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
             ),
             ComponentRolePermissions(
                 component = "workspace",
+                roles =
+                    mutableMapOf(
+                        ROLE_NONE to mutableListOf<String>(),
+                        ROLE_VIEWER to mutableListOf(PERMISSION_READ),
+                        ROLE_USER to
+                            mutableListOf(
+                                PERMISSION_READ,
+                                PERMISSION_READ_SECURITY,
+                                PERMISSION_CREATE_CHILDREN,
+                            ),
+                        ROLE_EDITOR to
+                            mutableListOf(
+                                PERMISSION_READ,
+                                PERMISSION_READ_SECURITY,
+                                PERMISSION_CREATE_CHILDREN,
+                                PERMISSION_WRITE,
+                            ),
+                        ROLE_ADMIN to
+                            mutableListOf(
+                                PERMISSION_READ,
+                                PERMISSION_READ_SECURITY,
+                                PERMISSION_CREATE_CHILDREN,
+                                PERMISSION_WRITE,
+                                PERMISSION_WRITE_SECURITY,
+                                PERMISSION_DELETE,
+                            ),
+                    ),
+            ),
+            ComponentRolePermissions(
+                component = "solution",
+                roles =
+                    mutableMapOf(
+                        ROLE_NONE to mutableListOf<String>(),
+                        ROLE_VIEWER to mutableListOf(PERMISSION_READ),
+                        ROLE_USER to
+                            mutableListOf(
+                                PERMISSION_READ,
+                                PERMISSION_READ_SECURITY,
+                                PERMISSION_CREATE_CHILDREN,
+                            ),
+                        ROLE_EDITOR to
+                            mutableListOf(
+                                PERMISSION_READ,
+                                PERMISSION_READ_SECURITY,
+                                PERMISSION_CREATE_CHILDREN,
+                                PERMISSION_WRITE,
+                            ),
+                        ROLE_ADMIN to
+                            mutableListOf(
+                                PERMISSION_READ,
+                                PERMISSION_READ_SECURITY,
+                                PERMISSION_CREATE_CHILDREN,
+                                PERMISSION_WRITE,
+                                PERMISSION_WRITE_SECURITY,
+                                PERMISSION_DELETE,
+                            ),
+                    ),
+            ),
+            ComponentRolePermissions(
+                component = "dataset",
                 roles =
                     mutableMapOf(
                         ROLE_NONE to mutableListOf<String>(),

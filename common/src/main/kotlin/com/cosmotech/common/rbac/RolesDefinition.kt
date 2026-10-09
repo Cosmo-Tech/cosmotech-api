@@ -80,6 +80,16 @@ fun getAllRolesDefinition(): Map<String, MutableMap<String, MutableList<String>>
                 .permissions
                 .mapValues { it.value.toMutableList() }
                 .toMutableMap(),
+        "solution" to
+            getCommonRolesDefinition()
+                .permissions
+                .mapValues { it.value.toMutableList() }
+                .toMutableMap(),
+        "dataset" to
+            getCommonRolesDefinition()
+                .permissions
+                .mapValues { it.value.toMutableList() }
+                .toMutableMap(),
         "runner" to
             getRunnerRolesDefinition()
                 .permissions
