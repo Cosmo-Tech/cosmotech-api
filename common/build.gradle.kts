@@ -5,7 +5,7 @@
 plugins { id("org.jetbrains.kotlinx.kover") }
 
 val hashidsVersion = "1.0.3"
-val testContainersRedisVersion = "2.2.4"
+val testContainersRedisVersion = "3.0.0"
 val testContainersPostgreSQLVersion = "2.0.5"
 val tikaVersion = "4.1.0"
 val springPlatformBomVersion = "4.1.1"
