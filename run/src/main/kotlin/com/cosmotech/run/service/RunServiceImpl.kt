@@ -41,7 +41,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClientResponseException
 
-
 @Service
 @Suppress("TooManyFunctions")
 class RunServiceImpl(
