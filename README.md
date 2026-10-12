@@ -85,12 +85,12 @@ The `build` command above generates few items. Some of them are currently versio
 
 A `dev` [Spring Profile](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.profiles) is added to the list of active Profiles.
 
-You will therefore need to specify a `config/application-dev.yml` file, with sensitive configuration like
+You will therefore need to specify a `config/application-dev-tenant-sphinx.yml` file, with sensitive configuration like
 
 You may want to copy and customize the [sample configuration](config/application-dev.sample.yml):
 
 ```shell
-cp config/application-dev.sample.yml config/application-dev.yml
+cp config/application-dev.sample.yml config/application-dev-tenant-sphinx.yml
 ```
 
 Also note that the `keycloak` Profile is activated by default. As such, the [application-keycloak.yml](api/src/main/resources/application-keycloak.yml) file is also read as part of the application configuration.
@@ -226,7 +226,7 @@ client.
 ### Configuration
 
 MCP is disabled by default. Enable it in the active Spring configuration, for example in
-`config/application-dev.yml`:
+`config/application-dev-tenant-sphinx.yml`:
 
 ```yaml
 csm:

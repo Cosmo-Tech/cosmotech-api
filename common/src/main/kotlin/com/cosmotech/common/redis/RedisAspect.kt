@@ -3,7 +3,6 @@
 package com.cosmotech.common.redis
 
 import com.cosmotech.common.utils.sanitizeForRedis
-import com.cosmotech.common.utils.toSecurityConstraintQuery
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
@@ -21,12 +20,6 @@ class RedisAspect {
       val parameter = joinPoint.args[it]
       if (parameter is String) {
         joinPoint.args[it] = parameter.sanitizeForRedis()
-      }
-    }
-    applyAnnotation<SecurityConstraint>(methodSignature) {
-      val parameter = joinPoint.args[it]
-      if (parameter is String) {
-        joinPoint.args[it] = parameter.toSecurityConstraintQuery()
       }
     }
     return joinPoint.proceed(joinPoint.args)

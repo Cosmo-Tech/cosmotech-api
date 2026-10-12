@@ -37,10 +37,6 @@ fun String.sanitizeForRedis(): String {
 
 fun String.sanitizeDatasetPartId(): String = this.replace('-', '_')
 
-fun String.toSecurityConstraintQuery() =
-    "((-@security_default:{none})|(@security_accessControlList_id:{${this.sanitizeForRedis()}}" +
-        " -@security_accessControlList_role:{none}))"
-
 fun String.shaHash(): String {
   val messageDigest = MessageDigest.getInstance("SHA-256")
   messageDigest.update(this.toByteArray(StandardCharsets.UTF_8))

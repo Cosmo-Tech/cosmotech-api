@@ -2,12 +2,10 @@
 // Licensed under the MIT license.
 package com.cosmotech.common.utils
 
-import java.nio.charset.StandardCharsets
+import com.cosmotech.common.config.CsmPlatformProperties
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import org.springframework.data.domain.PageRequest
-
-const val BULK_QUERY_KEY = "bulkQuery"
 
 fun constructPageRequest(page: Int?, size: Int?, defaultPageSize: Int): PageRequest? =
     when {
@@ -31,19 +29,19 @@ fun <T> findAllPaginated(
   return list
 }
 
-fun redisGraphKey(graphId: String, version: String): String = "$graphId:$version"
-
-fun bulkQueryKey(graphId: String, query: String, version: String?): Pair<ByteArray, String> {
-  val redisGraphKey = if (version != null) redisGraphKey(graphId, version) else graphId
-  val bulkQueryHash = "$redisGraphKey:$query".shaHash()
-  return Pair("$BULK_QUERY_KEY:$bulkQueryHash".toByteArray(StandardCharsets.UTF_8), bulkQueryHash)
-}
-
-fun bulkQueryKey(bulkQueryHash: String): ByteArray =
-    "$BULK_QUERY_KEY:$bulkQueryHash".toByteArray(StandardCharsets.UTF_8)
-
 fun getLocalDateNow(pattern: String = "yyyy/MM/dd - HH:mm:ss"): String {
   val current = LocalDateTime.now()
   val formatter = DateTimeFormatter.ofPattern(pattern)
   return current.format(formatter)
+}
+
+fun getCurrentUserSecurityConstraints(configuration: CsmPlatformProperties): String {
+  val identifiers = getCurrentAccountGroups(configuration).toMutableList()
+  val currentUser = getCurrentAccountIdentifier(configuration)
+  identifiers.add(currentUser)
+  val userFilters =
+      identifiers.joinToString(separator = "|") {
+        "@security_accessControlList_id:{${it.sanitizeForRedis()}}"
+      }
+  return "((-@security_default:{none})|($userFilters -@security_accessControlList_role:{none}))"
 }

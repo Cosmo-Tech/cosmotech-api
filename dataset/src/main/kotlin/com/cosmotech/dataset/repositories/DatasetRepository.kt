@@ -3,7 +3,6 @@
 package com.cosmotech.dataset.repositories
 
 import com.cosmotech.common.redis.Sanitize
-import com.cosmotech.common.redis.SecurityConstraint
 import com.cosmotech.dataset.domain.Dataset
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
@@ -25,7 +24,7 @@ interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
   fun findByOrganizationIdAndWorkspaceId(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
-      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
+      @Param("securityConstraint") securityConstraint: String,
       pageRequest: PageRequest,
   ): Page<Dataset>
 
