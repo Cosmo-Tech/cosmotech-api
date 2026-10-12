@@ -25,6 +25,7 @@ import com.cosmotech.common.security.keycloak.KeycloakMembers
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.utils.getCurrentUserSecurityConstraints
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.ComponentRolePermissions
 import com.cosmotech.organization.domain.Organization
@@ -63,8 +64,11 @@ class OrganizationServiceImpl(
       result =
           findAllPaginated(defaultPageSize) {
             if (rbacEnabled) {
-              val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
-              organizationRepository.findOrganizationsBySecurity(currentUser, it).toList()
+              val currentUserSecurityConstraints =
+                  getCurrentUserSecurityConstraints(this.csmPlatformProperties)
+              organizationRepository
+                  .findOrganizationsBySecurity(currentUserSecurityConstraints, it)
+                  .toList()
             } else {
               organizationRepository.findAll(it).toList()
             }
@@ -72,8 +76,11 @@ class OrganizationServiceImpl(
     } else {
       result =
           if (rbacEnabled) {
-            val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
-            organizationRepository.findOrganizationsBySecurity(currentUser, pageable).toList()
+            val currentUserSecurityConstraints =
+                getCurrentUserSecurityConstraints(this.csmPlatformProperties)
+            organizationRepository
+                .findOrganizationsBySecurity(currentUserSecurityConstraints, pageable)
+                .toList()
           } else {
             organizationRepository.findAll(pageable).toList()
           }

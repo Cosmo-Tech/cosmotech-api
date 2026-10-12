@@ -3,7 +3,6 @@
 package com.cosmotech.runner.repository
 
 import com.cosmotech.common.redis.Sanitize
-import com.cosmotech.common.redis.SecurityConstraint
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerStatus
 import com.redis.om.spring.annotations.Query
@@ -43,7 +42,7 @@ interface RunnerRepository : RedisDocumentRepository<Runner, String> {
   fun findByWorkspaceIdAndSecurity(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,
-      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
+      @Param("securityConstraint") securityConstraint: String,
       pageable: Pageable,
   ): Page<Runner>
 

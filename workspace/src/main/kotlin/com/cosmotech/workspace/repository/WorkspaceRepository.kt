@@ -3,7 +3,6 @@
 package com.cosmotech.workspace.repository
 
 import com.cosmotech.common.redis.Sanitize
-import com.cosmotech.common.redis.SecurityConstraint
 import com.cosmotech.workspace.domain.Workspace
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
@@ -29,7 +28,7 @@ interface WorkspaceRepository : RedisDocumentRepository<Workspace, String> {
   @Query("(@organizationId:{\$organizationId})  \$securityConstraint")
   fun findByOrganizationIdAndSecurity(
       @Sanitize @Param("organizationId") organizationId: String,
-      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
+      @Param("securityConstraint") securityConstraint: String,
       pageable: Pageable,
   ): Page<Workspace>
 }

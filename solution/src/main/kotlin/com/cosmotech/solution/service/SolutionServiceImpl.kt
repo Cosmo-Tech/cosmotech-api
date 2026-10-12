@@ -25,6 +25,7 @@ import com.cosmotech.common.utils.compareToAndMutateIfNeeded
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.utils.getCurrentUserSecurityConstraints
 import com.cosmotech.common.utils.validateResourceSizing
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.toGenericSecurity
@@ -81,9 +82,14 @@ class SolutionServiceImpl(
       result =
           findAllPaginated(defaultPageSize) {
             if (rbacEnabled) {
-              val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+              val currentUserSecurityConstraints =
+                  getCurrentUserSecurityConstraints(this.csmPlatformProperties)
               solutionRepository
-                  .findByOrganizationIdAndSecurity(organizationId, currentUser, it)
+                  .findByOrganizationIdAndSecurity(
+                      organizationId,
+                      currentUserSecurityConstraints,
+                      it,
+                  )
                   .toList()
             } else {
               solutionRepository.findByOrganizationId(organizationId, it).toList()
@@ -92,9 +98,14 @@ class SolutionServiceImpl(
     } else {
       result =
           if (rbacEnabled) {
-            val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+            val currentUserSecurityConstraints =
+                getCurrentUserSecurityConstraints(this.csmPlatformProperties)
             solutionRepository
-                .findByOrganizationIdAndSecurity(organizationId, currentUser, pageable)
+                .findByOrganizationIdAndSecurity(
+                    organizationId,
+                    currentUserSecurityConstraints,
+                    pageable,
+                )
                 .toList()
           } else {
             solutionRepository.findByOrganizationId(organizationId, pageable).toList()

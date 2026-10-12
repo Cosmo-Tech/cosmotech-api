@@ -27,6 +27,7 @@ import com.cosmotech.common.utils.ResourceScanner
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.utils.getCurrentUserSecurityConstraints
 import com.cosmotech.common.utils.sanitizeDatasetPartId
 import com.cosmotech.common.utils.sanitizeForRedis
 import com.cosmotech.dataset.DatasetApiServiceInterface
@@ -48,7 +49,6 @@ import com.cosmotech.dataset.part.factories.DatasetPartManagementFactory
 import com.cosmotech.dataset.repositories.DatasetPartRepository
 import com.cosmotech.dataset.repositories.DatasetRepository
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
-import com.cosmotech.workspace.service.toGenericSecurity
 import java.io.ByteArrayOutputStream
 import java.time.Instant
 import kotlin.math.min
@@ -282,9 +282,15 @@ class DatasetServiceImpl(
       result =
           findAllPaginated(defaultPageSize) {
             if (rbacEnabled) {
-              val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+              val currentUserSecurityConstraints =
+                  getCurrentUserSecurityConstraints(this.csmPlatformProperties)
               datasetRepository
-                  .findByOrganizationIdAndWorkspaceId(organizationId, workspaceId, currentUser, it)
+                  .findByOrganizationIdAndWorkspaceId(
+                      organizationId,
+                      workspaceId,
+                      currentUserSecurityConstraints,
+                      it,
+                  )
                   .toList()
             } else {
               datasetRepository
@@ -295,12 +301,13 @@ class DatasetServiceImpl(
     } else {
       result =
           if (rbacEnabled) {
-            val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+            val currentUserSecurityConstraints =
+                getCurrentUserSecurityConstraints(this.csmPlatformProperties)
             datasetRepository
                 .findByOrganizationIdAndWorkspaceId(
                     organizationId,
                     workspaceId,
-                    currentUser,
+                    currentUserSecurityConstraints,
                     pageable,
                 )
                 .toList()

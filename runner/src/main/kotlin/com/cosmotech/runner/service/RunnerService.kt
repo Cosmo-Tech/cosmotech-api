@@ -28,6 +28,7 @@ import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.common.utils.compareToAndMutateIfNeeded
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
+import com.cosmotech.common.utils.getCurrentUserSecurityConstraints
 import com.cosmotech.common.utils.validateResourceSizing
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
@@ -239,12 +240,13 @@ class RunnerService(
               .findByWorkspaceId(organization!!.id, workspace!!.id, pageRequest)
               .toList()
         } else {
-          val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+          val currentUserSecurityConstraints =
+              getCurrentUserSecurityConstraints(this.csmPlatformProperties)
           runnerRepository
               .findByWorkspaceIdAndSecurity(
                   organization!!.id,
                   workspace!!.id,
-                  currentUser,
+                  currentUserSecurityConstraints,
                   pageRequest,
               )
               .toList()

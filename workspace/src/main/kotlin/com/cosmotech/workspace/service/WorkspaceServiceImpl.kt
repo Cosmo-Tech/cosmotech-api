@@ -29,6 +29,7 @@ import com.cosmotech.common.utils.compareToAndMutateIfNeeded
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
+import com.cosmotech.common.utils.getCurrentUserSecurityConstraints
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.toGenericSecurity
 import com.cosmotech.solution.api.SolutionApiService
@@ -100,9 +101,14 @@ internal class WorkspaceServiceImpl(
             if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
               workspaceRepository.findByOrganizationId(organizationId, it).toList()
             } else {
-              val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+              val currentUserSecurityConstraints =
+                  getCurrentUserSecurityConstraints(this.csmPlatformProperties)
               workspaceRepository
-                  .findByOrganizationIdAndSecurity(organizationId, currentUser, it)
+                  .findByOrganizationIdAndSecurity(
+                      organizationId,
+                      currentUserSecurityConstraints,
+                      it,
+                  )
                   .toList()
             }
           }
@@ -110,10 +116,15 @@ internal class WorkspaceServiceImpl(
       if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
         result = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
       } else {
-        val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+        val currentUserSecurityConstraints =
+            getCurrentUserSecurityConstraints(this.csmPlatformProperties)
         result =
             workspaceRepository
-                .findByOrganizationIdAndSecurity(organizationId, currentUser, pageable)
+                .findByOrganizationIdAndSecurity(
+                    organizationId,
+                    currentUserSecurityConstraints,
+                    pageable,
+                )
                 .toList()
       }
     }
