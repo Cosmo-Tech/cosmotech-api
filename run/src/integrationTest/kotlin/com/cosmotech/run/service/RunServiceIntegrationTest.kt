@@ -271,7 +271,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
             security =
                 RunnerSecurity(ROLE_ADMIN, mutableListOf(RunnerAccessControl("user", ROLE_ADMIN))),
         )
-    val runStart = RunStart(this, runner,  RunType.Run)
+    val runStart = RunStart(this, runner, RunType.Run)
     eventPublisher.publishEvent(runStart)
     return runStart.response!!
   }
@@ -297,32 +297,32 @@ class RunServiceIntegrationTest : CsmTestBase() {
     val capturedStartInfos = mutableListOf<Any>()
     every { workflowService.launchRun(any(), any(), any(), any()) } answers
         {
-          val startInfo = args.filterNotNull().first { it.javaClass.simpleName == "RunStartContainers" }
+          val startInfo =
+              args.filterNotNull().first { it.javaClass.simpleName == "RunStartContainers" }
           capturedStartInfos.add(startInfo)
           mockWorkflowRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id)
         }
 
-      capturedStartInfos.clear()
-      val id =
-          mockStartRun(
-              organizationSaved.id,
-              workspaceSaved.id,
-              runnerSaved.id,
-              solutionSaved.id,
-          )
-      assertNotEquals("", id)
+    capturedStartInfos.clear()
+    val id =
+        mockStartRun(
+            organizationSaved.id,
+            workspaceSaved.id,
+            runnerSaved.id,
+            solutionSaved.id,
+        )
+    assertNotEquals("", id)
 
-      assertEquals(1, capturedStartInfos.size, "launchRun should be called once")
-      val labels = ReflectionTestUtils.getField(capturedStartInfos[0], "labels") as Map<*, *>?
-      assertEquals(
-          "container-Run",
-          labels?.get("cosmotech.com/workflowtype"),
-          "label cosmotech.com/workflowtype should be the workflow type",
-      )
+    assertEquals(1, capturedStartInfos.size, "launchRun should be called once")
+    val labels = ReflectionTestUtils.getField(capturedStartInfos[0], "labels") as Map<*, *>?
+    assertEquals(
+        "container-Run",
+        labels?.get("cosmotech.com/workflowtype"),
+        "label cosmotech.com/workflowtype should be the workflow type",
+    )
 
-      val found =
-          runApiService.getRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, id)
-      assertEquals(id, found.id)
+    val found = runApiService.getRun(organizationSaved.id, workspaceSaved.id, runnerSaved.id, id)
+    assertEquals(id, found.id)
 
     val runs =
         runApiService.listRuns(organizationSaved.id, workspaceSaved.id, runnerSaved.id, null, null)
