@@ -24,6 +24,7 @@ import com.cosmotech.common.security.keycloak.KeycloakMemberUser
 import com.cosmotech.common.security.keycloak.KeycloakMembers
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentUserSecurityConstraints
 import com.cosmotech.organization.OrganizationApiServiceInterface
@@ -303,19 +304,19 @@ class OrganizationServiceImpl(
             .not()
     ) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
-      val retrievedAC = organization.security.accessControlList.firstOrNull { it.id == username }
+      val userGroups = getCurrentAccountGroups(csmPlatformProperties)
+      val retrievedACL =
+          organization.security.accessControlList
+              .filter {
+                userGroups.contains(it.id) || it.id == username
+              }
+              .toMutableList()
 
-      val accessControlList =
-          if (retrievedAC != null) {
-            mutableListOf(retrievedAC)
-          } else {
-            mutableListOf()
-          }
       return organization.copy(
           security =
               OrganizationSecurity(
                   default = organization.security.default,
-                  accessControlList = accessControlList,
+                  accessControlList = retrievedACL,
               )
       )
     }

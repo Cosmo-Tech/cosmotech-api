@@ -26,6 +26,7 @@ import com.cosmotech.common.rbac.model.RbacAccessControl
 import com.cosmotech.common.rbac.model.RbacSecurity
 import com.cosmotech.common.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.common.utils.compareToAndMutateIfNeeded
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.common.utils.getCurrentUserSecurityConstraints
@@ -89,16 +90,14 @@ class RunnerService(
         csmRbac.check(runner.getRbac(), PERMISSION_READ_SECURITY, getRunnerRolesDefinition()).not()
     ) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
-      val retrievedAC = runner.security.accessControlList.firstOrNull { it.id == username }
+      val userGroups = getCurrentAccountGroups(csmPlatformProperties)
+      val retrievedACL =
+          runner.security.accessControlList
+              .filter { userGroups.contains(it.id) || it.id == username }
+              .toMutableList()
 
-      val accessControlList =
-          if (retrievedAC != null) {
-            mutableListOf(retrievedAC)
-          } else {
-            mutableListOf()
-          }
       runner.security =
-          RunnerSecurity(default = runner.security.default, accessControlList = accessControlList)
+          RunnerSecurity(default = runner.security.default, accessControlList = retrievedACL)
     }
     return runner
   }
