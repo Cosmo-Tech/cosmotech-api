@@ -12,6 +12,7 @@ data class RunStartContainers(
     val csmSimulationId: String,
     val nodeLabel: String? = null,
     val labels: Map<String, String>? = null,
+    val annotations: Map<String, String>? = null,
     val containers: List<RunContainer>,
 )
 

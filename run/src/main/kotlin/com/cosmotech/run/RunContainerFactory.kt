@@ -206,10 +206,13 @@ class RunContainerFactory(
             mapOf(
                 CSM_JOB_ID_LABEL_KEY to runId,
                 WORKFLOW_TYPE_LABEL to "container-${runType.value}",
-                RUN_TEMPLATE_TAGS to (template.tags?.joinToString(separator = ",") ?: ""),
                 ORGANIZATION_ID_LABEL to organization.id,
                 WORKSPACE_ID_LABEL to workspace.id,
                 RUNNER_ID_LABEL to runner.id,
+            ),
+        annotations =
+            mapOf(
+                RUN_TEMPLATE_TAGS to (template.tags?.joinToString(separator = ",") ?: ""),
             ),
     )
   }
