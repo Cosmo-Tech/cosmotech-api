@@ -28,6 +28,7 @@ import com.cosmotech.common.utils.ResourceScanner
 import com.cosmotech.common.utils.compareToAndMutateIfNeeded
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentUserSecurityConstraints
 import com.cosmotech.organization.OrganizationApiServiceInterface
@@ -570,20 +571,19 @@ internal class WorkspaceServiceImpl(
             .not()
     ) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
-      val retrievedAC = workspace.security.accessControlList.firstOrNull { it.id == username }
-
-      val accessControlList =
-          if (retrievedAC != null) {
-            mutableListOf(retrievedAC)
-          } else {
-            mutableListOf()
-          }
+      val userGroups = getCurrentAccountGroups(csmPlatformProperties)
+      val retrievedACL =
+          workspace.security.accessControlList
+              .filter {
+                userGroups.contains(it.id) || it.id == username
+              }
+              .toMutableList()
 
       return workspace.copy(
           security =
               WorkspaceSecurity(
                   default = workspace.security.default,
-                  accessControlList = accessControlList,
+                  accessControlList = retrievedACL,
               )
       )
     }

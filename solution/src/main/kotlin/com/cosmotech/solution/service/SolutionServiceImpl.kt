@@ -24,6 +24,7 @@ import com.cosmotech.common.security.keycloak.KeycloakMembers
 import com.cosmotech.common.utils.compareToAndMutateIfNeeded
 import com.cosmotech.common.utils.constructPageRequest
 import com.cosmotech.common.utils.findAllPaginated
+import com.cosmotech.common.utils.getCurrentAccountGroups
 import com.cosmotech.common.utils.getCurrentAccountIdentifier
 import com.cosmotech.common.utils.getCurrentUserSecurityConstraints
 import com.cosmotech.common.utils.validateResourceSizing
@@ -671,20 +672,19 @@ class SolutionServiceImpl(
             .not()
     ) {
       val username = getCurrentAccountIdentifier(csmPlatformProperties)
-      val retrievedAC = solution.security.accessControlList.firstOrNull { it.id == username }
-
-      val accessControlList =
-          if (retrievedAC != null) {
-            mutableListOf(retrievedAC)
-          } else {
-            mutableListOf()
-          }
+      val userGroups = getCurrentAccountGroups(csmPlatformProperties)
+      val retrievedACL =
+          solution.security.accessControlList
+              .filter {
+                userGroups.contains(it.id) || it.id == username
+              }
+              .toMutableList()
 
       return solution.copy(
           security =
               SolutionSecurity(
                   default = solution.security.default,
-                  accessControlList = accessControlList,
+                  accessControlList = retrievedACL,
               )
       )
     }
