@@ -405,7 +405,7 @@ class WorkflowBuildersTests {
   fun `Create Workflow with StartContainers generate name default`() {
     val sc = getStartContainers()
     val workflow = buildWorkflow(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
-    val expected = V1ObjectMeta().generateName("default-workflow-").labels(null)
+    val expected = V1ObjectMeta().generateName("default-workflow-").labels(null).annotations(null)
     assertEquals(expected, workflow.metadata)
   }
 
@@ -413,7 +413,7 @@ class WorkflowBuildersTests {
   fun `Create Workflow with StartContainers generate name Scenario`() {
     val sc = getStartContainersNamed()
     val workflow = buildWorkflow(ORGANIZATION_ID, WORKSPACE_ID, csmPlatformProperties, sc, null)
-    val expected = V1ObjectMeta().generateName("Scenario-1-").labels(null)
+    val expected = V1ObjectMeta().generateName("Scenario-1-").labels(null).annotations(null)
     assertEquals(expected, workflow.metadata)
   }
 
