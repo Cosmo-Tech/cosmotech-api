@@ -316,7 +316,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
     assertEquals(1, capturedStartInfos.size, "launchRun should be called once")
     val labels = ReflectionTestUtils.getField(capturedStartInfos[0], "labels") as Map<*, *>?
     assertEquals(
-        "container-Run",
+        "container-run",
         labels?.get("cosmotech.com/workflowtype"),
         "label cosmotech.com/workflowtype should be the workflow type",
     )
