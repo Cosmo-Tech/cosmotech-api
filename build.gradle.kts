@@ -43,7 +43,7 @@ plugins {
   id("dev.detekt") version "2.0.0-alpha.6"
   id("org.openapi.generator") version "7.25.0" apply false
   id("com.google.cloud.tools.jib") version "3.5.4" apply false
-  id("org.cyclonedx.bom") version "3.4.1"
+  id("org.cyclonedx.bom") version "3.5.1"
   id("org.sonarqube") version "7.5.0.8588"
 }
 
