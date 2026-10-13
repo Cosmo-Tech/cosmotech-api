@@ -321,7 +321,7 @@ subprojects {
 
   dependencies {
     // https://youtrack.jetbrains.com/issue/KT-71057/POM-file-unusable-after-upgrading-to-2.0.20-from-2.0.10
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.4.20"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.4.21"))
     detekt("dev.detekt:detekt-cli:$detektVersion")
     detektPlugins("dev.detekt:detekt-rules-libraries:$detektVersion")
 
