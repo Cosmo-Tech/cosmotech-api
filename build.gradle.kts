@@ -30,7 +30,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 val kotlinVersion = "2.4"
 
 plugins {
-  val kotlinCompleteVersion = "2.4.20"
+  val kotlinCompleteVersion = "2.4.21"
   kotlin("jvm") version kotlinCompleteVersion
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.4"
