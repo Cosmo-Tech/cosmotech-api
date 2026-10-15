@@ -259,7 +259,7 @@ internal fun buildWorkflow(
             V1ObjectMeta()
                 .generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME)
                 .labels(startContainers.labels)
-                .annotations(startContainers.annotations)
+                .annotations(startContainers.annotations),
         )
         .spec(
             buildWorkflowSpec(
