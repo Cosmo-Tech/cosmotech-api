@@ -5,6 +5,8 @@ logging:
       OkHttpClient: WARN
 
 spring:
+  security:
+    debug: false
   ai:
     mcp:
       server:

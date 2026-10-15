@@ -23,6 +23,7 @@ import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator
@@ -39,7 +40,7 @@ import org.springframework.util.CollectionUtils
 import org.springframework.util.StringUtils
 
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 @ConditionalOnProperty(
     name = ["csm.platform.identityProvider.code"],
     havingValue = "keycloak",
@@ -64,6 +65,13 @@ internal open class KeycloakSecurityConfiguration(
   @Value("\${csm.platform.identityProvider.tls.enabled}") private var tlsEnabled: Boolean = false
 
   @Value("\${csm.platform.identityProvider.tls.bundle}") private var tlsBundle: String = ""
+
+  @Value("\${spring.security.debug:false}") private var springSecurityDebug: Boolean = false
+
+  @Bean
+  fun webSecurityCustomizer(): WebSecurityCustomizer {
+    return WebSecurityCustomizer { customizer -> customizer.debug(springSecurityDebug) }
+  }
 
   @Bean(name = ["KeycloakFilterChain"])
   open fun filterChain(http: HttpSecurity): SecurityFilterChain {
