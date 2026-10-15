@@ -4,9 +4,12 @@ package com.cosmotech.common.security.keycloak
 
 import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.common.rbac.model.RbacAccessControl
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -45,6 +48,7 @@ class KeycloakClientTests {
   @BeforeEach
   fun setUp() {
     every { keycloakClient.getKeycloakInstance() } returns keycloakInstance
+    every { keycloakInstance.close() } just Runs
     every { keycloakInstance.realm(any()) } returns realmResource
     every { realmResource.groups() } returns groupsResource
     every { realmResource.users() } returns usersResource
@@ -67,6 +71,7 @@ class KeycloakClientTests {
 
     assertEquals(1, result.size)
     assertEquals("public-group", result[0].name)
+    verify(exactly = 1) { keycloakInstance.close() }
   }
 
   @Test
@@ -102,6 +107,7 @@ class KeycloakClientTests {
     assertThrows<CsmResourceNotFoundException> {
       keycloakClient.getUsersInGroup("id-private")
     }
+    verify(exactly = 1) { keycloakInstance.close() }
   }
 
   @Test
