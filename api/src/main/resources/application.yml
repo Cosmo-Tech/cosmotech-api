@@ -178,6 +178,8 @@ springdoc:
       paths-to-exclude: ${csm.platform.api.mcp.paths-to-exclude}
       enabled: ${csm.platform.api.mcp.enabled}
       dashboard-enabled : ${csm.platform.api.mcp.dashboard-enabled}
+      guardrails:
+        require-approval-for-mutating-tools: ${csm.platform.api.mcp.required-approval:true}
   # See https://springdoc.org/#properties
   api-docs:
     path: /openapi

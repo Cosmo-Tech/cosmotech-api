@@ -54,6 +54,7 @@ csm:
         enabled: false
         paths-to-exclude:
           - "[fill-this-value]"
+        required-approval: true
     event-publisher:
       type: in_process
       allowedTenants:
