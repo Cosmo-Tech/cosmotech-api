@@ -86,7 +86,7 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
 
   @ExceptionHandler
   fun handleInsufficientAuthenticationException(
-      exception: InsufficientAuthenticationException
+      exception: InsufficientAuthenticationException,
   ): ProblemDetail {
     val unauthorizedStatus = HttpStatus.UNAUTHORIZED
     val problemDetail = ProblemDetail.forStatus(unauthorizedStatus)
@@ -149,7 +149,7 @@ open class CsmExceptionHandling : ResponseEntityExceptionHandler() {
 
   @ExceptionHandler(AuthenticationServiceException::class)
   fun handleAuthenticationServiceException(
-      exception: AuthenticationServiceException
+      exception: AuthenticationServiceException,
   ): ProblemDetail {
     val response = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     val internalServerErrorStatus = HttpStatus.INTERNAL_SERVER_ERROR

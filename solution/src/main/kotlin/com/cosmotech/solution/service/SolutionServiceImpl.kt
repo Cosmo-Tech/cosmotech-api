@@ -233,7 +233,7 @@ class SolutionServiceImpl(
     val solutionRunTemplate =
         solution.runTemplates.firstOrNull { it.id == runTemplateId }
             ?: throw CsmResourceNotFoundException(
-                "Solution run template with id $runTemplateId does not exist"
+                "Solution run template with id $runTemplateId does not exist",
             )
     return solutionRunTemplate
   }
@@ -268,7 +268,7 @@ class SolutionServiceImpl(
           executionTimeout = runTemplateUpdateRequest.executionTimeout ?: this.executionTimeout
         }
         ?: throw CsmResourceNotFoundException(
-            "Solution run template with id $runTemplateId does not exist"
+            "Solution run template with id $runTemplateId does not exist",
         )
 
     val solutionSaved = save(existingSolution)
@@ -285,7 +285,7 @@ class SolutionServiceImpl(
 
     if (!existingSolution.runTemplates.removeIf { it.id == runTemplateId }) {
       throw CsmResourceNotFoundException(
-          "Solution run template with id $runTemplateId does not exist"
+          "Solution run template with id $runTemplateId does not exist",
       )
     }
     save(existingSolution)
@@ -454,7 +454,7 @@ class SolutionServiceImpl(
     val solutionParameterGroup =
         solution.parameterGroups.firstOrNull { it.id == parameterGroupId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter group with id $parameterGroupId does not exist"
+                "Solution parameter group with id $parameterGroupId does not exist",
             )
     return solutionParameterGroup
   }
@@ -476,7 +476,7 @@ class SolutionServiceImpl(
           parameters = runTemplateParameterGroupUpdateRequest.parameters ?: this.parameters
         }
         ?: throw CsmResourceNotFoundException(
-            "Solution parameter group with id $parameterGroupId does not exist"
+            "Solution parameter group with id $parameterGroupId does not exist",
         )
 
     val solutionSaved = save(existingSolution)
@@ -493,7 +493,7 @@ class SolutionServiceImpl(
     val solutionParameterGroup =
         solution.parameterGroups.firstOrNull { it.id == parameterGroupId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter group with id $parameterGroupId does not exist"
+                "Solution parameter group with id $parameterGroupId does not exist",
             )
     solution.parameterGroups.remove(solutionParameterGroup)
     save(solution)
@@ -553,7 +553,7 @@ class SolutionServiceImpl(
           additionalData = runTemplateParameterUpdateRequest.additionalData ?: this.additionalData
         }
         ?: throw CsmResourceNotFoundException(
-            "Solution parameter with id $parameterId does not exist"
+            "Solution parameter with id $parameterId does not exist",
         )
 
     val solutionSaved = save(existingSolution)
@@ -570,7 +570,7 @@ class SolutionServiceImpl(
     val solutionParameter =
         solution.parameters.firstOrNull { it.id == parameterId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter with id $parameterId does not exist"
+                "Solution parameter with id $parameterId does not exist",
             )
     return solutionParameter
   }
@@ -584,7 +584,7 @@ class SolutionServiceImpl(
     val solutionParameter =
         solution.parameters.firstOrNull { it.id == parameterId }
             ?: throw CsmResourceNotFoundException(
-                "Solution parameter with id $parameterId does not exist"
+                "Solution parameter with id $parameterId does not exist",
             )
 
     solution.parameters.remove(solutionParameter)
@@ -642,7 +642,7 @@ class SolutionServiceImpl(
     val solution =
         solutionRepository.findBy(organizationId, solutionId).orElseThrow {
           CsmResourceNotFoundException(
-              "Solution '$solutionId' not found in Organization '$organizationId'"
+              "Solution '$solutionId' not found in Organization '$organizationId'",
           )
         }
     csmRbac.verify(solution.security.toGenericSecurity(solutionId), requiredPermission)
@@ -685,7 +685,7 @@ class SolutionServiceImpl(
               SolutionSecurity(
                   default = solution.security.default,
                   accessControlList = retrievedACL,
-              )
+              ),
       )
     }
     return solution
@@ -698,7 +698,7 @@ class SolutionServiceImpl(
                   solution.repository,
                   solution.version,
                   "com.cosmotech.sdk-version",
-              )
+              ),
       )
 
   private fun convertToRunTemplateParameter(
@@ -727,7 +727,7 @@ class SolutionServiceImpl(
       )
 
   private fun convertToRunTemplate(
-      runTemplateCreateRequest: RunTemplateCreateRequest
+      runTemplateCreateRequest: RunTemplateCreateRequest,
   ): RunTemplate {
     runTemplateCreateRequest.runSizing?.let {
       validateResourceSizing(

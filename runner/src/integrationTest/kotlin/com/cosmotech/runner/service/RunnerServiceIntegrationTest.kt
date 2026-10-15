@@ -223,7 +223,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test createRunner and check parameterValues data`() {
 
     logger.info(
-        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared"
+        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared",
     )
     val newRunner =
         makeRunnerCreateRequest(
@@ -235,7 +235,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         parameterId = "param1",
                         value = "7",
                         varType = "ignored_var_type",
-                    )
+                    ),
                 ),
         )
     val newRunnerSaved =
@@ -252,7 +252,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test updateRunner and check parameterValues data`() {
 
     logger.info(
-        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared"
+        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared",
     )
     val creationParameterValue =
         RunnerRunTemplateParameterValue(
@@ -308,7 +308,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                       RunnerResourceSizing(
                           requests = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
                           limits = ResourceSizeInfo(cpu = "1Go", memory = "1Go"),
-                      )
+                      ),
               ),
           )
         }
@@ -468,7 +468,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "WorkspaceDataset",
             parts =
                 mutableListOf(
-                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt")
+                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt"),
                 ),
         )
     val workspaceDataset =
@@ -482,7 +482,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     "test.txt",
                     MediaType.MULTIPART_FORM_DATA_VALUE,
                     "test".toByteArray(),
-                )
+                ),
             ),
         )
     workspaceSaved =
@@ -496,7 +496,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         datasetId = workspaceDataset.id,
                         defaultParameterValues =
                             mutableMapOf("param2" to workspaceDataset.parts[0].id),
-                    )
+                    ),
             ),
         )
     val runnerWithInheritedDatasetParameterCreateRequest =
@@ -531,7 +531,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "WorkspaceDataset",
             parts =
                 mutableListOf(
-                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt")
+                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt"),
                 ),
         )
     val workspaceDataset =
@@ -545,7 +545,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     "test.txt",
                     MediaType.MULTIPART_FORM_DATA_VALUE,
                     "test".toByteArray(),
-                )
+                ),
             ),
         )
     workspaceSaved =
@@ -559,7 +559,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         datasetId = workspaceDataset.id,
                         defaultParameterValues =
                             mutableMapOf("param2" to workspaceDataset.parts[0].id),
-                    )
+                    ),
             ),
         )
     val runnerWithInheritedDatasetParameterCreateRequest =
@@ -590,7 +590,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
             name = "WorkspaceDataset",
             parts =
                 mutableListOf(
-                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt")
+                    DatasetPartCreateRequest(name = "defaultPart", sourceName = "test.txt"),
                 ),
         )
     val workspaceDataset =
@@ -604,7 +604,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     "test.txt",
                     MediaType.MULTIPART_FORM_DATA_VALUE,
                     "test".toByteArray(),
-                )
+                ),
             ),
         )
     workspaceSaved =
@@ -618,7 +618,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         datasetId = workspaceDataset.id,
                         defaultParameterValues =
                             mutableMapOf("param2" to workspaceDataset.parts[0].id),
-                    )
+                    ),
             ),
         )
     val runnerWithInheritedDatasetParameterCreateRequest =
@@ -768,10 +768,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     // force trigger scheduled cleanup
     runnerScheduledTasks.cleanupArchivedRunners()
     assertNull(
-        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, parentRunner1.id).rootId
+        runnerApiService
+            .getRunner(organizationSaved.id, workspaceSaved.id, parentRunner1.id)
+            .rootId,
     )
     assertNull(
-        runnerApiService.getRunner(organizationSaved.id, workspaceSaved.id, parentRunner2.id).rootId
+        runnerApiService
+            .getRunner(organizationSaved.id, workspaceSaved.id, parentRunner2.id)
+            .rootId,
     )
     assertEquals(
         parentRunner1.id,
@@ -850,7 +854,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(runnerAccessControl, runnerAccessControlRegistered)
 
     logger.info(
-        "should add an Access Control and assert it is the one created in the parameter dataset"
+        "should add an Access Control and assert it is the one created in the parameter dataset",
     )
     assertDoesNotThrow {
       datasetApiService.getDatasetAccessControl(
@@ -873,7 +877,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     assertEquals(ROLE_EDITOR, runnerAccessControlRegistered.role)
 
     logger.info(
-        "Should not change the parameter dataset access control because ACL already exist on it"
+        "Should not change the parameter dataset access control because ACL already exist on it",
     )
     assertEquals(
         ROLE_VIEWER,
@@ -913,7 +917,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     }
 
     logger.info(
-        "should remove the Access Control and assert it has been removed in the parameter dataset"
+        "should remove the Access Control and assert it has been removed in the parameter dataset",
     )
     assertThrows<CsmResourceNotFoundException> {
       datasetApiService.getDatasetAccessControl(
@@ -951,7 +955,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     }
 
     logger.info(
-        "should throw CsmAccessForbiddenException when trying to update RunnerAccessControl"
+        "should throw CsmAccessForbiddenException when trying to update RunnerAccessControl",
     )
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.updateRunnerAccessControl(
@@ -973,7 +977,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
     }
 
     logger.info(
-        "should throw CsmAccessForbiddenException when trying to remove RunnerAccessControl"
+        "should throw CsmAccessForbiddenException when trying to remove RunnerAccessControl",
     )
     assertThrows<CsmAccessForbiddenException> {
       runnerApiService.deleteRunnerAccessControl(
@@ -1521,8 +1525,8 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                             value = "param1value",
                             isInherited = false,
                             varType = "String",
-                        )
-                    )
+                        ),
+                    ),
             ),
         )
 
@@ -1558,7 +1562,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         RunTemplateParameterGroupCreateRequest(
                             id = "defaultDatasetPartParameterGroup",
                             parameters = mutableListOf("datasetPartParam"),
-                        )
+                        ),
                     ),
                 parameters =
                     mutableListOf(
@@ -1566,14 +1570,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                             id = "datasetPartParam",
                             defaultValue = "this_value_is_ignored",
                             varType = DATASET_PART_VARTYPE_DB,
-                        )
+                        ),
                     ),
                 runTemplates =
                     mutableListOf(
                         RunTemplateCreateRequest(
                             id = "runTemplateWithOneDatasetPartByDefault",
                             parameterGroups = mutableListOf("defaultDatasetPartParameterGroup"),
-                        )
+                        ),
                     ),
                 repository = "repository",
                 version = "1.0.0",
@@ -1608,7 +1612,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                             name = "datasetPart1",
                             sourceName = CUSTOMERS_FILE_NAME,
                             type = DatasetPartTypeEnum.DB,
-                        )
+                        ),
                     ),
             ),
             arrayOf(customersMultipartFile),
@@ -1624,7 +1628,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         datasetId = workspaceDataset.id,
                         defaultParameterValues =
                             mutableMapOf("datasetPartParam" to workspaceDataset.parts[0].id),
-                    )
+                    ),
             ),
         )
 
@@ -1667,7 +1671,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         RunTemplateParameterGroupCreateRequest(
                             id = "defaultDatasetPartParameterGroup",
                             parameters = mutableListOf("datasetPartParam"),
-                        )
+                        ),
                     ),
                 parameters =
                     mutableListOf(
@@ -1675,14 +1679,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                             id = "datasetPartParam",
                             defaultValue = "this_value_is_ignored",
                             varType = DATASET_PART_VARTYPE_DB,
-                        )
+                        ),
                     ),
                 runTemplates =
                     mutableListOf(
                         RunTemplateCreateRequest(
                             id = "runTemplateWithOneDatasetPartByDefault",
                             parameterGroups = mutableListOf("defaultDatasetPartParameterGroup"),
-                        )
+                        ),
                     ),
                 repository = "repository",
                 version = "1.0.0",
@@ -1717,7 +1721,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                             name = "datasetPart1",
                             sourceName = CUSTOMERS_FILE_NAME,
                             type = DatasetPartTypeEnum.DB,
-                        )
+                        ),
                     ),
             ),
             arrayOf(customersMultipartFile),
@@ -1733,7 +1737,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         datasetId = workspaceDataset.id,
                         defaultParameterValues =
                             mutableMapOf("datasetPartParam" to workspaceDataset.parts[0].id),
-                    )
+                    ),
             ),
         )
 
@@ -2087,7 +2091,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     RunTemplateParameterGroupCreateRequest(
                         id = "testParameterGroups",
                         parameters = mutableListOf("my_property_name"),
-                    )
+                    ),
                 ),
             parameters =
                 mutableListOf(
@@ -2095,14 +2099,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         id = "my_property_name",
                         defaultValue = "ignored_default_value",
                         varType = DATASET_PART_VARTYPE_FILE,
-                    )
+                    ),
                 ),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
                         parameterGroups = mutableListOf("testParameterGroups"),
-                    )
+                    ),
                 ),
             repository = "repository",
             version = "1.0.0",
@@ -2137,7 +2141,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                             name = "my_property_name",
                             sourceName = CUSTOMERS_FILE_NAME,
                             type = DatasetPartTypeEnum.File,
-                        )
+                        ),
                     ),
             ),
             arrayOf(multipartFile),
@@ -2155,7 +2159,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     datasetId = workspaceDataset.id,
                     defaultParameterValues =
                         mutableMapOf("my_property_name" to workspaceDataset.parts[0].id),
-                )
+                ),
         ),
     )
 
@@ -2219,7 +2223,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     RunTemplateParameterGroupCreateRequest(
                         id = "testParameterGroups",
                         parameters = mutableListOf(simpleParameterId),
-                    )
+                    ),
                 ),
             parameters =
                 mutableListOf(
@@ -2227,14 +2231,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         id = simpleParameterId,
                         defaultValue = simpleParameterDefaultValue,
                         varType = simpleParameterVarType,
-                    )
+                    ),
                 ),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
                         parameterGroups = mutableListOf("testParameterGroups"),
-                    )
+                    ),
                 ),
             repository = "repository",
             version = "1.0.0",
@@ -2300,7 +2304,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     RunTemplateParameterGroupCreateRequest(
                         id = "testParameterGroups",
                         parameters = mutableListOf(simpleParameterId),
-                    )
+                    ),
                 ),
             parameters =
                 mutableListOf(
@@ -2308,14 +2312,14 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         id = simpleParameterId,
                         defaultValue = simpleParameterDefaultValue,
                         varType = simpleParameterVarType,
-                    )
+                    ),
                 ),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
                         parameterGroups = mutableListOf("testParameterGroups"),
-                    )
+                    ),
                 ),
             repository = "repository",
             version = "1.0.0",
@@ -2388,21 +2392,21 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     RunTemplateParameterGroupCreateRequest(
                         id = "testParameterGroups",
                         parameters = mutableListOf("my_property_name"),
-                    )
+                    ),
                 ),
             parameters =
                 mutableListOf(
                     RunTemplateParameterCreateRequest(
                         id = "my_property_name",
                         varType = DATASET_PART_VARTYPE_FILE,
-                    )
+                    ),
                 ),
             runTemplates =
                 mutableListOf(
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
                         parameterGroups = mutableListOf("testParameterGroups"),
-                    )
+                    ),
                 ),
             repository = "repository",
             version = "1.0.0",
@@ -2437,7 +2441,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                             name = "my_property_name",
                             sourceName = CUSTOMERS_FILE_NAME,
                             type = DatasetPartTypeEnum.File,
-                        )
+                        ),
                     ),
             ),
             arrayOf(multipartFile),
@@ -2454,7 +2458,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     datasetId = workspaceDataset.id,
                     defaultParameterValues =
                         mutableMapOf("my_property_name" to workspaceDataset.parts[0].id),
-                )
+                ),
         ),
     )
 
@@ -2585,7 +2589,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     RunTemplateParameterGroupCreateRequest(
                         id = "testParameterGroups",
                         parameters = mutableListOf(parameterFileId, parameterStringId),
-                    )
+                    ),
                 ),
             parameters =
                 mutableListOf(
@@ -2604,7 +2608,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
                         parameterGroups = mutableListOf("testParameterGroups"),
-                    )
+                    ),
                 ),
             repository = "repository",
             version = "1.0.0",
@@ -2637,7 +2641,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                             name = parameterFileId,
                             sourceName = CUSTOMERS_FILE_NAME,
                             type = DatasetPartTypeEnum.File,
-                        )
+                        ),
                     ),
             ),
             arrayOf(multipartFile),
@@ -2655,7 +2659,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     datasetId = workspaceDataset.id,
                     defaultParameterValues =
                         mutableMapOf(parameterFileId to workspaceDataset.parts[0].id),
-                )
+                ),
         ),
     )
 
@@ -2765,7 +2769,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                     RunTemplateCreateRequest(
                         id = "runTemplateId",
                         parameterGroups = mutableListOf(),
-                    )
+                    ),
                 ),
         )
     solutionSaved =
@@ -2851,7 +2855,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
   fun `test onGetRunnerAttachedToDataset behaviour`() {
 
     logger.info(
-        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared"
+        "should create a new Runner and retrieve parameter varType from solution ignoring the one declared",
     )
     val newRunner =
         makeRunnerCreateRequest(
@@ -2863,7 +2867,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                         parameterId = "param1",
                         value = "7",
                         varType = "ignored_var_type",
-                    )
+                    ),
                 ),
         )
     val newRunnerSaved =
@@ -3024,7 +3028,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                             "param2" to workspaceDataset.parts[0].id,
                             "param3" to workspaceDataset.parts[1].id,
                         ),
-                )
+                ),
         ),
     )
 
@@ -3187,7 +3191,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 RunTemplateParameterGroupCreateRequest(
                     id = "testParameterGroups",
                     parameters = mutableListOf("param1", "param2", "param3"),
-                )
+                ),
             ),
         parameters =
             mutableListOf(
@@ -3212,7 +3216,7 @@ class RunnerServiceIntegrationTest : CsmTestBase() {
                 RunTemplateCreateRequest(
                     id = "runTemplateId",
                     parameterGroups = mutableListOf("testParameterGroups"),
-                )
+                ),
             ),
         repository = "repository",
         version = "1.0.0",

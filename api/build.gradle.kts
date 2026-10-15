@@ -74,7 +74,7 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
     into("${layout.buildDirectory.get()}/tmp/openapi")
   } else {
     logger.warn(
-        "Unable to find OpenAPI definitions in project dependencies => 'copySubProjectsOpenAPIFiles' not configured!"
+        "Unable to find OpenAPI definitions in project dependencies => 'copySubProjectsOpenAPIFiles' not configured!",
     )
   }
 }
@@ -121,7 +121,7 @@ tasks.register<GenerateTask>("openApiTypescriptGenerate") {
           "npmName" to "@cosmotech/api-ts",
           "httpUserAgent" to "cosmotech-api-typescript/${project.version}",
           "licenseName" to "CosmoTech",
-      )
+      ),
   )
 }
 
@@ -166,7 +166,7 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
           "packageName" to "cosmotech_api",
           "pythonAttrNoneIfUnset" to true,
           "httpUserAgent" to "cosmotech-api-python/${project.version}",
-      )
+      ),
   )
 }
 
@@ -264,6 +264,6 @@ tasks.register<GenerateTask>("generateDocumentation") {
           "infoEmail" to "platform@cosmotech.com",
           "snippetDir" to "${rootDir}/doc/generated-snippets/",
           "infoUrl" to "https://github.com/Cosmo-Tech/cosmotech-api",
-      )
+      ),
   )
 }

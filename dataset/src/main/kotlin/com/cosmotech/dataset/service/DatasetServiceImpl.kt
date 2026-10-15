@@ -92,7 +92,7 @@ class DatasetServiceImpl(
     val dataset =
         datasetRepository.findBy(organizationId, workspaceId, datasetId).orElseThrow {
           CsmResourceNotFoundException(
-              "Dataset '$datasetId' not found in Organization '$organizationId' and Workspace '$workspaceId'"
+              "Dataset '$datasetId' not found in Organization '$organizationId' and Workspace '$workspaceId'",
           )
         }
     csmRbac.verify(dataset.security.toGenericSecurity(datasetId), requiredPermission)
@@ -107,7 +107,7 @@ class DatasetServiceImpl(
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     return datasetRepository.findBy(organizationId, workspaceId, datasetId).orElseThrow {
       CsmResourceNotFoundException(
-          "Dataset '$datasetId' not found in Organization '$organizationId' and Workspace '$workspaceId'"
+          "Dataset '$datasetId' not found in Organization '$organizationId' and Workspace '$workspaceId'",
       )
     }
   }
@@ -465,7 +465,7 @@ class DatasetServiceImpl(
               DatasetSecurity(
                   default = dataset.security.default,
                   accessControlList = retrievedACL,
-              )
+              ),
       )
     }
     return dataset
@@ -556,7 +556,7 @@ class DatasetServiceImpl(
             .orElseThrow {
               CsmResourceNotFoundException(
                   "Dataset part '$datasetPartId' not found in Organization '$organizationId', " +
-                      "Workspace '$workspaceId' and Dataset '$datasetId'"
+                      "Workspace '$workspaceId' and Dataset '$datasetId'",
               )
             }
 
@@ -588,7 +588,7 @@ class DatasetServiceImpl(
         .orElseThrow {
           CsmResourceNotFoundException(
               "Dataset part '$datasetPartId' not found in Organization '$organizationId', " +
-                  "Workspace '$workspaceId' and Dataset '$datasetId'"
+                  "Workspace '$workspaceId' and Dataset '$datasetId'",
           )
         }
   }
@@ -646,7 +646,7 @@ class DatasetServiceImpl(
             "maxs" to maxs,
             "groupBys" to groupBys,
             "orderBys" to orderBys,
-        )
+        ),
     )
     val query =
         constructQuery(
@@ -818,7 +818,7 @@ class DatasetServiceImpl(
                 aggFunction,
                 if (isDistinct) "_${COLUMN_DISTINCT_KEYWORD}_" else "_",
                 columnName,
-            )
+            ),
     )
   }
 
@@ -836,7 +836,7 @@ class DatasetServiceImpl(
             .orElseThrow {
               CsmResourceNotFoundException(
                   "Dataset part '$datasetPartId' not found in Organization '$organizationId', " +
-                      "Workspace '$workspaceId' and Dataset '$datasetId'"
+                      "Workspace '$workspaceId' and Dataset '$datasetId'",
               )
             }
     val now = Instant.now().toEpochMilli()
@@ -880,7 +880,7 @@ class DatasetServiceImpl(
             .orElseThrow {
               CsmResourceNotFoundException(
                   "Dataset part '$datasetPartId' not found in Organization '$organizationId', " +
-                      "Workspace '$workspaceId' and Dataset '$datasetId'"
+                      "Workspace '$workspaceId' and Dataset '$datasetId'",
               )
             }
 
@@ -992,7 +992,7 @@ class DatasetServiceImpl(
         datasetRepository.findBy(organizationId, workspaceId, datasetParameterId).orElseThrow {
           CsmResourceNotFoundException(
               "Dataset '$datasetParameterId' not found in Organization '$organizationId' " +
-                  "and Workspace '$workspaceId'"
+                  "and Workspace '$workspaceId'",
           )
         }
 
@@ -1044,7 +1044,7 @@ class DatasetServiceImpl(
           "${files.size} != ${datasetCreateRequest.parts?.size}"
     }
     require(
-        files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty()
+        files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty(),
     ) {
       "Part File names should be unique during dataset creation. " +
           "Multipart file names: ${files.map { it.originalFilename }}. " +
@@ -1052,7 +1052,7 @@ class DatasetServiceImpl(
     }
     require(
         files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
-            datasetCreateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())
+            datasetCreateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder()),
     ) {
       "All files must have the same name as corresponding sourceName in a Dataset Part. " +
           "Multipart file names: ${files.map { it.originalFilename }}. " +
@@ -1072,7 +1072,7 @@ class DatasetServiceImpl(
   ) {
     require(
         datasetUpdateRequest.name == null ||
-            (datasetUpdateRequest.name != null && datasetUpdateRequest.name!!.isNotBlank())
+            (datasetUpdateRequest.name != null && datasetUpdateRequest.name!!.isNotBlank()),
     ) {
       "Dataset name must not be blank"
     }
@@ -1081,7 +1081,7 @@ class DatasetServiceImpl(
           "${files.size} != ${datasetUpdateRequest.parts?.size}"
     }
     require(
-        files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty()
+        files.groupingBy { it.originalFilename }.eachCount().filter { it.value > 1 }.isEmpty(),
     ) {
       "Multipart file names should be unique during dataset update. " +
           "Multipart file names: ${files.map { it.originalFilename }}. " +
@@ -1090,7 +1090,7 @@ class DatasetServiceImpl(
     require(
         files.mapNotNull { it.originalFilename }.toSortedSet(naturalOrder()) ==
             (datasetUpdateRequest.parts?.map { it.sourceName }?.toSortedSet(naturalOrder())
-                ?: emptySet<String>())
+                ?: emptySet<String>()),
     ) {
       "All files must have the same name as corresponding sourceName in a Dataset Part. " +
           "Multipart file names: ${files.map { it.originalFilename }}. " +

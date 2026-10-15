@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository
 interface RunRepository : RedisDocumentRepository<Run, String> {
 
   @Query(
-      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @runnerId:{\$runnerId} @id:{\$runId}"
+      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @runnerId:{\$runnerId} @id:{\$runId}",
   )
   fun findBy(
       @Sanitize @Param("organizationId") organizationId: String,

@@ -123,7 +123,7 @@ class RunControllerTests : ControllerTestBase() {
                 runTemplateRunSizing,
                 mutableListOf(PARAMETER_GROUP_ID),
                 10,
-            )
+            ),
         )
 
     organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
@@ -171,17 +171,17 @@ class RunControllerTests : ControllerTestBase() {
         JSONObject(
                 mvc.perform(
                         post(
-                                "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/start"
+                                "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/start",
                             )
                             .withPlatformAdminHeader()
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf())
+                            .with(csrf()),
                     )
                     .andExpect(status().is2xxSuccessful)
                     .andReturn()
                     .response
-                    .contentAsString
+                    .contentAsString,
             )
             .getString("id")
   }
@@ -190,109 +190,109 @@ class RunControllerTests : ControllerTestBase() {
   fun get_run_with_wrong_ids_format() {
     mvc.perform(
             get(
-                    "/organizations/wrong-orgId/workspaces/wrong-workspaceId/runners/wrong-runnerId/runs/wrong-runId"
+                    "/organizations/wrong-orgId/workspaces/wrong-workspaceId/runners/wrong-runnerId/runs/wrong-runId",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")),
         )
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-runnerId:must match \"^(r|s)-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-runnerId:must match \"^(r|s)-\\w{10,20}\"")),
         )
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-runId:must match \"^(run|sr)-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-runId:must match \"^(run|sr)-\\w{10,20}\"")),
         )
 
     mvc.perform(
             get(
-                    "/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/r-123456azerty/runs/run-123456azerty"
+                    "/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/r-123456azerty/runs/run-123456azerty",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-        )
-        .andExpect(status().isBadRequest)
-        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
-
-    mvc.perform(
-            get(
-                    "/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/s-123456azerty/runs/run-123456azerty"
-                )
-                .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
 
     mvc.perform(
             get(
-                    "/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/r-123456azerty/runs/run-123456azerty"
+                    "/organizations/wrong-orgId/workspaces/w-123456abcdef/runners/s-123456azerty/runs/run-123456azerty",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
+        )
+        .andExpect(status().isBadRequest)
+        .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
+
+    mvc.perform(
+            get(
+                    "/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/r-123456azerty/runs/run-123456azerty",
+                )
+                .withPlatformAdminHeader()
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")),
         )
 
     mvc.perform(
             get(
-                    "/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/s-123456azerty/runs/run-123456azerty"
+                    "/organizations/o-1233456azer/workspaces/wrong-workspaceId/runners/s-123456azerty/runs/run-123456azerty",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")),
         )
 
     mvc.perform(
             get(
-                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/wrong-runnerId/runs/run-123456azerty"
+                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/wrong-runnerId/runs/run-123456azerty",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-runnerId:must match \"^(r|s)-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-runnerId:must match \"^(r|s)-\\w{10,20}\"")),
         )
 
     mvc.perform(
             get(
-                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/r-123456azerty/runs/wrong-runId"
+                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/r-123456azerty/runs/wrong-runId",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-runId:must match \"^(run|sr)-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-runId:must match \"^(run|sr)-\\w{10,20}\"")),
         )
 
     mvc.perform(
             get(
-                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/s-123456azerty/runs/wrong-runId"
+                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/runners/s-123456azerty/runs/wrong-runId",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-runId:must match \"^(run|sr)-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-runId:must match \"^(run|sr)-\\w{10,20}\"")),
         )
   }
 
@@ -309,7 +309,7 @@ class RunControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].id").value(runId))
@@ -331,8 +331,8 @@ class RunControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/GET",
+            ),
         )
   }
 
@@ -346,11 +346,11 @@ class RunControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId"
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.state").value(RunState.Successful.toString()))
@@ -371,8 +371,8 @@ class RunControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/GET",
+            ),
         )
   }
 
@@ -395,19 +395,19 @@ class RunControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId"
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/DELETE"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/DELETE",
+            ),
         )
   }
 
@@ -431,18 +431,18 @@ class RunControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId/logs"
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId/logs",
                 )
                 .withPlatformAdminHeader()
-                .accept(MediaType.TEXT_PLAIN)
+                .accept(MediaType.TEXT_PLAIN),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(content().string(logs))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs/GET",
+            ),
         )
   }
 
@@ -478,18 +478,18 @@ class RunControllerTests : ControllerTestBase() {
                         progress = NODE_PROGRESS,
                         startTime = Date.from(Instant.now()).toString(),
                         endTime = Date.from(Instant.now()).toString(),
-                    )
+                    ),
                 ),
             state = RunState.Successful,
         )
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId/status"
+                    "/organizations/$organizationId/workspaces/$workspaceId/runners/$runnerId/runs/$runId/status",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(runId))
@@ -516,8 +516,8 @@ class RunControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status/GET",
+            ),
         )
   }
 
@@ -543,7 +543,7 @@ class RunControllerTests : ControllerTestBase() {
                       parameterId = RUN_TEMPLATE_PARAMETER_ID,
                       value = RUN_TEMPLATE_VALUE,
                       varType = RUN_TEMPLATE_VAR_TYPE,
-                  )
+                  ),
               ),
           nodeLabel = NODE_LABEL,
           containers =
@@ -572,7 +572,7 @@ class RunControllerTests : ControllerTestBase() {
                                       memory = "1Gi",
                                   ),
                           ),
-                  )
+                  ),
               ),
           runnerId = runnerId,
       )

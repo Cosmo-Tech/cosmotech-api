@@ -108,7 +108,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                 mutableListOf(
                     RunTemplateCreateRequest(id = "one", parameterGroups = mutableListOf()),
                     RunTemplateCreateRequest(id = "two", parameterGroups = mutableListOf()),
-                )
+                ),
         )
     solutionSaved = solutionApiService.createSolution(organizationSaved.id, solution)
 
@@ -140,7 +140,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals(solutionCreated, solutionFound)
 
     logger.info(
-        "should find all solutions for the organization and assert the list contains 2 elements"
+        "should find all solutions for the organization and assert the list contains 2 elements",
     )
     val solutionsFound = solutionApiService.listSolutions(organizationSaved.id, null, null)
     assertTrue(solutionsFound.size == 2)
@@ -156,7 +156,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
     assertEquals("My solution updated", solutionUpdated.name)
 
     logger.info(
-        "should delete the solution and assert that the list of solutions contains only 1 element"
+        "should delete the solution and assert that the list of solutions contains only 1 element",
     )
     solutionApiService.deleteSolution(organizationSaved.id, solutionCreated.id)
     val solutionsFoundAfterDelete =
@@ -182,7 +182,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                         requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
                         limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
                     ),
-            )
+            ),
         )
     val solutionParameterGroups =
         mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group"))
@@ -200,7 +200,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string"),
                 ),
             security =
                 SolutionSecurity(
@@ -241,8 +241,8 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                                       requests = ResourceSizeInfo(cpu = "3Go", memory = "3Go"),
                                       limits = ResourceSizeInfo(cpu = "4Go", memory = "4Go"),
                                   ),
-                          )
-                      )
+                          ),
+                      ),
               ),
           )
         }
@@ -280,7 +280,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string"),
                 ),
             security =
                 SolutionSecurity(
@@ -1063,7 +1063,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string"),
                 ),
             security =
                 SolutionSecurity(
@@ -1122,7 +1122,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string"),
                 ),
             security =
                 SolutionSecurity(
@@ -1155,7 +1155,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                     RunTemplateParameterCreateRequest(
                         id = "parameterNameUpdated",
                         varType = "int",
-                    )
+                    ),
                 ),
             url = newUrl,
             version = newVersion,
@@ -1212,7 +1212,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string"),
                 ),
             security =
                 SolutionSecurity(
@@ -1294,7 +1294,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string"),
                 ),
             security =
                 SolutionSecurity(
@@ -1367,7 +1367,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string"),
                 ),
             security =
                 SolutionSecurity(
@@ -1448,7 +1448,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
             parameterGroups = solutionParameterGroups,
             parameters =
                 mutableListOf(
-                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string")
+                    RunTemplateParameterCreateRequest(id = "parameterName", varType = "string"),
                 ),
             security =
                 SolutionSecurity(
@@ -2078,7 +2078,7 @@ class SolutionServiceIntegrationTest : CsmTestBase() {
                             ),
                         parameterGroups = mutableListOf("parameterGroup1", "parameterGroup2"),
                         executionTimeout = 10,
-                    )
+                    ),
                 ),
         )
 

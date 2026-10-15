@@ -8,7 +8,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 
 class SecurityCoroutineContext(
-    private val securityContext: SecurityContext = SecurityContextHolder.getContext()
+    private val securityContext: SecurityContext = SecurityContextHolder.getContext(),
 ) : ThreadContextElement<SecurityContext?> {
 
   companion object Key : CoroutineContext.Key<SecurityCoroutineContext>

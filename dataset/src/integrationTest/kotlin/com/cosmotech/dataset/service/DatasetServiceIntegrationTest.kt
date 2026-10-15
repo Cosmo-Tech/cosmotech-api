@@ -636,7 +636,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
             name = "Dataset Test",
             parts =
                 mutableListOf(
-                    DatasetPartCreateRequest(name = "part1", sourceName = "wrongname.csv")
+                    DatasetPartCreateRequest(name = "part1", sourceName = "wrongname.csv"),
                 ),
         )
 
@@ -1021,7 +1021,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                     default = ROLE_NONE,
                     accessControlList =
                         mutableListOf(
-                            DatasetAccessControl(id = CONNECTED_DEFAULT_USER, role = "admin")
+                            DatasetAccessControl(id = CONNECTED_DEFAULT_USER, role = "admin"),
                         ),
                 ),
         )
@@ -1574,7 +1574,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                         name = "DB part",
                         sourceName = CUSTOMERS_10000_SOURCE_FILE_NAME,
                         type = DatasetPartTypeEnum.DB,
-                    )
+                    ),
                 ),
         )
 
@@ -1625,7 +1625,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                         name = "DB part",
                         sourceName = CUSTOMERS_10000_SOURCE_FILE_NAME,
                         type = DatasetPartTypeEnum.DB,
-                    )
+                    ),
                 ),
         )
 
@@ -1677,8 +1677,8 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                             name = "New part DB",
                             sourceName = CUSTOMERS_1000_SOURCE_FILE_NAME,
                             type = DatasetPartTypeEnum.DB,
-                        )
-                    )
+                        ),
+                    ),
             ),
             arrayOf(customers1000MultipartFile),
         )
@@ -1726,7 +1726,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                         name = "DB part",
                         sourceName = UNALLOWED_CHAR_HEADERS_FILE_NAME,
                         type = DatasetPartTypeEnum.DB,
-                    )
+                    ),
                 ),
         )
 
@@ -1772,7 +1772,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                         name = "DB part",
                         sourceName = EMPTY_SOURCE_FILE_NAME,
                         type = DatasetPartTypeEnum.DB,
-                    )
+                    ),
                 ),
         )
 
@@ -1814,7 +1814,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
                         name = "DB part",
                         sourceName = SAME_HEADERS_FILE_NAME,
                         type = DatasetPartTypeEnum.DB,
-                    )
+                    ),
                 ),
         )
 
@@ -2893,7 +2893,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
 
     testParameters.forEach { expectedSize, (pageIndex, pageSize) ->
       logger.debug(
-          "test listDatasetParts pagination with pageIndex($pageIndex) pageSize($pageSize) for expected size $expectedSize"
+          "test listDatasetParts pagination with pageIndex($pageIndex) pageSize($pageSize) for expected size $expectedSize",
       )
       val listDatasetParts =
           datasetApiService.listDatasetParts(
@@ -3066,7 +3066,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         s3Template.objectExists(
             csmPlatformProperties.s3.bucketName,
             constructFilePathForDatasetPart(createdDataset, 0),
-        )
+        ),
     )
 
     // check the new Dataset part is in s3 storage now
@@ -3074,7 +3074,7 @@ class DatasetServiceIntegrationTest() : CsmTestBase() {
         s3Template.objectExists(
             csmPlatformProperties.s3.bucketName,
             constructFilePathForDatasetPart(updatedDataset, 0),
-        )
+        ),
     )
   }
 

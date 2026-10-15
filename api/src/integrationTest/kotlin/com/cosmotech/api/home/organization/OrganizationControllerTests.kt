@@ -54,7 +54,7 @@ class OrganizationControllerTests : ControllerTestBase() {
                 .content(MINIMAL_ORGANIZATION_REQUEST_CREATION)
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(ORGANIZATION_NAME))
@@ -72,7 +72,7 @@ class OrganizationControllerTests : ControllerTestBase() {
             get("/organizations/wrongid-format")
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail").value("wrongid-format:must match \"^o-\\w{10,20}\""))
@@ -86,7 +86,7 @@ class OrganizationControllerTests : ControllerTestBase() {
                 .content(ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES)
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(ORGANIZATION_NAME))
@@ -112,7 +112,7 @@ class OrganizationControllerTests : ControllerTestBase() {
                 .content(MINIMAL_ORGANIZATION_REQUEST_UPDATE)
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(NEW_ORGANIZATION_NAME))
@@ -143,7 +143,7 @@ class OrganizationControllerTests : ControllerTestBase() {
             get("/organizations")
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].id").value(firstOrganizationId))
@@ -172,7 +172,7 @@ class OrganizationControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId")
                 .contentType(MediaType.APPLICATION_JSON)
-                .withPlatformAdminHeader()
+                .withPlatformAdminHeader(),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(ORGANIZATION_NAME))
@@ -204,7 +204,7 @@ class OrganizationControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/security")
                 .contentType(MediaType.APPLICATION_JSON)
-                .withPlatformAdminHeader()
+                .withPlatformAdminHeader(),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_NONE))
@@ -225,7 +225,7 @@ class OrganizationControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .content(MINIMAL_ORGANIZATION_ACCESS_CONTROL_REQUEST)
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(NEW_USER_ROLE))
@@ -242,7 +242,7 @@ class OrganizationControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/security/access/$PLATFORM_ADMIN_EMAIL")
                 .contentType(MediaType.APPLICATION_JSON)
-                .withPlatformAdminHeader()
+                .withPlatformAdminHeader(),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
@@ -262,11 +262,11 @@ class OrganizationControllerTests : ControllerTestBase() {
                             .withPlatformAdminHeader()
                             .content(ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES)
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf())
+                            .with(csrf()),
                     )
                     .andReturn()
                     .response
-                    .contentAsString
+                    .contentAsString,
             )
             .getString("id")
 
@@ -276,7 +276,7 @@ class OrganizationControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_VIEWER))
@@ -296,11 +296,11 @@ class OrganizationControllerTests : ControllerTestBase() {
                             .withPlatformAdminHeader()
                             .content(ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES)
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf())
+                            .with(csrf()),
                     )
                     .andReturn()
                     .response
-                    .contentAsString
+                    .contentAsString,
             )
             .getString("id")
 
@@ -308,7 +308,7 @@ class OrganizationControllerTests : ControllerTestBase() {
             delete("/organizations/$organizationId/security/access/$NEW_USER_ID")
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -326,11 +326,11 @@ class OrganizationControllerTests : ControllerTestBase() {
                             .withPlatformAdminHeader()
                             .content(MINIMAL_ORGANIZATION_REQUEST_CREATION)
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf())
+                            .with(csrf()),
                     )
                     .andReturn()
                     .response
-                    .contentAsString
+                    .contentAsString,
             )
             .getString("id")
 
@@ -340,7 +340,7 @@ class OrganizationControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_VIEWER))
@@ -361,11 +361,11 @@ class OrganizationControllerTests : ControllerTestBase() {
                             .withPlatformAdminHeader()
                             .content(ORGANIZATION_REQUEST_CREATION_WITH_ACCESSES)
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf())
+                            .with(csrf()),
                     )
                     .andReturn()
                     .response
-                    .contentAsString
+                    .contentAsString,
             )
             .getString("id")
 
@@ -373,7 +373,7 @@ class OrganizationControllerTests : ControllerTestBase() {
             get("/organizations/$organizationId/security/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))
@@ -390,7 +390,7 @@ class OrganizationControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .content(EMPTY_NAME_ORGANIZATION_REQUEST_CREATION)
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is4xxClientError)
         .andExpect(status().isBadRequest)
@@ -405,7 +405,7 @@ class OrganizationControllerTests : ControllerTestBase() {
                 .contentType(MediaType.APPLICATION_JSON)
                 .withOrganizationUserHeader()
                 .content(MINIMAL_ORGANIZATION_REQUEST_CREATION)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isForbidden)
         .andDo(MockMvcResultHandlers.print())
@@ -418,7 +418,7 @@ class OrganizationControllerTests : ControllerTestBase() {
                 .contentType(MediaType.APPLICATION_JSON)
                 .withOrganizationUserHeader()
                 .content(MINIMAL_ORGANIZATION_REQUEST_CREATION)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isForbidden)
         .andDo(MockMvcResultHandlers.print())
@@ -447,18 +447,18 @@ class OrganizationControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/members")
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         // users known by Keycloak are returned with their RBAC role
         .andExpect(jsonPath("$.users").isArray)
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", PLATFORM_ADMIN_EMAIL).exists())
         .andExpect(
-            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN)
+            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN),
         )
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", ORGANIZATION_USER_EMAIL).exists())
         .andExpect(
-            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR)
+            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR),
         )
         // an identity unknown to Keycloak is never exposed, neither as user nor as group
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
@@ -469,11 +469,11 @@ class OrganizationControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.groups[?(@.id == '%s')].role", PUBLIC_GROUP_NAME).value(ROLE_VIEWER))
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
-                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL))
+                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL)),
         )
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
-                .value(hasItem<String>(ORGANIZATION_USER_EMAIL))
+                .value(hasItem<String>(ORGANIZATION_USER_EMAIL)),
         )
         // a group without the `public=true` attribute is filtered out
         .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PRIVATE_GROUP_NAME).doesNotExist())

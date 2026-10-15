@@ -56,11 +56,11 @@ class ControllerTestUtils {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(organizationCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf())
+                            .with(csrf()),
                     )
                     .andReturn()
                     .response
-                    .contentAsString
+                    .contentAsString,
             )
             .getString("id")
 
@@ -88,11 +88,11 @@ class ControllerTestUtils {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(solutionCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf())
+                            .with(csrf()),
                     )
                     .andReturn()
                     .response
-                    .contentAsString
+                    .contentAsString,
             )
             .getString("id")
 
@@ -167,11 +167,11 @@ class ControllerTestUtils {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(runnerCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf())
+                            .with(csrf()),
                     )
                     .andReturn()
                     .response
-                    .contentAsString
+                    .contentAsString,
             )
             .getString("id")
 
@@ -261,16 +261,16 @@ class ControllerTestUtils {
                                             key = workspaceKey,
                                             name = workspaceName,
                                             solutionId = solutionId,
-                                        )
+                                        ),
                                     )
-                                    .toString()
+                                    .toString(),
                             )
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf())
+                            .with(csrf()),
                     )
                     .andReturn()
                     .response
-                    .contentAsString
+                    .contentAsString,
             )
             .getString("id")
 
@@ -287,11 +287,11 @@ class ControllerTestUtils {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(JSONObject(workspaceCreateRequest).toString())
                             .accept(MediaType.APPLICATION_JSON)
-                            .with(csrf())
+                            .with(csrf()),
                     )
                     .andReturn()
                     .response
-                    .contentAsString
+                    .contentAsString,
             )
             .getString("id")
 
@@ -366,7 +366,7 @@ class ControllerTestUtils {
       val fileToUpload =
           this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
               ?: throw IllegalStateException(
-                  "$TEST_FILE_NAME file used for endpoints test documentation cannot be null"
+                  "$TEST_FILE_NAME file used for endpoints test documentation cannot be null",
               )
 
       val datasetCreateRequestFile =
@@ -390,11 +390,11 @@ class ControllerTestUtils {
                           .file(files)
                           .withPlatformAdminHeader()
                           .accept(MediaType.APPLICATION_JSON)
-                          .with(csrf())
+                          .with(csrf()),
                   )
                   .andReturn()
                   .response
-                  .contentAsString
+                  .contentAsString,
           )
           .getString("id")
     }
@@ -410,15 +410,15 @@ class ControllerTestUtils {
           JSONObject(
                   mvc.perform(
                           get(
-                                  "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId"
+                                  "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId",
                               )
                               .withPlatformAdminHeader()
                               .accept(MediaType.APPLICATION_JSON)
-                              .with(csrf())
+                              .with(csrf()),
                       )
                       .andReturn()
                       .response
-                      .contentAsString
+                      .contentAsString,
               )
               .getJSONArray("parts")
 
@@ -437,7 +437,7 @@ class ControllerTestUtils {
       val fileToUpload =
           this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
               ?: throw IllegalStateException(
-                  "$TEST_FILE_NAME file used for endpoints test documentation cannot be null"
+                  "$TEST_FILE_NAME file used for endpoints test documentation cannot be null",
               )
 
       val datasetPartCreateRequestFile =
@@ -457,17 +457,17 @@ class ControllerTestUtils {
       return JSONObject(
               mvc.perform(
                       multipart(
-                              "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts"
+                              "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts",
                           )
                           .file(datasetPartCreateRequestFile)
                           .file(file)
                           .withPlatformAdminHeader()
                           .accept(MediaType.APPLICATION_JSON)
-                          .with(csrf())
+                          .with(csrf()),
                   )
                   .andReturn()
                   .response
-                  .contentAsString
+                  .contentAsString,
           )
           .getString("id")
     }
@@ -493,7 +493,7 @@ class ControllerTestUtils {
                       additionalData = mutableMapOf("customClient" to "customDatasetPartData"),
                       type = type,
                       sourceName = sourceName,
-                  )
+                  ),
               ),
           security = security,
       )

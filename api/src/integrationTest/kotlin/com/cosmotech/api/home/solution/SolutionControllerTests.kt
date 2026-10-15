@@ -75,19 +75,19 @@ class SolutionControllerTests : ControllerTestBase() {
             get("/organizations/wrong-orgId/solutions/wrong-solutionId")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-solutionId:must match \"^sol-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-solutionId:must match \"^sol-\\w{10,20}\"")),
         )
 
     mvc.perform(
             get("/organizations/wrong-orgId/solutions/sol-123456abcdef")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
@@ -96,11 +96,11 @@ class SolutionControllerTests : ControllerTestBase() {
             get("/organizations/o-123456abcdef/solutions/wrong-solutionId")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-solutionId:must match \"^sol-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-solutionId:must match \"^sol-\\w{10,20}\"")),
         )
   }
 
@@ -132,7 +132,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/solutions")
                 .contentType(MediaType.APPLICATION_JSON)
-                .withPlatformAdminHeader()
+                .withPlatformAdminHeader(),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].id").value(firstSolutionId))
@@ -188,7 +188,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterMinValue,
                 parameterMaxValue,
                 additionalData,
-            )
+            ),
         )
     val parameterGroupId = "parameterGroup1"
     val parameterGroups =
@@ -199,7 +199,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterLabels,
                 additionalData,
                 mutableListOf(parameterId),
-            )
+            ),
         )
     val runTemplateId = "runtemplate1"
     val runTemplateName = "this_is_a_name"
@@ -221,7 +221,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 runTemplateRunSizing,
                 mutableListOf(parameterGroupId),
                 10,
-            )
+            ),
         )
 
     val url = "this_is_the_solution_url"
@@ -255,7 +255,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .content(JSONObject(solutionCreateRequest).toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(SOLUTION_NAME))
@@ -286,7 +286,7 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.cpu").value("1"))
         .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.memory").value("2G"))
         .andExpect(
-            jsonPath("$.runTemplates[0].parameterGroups").value(mutableListOf(parameterGroupId))
+            jsonPath("$.runTemplates[0].parameterGroups").value(mutableListOf(parameterGroupId)),
         )
         .andExpect(jsonPath("$.runTemplates[0].executionTimeout").value(10))
         .andExpect(jsonPath("$.url").value(url))
@@ -330,7 +330,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterMinValue,
                 parameterMaxValue,
                 additionalData,
-            )
+            ),
         )
     val parameterGroupId = "parameterGroup1"
     val parameterGroupDescription = "this_is_a_description"
@@ -342,7 +342,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterLabels,
                 additionalData,
                 mutableListOf(parameterId),
-            )
+            ),
         )
     val runTemplateId = "runtemplate1"
     val runTemplateName = "this_is_a_name"
@@ -364,7 +364,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 runTemplateRunSizing,
                 mutableListOf(parameterGroupId),
                 10,
-            )
+            ),
         )
 
     val url = "this_is_the_solution_url"
@@ -398,7 +398,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(solutionId))
@@ -418,21 +418,21 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.parameters[0].maxValue").value(parameterMaxValue))
         .andExpect(
             jsonPath("$.parameters[0].additionalData[\"you_can_put\"]")
-                .value("whatever_you_want_here")
+                .value("whatever_you_want_here"),
         )
         .andExpect(
-            jsonPath("$.parameters[0].additionalData[\"even\"][\"object\"]").value("if_you_want")
+            jsonPath("$.parameters[0].additionalData[\"even\"][\"object\"]").value("if_you_want"),
         )
         .andExpect(jsonPath("$.parameterGroups[0].id").value(parameterGroupId))
         .andExpect(jsonPath("$.parameterGroups[0].labels").value(parameterLabels))
         .andExpect(jsonPath("$.parameterGroups[0].parameters").value(mutableListOf(parameterId)))
         .andExpect(
             jsonPath("$.parameterGroups[0].additionalData[\"you_can_put\"]")
-                .value("whatever_you_want_here")
+                .value("whatever_you_want_here"),
         )
         .andExpect(
             jsonPath("$.parameterGroups[0].additionalData[\"even\"][\"object\"]")
-                .value("if_you_want")
+                .value("if_you_want"),
         )
         .andExpect(jsonPath("$.runTemplates[0].id").value(runTemplateId))
         .andExpect(jsonPath("$.runTemplates[0].name").value(runTemplateName))
@@ -445,7 +445,7 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.cpu").value("1"))
         .andExpect(jsonPath("$.runTemplates[0].runSizing.limits.memory").value("2G"))
         .andExpect(
-            jsonPath("$.runTemplates[0].parameterGroups").value(mutableListOf(parameterGroupId))
+            jsonPath("$.runTemplates[0].parameterGroups").value(mutableListOf(parameterGroupId)),
         )
         .andExpect(jsonPath("$.runTemplates[0].executionTimeout").value(10))
         .andExpect(jsonPath("$.url").value(url))
@@ -470,7 +470,7 @@ class SolutionControllerTests : ControllerTestBase() {
             delete("/organizations/$organizationId/solutions/$solutionId")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -504,7 +504,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .content(JSONObject(solutionUpdateRequest).toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(solutionId))
@@ -561,7 +561,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject(parameterCreateRequest).toString())
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.labels").value(parameterLabels))
@@ -612,14 +612,14 @@ class SolutionControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject(parameterCreateRequest).toString())
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
 
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/parameters/$parameterId")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.labels").value(parameterLabels))
@@ -634,8 +634,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id}/GET"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id}/GET",
+            ),
         )
   }
 
@@ -685,8 +685,8 @@ class SolutionControllerTests : ControllerTestBase() {
                                 "you_can_put" to "whatever_you_want_here",
                                 "even" to JSONObject(mapOf("object" to "if_you_want")),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             ),
         )
 
@@ -695,7 +695,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .content(JSONObject(newParameterUpdateRequest).toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.labels").value(newParameterLabels))
@@ -706,16 +706,16 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.minValue").value(newParameterMinValue))
         .andExpect(jsonPath("$.maxValue").value(newParameterMaxValue))
         .andExpect(
-            jsonPath("$.additionalData[\"new_you_can_put\"]").value("new_whatever_you_want_here")
+            jsonPath("$.additionalData[\"new_you_can_put\"]").value("new_whatever_you_want_here"),
         )
         .andExpect(
-            jsonPath("$.additionalData[\"new_even\"][\"new_object\"]").value("new_if_you_want")
+            jsonPath("$.additionalData[\"new_even\"][\"new_object\"]").value("new_if_you_want"),
         )
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id}/PATCH"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id}/PATCH",
+            ),
         )
   }
 
@@ -743,8 +743,8 @@ class SolutionControllerTests : ControllerTestBase() {
                                 "you_can_put" to "whatever_you_want_here",
                                 "even" to JSONObject(mapOf("object" to "if_you_want")),
                             ),
-                        )
-                    )
+                        ),
+                    ),
             ),
         )
 
@@ -761,10 +761,10 @@ class SolutionControllerTests : ControllerTestBase() {
                             "maxValue": null,
                             "additionalData": null
                         }
-                    """
+                    """,
                 )
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is4xxClientError)
         .andExpect(jsonPath("$.detail").value("varType: cannot be empty"))
@@ -796,7 +796,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterMinValue,
                 parameterMaxValue,
                 additionalData,
-            )
+            ),
         )
     val solutionId =
         createSolutionAndReturnId(
@@ -807,7 +807,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/parameters")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -849,7 +849,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 parameterMinValue,
                 parameterMaxValue,
                 additionalData,
-            )
+            ),
         )
     val solutionId =
         createSolutionAndReturnId(
@@ -861,14 +861,14 @@ class SolutionControllerTests : ControllerTestBase() {
             delete("/organizations/$organizationId/solutions/$solutionId/parameters/$parameterId")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id}/DELETE"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/parameters/{parameter_id}/DELETE",
+            ),
         )
   }
 
@@ -901,7 +901,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject(parameterGroup).toString())
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(parameterGroupId))
@@ -912,7 +912,9 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.parameters").value(mutableListOf(parameterId)))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
-            document("organizations/{organization_id}/solutions/{solution_id}/parameterGroups/POST")
+            document(
+                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/POST",
+            ),
         )
   }
 
@@ -945,10 +947,10 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId"
+                    "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId",
                 )
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(parameterGroupId))
@@ -960,8 +962,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id}/GET"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id}/GET",
+            ),
         )
   }
 
@@ -1010,27 +1012,27 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch(
-                    "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId"
+                    "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId",
                 )
                 .withPlatformAdminHeader()
                 .content(JSONObject(newParameterGroup).toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(parameterGroupId))
         .andExpect(jsonPath("$.description").value(newParameterGroupDescription))
         .andExpect(jsonPath("$.labels").value(newParameterLabels))
         .andExpect(
-            jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_new_here")
+            jsonPath("$.additionalData[\"you_can_put\"]").value("whatever_you_want_new_here"),
         )
         .andExpect(jsonPath("$.additionalData[\"even\"][\"new_object\"]").value("if_you_want"))
         .andExpect(jsonPath("$.parameters").value(mutableListOf(newParameterId)))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id}/PATCH"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_group_id}/PATCH",
+            ),
         )
   }
 
@@ -1065,7 +1067,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/parameterGroups")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -1076,7 +1078,7 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].additionalData[\"even\"][\"object\"]").value("if_you_want"))
         .andExpect(jsonPath("$[0].parameters").value(mutableListOf(parameterId)))
         .andDo(
-            document("organizations/{organization_id}/solutions/{solution_id}/parameterGroups/GET")
+            document("organizations/{organization_id}/solutions/{solution_id}/parameterGroups/GET"),
         )
   }
 
@@ -1109,18 +1111,18 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete(
-                    "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId"
+                    "/organizations/$organizationId/solutions/$solutionId/parameterGroups/$parameterGroupId",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_id}/DELETE"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/parameterGroups/{parameter_id}/DELETE",
+            ),
         )
   }
 
@@ -1149,7 +1151,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 ),
                 runTemplateParameterGroups,
                 10,
-            )
+            ),
         )
 
     val solutionId =
@@ -1162,7 +1164,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/runTemplates")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].id").value(runTemplateId))
@@ -1217,7 +1219,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JSONObject(runTemplate).toString())
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(runTemplateId))
@@ -1234,7 +1236,7 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.executionTimeout").value(10))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
-            document("organizations/{organization_id}/solutions/{solution_id}/runTemplates/POST")
+            document("organizations/{organization_id}/solutions/{solution_id}/runTemplates/POST"),
         )
   }
 
@@ -1263,7 +1265,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 ),
                 runTemplateParameterGroups,
                 10,
-            )
+            ),
         )
 
     val solutionId =
@@ -1276,7 +1278,7 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(runTemplateId))
@@ -1294,8 +1296,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}/GET"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}/GET",
+            ),
         )
   }
 
@@ -1318,7 +1320,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 ),
                 mutableListOf("parameterGroup1"),
                 10,
-            )
+            ),
         )
 
     val solutionId =
@@ -1353,12 +1355,12 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch(
-                    "/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId"
+                    "/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId",
                 )
                 .withPlatformAdminHeader()
                 .content(JSONObject(newRunTemplate).toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(runTemplateId))
@@ -1376,8 +1378,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}/PATCH"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}/PATCH",
+            ),
         )
   }
 
@@ -1408,7 +1410,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 runTemplateRunSizing,
                 mutableListOf(parameterGroupId),
                 10,
-            )
+            ),
         )
 
     val solutionId =
@@ -1420,18 +1422,18 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete(
-                    "/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId"
+                    "/organizations/$organizationId/solutions/$solutionId/runTemplates/$runTemplateId",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}/DELETE"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}/DELETE",
+            ),
         )
   }
 
@@ -1443,7 +1445,7 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/security")
-                .withPlatformAdminHeader()
+                .withPlatformAdminHeader(),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_NONE))
@@ -1470,17 +1472,19 @@ class SolutionControllerTests : ControllerTestBase() {
                         "role": "$NEW_USER_ROLE"
                         }
                     """
-                        .trimMargin()
+                        .trimMargin(),
                 )
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(NEW_USER_ROLE))
         .andExpect(jsonPath("$.id").value(NEW_USER_ID))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
-            document("organizations/{organization_id}/solutions/{solution_id}/security/access/POST")
+            document(
+                "organizations/{organization_id}/solutions/{solution_id}/security/access/POST",
+            ),
         )
   }
 
@@ -1492,9 +1496,9 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/solutions/$solutionId/security/access/$PLATFORM_ADMIN_EMAIL"
+                    "/organizations/$organizationId/solutions/$solutionId/security/access/$PLATFORM_ADMIN_EMAIL",
                 )
-                .withPlatformAdminHeader()
+                .withPlatformAdminHeader(),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
@@ -1502,8 +1506,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}/GET"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}/GET",
+            ),
         )
   }
 
@@ -1528,13 +1532,13 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch(
-                    "/organizations/$organizationId/solutions/$solutionId/security/access/$NEW_USER_ID"
+                    "/organizations/$organizationId/solutions/$solutionId/security/access/$NEW_USER_ID",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_VIEWER))
@@ -1542,8 +1546,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}/PATCH"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}/PATCH",
+            ),
         )
   }
 
@@ -1568,17 +1572,17 @@ class SolutionControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete(
-                    "/organizations/$organizationId/solutions/$solutionId/security/access/$NEW_USER_ID"
+                    "/organizations/$organizationId/solutions/$solutionId/security/access/$NEW_USER_ID",
                 )
                 .withPlatformAdminHeader()
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}/DELETE"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}/DELETE",
+            ),
         )
   }
 
@@ -1594,7 +1598,7 @@ class SolutionControllerTests : ControllerTestBase() {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_VIEWER))
@@ -1603,8 +1607,8 @@ class SolutionControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/solutions/{solution_id}/security/default/POST"
-            )
+                "organizations/{organization_id}/solutions/{solution_id}/security/default/POST",
+            ),
         )
   }
 
@@ -1631,14 +1635,14 @@ class SolutionControllerTests : ControllerTestBase() {
             get("/organizations/$organizationId/solutions/$solutionId/security/users")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[1]").value(NEW_USER_ID))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
-            document("organizations/{organization_id}/solutions/{solution_id}/security/users/GET")
+            document("organizations/{organization_id}/solutions/{solution_id}/security/users/GET"),
         )
   }
 
@@ -1666,18 +1670,18 @@ class SolutionControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/solutions/$solutionId/members")
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         // users known by Keycloak are returned with their RBAC role
         .andExpect(jsonPath("$.users").isArray)
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", PLATFORM_ADMIN_EMAIL).exists())
         .andExpect(
-            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN)
+            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN),
         )
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", ORGANIZATION_USER_EMAIL).exists())
         .andExpect(
-            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR)
+            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR),
         )
         // an identity unknown to Keycloak is never exposed, neither as user nor as group
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
@@ -1688,11 +1692,11 @@ class SolutionControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.groups[?(@.id == '%s')].role", PUBLIC_GROUP_NAME).value(ROLE_VIEWER))
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
-                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL))
+                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL)),
         )
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
-                .value(hasItem<String>(ORGANIZATION_USER_EMAIL))
+                .value(hasItem<String>(ORGANIZATION_USER_EMAIL)),
         )
         // a group without the `public=true` attribute is filtered out
         .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PRIVATE_GROUP_NAME).doesNotExist())
