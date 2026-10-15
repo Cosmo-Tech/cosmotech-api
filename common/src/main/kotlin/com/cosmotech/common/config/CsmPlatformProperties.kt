@@ -210,6 +210,8 @@ data class CsmPlatformProperties(
         val dashboardEnabled: Boolean = false,
         /** List all excluded path from MCP generation */
         val pathsToExclude: List<String> = emptyList(),
+        /** Enable "Human in the loop" mechanism for mutating tool */
+        val requiredApproval: Boolean = true,
     )
   }
 
