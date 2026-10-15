@@ -46,21 +46,24 @@ class KeycloakClient(
           group.attributes[FILTER_ATTRIBUTE]?.contains(FILTER_VALUE) == true
 
   private fun getGroupsHierarchy(): List<GroupRepresentation> {
-    val keycloak = getKeycloakInstance()
-    val realmResource = keycloak.realm(realm)
 
-    val groupCount: Long? = realmResource.groups().count(true)[GROUP_COUNT_MAP_KEY]
+    getKeycloakInstance().use { keycloakClient ->
+      val realmResource = keycloakClient.realm(realm)
 
-    val groups = mutableListOf<GroupRepresentation>()
-    if (groupCount != null) {
-      var offset = OFFSET_START
-      while (offset < groupCount) {
-        groups.addAll(realmResource.groups().groups(GROUP_SEARCH_EXP, offset, MAX_PAGE_SIZE, false))
-        offset += MAX_PAGE_SIZE
+      val groupCount: Long? = realmResource.groups().count(true)[GROUP_COUNT_MAP_KEY]
+
+      val groups = mutableListOf<GroupRepresentation>()
+      if (groupCount != null) {
+        var offset = OFFSET_START
+        while (offset < groupCount) {
+          groups.addAll(
+              realmResource.groups().groups(GROUP_SEARCH_EXP, offset, MAX_PAGE_SIZE, false),
+          )
+          offset += MAX_PAGE_SIZE
+        }
       }
+      return groups
     }
-
-    return groups
   }
 
   fun getAllGroups(): List<GroupRepresentation> {
@@ -69,26 +72,29 @@ class KeycloakClient(
   }
 
   fun getUsersInGroup(groupId: String): List<UserRepresentation> {
-    val keycloak = getKeycloakInstance()
-    val realmResource = keycloak.realm(realm)
-    val group = realmResource.groups().group(groupId)
-    if (!isGroupPublic(group.toRepresentation())) {
-      throw CsmResourceNotFoundException("Group with id $groupId does not exist")
+    getKeycloakInstance().use { keycloakClient ->
+      val realmResource = keycloakClient.realm(realm)
+      val group = realmResource.groups().group(groupId)
+      if (!isGroupPublic(group.toRepresentation())) {
+        throw CsmResourceNotFoundException("Group with id $groupId does not exist")
+      }
+      return group.members()
     }
-    return group.members()
   }
 
   fun getUserRoles(userId: String): List<RoleRepresentation> {
-    val keycloak = getKeycloakInstance()
-    val realmResource = keycloak.realm(realm)
-    val userResource = realmResource.users().get(userId)
-    return userResource.roles().realmLevel().listAll()
+    getKeycloakInstance().use { keycloakClient ->
+      val realmResource = keycloakClient.realm(realm)
+      val userResource = realmResource.users().get(userId)
+      return userResource.roles().realmLevel().listAll()
+    }
   }
 
   fun getAllUsers(): List<UserRepresentation> {
-    val keycloak = getKeycloakInstance()
-    val realmResource = keycloak.realm(realm)
-    return realmResource.users().list()
+    getKeycloakInstance().use { keycloakClient ->
+      val realmResource = keycloakClient.realm(realm)
+      return realmResource.users().list()
+    }
   }
 
   fun listRBACMembers(rbac: List<RbacAccessControl>): KeycloakMembers {
