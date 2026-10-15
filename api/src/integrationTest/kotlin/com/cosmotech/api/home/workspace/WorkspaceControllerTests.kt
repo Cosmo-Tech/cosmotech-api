@@ -65,19 +65,19 @@ class WorkspaceControllerTests : ControllerTestBase() {
             get("/organizations/wrong-orgId/workspaces/wrong-workspaceId")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")),
         )
 
     mvc.perform(
             get("/organizations/wrong-orgId/workspaces/w-123456abcdef")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
@@ -86,11 +86,11 @@ class WorkspaceControllerTests : ControllerTestBase() {
             get("/organizations/o-123456abcdef/workspaces/wrong-workspaceId")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")),
         )
   }
 
@@ -136,12 +136,12 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                 workspaceSecurity,
                                 additionalData,
                                 tags,
-                            )
+                            ),
                         )
-                        .toString()
+                        .toString(),
                 )
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(WORKSPACE_NAME))
@@ -153,11 +153,11 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter1")
-                .value("solution_parameter1_defaultValue")
+                .value("solution_parameter1_defaultValue"),
         )
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter2")
-                .value("solution_parameter2_defaultValue")
+                .value("solution_parameter2_defaultValue"),
         )
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.additionalData").value(additionalData))
@@ -205,12 +205,12 @@ class WorkspaceControllerTests : ControllerTestBase() {
                                 description,
                                 additionalData,
                                 tags,
-                            )
+                            ),
                         )
-                        .toString()
+                        .toString(),
                 )
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(WORKSPACE_NAME))
@@ -221,11 +221,11 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter1")
-                .value("solution_parameter1_defaultValue")
+                .value("solution_parameter1_defaultValue"),
         )
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter2")
-                .value("solution_parameter2_defaultValue")
+                .value("solution_parameter2_defaultValue"),
         )
         .andExpect(jsonPath("$.tags").value(tags))
         .andExpect(jsonPath("$.additionalData").value(additionalData))
@@ -269,7 +269,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/workspaces")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].id").value(firstWorkspaceId))
@@ -346,7 +346,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(WORKSPACE_NAME))
@@ -362,11 +362,11 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.solution.datasetId").value(workspaceDatasetId))
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter1")
-                .value("solution_parameter1_defaultValue")
+                .value("solution_parameter1_defaultValue"),
         )
         .andExpect(
             jsonPath("$.solution.defaultParameterValues.solution_parameter2")
-                .value("solution_parameter2_defaultValue")
+                .value("solution_parameter2_defaultValue"),
         )
         .andExpect(jsonPath("$.security.default").value(ROLE_NONE))
         .andExpect(jsonPath("$.security.accessControlList[0].role").value(ROLE_ADMIN))
@@ -387,7 +387,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
             delete("/organizations/$organizationId/workspaces/$workspaceId")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -406,7 +406,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/security")
-                .withPlatformAdminHeader()
+                .withPlatformAdminHeader(),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_NONE))
@@ -437,10 +437,10 @@ class WorkspaceControllerTests : ControllerTestBase() {
                         "role": "$NEW_USER_ROLE"
                         }
                     """
-                        .trimMargin()
+                        .trimMargin(),
                 )
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(NEW_USER_ROLE))
@@ -448,8 +448,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/POST"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/POST",
+            ),
         )
   }
 
@@ -465,9 +465,9 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$PLATFORM_ADMIN_EMAIL"
+                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$PLATFORM_ADMIN_EMAIL",
                 )
-                .withPlatformAdminHeader()
+                .withPlatformAdminHeader(),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
@@ -475,8 +475,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/GET",
+            ),
         )
   }
 
@@ -506,13 +506,13 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch(
-                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$NEW_USER_ID"
+                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$NEW_USER_ID",
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_VIEWER))
@@ -520,8 +520,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/PATCH"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/PATCH",
+            ),
         )
   }
 
@@ -551,17 +551,17 @@ class WorkspaceControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete(
-                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$NEW_USER_ID"
+                    "/organizations/$organizationId/workspaces/$workspaceId/security/access/$NEW_USER_ID",
                 )
                 .withPlatformAdminHeader()
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/DELETE"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}/DELETE",
+            ),
         )
   }
 
@@ -581,7 +581,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"role":"$ROLE_VIEWER"}""")
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_VIEWER))
@@ -590,8 +590,8 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/security/default/POST"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/default/POST",
+            ),
         )
   }
 
@@ -623,14 +623,16 @@ class WorkspaceControllerTests : ControllerTestBase() {
             get("/organizations/$organizationId/workspaces/$workspaceId/security/users")
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0]").value(PLATFORM_ADMIN_EMAIL))
         .andExpect(jsonPath("$[1]").value(NEW_USER_ID))
         .andDo(MockMvcResultHandlers.print())
         .andDo(
-            document("organizations/{organization_id}/workspaces/{workspace_id}/security/users/GET")
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/security/users/GET",
+            ),
         )
   }
 
@@ -647,7 +649,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/files")
                 .withPlatformAdminHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -666,7 +668,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val fileToUpload =
         this::class.java.getResourceAsStream("/workspace/$fileName")
             ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null"
+                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null",
             )
 
     val mockFile =
@@ -684,7 +686,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 .param("destination", "path/to/a/directory/")
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.fileName").value("path/to/a/directory/$fileName"))
@@ -706,7 +708,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
             delete("/organizations/$organizationId/workspaces/$workspaceId/files")
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -726,7 +728,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val fileToUpload =
         this::class.java.getResourceAsStream("/workspace/$fileName")
             ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null"
+                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null",
             )
 
     val mockFile =
@@ -745,7 +747,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .param("destination", destination)
             .withPlatformAdminHeader()
             .accept(MediaType.APPLICATION_JSON)
-            .with(csrf())
+            .with(csrf()),
     )
 
     mvc.perform(
@@ -753,14 +755,14 @@ class WorkspaceControllerTests : ControllerTestBase() {
                 .param("file_name", destination + fileName)
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/files/delete/DELETE"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/files/delete/DELETE",
+            ),
         )
   }
 
@@ -778,7 +780,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val fileToUpload =
         this::class.java.getResourceAsStream("/workspace/$fileName")
             ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null"
+                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null",
             )
 
     val mockFile =
@@ -797,19 +799,21 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .param("destination", destination)
             .withPlatformAdminHeader()
             .accept(MediaType.APPLICATION_JSON)
-            .with(csrf())
+            .with(csrf()),
     )
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
                 .param("file_name", destination + fileName)
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .accept(MediaType.APPLICATION_OCTET_STREAM),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
-            document("organizations/{organization_id}/workspaces/{workspace_id}/files/download/GET")
+            document(
+                "organizations/{organization_id}/workspaces/{workspace_id}/files/download/GET",
+            ),
         )
   }
 
@@ -827,7 +831,7 @@ class WorkspaceControllerTests : ControllerTestBase() {
     val fileToUpload =
         this::class.java.getResourceAsStream("/workspace/$fileName")
             ?: throw IllegalStateException(
-                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null"
+                "$fileName file used for organizations/{organization_id}/workspaces/{workspace_id}/files/POST endpoint documentation cannot be null",
             )
 
     val mockFile =
@@ -846,14 +850,14 @@ class WorkspaceControllerTests : ControllerTestBase() {
             .param("destination", destination)
             .withPlatformAdminHeader()
             .accept(MediaType.APPLICATION_JSON)
-            .with(csrf())
+            .with(csrf()),
     )
 
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/files/download")
                 .param("file_name", "Wrong file name")
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .accept(MediaType.APPLICATION_OCTET_STREAM),
         )
         .andExpect(status().is4xxClientError)
         .andExpect(jsonPath("$.detail").value("Wrong file name does not exist."))
@@ -885,18 +889,18 @@ class WorkspaceControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/members")
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         // users known by Keycloak are returned with their RBAC role
         .andExpect(jsonPath("$.users").isArray)
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", PLATFORM_ADMIN_EMAIL).exists())
         .andExpect(
-            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN)
+            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN),
         )
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", ORGANIZATION_USER_EMAIL).exists())
         .andExpect(
-            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR)
+            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR),
         )
         // an identity unknown to Keycloak is never exposed, neither as user nor as group
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
@@ -907,11 +911,11 @@ class WorkspaceControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.groups[?(@.id == '%s')].role", PUBLIC_GROUP_NAME).value(ROLE_VIEWER))
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
-                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL))
+                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL)),
         )
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
-                .value(hasItem<String>(ORGANIZATION_USER_EMAIL))
+                .value(hasItem<String>(ORGANIZATION_USER_EMAIL)),
         )
         // a group without the `public=true` attribute is filtered out
         .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PRIVATE_GROUP_NAME).doesNotExist())

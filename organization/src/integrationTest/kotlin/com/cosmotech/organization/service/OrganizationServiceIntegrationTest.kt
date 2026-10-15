@@ -159,7 +159,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
     fun `getOrganization as resource admin`() {
       val organizationRegistered =
           organizationApiService.createOrganization(
-              makeSimpleOrganizationCreateRequest("o-connector-test-1")
+              makeSimpleOrganizationCreateRequest("o-connector-test-1"),
           )
       assertNotNull(organizationApiService.getOrganization(organizationRegistered.id))
     }
@@ -343,7 +343,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_EDITOR,
-                )
+                ),
             )
 
         runAsOrganizationUser()
@@ -617,7 +617,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_USER,
-                )
+                ),
             )
         runAsOrganizationUser()
         var organizationUserPermissions =
@@ -709,7 +709,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_USER,
-                )
+                ),
             )
         runAsOrganizationUser()
         assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id))
@@ -728,7 +728,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_NONE,
-                )
+                ),
             )
         runAsOrganizationUser()
         organizationApiService.getOrganizationSecurity(organizationRegistered.id)
@@ -746,7 +746,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
             organizationApiService.updateOrganizationDefaultSecurity(
                 organizationRegistered.id,
                 OrganizationRole(ROLE_ADMIN),
-            )
+            ),
         )
         val defaultRoleUpdated =
             organizationApiService.getOrganizationSecurity(organizationRegistered.id).default
@@ -779,7 +779,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_ADMIN,
-                )
+                ),
             )
         val defaultRoleCreated = organizationRegistered.security.default
         runAsOrganizationUser()
@@ -787,7 +787,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
             organizationApiService.updateOrganizationDefaultSecurity(
                 organizationRegistered.id,
                 OrganizationRole(ROLE_ADMIN),
-            )
+            ),
         )
         val defaultRoleUpdated =
             organizationApiService.getOrganizationSecurity(organizationRegistered.id).default
@@ -807,7 +807,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_USER,
-                )
+                ),
             )
         runAsOrganizationUser()
         organizationApiService.updateOrganizationDefaultSecurity(
@@ -856,7 +856,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_USER,
-                )
+                ),
             )
         runAsOrganizationUser()
         val organizationRole =
@@ -882,7 +882,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_USER,
-                )
+                ),
             )
         runAsOrganizationUser()
         organizationApiService.getOrganizationAccessControl(
@@ -904,7 +904,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_NONE,
-                )
+                ),
             )
         runAsOrganizationUser()
         organizationApiService.getOrganizationAccessControl(
@@ -931,7 +931,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
             organizationApiService.createOrganizationAccessControl(
                 organizationRegistered.id,
                 otherUserACL,
-            )
+            ),
         )
 
         val otherUserACLRetrieved =
@@ -958,7 +958,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_ADMIN,
-                )
+                ),
             )
         runAsOrganizationUser()
         assertThrows<CsmResourceNotFoundException> {
@@ -972,7 +972,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
             organizationApiService.createOrganizationAccessControl(
                 organizationRegistered.id,
                 otherUserACL,
-            )
+            ),
         )
 
         val otherUserACLRetrieved =
@@ -999,7 +999,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                     TEST_USER_ID,
                     ROLE_NONE,
                     ROLE_USER,
-                )
+                ),
             )
         runAsOrganizationUser()
         assertThrows<CsmResourceNotFoundException> {
@@ -1047,7 +1047,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                 organizationRegistered.id,
                 OTHER_TEST_USER_ID,
                 OrganizationRole(role = ROLE_EDITOR),
-            )
+            ),
         )
 
         val userACLRetrieved =
@@ -1125,7 +1125,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                 organizationRegistered.id,
                 OTHER_TEST_USER_ID,
                 OrganizationRole(role = ROLE_EDITOR),
-            )
+            ),
         )
 
         val userACLRetrieved =
@@ -1277,7 +1277,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_USER_ID,
                   ROLE_NONE,
                   ROLE_USER,
-              )
+              ),
           )
       runAsOrganizationUser()
       val orgaUsers =
@@ -1296,7 +1296,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_USER_ID,
                   ROLE_NONE,
                   ROLE_NONE,
-              )
+              ),
           )
       runAsOrganizationUser()
       assertThrows<CsmAccessForbiddenException> {
@@ -1327,7 +1327,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_USER_ID,
                   ROLE_NONE,
                   ROLE_NONE,
-              )
+              ),
           )
       runAsOrganizationUser()
       assertThrows<CsmAccessForbiddenException> {
@@ -1427,7 +1427,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
     fun `getOrganization as resource admin`() {
       val organizationRegistered =
           organizationApiService.createOrganization(
-              makeSimpleOrganizationCreateRequest("o-connector-test-1")
+              makeSimpleOrganizationCreateRequest("o-connector-test-1"),
           )
       assertNotNull(organizationApiService.getOrganization(organizationRegistered.id))
     }
@@ -1448,7 +1448,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
             OrganizationSecurity(
                 default = ROLE_NONE,
                 mutableListOf(
-                    OrganizationAccessControl(id = TEST_ADMIN_USER_ID, role = ROLE_ADMIN)
+                    OrganizationAccessControl(id = TEST_ADMIN_USER_ID, role = ROLE_ADMIN),
                 ),
             ),
             organizationRegistered.security,
@@ -1528,7 +1528,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
     assertDoesNotThrow {
       val organizationRegistered =
           organizationApiService.createOrganization(
-              makeSimpleOrganizationCreateRequest("o-connector-test-1")
+              makeSimpleOrganizationCreateRequest("o-connector-test-1"),
           )
       val newName = "my-new-name"
       val organizationUpdated =
@@ -1566,7 +1566,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_ADMIN_USER_ID,
                   ROLE_NONE,
                   ROLE_EDITOR,
-              )
+              ),
           )
 
       runAsPlatformAdmin()
@@ -1848,7 +1848,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_USER_ID,
                   ROLE_NONE,
                   ROLE_VIEWER,
-              )
+              ),
           )
       runAsPlatformAdmin()
       var organizationUserPermissions =
@@ -1905,7 +1905,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_USER_ID,
                   ROLE_NONE,
                   ROLE_VIEWER,
-              )
+              ),
           )
       runAsPlatformAdmin()
       var organizationUserPermissions =
@@ -1987,7 +1987,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_USER_ID,
                   ROLE_NONE,
                   ROLE_VIEWER,
-              )
+              ),
           )
       runAsPlatformAdmin()
       assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id))
@@ -2006,7 +2006,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   defaultName,
                   ROLE_NONE,
                   ROLE_NONE,
-              )
+              ),
           )
       runAsPlatformAdmin()
       assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id))
@@ -2024,7 +2024,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
           organizationApiService.updateOrganizationDefaultSecurity(
               organizationRegistered.id,
               OrganizationRole(ROLE_ADMIN),
-          )
+          ),
       )
       val defaultRoleUpdated =
           organizationApiService.getOrganizationSecurity(organizationRegistered.id).default
@@ -2058,7 +2058,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
           organizationApiService.updateOrganizationDefaultSecurity(
               organizationRegistered.id,
               OrganizationRole(ROLE_ADMIN),
-          )
+          ),
       )
       val defaultRoleUpdated =
           organizationApiService.getOrganizationSecurity(organizationRegistered.id).default
@@ -2078,7 +2078,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_ADMIN_USER_ID,
                   ROLE_NONE,
                   ROLE_NONE,
-              )
+              ),
           )
       val defaultRoleCreated = organizationRegistered.security.default
       runAsPlatformAdmin()
@@ -2086,7 +2086,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
           organizationApiService.updateOrganizationDefaultSecurity(
               organizationRegistered.id,
               OrganizationRole(ROLE_ADMIN),
-          )
+          ),
       )
       val defaultRoleUpdated =
           organizationApiService.getOrganizationSecurity(organizationRegistered.id).default
@@ -2133,7 +2133,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_USER_ID,
                   ROLE_NONE,
                   ROLE_VIEWER,
-              )
+              ),
           )
       runAsPlatformAdmin()
       val organizationRole =
@@ -2159,7 +2159,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_USER_ID,
                   ROLE_NONE,
                   ROLE_VIEWER,
-              )
+              ),
           )
       runAsPlatformAdmin()
       organizationApiService.getOrganizationAccessControl(
@@ -2181,7 +2181,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_ADMIN_USER_ID,
                   ROLE_NONE,
                   ROLE_NONE,
-              )
+              ),
           )
       runAsPlatformAdmin()
       organizationApiService.getOrganizationAccessControl(
@@ -2203,7 +2203,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_USER_ID,
                   ROLE_NONE,
                   ROLE_NONE,
-              )
+              ),
           )
       runAsPlatformAdmin()
       val organizationAccessControl =
@@ -2234,7 +2234,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
           organizationApiService.createOrganizationAccessControl(
               organizationRegistered.id,
               otherUserACL,
-          )
+          ),
       )
 
       val otherUserACLRetrieved =
@@ -2261,7 +2261,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   TEST_ADMIN_USER_ID,
                   ROLE_NONE,
                   ROLE_ADMIN,
-              )
+              ),
           )
       runAsPlatformAdmin()
       assertThrows<CsmResourceNotFoundException> {
@@ -2272,7 +2272,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
           organizationApiService.createOrganizationAccessControl(
               organizationRegistered.id,
               otherUserACL,
-          )
+          ),
       )
 
       val otherUserACLRetrieved =
@@ -2296,7 +2296,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                   defaultName,
                   ROLE_NONE,
                   ROLE_NONE,
-              )
+              ),
           )
       runAsPlatformAdmin()
       assertThrows<CsmResourceNotFoundException> {
@@ -2307,7 +2307,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
           organizationApiService.createOrganizationAccessControl(
               organizationRegistered.id,
               otherUserACL,
-          )
+          ),
       )
 
       val otherUserACLRetrieved =
@@ -2350,7 +2350,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
               organizationRegistered.id,
               OTHER_TEST_USER_ID,
               OrganizationRole(role = ROLE_EDITOR),
-          )
+          ),
       )
 
       val userACLRetrieved =
@@ -2428,7 +2428,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
               organizationRegistered.id,
               OTHER_TEST_USER_ID,
               OrganizationRole(role = ROLE_EDITOR),
-          )
+          ),
       )
 
       val userACLRetrieved =
@@ -2460,7 +2460,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
               organizationRegistered.id,
               TEST_ADMIN_USER_ID,
               OrganizationRole(role = ROLE_EDITOR),
-          )
+          ),
       )
 
       val userACLRetrieved =
@@ -2583,7 +2583,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                 TEST_USER_ID,
                 ROLE_NONE,
                 ROLE_VIEWER,
-            )
+            ),
         )
     runAsPlatformAdmin()
     val orgaUsers = organizationApiService.listOrganizationSecurityUsers(organizationRegistered.id)
@@ -2601,7 +2601,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                 TEST_USER_ID,
                 ROLE_NONE,
                 ROLE_NONE,
-            )
+            ),
         )
     runAsPlatformAdmin()
     val orgaUsers = organizationApiService.listOrganizationSecurityUsers(organizationRegistered.id)
@@ -2673,7 +2673,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
                 TEST_USER_ID,
                 ROLE_NONE,
                 ROLE_NONE,
-            )
+            ),
         )
     runAsPlatformAdmin()
     assertDoesNotThrow {
@@ -2694,7 +2694,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
   fun `assert timestamps are functional for base CRUD`() {
     val organizationSaved =
         organizationApiService.createOrganization(
-            makeSimpleOrganizationCreateRequest("organization")
+            makeSimpleOrganizationCreateRequest("organization"),
         )
     assertTrue(organizationSaved.createInfo.timestamp >= startTime)
     assertEquals(organizationSaved.createInfo, organizationSaved.updateInfo)
@@ -2721,7 +2721,7 @@ class OrganizationServiceIntegrationTest : CsmTestBase() {
   fun `assert timestamps are functional for RBAC CRUD`() {
     val organizationSaved =
         organizationApiService.createOrganization(
-            makeSimpleOrganizationCreateRequest("organization")
+            makeSimpleOrganizationCreateRequest("organization"),
         )
     organizationApiService.createOrganizationAccessControl(
         organizationSaved.id,

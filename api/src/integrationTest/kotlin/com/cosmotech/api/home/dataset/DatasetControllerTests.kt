@@ -103,7 +103,7 @@ class DatasetControllerTests : ControllerTestBase() {
                 runTemplateRunSizing,
                 mutableListOf(PARAMETER_GROUP_ID),
                 10,
-            )
+            ),
         )
 
     organizationId = createOrganizationAndReturnId(mvc, constructOrganizationCreateRequest())
@@ -125,78 +125,78 @@ class DatasetControllerTests : ControllerTestBase() {
   fun get_dataset_part_with_wrong_ids_format() {
     mvc.perform(
             get(
-                    "/organizations/wrong-orgId/workspaces/wrong-workspaceId/datasets/wrong-datasetId/parts/wrong-datasetPartId"
+                    "/organizations/wrong-orgId/workspaces/wrong-workspaceId/datasets/wrong-datasetId/parts/wrong-datasetPartId",
                 )
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")),
         )
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-datasetId:must match \"^d-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-datasetId:must match \"^d-\\w{10,20}\"")),
         )
         .andExpect(
             jsonPath(
                 "$.detail",
                 containsString("wrong-datasetPartId:must match \"^dp-\\w{10,20}\""),
-            )
+            ),
         )
 
     mvc.perform(
             get(
-                    "/organizations/wrong-orgId/workspaces/w-123456abcdef/datasets/d-123456azerty/parts/dp-123456azert"
+                    "/organizations/wrong-orgId/workspaces/w-123456abcdef/datasets/d-123456azerty/parts/dp-123456azert",
                 )
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail", containsString("wrong-orgId:must match \"^o-\\w{10,20}\"")))
 
     mvc.perform(
             get(
-                    "/organizations/o-1233456azer/workspaces/wrong-workspaceId/datasets/d-123456azerty/parts/dp-123456azert"
+                    "/organizations/o-1233456azer/workspaces/wrong-workspaceId/datasets/d-123456azerty/parts/dp-123456azert",
                 )
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-workspaceId:must match \"^w-\\w{10,20}\"")),
         )
 
     mvc.perform(
             get(
-                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/datasets/wrong-datasetId/parts/dp-123456azert"
+                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/datasets/wrong-datasetId/parts/dp-123456azert",
                 )
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(
-            jsonPath("$.detail", containsString("wrong-datasetId:must match \"^d-\\w{10,20}\""))
+            jsonPath("$.detail", containsString("wrong-datasetId:must match \"^d-\\w{10,20}\"")),
         )
 
     mvc.perform(
             get(
-                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/datasets/d-123456azerty/parts/wrong-datasetPartId"
+                    "/organizations/o-1233456azer/workspaces/w-123456abcdef/datasets/d-123456azerty/parts/wrong-datasetPartId",
                 )
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isBadRequest)
         .andExpect(
             jsonPath(
                 "$.detail",
                 containsString("wrong-datasetPartId:must match \"^dp-\\w{10,20}\""),
-            )
+            ),
         )
   }
 
@@ -213,7 +213,7 @@ class DatasetControllerTests : ControllerTestBase() {
     val fileToUpload =
         this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
             ?: throw IllegalStateException(
-                "$TEST_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST endpoint documentation cannot be null"
+                "$TEST_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST endpoint documentation cannot be null",
             )
     val files =
         MockMultipartFile(
@@ -228,7 +228,7 @@ class DatasetControllerTests : ControllerTestBase() {
                 .file(files)
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(DATASET_NAME))
@@ -274,7 +274,7 @@ class DatasetControllerTests : ControllerTestBase() {
                         name = DATASET_NAME,
                         description = DATASET_DESCRIPTION,
                         tags = mutableListOf("tag1", "tag2"),
-                    )
+                    ),
                 )
                 .toString()
                 .byteInputStream(),
@@ -285,7 +285,7 @@ class DatasetControllerTests : ControllerTestBase() {
                 .file(datasetCreateRequest)
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(DATASET_NAME))
@@ -319,7 +319,7 @@ class DatasetControllerTests : ControllerTestBase() {
                         description = DATASET_DESCRIPTION,
                         tags = mutableListOf("tag1", "tag2"),
                         parts = mutableListOf(),
-                    )
+                    ),
                 )
                 .toString()
                 .byteInputStream(),
@@ -330,7 +330,7 @@ class DatasetControllerTests : ControllerTestBase() {
                 .file(datasetCreateRequest)
                 .accept(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(DATASET_NAME))
@@ -368,15 +368,15 @@ class DatasetControllerTests : ControllerTestBase() {
     val fileUploaded =
         this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
             ?: throw IllegalStateException(
-                "$TEST_FILE_NAME file used for endpoints test documentation cannot be null"
+                "$TEST_FILE_NAME file used for endpoints test documentation cannot be null",
             )
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId/download"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId/download",
                 )
                 .accept(MediaType.APPLICATION_OCTET_STREAM)
-                .withPlatformAdminHeader()
+                .withPlatformAdminHeader(),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect { result ->
@@ -385,8 +385,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/download/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/download/GET",
+            ),
         )
   }
 
@@ -398,7 +398,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(DATASET_NAME))
@@ -431,8 +431,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/GET",
+            ),
         )
   }
 
@@ -446,14 +446,14 @@ class DatasetControllerTests : ControllerTestBase() {
             delete("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId")
                 .accept(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/DELETE"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/DELETE",
+            ),
         )
   }
 
@@ -465,7 +465,7 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access",
                 )
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
@@ -474,12 +474,12 @@ class DatasetControllerTests : ControllerTestBase() {
                             DatasetAccessControl(
                                 role = ROLE_ADMIN,
                                 id = ORGANIZATION_USER_EMAIL,
-                            )
+                            ),
                         )
-                        .toString()
+                        .toString(),
                 )
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
@@ -487,8 +487,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/POST"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/POST",
+            ),
         )
   }
 
@@ -515,10 +515,10 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security",
                 )
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_NONE))
@@ -529,8 +529,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/GET",
+            ),
         )
   }
 
@@ -557,10 +557,10 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL",
                 )
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_EDITOR))
@@ -568,8 +568,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}/GET",
+            ),
         )
   }
 
@@ -596,18 +596,18 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL",
                 )
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}/DELETE"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}/DELETE",
+            ),
         )
   }
 
@@ -620,7 +620,7 @@ class DatasetControllerTests : ControllerTestBase() {
     val fileToUpload =
         this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
             ?: throw IllegalStateException(
-                "$TEST_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/POST endpoint documentation cannot be null"
+                "$TEST_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/POST endpoint documentation cannot be null",
             )
     val file =
         MockMultipartFile(
@@ -639,13 +639,13 @@ class DatasetControllerTests : ControllerTestBase() {
         )
     mvc.perform(
             multipart(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts",
                 )
                 .file(file)
                 .file(datasetPartCreateRequest)
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(DATASET_PART_NAME))
@@ -665,8 +665,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/POST"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/POST",
+            ),
         )
   }
 
@@ -686,12 +686,12 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             multipart(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts",
                 )
                 .file(datasetPartCreateRequest)
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().isBadRequest)
         .andExpect(jsonPath("$.detail").value("Required part 'file' is not present."))
@@ -714,18 +714,18 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             delete(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId",
                 )
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/DELETE"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/DELETE",
+            ),
         )
   }
 
@@ -746,10 +746,10 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId",
                 )
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.id").value(datasetPartId))
@@ -770,8 +770,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/GET",
+            ),
         )
   }
 
@@ -792,7 +792,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts")
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$[0].name").value(DATASET_PART_NAME))
@@ -827,8 +827,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/GET",
+            ),
         )
   }
 
@@ -849,13 +849,13 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             post(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/search"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/search",
                 )
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
                 .content(JSONArray(listOf("tag_part3")).toString())
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -874,8 +874,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].updateInfo.timestamp").value(greaterThan(0.toLong())))
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/search/POST"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/search/POST",
+            ),
         )
   }
 
@@ -899,26 +899,26 @@ class DatasetControllerTests : ControllerTestBase() {
                                     role = ROLE_EDITOR,
                                 ),
                             ),
-                    )
+                    ),
             ),
         )
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/users"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/users",
                 )
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
         .andExpect(
-            jsonPath("$").value(mutableListOf(PLATFORM_ADMIN_EMAIL, ORGANIZATION_USER_EMAIL))
+            jsonPath("$").value(mutableListOf(PLATFORM_ADMIN_EMAIL, ORGANIZATION_USER_EMAIL)),
         )
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/users/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/users/GET",
+            ),
         )
   }
 
@@ -931,7 +931,7 @@ class DatasetControllerTests : ControllerTestBase() {
     mvc.perform(
             get("/organizations/$organizationId/workspaces/$workspaceId/datasets")
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -978,7 +978,7 @@ class DatasetControllerTests : ControllerTestBase() {
                 .content(JSONArray(listOf("tag1")).toString())
                 .withPlatformAdminHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -1012,8 +1012,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$[0].security.accessControlList[0].id").value(PLATFORM_ADMIN_EMAIL))
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/search/POST"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/search/POST",
+            ),
         )
   }
 
@@ -1028,7 +1028,7 @@ class DatasetControllerTests : ControllerTestBase() {
                     constructDatasetCreateRequest(
                         type = DatasetPartTypeEnum.DB,
                         sourceName = CUSTOMERS_FILE_NAME,
-                    )
+                    ),
                 )
                 .toString()
                 .byteInputStream(),
@@ -1037,7 +1037,7 @@ class DatasetControllerTests : ControllerTestBase() {
     val fileToUpload =
         this::class.java.getResourceAsStream("/dataset/$CUSTOMERS_FILE_NAME")
             ?: throw IllegalStateException(
-                "$CUSTOMERS_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST endpoint documentation should exist"
+                "$CUSTOMERS_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST endpoint documentation should exist",
             )
 
     val files =
@@ -1056,12 +1056,12 @@ class DatasetControllerTests : ControllerTestBase() {
                         .file(files)
                         .withPlatformAdminHeader()
                         .accept(MediaType.APPLICATION_JSON)
-                        .with(csrf())
+                        .with(csrf()),
                 )
                 .andExpect(status().is2xxSuccessful)
                 .andReturn()
                 .response
-                .contentAsString
+                .contentAsString,
         )
 
     val datasetPartId = datasetCreated.getJSONArray("parts").getJSONObject(0).get("id")
@@ -1071,17 +1071,17 @@ class DatasetControllerTests : ControllerTestBase() {
     val valueRetrieved =
         mvc.perform(
                 get(
-                        "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId/query"
+                        "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId/query",
                     )
                     .withPlatformAdminHeader()
-                    .accept(MediaType.APPLICATION_OCTET_STREAM)
+                    .accept(MediaType.APPLICATION_OCTET_STREAM),
             )
             .andExpect(status().is2xxSuccessful)
             .andDo(MockMvcResultHandlers.print())
             .andDo(
                 document(
-                    "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/query/GET"
-                )
+                    "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/query/GET",
+                ),
             )
             .andReturn()
             .response
@@ -1124,7 +1124,7 @@ class DatasetControllerTests : ControllerTestBase() {
                         sourceName = newSourceName,
                         description = newDescription,
                         tags = newTags,
-                    )
+                    ),
                 )
                 .toString()
                 .byteInputStream(),
@@ -1139,7 +1139,7 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             multipart(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId",
                 )
                 .file(datasetPartUpdateRequest)
                 .file(newFile)
@@ -1152,7 +1152,7 @@ class DatasetControllerTests : ControllerTestBase() {
                 .with { request ->
                   request.method = "PUT"
                   request
-                }
+                },
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -1173,8 +1173,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.datasetId").value(datasetId))
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/PUT"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/PUT",
+            ),
         )
   }
 
@@ -1199,7 +1199,7 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/parts/$datasetPartId",
                 )
                 .content(
                     JSONObject(
@@ -1207,14 +1207,14 @@ class DatasetControllerTests : ControllerTestBase() {
                                 sourceName = newSourceName,
                                 description = newDescription,
                                 tags = newTags,
-                            )
+                            ),
                         )
-                        .toString()
+                        .toString(),
                 )
                 .withPlatformAdminHeader()
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -1235,8 +1235,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.datasetId").value(datasetId))
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/PATCH"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/parts/{dataset_part_id}/PATCH",
+            ),
         )
   }
 
@@ -1259,7 +1259,7 @@ class DatasetControllerTests : ControllerTestBase() {
                                     role = ROLE_EDITOR,
                                 ),
                             ),
-                    )
+                    ),
             ),
         )
 
@@ -1274,7 +1274,7 @@ class DatasetControllerTests : ControllerTestBase() {
     val fileToUpload =
         this::class.java.getResourceAsStream("/dataset/$TEST_FILE_NAME")
             ?: throw IllegalStateException(
-                "$TEST_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST endpoint documentation cannot be null"
+                "$TEST_FILE_NAME file used for organizations/{organization_id}/workspaces/{workspace_id}/datasets/POST endpoint documentation cannot be null",
             )
 
     val datasetUpdateRequest =
@@ -1290,7 +1290,7 @@ class DatasetControllerTests : ControllerTestBase() {
                         description = newPartDescription,
                         tags = newPartTags,
                         type = DatasetPartTypeEnum.File,
-                    )
+                    ),
                 ),
         )
 
@@ -1322,7 +1322,7 @@ class DatasetControllerTests : ControllerTestBase() {
                 .with { request ->
                   request.method = "PATCH"
                   request
-                }
+                },
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(newName))
@@ -1357,8 +1357,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/PATCH"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/PATCH",
+            ),
         )
   }
 
@@ -1381,7 +1381,7 @@ class DatasetControllerTests : ControllerTestBase() {
                                     role = ROLE_EDITOR,
                                 ),
                             ),
-                    )
+                    ),
             ),
         )
 
@@ -1411,7 +1411,7 @@ class DatasetControllerTests : ControllerTestBase() {
                 .with { request ->
                   request.method = "PATCH"
                   request
-                }
+                },
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(newName))
@@ -1465,7 +1465,7 @@ class DatasetControllerTests : ControllerTestBase() {
                                     role = ROLE_EDITOR,
                                 ),
                             ),
-                    )
+                    ),
             ),
         )
 
@@ -1500,7 +1500,7 @@ class DatasetControllerTests : ControllerTestBase() {
                 .with { request ->
                   request.method = "PATCH"
                   request
-                }
+                },
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.name").value(newName))
@@ -1543,19 +1543,19 @@ class DatasetControllerTests : ControllerTestBase() {
                                     role = ROLE_EDITOR,
                                 ),
                             ),
-                    )
+                    ),
             ),
         )
 
     mvc.perform(
             patch(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/access/$ORGANIZATION_USER_EMAIL",
                 )
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
                 .content(JSONObject(DatasetRole(role = ROLE_ADMIN)).toString())
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.role").value(ROLE_ADMIN))
@@ -1563,8 +1563,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}/PATCH"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/access/{identity_id}/PATCH",
+            ),
         )
   }
 
@@ -1576,13 +1576,13 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             patch(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/default"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/security/default",
                 )
                 .contentType(MediaType.APPLICATION_JSON)
                 .withPlatformAdminHeader()
                 .content(JSONObject(DatasetRole(role = ROLE_VIEWER)).toString())
                 .accept(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                .with(csrf()),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect(jsonPath("$.default").value(ROLE_VIEWER))
@@ -1591,8 +1591,8 @@ class DatasetControllerTests : ControllerTestBase() {
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default/PATCH"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/security/default/PATCH",
+            ),
         )
   }
 
@@ -1620,21 +1620,21 @@ class DatasetControllerTests : ControllerTestBase() {
 
     mvc.perform(
             get(
-                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/members"
+                    "/organizations/$organizationId/workspaces/$workspaceId/datasets/$datasetId/members",
                 )
                 .withPlatformAdminHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         // users known by Keycloak are returned with their RBAC role
         .andExpect(jsonPath("$.users").isArray)
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", PLATFORM_ADMIN_EMAIL).exists())
         .andExpect(
-            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN)
+            jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL).value(ROLE_ADMIN),
         )
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", ORGANIZATION_USER_EMAIL).exists())
         .andExpect(
-            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR)
+            jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL).value(ROLE_EDITOR),
         )
         // an identity unknown to Keycloak is never exposed, neither as user nor as group
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
@@ -1645,19 +1645,19 @@ class DatasetControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.groups[?(@.id == '%s')].role", PUBLIC_GROUP_NAME).value(ROLE_VIEWER))
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
-                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL))
+                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL)),
         )
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
-                .value(hasItem<String>(ORGANIZATION_USER_EMAIL))
+                .value(hasItem<String>(ORGANIZATION_USER_EMAIL)),
         )
         // a group without the `public=true` attribute is filtered out
         .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PRIVATE_GROUP_NAME).doesNotExist())
         .andDo(MockMvcResultHandlers.print())
         .andDo(
             document(
-                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/members/GET"
-            )
+                "organizations/{organization_id}/workspaces/{workspace_id}/datasets/{dataset_id}/members/GET",
+            ),
         )
   }
 }

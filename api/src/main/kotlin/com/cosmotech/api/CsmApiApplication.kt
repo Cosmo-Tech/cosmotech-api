@@ -19,7 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
             ComponentScan.Filter(
                 type = FilterType.REGEX,
                 pattern = ["com\\.cosmotech\\.\\w+\\.Application"],
-            )
+            ),
         ],
 )
 class CsmApiApplication

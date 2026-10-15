@@ -23,7 +23,7 @@ dependencies {
   implementation(platform("com.squareup.okhttp3:okhttp-bom:$okHttpBom"))
   implementation("com.squareup.okhttp3:okhttp")
   implementation(
-      "org.springframework.boot:spring-boot-starter-restclient:$springPlatformBomVersion"
+      "org.springframework.boot:spring-boot-starter-restclient:$springPlatformBomVersion",
   )
   implementation("com.squareup.okhttp3:logging-interceptor")
 }

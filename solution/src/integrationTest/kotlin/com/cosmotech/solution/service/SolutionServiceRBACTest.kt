@@ -187,7 +187,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               solutionApiService.createSolution(
                   organizationSaved.id,
@@ -1156,7 +1156,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest(
-                "Test Organization RBAC updateSolutionDefaultSecurity : $role"
+                "Test Organization RBAC updateSolutionDefaultSecurity : $role",
             ) {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
@@ -2011,7 +2011,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
           parameterGroups = mutableListOf(RunTemplateParameterGroupCreateRequest(id = "group")),
           parameters =
               mutableListOf(
-                  RunTemplateParameterCreateRequest(id = "parameter", varType = "string")
+                  RunTemplateParameterCreateRequest(id = "parameter", varType = "string"),
               ),
           security =
               SolutionSecurity(

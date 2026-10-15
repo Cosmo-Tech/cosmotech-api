@@ -56,7 +56,7 @@ open class CsmRbac(
   ) {
     if (!this.check(rbacSecurity, permission, rolesDefinition)) {
       throw CsmAccessForbiddenException(
-          "RBAC ${rbacSecurity.id} - User does not have permission $permission"
+          "RBAC ${rbacSecurity.id} - User does not have permission $permission",
       )
     }
   }

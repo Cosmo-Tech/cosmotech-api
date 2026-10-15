@@ -86,7 +86,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC listOrganizations : $role") {
               organizationApiService.createOrganization(
-                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                  makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
               )
 
               val organizations = organizationApiService.listOrganizations(null, null)
@@ -108,7 +108,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC getOrganizationMembers : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {
@@ -143,7 +143,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {
@@ -175,7 +175,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC deleteOrganization : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {
@@ -207,7 +207,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC updateOrganization : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
 
               if (shouldThrow) {
@@ -247,7 +247,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC getOrganizationPermissions : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {
@@ -280,7 +280,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC getOrganizationSecurity : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {
@@ -314,7 +314,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC updateOrganizationDefaultSecurity : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {
@@ -354,7 +354,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC createOrganizationAccessControl : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {
@@ -394,7 +394,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC getOrganizationAccessControl : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {
@@ -434,7 +434,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC deleteOrganizationAccessControl : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {
@@ -474,7 +474,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC updateOrganizationAccessControl : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {
@@ -516,7 +516,7 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             DynamicTest.dynamicTest("Test RBAC listOrganizationSecurityUsers : $role") {
               val organization =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(TEST_USER_MAIL, role)
+                      makeOrganizationCreateRequest(TEST_USER_MAIL, role),
                   )
 
               if (shouldThrow) {

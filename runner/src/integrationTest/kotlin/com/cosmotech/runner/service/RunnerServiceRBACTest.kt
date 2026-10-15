@@ -2911,7 +2911,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           .map { role ->
             dynamicTest(
                 "Check Dataset RBAC modification " +
-                    "when createRunnerAccessControl is called on a runner with role : $role"
+                    "when createRunnerAccessControl is called on a runner with role : $role",
             ) {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organization =
@@ -2949,7 +2949,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               assertTrue(
                   datasetSaved.security.accessControlList.none { datasetAccessControl ->
                     datasetAccessControl.id == "unknown_user@test.com"
-                  }
+                  },
               )
 
               runnerApiService.createRunnerAccessControl(
@@ -2969,7 +2969,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
               assertTrue(
                   baseDatasetRunner.security.accessControlList.none {
                     it.id == "unknown_user@test.com"
-                  }
+                  },
               )
 
               val parameterDatasetRunner =
@@ -2983,7 +2983,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
                   parameterDatasetRunner.security.accessControlList.any { access ->
                     access.id == "unknown_user@test.com" &&
                         access.role == (role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER)
-                  }
+                  },
               )
             }
           }

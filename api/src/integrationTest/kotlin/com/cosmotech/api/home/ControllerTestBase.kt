@@ -69,7 +69,7 @@ abstract class ControllerTestBase : CsmTestBase() {
                     
                   ${response.contentAsString}
                 """
-                        .trimIndent()
+                        .trimIndent(),
                 )
               }
             }
@@ -91,7 +91,7 @@ abstract class ControllerTestBase : CsmTestBase() {
                             .remove(HttpHeaders.CONTENT_LENGTH)
                             .remove(HttpHeaders.CACHE_CONTROL),
                         prettyPrint(),
-                    )
+                    ),
             )
             .build()
   }

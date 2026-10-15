@@ -122,7 +122,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -171,7 +171,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -243,7 +243,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -300,7 +300,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -350,7 +350,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -400,7 +400,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -450,7 +450,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -508,7 +508,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -566,7 +566,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -619,7 +619,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -672,7 +672,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -743,7 +743,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -814,7 +814,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -867,7 +867,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -920,7 +920,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -978,7 +978,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1036,7 +1036,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1094,7 +1094,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1152,7 +1152,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1210,7 +1210,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1268,7 +1268,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1321,7 +1321,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1374,7 +1374,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1432,7 +1432,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1490,7 +1490,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1548,7 +1548,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1606,7 +1606,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1664,7 +1664,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1722,7 +1722,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1780,7 +1780,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1838,7 +1838,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1898,7 +1898,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -1958,7 +1958,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = role),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -2014,7 +2014,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(
@@ -2070,7 +2070,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               val organizationSaved =
                   organizationApiService.createOrganization(
-                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                      makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN),
                   )
               val solutionSaved =
                   solutionApiService.createSolution(

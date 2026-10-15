@@ -48,7 +48,7 @@ class IAMInfoControllerTests : ControllerTestBase() {
   fun `list IAM groups as organization user`() {
     // listIAMGroups is open to all users, no permission check needed
     mvc.perform(
-            get("/iaminfo/groups").withOrganizationUserHeader().accept(MediaType.APPLICATION_JSON)
+            get("/iaminfo/groups").withOrganizationUserHeader().accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andExpect { result -> JSONArray(result.response.contentAsString) }
@@ -59,7 +59,7 @@ class IAMInfoControllerTests : ControllerTestBase() {
   @Test
   fun `list IAM members as platform admin`() {
     mvc.perform(
-            get("/iaminfo/members").withPlatformAdminHeader().accept(MediaType.APPLICATION_JSON)
+            get("/iaminfo/members").withPlatformAdminHeader().accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().is2xxSuccessful)
         .andDo(MockMvcResultHandlers.print())
@@ -67,12 +67,12 @@ class IAMInfoControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", PLATFORM_ADMIN_EMAIL).exists())
         .andExpect(
             jsonPath("$.users[?(@.id == '%s')].role", PLATFORM_ADMIN_EMAIL)
-                .value(ROLE_PLATFORM_ADMIN)
+                .value(ROLE_PLATFORM_ADMIN),
         )
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", ORGANIZATION_USER_EMAIL).exists())
         .andExpect(
             jsonPath("$.users[?(@.id == '%s')].role", ORGANIZATION_USER_EMAIL)
-                .value(ROLE_ORGANIZATION_USER)
+                .value(ROLE_ORGANIZATION_USER),
         )
         // an identity unknown to Keycloak is never exposed, neither as user nor as group
         .andExpect(jsonPath("$.users[?(@.id == '%s')]", UNKNOWN_IDENTITY).doesNotExist())
@@ -82,15 +82,15 @@ class IAMInfoControllerTests : ControllerTestBase() {
         .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PUBLIC_GROUP_NAME).exists())
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].role", PUBLIC_GROUP_NAME)
-                .value(ROLE_ORGANIZATION_VIEWER)
+                .value(ROLE_ORGANIZATION_VIEWER),
         )
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
-                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL))
+                .value(hasItem<String>(PLATFORM_ADMIN_EMAIL)),
         )
         .andExpect(
             jsonPath("$.groups[?(@.id == '%s')].users[*]", PUBLIC_GROUP_NAME)
-                .value(hasItem<String>(ORGANIZATION_USER_EMAIL))
+                .value(hasItem<String>(ORGANIZATION_USER_EMAIL)),
         )
         // a group without the `public=true` attribute is filtered out
         .andExpect(jsonPath("$.groups[?(@.id == '%s')]", PRIVATE_GROUP_NAME).doesNotExist())
@@ -101,7 +101,7 @@ class IAMInfoControllerTests : ControllerTestBase() {
   fun `list IAM members as organization user should be forbidden`() {
     // listIAMMembers is only accessible to Platform.admin users
     mvc.perform(
-            get("/iaminfo/members").withOrganizationUserHeader().accept(MediaType.APPLICATION_JSON)
+            get("/iaminfo/members").withOrganizationUserHeader().accept(MediaType.APPLICATION_JSON),
         )
         .andExpect(status().isForbidden)
         .andDo(MockMvcResultHandlers.print())

@@ -16,7 +16,7 @@ val testContainerKeycloakVersion = "4.4.0"
 dependencies {
   implementation("org.apache.httpcomponents.client5:httpclient5")
   implementation(
-      "org.springframework.boot:spring-boot-starter-restclient:$springPlatformBomVersion"
+      "org.springframework.boot:spring-boot-starter-restclient:$springPlatformBomVersion",
   )
   implementation("org.hashids:hashids:${hashidsVersion}")
   implementation("com.redis:testcontainers-redis:${testContainersRedisVersion}")

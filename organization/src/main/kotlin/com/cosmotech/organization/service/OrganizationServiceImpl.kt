@@ -100,7 +100,7 @@ class OrganizationServiceImpl(
       updateSecurityVisibility(getVerifiedOrganization(organizationId, PERMISSION_READ))
 
   override fun createOrganization(
-      organizationCreateRequest: OrganizationCreateRequest
+      organizationCreateRequest: OrganizationCreateRequest,
   ): Organization {
     logger.trace("Registering organization: {}", organizationCreateRequest)
 
@@ -317,7 +317,7 @@ class OrganizationServiceImpl(
               OrganizationSecurity(
                   default = organization.security.default,
                   accessControlList = retrievedACL,
-              )
+              ),
       )
     }
     return organization

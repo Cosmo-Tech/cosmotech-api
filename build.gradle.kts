@@ -34,7 +34,7 @@ plugins {
   kotlin("jvm") version kotlinCompleteVersion
   kotlin("plugin.spring") version kotlinCompleteVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.21.4"
-  id("com.diffplug.spotless") version "8.10.3"
+  id("com.diffplug.spotless") version "8.10.4"
   id("org.springframework.boot") version "4.1.1" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "13.0.0"
@@ -288,21 +288,21 @@ subprojects {
         // observe findings in your browser with structure and code snippets
         required.set(true)
         outputLocation.set(
-            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.html")
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.html"),
         )
       }
       checkstyle {
         // checkstyle like format mainly for integrations like Jenkins
         required.set(false)
         outputLocation.set(
-            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.xml")
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.xml"),
         )
       }
       markdown {
         // similar to the console output, contains issue signature to manually edit baseline files
         required.set(true)
         outputLocation.set(
-            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.txt")
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.txt"),
         )
       }
       sarif {
@@ -310,7 +310,7 @@ subprojects {
         // with Github Code Scanning
         required.set(true)
         outputLocation.set(
-            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.sarif")
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.sarif"),
         )
       }
     }
@@ -328,7 +328,7 @@ subprojects {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion")
 
     implementation(
-        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES),
     )
     implementation(platform("tools.jackson:jackson-bom:$jacksonBom"))
 
@@ -345,7 +345,7 @@ subprojects {
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation(
-        "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springOauthAutoConfigureVersion}"
+        "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springOauthAutoConfigureVersion}",
     ) {
       // CVE fixes here:
       // bcpkix-jdk15on has several one (at least)
@@ -380,7 +380,7 @@ subprojects {
     implementation("org.keycloak:keycloak-admin-client:$keycloakAdminClientVersion")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-mcp:$springdocOpenapiMcpVersion")
     implementation(
-        "org.springframework.ai:spring-ai-starter-mcp-server-webmvc:$springAiStarterMcpVersion"
+        "org.springframework.ai:spring-ai-starter-mcp-server-webmvc:$springAiStarterMcpVersion",
     )
     implementation("org.springaicommunity:mcp-server-security:$springAiSecurityMcpVersion")
 
@@ -393,7 +393,7 @@ subprojects {
     testImplementation("org.testng:testng:$testNgVersion")
     testImplementation("com.redis:testcontainers-redis:$testContainersRedisVersion")
     testImplementation(
-        "org.testcontainers:testcontainers-postgresql:$testContainersPostgreSQLVersion"
+        "org.testcontainers:testcontainers-postgresql:$testContainersPostgreSQLVersion",
     )
     testImplementation("com.github.dasniko:testcontainers-keycloak:$testContainerKeycloakVersion")
     testImplementation("org.testcontainers:localstack:$testContainersLocalStackVersion")
@@ -406,7 +406,7 @@ subprojects {
     }
     integrationTestImplementation("com.ninja-squad:springmockk:$springMockkVersion")
     integrationTestImplementation(
-        "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion",
     )
   }
 
@@ -541,7 +541,7 @@ subprojects {
               // which is not the case when serviceInterface is true.
               // We will write our own tests instead.
               "apiTests" to "false",
-          )
+          ),
       )
       additionalProperties.set(
           mapOf(
@@ -564,7 +564,7 @@ subprojects {
               // To be investigated and fixed in the next major version (6?)
               "generateJsonIncludeAnnotations" to false,
               "generateJsonSetterNullsAnnotations" to false,
-          )
+          ),
       )
     }
   }
@@ -609,7 +609,7 @@ subprojects {
                   "fullVersion" to fullVersion,
                   "releaseVersion" to project.version,
                   "buildVersion" to buildVersion,
-              )
+              ),
       )
     }
   }
@@ -625,7 +625,7 @@ subprojects {
                 "fullVersion" to fullVersion,
                 "releaseVersion" to project.version,
                 "buildVersion" to buildVersion,
-            )
+            ),
     )
   }
   tasks.getByName<Copy>("processTestResources") {
@@ -664,13 +664,13 @@ subprojects {
       environment =
           mapOf(
               "JAVA_TOOL_OPTIONS" to
-                  "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005"
+                  "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005",
           )
       jvmFlags =
           listOf(
               // Make sure Spring DevTools is disabled in production as running it is a
               // security risk
-              "-Dspring.devtools.restart.enabled=false"
+              "-Dspring.devtools.restart.enabled=false",
           )
       ports = listOf("5005", "8080", "8081")
       // Docker Best Practice : run as non-root.
@@ -697,7 +697,7 @@ val copySubProjectsDetektReportsTasks = subprojects.flatMap { subProject ->
     val copyTask =
         tasks.register<Copy>(
             "detektCopy${format}ReportFor" +
-                "${subProject.projectDir.relativeTo(rootDir)}".replace("/", "_")
+                "${subProject.projectDir.relativeTo(rootDir)}".replace("/", "_"),
         ) {
           group = "detekt"
           description =
@@ -705,8 +705,8 @@ val copySubProjectsDetektReportsTasks = subprojects.flatMap { subProject ->
           dependsOn("spotlessKotlin", "spotlessKotlinGradle", "spotlessJava")
           from(
               file(
-                  "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"
-              )
+                  "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format",
+              ),
           )
           into("${subProject.parent!!.layout.projectDirectory}/build/reports/detekt/$format")
         }

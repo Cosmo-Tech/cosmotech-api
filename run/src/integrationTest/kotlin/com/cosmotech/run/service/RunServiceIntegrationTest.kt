@@ -172,7 +172,7 @@ class RunServiceIntegrationTest : CsmTestBase() {
                       id = UUID.randomUUID().toString(),
                       name = "RunTemplate1",
                       description = "RunTemplate1 description",
-                  )
+                  ),
               ),
           parameters = mutableListOf(RunTemplateParameterCreateRequest("parameter", "string")),
           version = "1.0.0",

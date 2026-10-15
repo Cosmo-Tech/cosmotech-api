@@ -122,7 +122,7 @@ internal class RunArgoWorkflowService(
         Status code: ${e.code}
         Reason: ${e.responseBody}
         """
-              .trimIndent()
+              .trimIndent(),
       )
       logger.debug("Response headers: " + e.getResponseHeaders())
     }
@@ -147,7 +147,7 @@ internal class RunArgoWorkflowService(
                     runStartContainers,
                     executionTimeout,
                     alwaysPull,
-                )
+                ),
             )
 
     logger.debug("Workflow: {}", body.workflow)
@@ -179,7 +179,7 @@ internal class RunArgoWorkflowService(
         Status code: ${e.code}
         Reason: ${e.responseBody}
         """
-              .trimIndent()
+              .trimIndent(),
       )
       logger.debug("Response headers: {}", e.responseHeaders)
       throw IllegalStateException(e)
@@ -204,7 +204,7 @@ internal class RunArgoWorkflowService(
   }
 
   internal fun findWorkflowListByLabel(
-      labelSelector: String
+      labelSelector: String,
   ): List<IoArgoprojWorkflowV1alpha1Workflow> =
       newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
           .workflowServiceListWorkflows(
@@ -230,7 +230,7 @@ internal class RunArgoWorkflowService(
     val workflowName =
         run.workflowName
             ?: throw IllegalStateException(
-                "Run $runId for Organization $organizationId contains a null workflowName"
+                "Run $runId for Organization $organizationId contains a null workflowName",
             )
     val workflowStatus = getWorkflowStatus(workflowName)
     return buildRunStatusFromWorkflowStatus(run, workflowStatus)
@@ -254,7 +254,7 @@ internal class RunArgoWorkflowService(
                     .get()
                     .uri(
                         "/api/v1/workflows/${csmPlatformProperties.argo.workflows.namespace}" +
-                            "/$workflowName/log?podName=$podName&logOptions.container=main"
+                            "/$workflowName/log?podName=$podName&logOptions.container=main",
                     )
                     .retrieve()
                     .body(String::class.java)
@@ -319,7 +319,7 @@ internal class RunArgoWorkflowService(
         Status code: ${e.code}
         Reason: ${e.responseBody}
         """
-              .trimIndent()
+              .trimIndent(),
       )
       logger.debug("Response headers: " + e.responseHeaders)
     }

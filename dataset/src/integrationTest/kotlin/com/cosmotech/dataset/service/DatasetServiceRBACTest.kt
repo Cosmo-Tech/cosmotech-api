@@ -123,7 +123,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                 CUSTOMER_SOURCE_FILE_NAME,
                 MediaType.MULTIPART_FORM_DATA_VALUE,
                 IOUtils.toByteArray(fileToSend),
-            )
+            ),
         )
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
@@ -180,7 +180,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                               role = role,
                                           ),
                                       ),
-                              )
+                              ),
                       ),
                       mockMultipartFiles,
                   )
@@ -237,7 +237,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
               datasetSaved =
                   datasetApiService.createDataset(
@@ -311,7 +311,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
               datasetSaved =
                   datasetApiService.createDataset(
@@ -379,7 +379,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
               datasetSaved =
                   datasetApiService.createDataset(
@@ -441,7 +441,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
               datasetSaved =
                   datasetApiService.createDataset(
@@ -519,7 +519,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
 
               if (shouldThrow) {
@@ -578,7 +578,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
               datasetSaved =
                   datasetApiService.createDataset(
@@ -640,7 +640,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
               datasetSaved =
                   datasetApiService.createDataset(
@@ -704,7 +704,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
               datasetSaved =
                   datasetApiService.createDataset(
@@ -835,7 +835,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
 
               every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
@@ -907,7 +907,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
               datasetSaved =
                   datasetApiService.createDataset(
@@ -975,7 +975,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
               datasetSaved =
                   datasetApiService.createDataset(
@@ -1041,7 +1041,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
               datasetSaved =
                   datasetApiService.createDataset(
@@ -1117,7 +1117,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
 
               datasetSaved =
@@ -1199,7 +1199,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
 
               datasetSaved =
@@ -1279,7 +1279,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
 
               datasetSaved =
@@ -1359,7 +1359,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
 
               datasetSaved =
@@ -1439,7 +1439,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
 
               datasetSaved =
@@ -1521,7 +1521,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
 
               datasetSaved =
@@ -1605,7 +1605,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
 
               datasetSaved =
@@ -1690,7 +1690,7 @@ class DatasetServiceRBACTest : CsmTestBase() {
                                           role = role,
                                       ),
                                   ),
-                          )
+                          ),
                   )
 
               datasetSaved =
