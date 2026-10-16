@@ -64,8 +64,7 @@ csm:
     identityProvider:
       admin:
         clientId: "[fill-this-value]"
-        username: "[fill-this-value]"
-        password: "[fill-this-value]"
+        clientSecret: "[fill-this-value]"
       tls:
         enabled: true
         bundle: "keycloak"
