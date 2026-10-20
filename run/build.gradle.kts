@@ -27,7 +27,7 @@ dependencies {
   implementation("com.squareup.okhttp3:okhttp")
   implementation("com.squareup.okhttp3:logging-interceptor")
   implementation("org.springframework.boot:spring-boot-starter-amqp") {
-    constraints { implementation("com.rabbitmq:amqp-client:5.35.0") }
+    constraints { implementation("com.rabbitmq:amqp-client:5.37.0") }
   }
 
   testImplementation("org.testcontainers:rabbitmq:$testContainersRabbitMQVersion")
