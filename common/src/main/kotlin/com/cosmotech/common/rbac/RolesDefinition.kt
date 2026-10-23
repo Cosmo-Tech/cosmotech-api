@@ -5,12 +5,28 @@ package com.cosmotech.common.rbac
 import org.springframework.stereotype.Component
 
 // openapi generator takes only last term if _ in name or bad parsing if -
-const val ROLE_VIEWER = "viewer"
-const val ROLE_EDITOR = "editor"
-const val ROLE_ADMIN = "admin"
-const val ROLE_VALIDATOR = "validator"
-const val ROLE_USER = "user"
 const val ROLE_NONE = "none"
+const val ROLE_NONE_PRIORITY = 0
+const val ROLE_VIEWER = "viewer"
+const val ROLE_VIEWER_PRIORITY = 1
+const val ROLE_USER = "user"
+const val ROLE_USER_PRIORITY = 2
+const val ROLE_EDITOR = "editor"
+const val ROLE_EDITOR_PRIORITY = 3
+const val ROLE_VALIDATOR = "validator"
+const val ROLE_VALIDATOR_PRIORITY = 4
+const val ROLE_ADMIN = "admin"
+const val ROLE_ADMIN_PRIORITY = 5
+
+val ROLE_PRIORITIES =
+    mapOf(
+        ROLE_NONE to ROLE_NONE_PRIORITY,
+        ROLE_VIEWER to ROLE_VIEWER_PRIORITY,
+        ROLE_USER to ROLE_USER_PRIORITY,
+        ROLE_EDITOR to ROLE_EDITOR_PRIORITY,
+        ROLE_VALIDATOR to ROLE_VALIDATOR_PRIORITY,
+        ROLE_ADMIN to ROLE_ADMIN_PRIORITY,
+    )
 
 // apply same format rules for permission for consistency
 const val PERMISSION_READ = "read"
