@@ -39,12 +39,14 @@ import io.mockk.mockkStatic
 import java.io.InputStream
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.Resource
@@ -58,6 +60,15 @@ import org.springframework.test.util.ReflectionTestUtils
 class SolutionServiceRBACTest : CsmTestBase() {
 
   val TEST_USER_MAIL = "testuser@mail.fr"
+  val ROLE_LIST =
+      listOf(
+          ROLE_VIEWER,
+          ROLE_EDITOR,
+          ROLE_USER,
+          ROLE_NONE,
+          ROLE_ADMIN,
+      )
+  private val logger = LoggerFactory.getLogger(SolutionServiceRBACTest::class.java)
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
 
@@ -97,6 +108,61 @@ class SolutionServiceRBACTest : CsmTestBase() {
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
   }
+
+  @TestFactory
+  fun `test security visibility with default role`() =
+      mapOf(
+              ROLE_VIEWER to ROLE_LIST,
+              ROLE_EDITOR to ROLE_LIST,
+              ROLE_USER to ROLE_LIST,
+              ROLE_NONE to ROLE_LIST,
+              ROLE_ADMIN to ROLE_LIST,
+          )
+          .map { (defaultRole, aclRolePossible) ->
+            every { getCurrentAccountIdentifier(csmPlatformProperties) } returns TEST_USER_MAIL
+            DynamicTest.dynamicTest("test security visibility with default role : $defaultRole") {
+              aclRolePossible.forEach { aclRole ->
+                val organization =
+                    makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                organizationSaved = organizationApiService.createOrganization(organization)
+                logger.info("ACL user role: $aclRole")
+                val solutionCreated =
+                    solutionApiService.createSolution(
+                        organizationSaved.id,
+                        makeSolutionWithRole(
+                            id = TEST_USER_MAIL,
+                            role = aclRole,
+                            defaultRole = defaultRole,
+                        ),
+                    )
+                if (aclRole == ROLE_NONE) {
+                  val exception =
+                      assertThrows<CsmAccessForbiddenException> {
+                        solutionApiService.getSolution(
+                            organizationSaved.id,
+                            solutionCreated.id,
+                        )
+                      }
+                  assertEquals(
+                      "RBAC ${solutionCreated.id} - User does not have permission read",
+                      exception.message,
+                  )
+                } else {
+                  val solutionRetrieved =
+                      solutionApiService.getSolution(
+                          organizationSaved.id,
+                          solutionCreated.id,
+                      )
+                  logger.info(solutionRetrieved.security.toString())
+                  if (aclRole == ROLE_VIEWER) {
+                    assertTrue { solutionRetrieved.security.accessControlList.size == 1 }
+                  } else {
+                    assertTrue { solutionRetrieved.security.accessControlList.size == 2 }
+                  }
+                }
+              }
+            }
+          }
 
   @TestFactory
   fun `test Organization RBAC getSolution`() =
@@ -2001,6 +2067,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
       organizationId: String = organizationSaved.id,
       id: String,
       role: String,
+      defaultRole: String = ROLE_NONE,
   ) =
       SolutionCreateRequest(
           key = UUID.randomUUID().toString(),
@@ -2015,7 +2082,7 @@ class SolutionServiceRBACTest : CsmTestBase() {
               ),
           security =
               SolutionSecurity(
-                  default = ROLE_NONE,
+                  default = defaultRole,
                   accessControlList =
                       mutableListOf(
                           SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),

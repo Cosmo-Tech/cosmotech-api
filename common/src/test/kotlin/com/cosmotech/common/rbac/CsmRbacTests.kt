@@ -407,7 +407,7 @@ class CsmRbacTests {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     rbac.removeEntity(rbacSecurity, USER_NEW_READER, rolesDefinition)
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyRbac(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()),
     )
   }
 
@@ -418,7 +418,7 @@ class CsmRbacTests {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     rbac.removeEntity(rbacSecurity, USER_NEW_READER, rolesDefinition)
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_ADMIN, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyRbac(rbacSecurity, PERM_ADMIN, rolesDefinition, USER_NEW_READER, emptyList()),
     )
   }
 
@@ -439,8 +439,21 @@ class CsmRbacTests {
   }
 
   @Test
-  fun `user with no roles has default read permission`() {
-    assertTrue(rbac.verifyRbac(rbacSecurity, PERM_READ, rolesDefinition, USER_NONE, emptyList()))
+  fun `user with unknown role has no read permission`() {
+    assertFalse(rbac.verifyRbac(rbacSecurity, PERM_READ, rolesDefinition, USER_NONE, emptyList()))
+  }
+
+  @Test
+  fun `unknown user has default read permission applied`() {
+    assertTrue(
+        rbac.verifyRbac(
+            rbacSecurity,
+            PERM_READ,
+            rolesDefinition,
+            "I_am_an_unknown_user",
+            emptyList(),
+        ),
+    )
   }
 
   @Test
@@ -450,9 +463,11 @@ class CsmRbacTests {
   }
 
   @Test
-  fun `update default security to writer role and verify write OK for reader user`() {
+  fun `update default security to writer role and verify write is still not OK for reader user`() {
     rbac.setDefault(rbacSecurity, userWriterRole, rolesDefinition)
-    assertTrue(rbac.verifyRbac(rbacSecurity, PERM_WRITE, rolesDefinition, USER_READER, emptyList()))
+    assertFalse(
+        rbac.verifyRbac(rbacSecurity, PERM_WRITE, rolesDefinition, USER_READER, emptyList()),
+    )
   }
 
   @Test

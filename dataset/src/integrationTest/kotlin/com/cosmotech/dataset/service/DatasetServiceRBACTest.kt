@@ -59,6 +59,7 @@ import java.io.FileInputStream
 import java.util.UUID
 import kotlin.test.Ignore
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.apache.commons.io.IOUtils
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
@@ -83,8 +84,16 @@ class DatasetServiceRBACTest : CsmTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
   val CUSTOMER_SOURCE_FILE_NAME = "customers.csv"
+  val ROLE_LIST =
+      listOf(
+          ROLE_VIEWER,
+          ROLE_EDITOR,
+          ROLE_USER,
+          ROLE_NONE,
+          ROLE_ADMIN,
+      )
 
-  private val logger = LoggerFactory.getLogger(DatasetServiceIntegrationTest::class.java)
+  private val logger = LoggerFactory.getLogger(DatasetServiceRBACTest::class.java)
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
@@ -150,6 +159,75 @@ class DatasetServiceRBACTest : CsmTestBase() {
             mockMultipartFiles,
         )
   }
+
+  @TestFactory
+  fun `test security visibility with default role`() =
+      mapOf(
+              ROLE_VIEWER to ROLE_LIST,
+              ROLE_EDITOR to ROLE_LIST,
+              ROLE_USER to ROLE_LIST,
+              ROLE_NONE to ROLE_LIST,
+              ROLE_ADMIN to ROLE_LIST,
+          )
+          .map { (defaultRole, aclRolePossible) ->
+            every { getCurrentAccountIdentifier(csmPlatformProperties) } returns
+                CONNECTED_DEFAULT_USER
+            DynamicTest.dynamicTest("test security visibility with default role : $defaultRole") {
+              aclRolePossible.forEach { aclRole ->
+                logger.info("ACL user role: $aclRole")
+                val datasetCreated =
+                    datasetApiService.createDataset(
+                        organizationSaved.id,
+                        workspaceSaved.id,
+                        makeDatasetCreateRequest(
+                            datasetSecurity =
+                                DatasetSecurity(
+                                    default = defaultRole,
+                                    accessControlList =
+                                        mutableListOf(
+                                            DatasetAccessControl(
+                                                id = CONNECTED_DEFAULT_USER,
+                                                role = aclRole,
+                                            ),
+                                            DatasetAccessControl(
+                                                id = CONNECTED_ADMIN_USER,
+                                                role = ROLE_ADMIN,
+                                            ),
+                                        ),
+                                ),
+                        ),
+                        mockMultipartFiles,
+                    )
+                if (aclRole == ROLE_NONE) {
+                  val exception =
+                      assertThrows<CsmAccessForbiddenException> {
+                        datasetApiService.getDataset(
+                            organizationSaved.id,
+                            workspaceSaved.id,
+                            datasetCreated.id,
+                        )
+                      }
+                  assertEquals(
+                      "RBAC ${datasetCreated.id} - User does not have permission read",
+                      exception.message,
+                  )
+                } else {
+                  val datasetRetrieved =
+                      datasetApiService.getDataset(
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          datasetCreated.id,
+                      )
+                  logger.info(datasetRetrieved.security.toString())
+                  if (aclRole == ROLE_VIEWER) {
+                    assertTrue { datasetRetrieved.security.accessControlList.size == 1 }
+                  } else {
+                    assertTrue { datasetRetrieved.security.accessControlList.size == 2 }
+                  }
+                }
+              }
+            }
+          }
 
   @TestFactory
   fun `test RBAC getDataset`() =
