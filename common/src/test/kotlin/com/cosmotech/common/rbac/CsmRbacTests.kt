@@ -172,6 +172,103 @@ class CsmRbacTests {
   }
 
   @Test
+  fun `rbac should take highest priority within ACL permission definition`() {
+    every { getCurrentAccountIdentifier(csmPlatformProperties) } returns USER_READER
+    every { getCurrentAuthenticatedRoles(csmPlatformProperties) } returns
+        listOf(ROLE_ORGANIZATION_USER)
+    // 1 - ACL content:
+    // - Default Role to ROLE_VIEWER
+    // - User defined with no READ_SECURITY permission
+    val rbacSecurity =
+        RbacSecurity(
+            COMPONENT_ID,
+            ROLE_VIEWER,
+            mutableListOf(
+                RbacAccessControl(USER_READER, ROLE_NONE),
+            ),
+        )
+    assertFalse(rbac.check(rbacSecurity, PERMISSION_READ_SECURITY))
+
+    // 2 - ACL content:
+    // - Default Role to ROLE_VIEWER
+    // - User defined with no READ_SECURITY permission
+    // - one user group with ROLE_EDITOR
+    rbacSecurity.accessControlList.add(RbacAccessControl(GROUP_EDITOR, ROLE_EDITOR))
+
+    assertTrue(rbac.check(rbacSecurity, PERMISSION_READ_SECURITY))
+
+    // 3 - ACL content:
+    // - Default Role to ROLE_VIEWER
+    // - User defined with no READ_SECURITY permission
+    // - one user group with READ_SECURITY_PERMISSION
+    // - one user group with ROLE_NONE
+    rbacSecurity.accessControlList.add(RbacAccessControl(GROUP_EDITOR, ROLE_NONE))
+
+    assertTrue(rbac.check(rbacSecurity, PERMISSION_READ_SECURITY))
+
+    // 4 - ACL content:
+    // - Default Role to ROLE_VIEWER
+    // - no user id and no user group in ACL
+    every { getCurrentAccountGroups(csmPlatformProperties) } returns emptyList()
+    every { getCurrentAccountIdentifier(csmPlatformProperties) } returns USER_NOTIN
+    assertTrue(rbac.check(rbacSecurity, PERMISSION_READ))
+  }
+
+  @Test
+  fun `rbac should take highest priority within ACL permission definition for admin role`() {
+
+    every { getCurrentAccountIdentifier(csmPlatformProperties) } returns USER_READER
+    every { getCurrentAuthenticatedRoles(csmPlatformProperties) } returns
+        listOf(ROLE_ORGANIZATION_USER)
+    // 1 - ACL content:
+    // - Default Role to ROLE_VIEWER
+    // - User defined with ROLE_NONE
+    val rbacSecurity =
+        RbacSecurity(
+            COMPONENT_ID,
+            ROLE_VIEWER,
+            mutableListOf(
+                RbacAccessControl(USER_READER, ROLE_NONE),
+            ),
+        )
+    assertFalse(rbac.isAdmin(rbacSecurity, getCommonRolesDefinition()))
+
+    // 2 - ACL content:
+    // - Default Role to ROLE_VIEWER
+    // - User defined with ROLE_NONE
+    // - one user group with ROLE_EDITOR
+    rbacSecurity.accessControlList.add(RbacAccessControl(GROUP_EDITOR, ROLE_EDITOR))
+
+    assertFalse(rbac.isAdmin(rbacSecurity, getCommonRolesDefinition()))
+
+    // 3 - ACL content:
+    // - Default Role to ROLE_VIEWER
+    // - User defined with ROLE_NONE
+    // - one user group with ROLE_EDITOR
+    // - one user group with ROLE_ADMIN
+    rbacSecurity.accessControlList.add(RbacAccessControl(GROUP_ADMIN, ROLE_ADMIN))
+
+    assertTrue(rbac.isAdmin(rbacSecurity, getCommonRolesDefinition()))
+
+    // 4 - ACL content:
+    // - Default Role to ROLE_ADMIN
+    // - no user id and no user group in ACL
+    every { getCurrentAccountGroups(csmPlatformProperties) } returns emptyList()
+    every { getCurrentAccountIdentifier(csmPlatformProperties) } returns USER_NOTIN
+    rbac.setDefault(rbacSecurity, ROLE_ADMIN)
+    assertTrue(rbac.isAdmin(rbacSecurity, getCommonRolesDefinition()))
+
+    // 4 - ACL content:
+    // - Default Role to ROLE_NONE
+    // - no user id and no user group in ACL
+    // - user is a Platform.Admin
+    rbac.setDefault(rbacSecurity, ROLE_NONE)
+    every { getCurrentAuthenticatedRoles(csmPlatformProperties) } returns
+        listOf(ROLE_PLATFORM_ADMIN)
+    assertTrue(rbac.isAdmin(rbacSecurity, getCommonRolesDefinition()))
+  }
+
+  @Test
   fun `rbac option is true by default`() {
     assertFalse(CsmPlatformProperties.CsmRbac().enabled)
   }
@@ -292,19 +389,41 @@ class CsmRbacTests {
 
   @Test
   fun `verify permission read for user writer OK`() {
-    assertTrue(rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_READER, emptyList()))
+    assertTrue(
+        rbac.verifyUserACLPermissions(
+            rbacSecurity,
+            PERM_READ,
+            rolesDefinition,
+            USER_READER,
+            emptyList(),
+        ),
+    )
   }
 
   @Test
   fun `verify permission write for user writer KO`() {
     assertFalse(
-        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_READER, emptyList()),
+        rbac.verifyUserACLPermissions(
+            rbacSecurity,
+            PERM_WRITE,
+            rolesDefinition,
+            USER_READER,
+            emptyList(),
+        ),
     )
   }
 
   @Test
   fun `verify permission read for user none KO`() {
-    assertFalse(rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NONE, emptyList()))
+    assertFalse(
+        rbac.verifyUserACLPermissions(
+            rbacSecurity,
+            PERM_READ,
+            rolesDefinition,
+            USER_NONE,
+            emptyList(),
+        ),
+    )
   }
 
   @Test
@@ -321,7 +440,13 @@ class CsmRbacTests {
   fun `add new reader user and verify read permission OK`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUserACLPermissions(
+            rbacSecurity,
+            PERM_READ,
+            rolesDefinition,
+            USER_NEW_READER,
+            emptyList(),
+        ),
     )
   }
 
@@ -329,7 +454,13 @@ class CsmRbacTests {
   fun `add new reader user and verify write permission KO`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     assertFalse(
-        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUserACLPermissions(
+            rbacSecurity,
+            PERM_WRITE,
+            rolesDefinition,
+            USER_NEW_READER,
+            emptyList(),
+        ),
     )
   }
 
@@ -370,7 +501,13 @@ class CsmRbacTests {
             rolesDefinition,
         )
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_IN_PARENT, emptyList()),
+        rbac.verifyUserACLPermissions(
+            rbacSecurity,
+            PERM_READ,
+            rolesDefinition,
+            USER_IN_PARENT,
+            emptyList(),
+        ),
     )
   }
 
@@ -386,7 +523,15 @@ class CsmRbacTests {
             userReaderRole,
             rolesDefinition,
         )
-    assertTrue(rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NOTIN, emptyList()))
+    assertTrue(
+        rbac.verifyUserACLPermissions(
+            rbacSecurity,
+            PERM_READ,
+            rolesDefinition,
+            USER_NOTIN,
+            emptyList(),
+        ),
+    )
   }
 
   @Test
@@ -396,7 +541,13 @@ class CsmRbacTests {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     rbac.removeEntity(rbacSecurity, USER_NEW_READER, rolesDefinition)
     assertFalse(
-        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUserACLPermissions(
+            rbacSecurity,
+            PERM_READ,
+            rolesDefinition,
+            USER_NEW_READER,
+            emptyList(),
+        ),
     )
   }
 
@@ -426,7 +577,13 @@ class CsmRbacTests {
   fun `update existing new user and verify write permission OK`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userWriterRole, rolesDefinition)
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_WRITE, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUserACLPermissions(
+            rbacSecurity,
+            PERM_WRITE,
+            rolesDefinition,
+            USER_NEW_READER,
+            emptyList(),
+        ),
     )
   }
 
@@ -434,7 +591,13 @@ class CsmRbacTests {
   fun `update existing new user and verify read permission OK`() {
     rbac.setEntityRole(rbacSecurity, USER_NEW_READER, userReaderRole, rolesDefinition)
     assertTrue(
-        rbac.verifyUser(rbacSecurity, PERM_READ, rolesDefinition, USER_NEW_READER, emptyList()),
+        rbac.verifyUserACLPermissions(
+            rbacSecurity,
+            PERM_READ,
+            rolesDefinition,
+            USER_NEW_READER,
+            emptyList(),
+        ),
     )
   }
 
