@@ -201,37 +201,59 @@ open class CsmRbac(
       groups: List<String>,
       rolesDefinition: RolesDefinition,
   ): Boolean {
-    logger.debug("RBAC ${rbacSecurity.id} - Verifying if $user has default admin rbac role")
-    val isAdmin =
-        if (rbacSecurity.accessControlList.any { it.id == user }) {
-          this.getEntityRole(rbacSecurity, user) == this.getAdminRole(rolesDefinition)
-        } else {
-          groups.any {
-            this.getEntityRole(rbacSecurity, it) == this.getAdminRole(rolesDefinition)
-          }
-        }
-    logger.debug("RBAC ${rbacSecurity.id} - $user has default admin rbac role: $isAdmin")
-    return isAdmin
+
+    logger.debug("RBAC ${rbacSecurity.id} - Verifying $user has admin role in ACL")
+
+    val userAclDefinitionOrNull =
+        rbacSecurity.accessControlList.firstOrNull { it.id.equals(user, ignoreCase = true) }
+
+    val userGroupAclDefinition =
+        rbacSecurity.accessControlList
+            .filter { entity -> groups.any { entity.id.equals(it, ignoreCase = true) } }
+            .toMutableList()
+
+    if (userAclDefinitionOrNull != null) {
+      userGroupAclDefinition.add(userAclDefinitionOrNull)
+    }
+
+    val userACLWithHighestRole =
+        userGroupAclDefinition
+            .filter { it.role in ROLE_PRIORITIES }
+            .maxByOrNull { ROLE_PRIORITIES.getValue(it.role) }
+
+    return userACLWithHighestRole != null &&
+        userACLWithHighestRole.role == this.getAdminRole(rolesDefinition)
   }
 
-  internal fun verifyUser(
+  internal fun verifyUserACLPermissions(
       rbacSecurity: RbacSecurity,
       permission: String,
       rolesDefinition: RolesDefinition,
       user: String,
       groups: List<String>,
   ): Boolean {
+
     logger.debug("RBAC ${rbacSecurity.id} - Verifying $user has permission in ACL: $permission")
-    val isAuthorized =
-        if (rbacSecurity.accessControlList.any { it.id == user }) {
-          verifyPermissionFromRole(permission, getEntityRole(rbacSecurity, user), rolesDefinition)
-        } else {
-          groups.any {
-            verifyPermissionFromRole(permission, getEntityRole(rbacSecurity, it), rolesDefinition)
-          }
-        }
-    logger.debug("RBAC ${rbacSecurity.id} - $user has permission $permission in ACL: $isAuthorized")
-    return isAuthorized
+
+    val userAclDefinitionOrNull =
+        rbacSecurity.accessControlList.firstOrNull { it.id.equals(user, ignoreCase = true) }
+
+    val userGroupAclDefinition =
+        rbacSecurity.accessControlList
+            .filter { entity -> groups.any { entity.id.equals(it, ignoreCase = true) } }
+            .toMutableList()
+
+    if (userAclDefinitionOrNull != null) {
+      userGroupAclDefinition.add(userAclDefinitionOrNull)
+    }
+
+    val userACLWithHighestRole =
+        userGroupAclDefinition
+            .filter { it.role in ROLE_PRIORITIES }
+            .maxByOrNull { ROLE_PRIORITIES.getValue(it.role) }
+
+    return userACLWithHighestRole != null &&
+        verifyPermissionFromRole(permission, userACLWithHighestRole.role, rolesDefinition)
   }
 
   internal fun verifyDefault(
@@ -259,7 +281,7 @@ open class CsmRbac(
         rbacSecurity.accessControlList.any { it.id == user } ||
             rbacSecurity.accessControlList.any { groups.contains(it.id) }
     ) {
-      return this.verifyUser(rbacSecurity, permission, rolesDefinition, user, groups)
+      return this.verifyUserACLPermissions(rbacSecurity, permission, rolesDefinition, user, groups)
     }
     return this.verifyDefault(rbacSecurity, permission, rolesDefinition)
   }
