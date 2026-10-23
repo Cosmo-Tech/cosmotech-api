@@ -48,12 +48,14 @@ import io.mockk.mockkStatic
 import java.io.File
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -70,6 +72,15 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
 
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
+  val ROLE_LIST =
+      listOf(
+          ROLE_VIEWER,
+          ROLE_EDITOR,
+          ROLE_USER,
+          ROLE_NONE,
+          ROLE_ADMIN,
+      )
+  private val logger = LoggerFactory.getLogger(WorkspaceServiceRBACTest::class.java)
 
   @RelaxedMockK private lateinit var resource: MultipartFile
 
@@ -109,6 +120,67 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
   }
 
   @TestFactory
+  fun `test security visibility with default role`() =
+      mapOf(
+              ROLE_VIEWER to ROLE_LIST,
+              ROLE_EDITOR to ROLE_LIST,
+              ROLE_USER to ROLE_LIST,
+              ROLE_NONE to ROLE_LIST,
+              ROLE_ADMIN to ROLE_LIST,
+          )
+          .map { (defaultRole, aclRolePossible) ->
+            every { getCurrentAccountIdentifier(csmPlatformProperties) } returns TEST_USER_MAIL
+            DynamicTest.dynamicTest("test security visibility with default role : $defaultRole") {
+              aclRolePossible.forEach { aclRole ->
+                val organization =
+                    makeOrganizationCreateRequest(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                val organizationSaved = organizationApiService.createOrganization(organization)
+                val solutionSaved =
+                    solutionApiService.createSolution(
+                        organizationSaved.id,
+                        makeSolution(organizationSaved.id),
+                    )
+                logger.info("ACL user role: $aclRole")
+                val workspaceCreated =
+                    workspaceApiService.createWorkspace(
+                        organizationSaved.id,
+                        makeWorkspaceCreateRequest(
+                            solutionSaved.id,
+                            id = TEST_USER_MAIL,
+                            role = aclRole,
+                            defaultRole = defaultRole,
+                        ),
+                    )
+                if (aclRole == ROLE_NONE) {
+                  val exception =
+                      assertThrows<CsmAccessForbiddenException> {
+                        workspaceApiService.getWorkspace(
+                            organizationSaved.id,
+                            workspaceCreated.id,
+                        )
+                      }
+                  assertEquals(
+                      "RBAC ${workspaceCreated.id} - User does not have permission read",
+                      exception.message,
+                  )
+                } else {
+                  val workspaceRetrieved =
+                      workspaceApiService.getWorkspace(
+                          organizationSaved.id,
+                          workspaceCreated.id,
+                      )
+                  logger.info(workspaceRetrieved.security.toString())
+                  if (aclRole == ROLE_VIEWER) {
+                    assertTrue { workspaceRetrieved.security.accessControlList.size == 1 }
+                  } else {
+                    assertTrue { workspaceRetrieved.security.accessControlList.size == 2 }
+                  }
+                }
+              }
+            }
+          }
+
+  @TestFactory
   fun `test RBAC listWorkspaces`() =
       mapOf(
               ROLE_VIEWER to false,
@@ -132,7 +204,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               workspaceApiService.createWorkspace(
                   organizationSaved.id,
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
                       solutionSaved.id,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN,
@@ -181,7 +252,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               workspaceApiService.createWorkspace(
                   organizationSaved.id,
                   makeWorkspaceCreateRequest(
-                      organizationSaved.id,
                       solutionSaved.id,
                       id = TEST_USER_MAIL,
                       role = ROLE_ADMIN,
@@ -195,7 +265,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                       workspaceApiService.createWorkspace(
                           organizationSaved.id,
                           makeWorkspaceCreateRequest(
-                              organizationSaved.id,
                               solutionSaved.id,
                               id = TEST_USER_MAIL,
                               role = ROLE_ADMIN,
@@ -218,7 +287,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -254,7 +322,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -311,7 +378,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -361,7 +427,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -411,7 +476,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -461,7 +525,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -519,7 +582,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -577,7 +639,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -630,7 +691,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -683,7 +743,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -754,7 +813,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -825,7 +883,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -878,7 +935,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -931,7 +987,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -989,7 +1044,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -1047,7 +1101,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -1105,7 +1158,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -1163,7 +1215,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -1221,7 +1272,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -1279,7 +1329,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -1332,7 +1381,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -1385,7 +1433,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -1443,7 +1490,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -1501,7 +1547,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -1559,7 +1604,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -1617,7 +1661,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -1675,7 +1718,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -1733,7 +1775,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -1791,7 +1832,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -1849,7 +1889,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -1909,7 +1948,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -1969,7 +2007,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = ROLE_ADMIN,
@@ -2025,7 +2062,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -2081,7 +2117,6 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
                   workspaceApiService.createWorkspace(
                       organizationSaved.id,
                       makeWorkspaceCreateRequest(
-                          organizationSaved.id,
                           solutionSaved.id,
                           id = TEST_USER_MAIL,
                           role = role,
@@ -2146,10 +2181,10 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
       )
 
   fun makeWorkspaceCreateRequest(
-      organizationId: String,
       solutionId: String,
       id: String,
       role: String,
+      defaultRole: String = ROLE_NONE,
   ) =
       WorkspaceCreateRequest(
           key = UUID.randomUUID().toString(),
@@ -2160,7 +2195,7 @@ class WorkspaceServiceRBACTest : CsmTestBase() {
               ),
           security =
               WorkspaceSecurity(
-                  default = ROLE_NONE,
+                  default = defaultRole,
                   accessControlList =
                       mutableListOf(
                           WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),

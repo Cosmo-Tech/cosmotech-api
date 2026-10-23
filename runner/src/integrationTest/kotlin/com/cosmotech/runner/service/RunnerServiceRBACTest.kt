@@ -68,6 +68,7 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -79,9 +80,18 @@ import org.springframework.test.util.ReflectionTestUtils
 @EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
 @Suppress("FunctionName")
 class RunnerServiceRBACTest : CsmTestBase() {
+  private val logger = LoggerFactory.getLogger(RunnerServiceRBACTest::class.java)
 
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val TEST_USER_MAIL = "testuser@mail.fr"
+  val ROLE_LIST =
+      listOf(
+          ROLE_VIEWER,
+          ROLE_EDITOR,
+          ROLE_VALIDATOR,
+          ROLE_NONE,
+          ROLE_ADMIN,
+      )
 
   @MockkSpyBean private lateinit var eventPublisher: CsmEventPublisher
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
@@ -120,6 +130,75 @@ class RunnerServiceRBACTest : CsmTestBase() {
           firstArg<RunStart>().response = "run-gen12345"
         }
   }
+
+  @TestFactory
+  fun `test security visibility with default role`() =
+      mapOf(
+              ROLE_VIEWER to ROLE_LIST,
+              ROLE_EDITOR to ROLE_LIST,
+              ROLE_VALIDATOR to ROLE_LIST,
+              ROLE_NONE to ROLE_LIST,
+              ROLE_ADMIN to ROLE_LIST,
+          )
+          .map { (defaultRole, aclRolePossible) ->
+            dynamicTest("test security visibility with default role : $defaultRole") {
+              aclRolePossible.forEach { aclRole ->
+                val organization =
+                    makeOrganizationCreateRequest(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                val organizationSaved = organizationApiService.createOrganization(organization)
+                val solution = makeSolution(userId = TEST_USER_MAIL, role = ROLE_ADMIN)
+                val solutionSaved =
+                    solutionApiService.createSolution(organizationSaved.id, solution)
+                val workspace =
+                    makeWorkspaceCreateRequest(
+                        solutionSaved.id,
+                        userId = TEST_USER_MAIL,
+                        role = ROLE_ADMIN,
+                    )
+                val workspaceSaved =
+                    workspaceApiService.createWorkspace(organizationSaved.id, workspace)
+
+                val runner =
+                    makeRunnerWithRole(
+                        solutionId = solutionSaved.id,
+                        datasetList = mutableListOf(),
+                        userId = TEST_USER_MAIL,
+                        role = aclRole,
+                        defaultRole = defaultRole,
+                    )
+                logger.info("ACL user role: $aclRole")
+                every { getCurrentAccountIdentifier(csmPlatformProperties) } returns TEST_USER_MAIL
+                if (aclRole == ROLE_NONE) {
+                  val exception =
+                      assertThrows<CsmAccessForbiddenException> {
+                        runnerApiService.createRunner(
+                            organizationSaved.id,
+                            workspaceSaved.id,
+                            runner,
+                        )
+                      }
+                  assertTrue(
+                      exception.message.endsWith("User does not have permission read"),
+                  )
+                } else {
+                  val runnerCreated =
+                      runnerApiService.createRunner(organizationSaved.id, workspaceSaved.id, runner)
+                  val runnerRetrieved =
+                      runnerApiService.getRunner(
+                          organizationSaved.id,
+                          workspaceSaved.id,
+                          runnerCreated.id,
+                      )
+                  logger.info(runnerRetrieved.security.toString())
+                  if (aclRole == ROLE_VIEWER) {
+                    assertTrue { runnerRetrieved.security.accessControlList.size == 1 }
+                  } else {
+                    assertTrue { runnerRetrieved.security.accessControlList.size == 2 }
+                  }
+                }
+              }
+            }
+          }
 
   @TestFactory
   fun `test Organization RBAC listRunners`() =
@@ -4889,6 +4968,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
       datasetList: MutableList<String>,
       userId: String,
       role: String,
+      defaultRole: String = ROLE_NONE,
   ) =
       RunnerCreateRequest(
           name = "Runner",
@@ -4898,7 +4978,7 @@ class RunnerServiceRBACTest : CsmTestBase() {
           parentId = null,
           security =
               RunnerSecurity(
-                  ROLE_NONE,
+                  defaultRole,
                   mutableListOf(
                       RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                       RunnerAccessControl(userId, role),

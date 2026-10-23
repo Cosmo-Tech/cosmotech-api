@@ -183,13 +183,16 @@ open class CsmRbac(
   }
 
   fun isAdmin(rbacSecurity: RbacSecurity, rolesDefinition: RolesDefinition): Boolean {
-    var isAdmin = this.isAdminToken(rbacSecurity)
-    if (!isAdmin) {
-      val user = getCurrentAccountIdentifier(this.csmPlatformProperties)
-      val groups = getCurrentAccountGroups(this.csmPlatformProperties)
-      isAdmin = this.verifyAdminRole(rbacSecurity, user, groups, rolesDefinition)
+    if (this.isAdminToken(rbacSecurity)) return true
+    val user = getCurrentAccountIdentifier(this.csmPlatformProperties)
+    val groups = getCurrentAccountGroups(this.csmPlatformProperties)
+    if (
+        rbacSecurity.accessControlList.any { it.id == user } ||
+            rbacSecurity.accessControlList.any { groups.contains(it.id) }
+    ) {
+      return this.verifyAdminRole(rbacSecurity, user, groups, rolesDefinition)
     }
-    return isAdmin
+    return rbacSecurity.default == this.getAdminRole(rolesDefinition)
   }
 
   internal fun verifyAdminRole(
@@ -205,7 +208,7 @@ open class CsmRbac(
         } else {
           groups.any {
             this.getEntityRole(rbacSecurity, it) == this.getAdminRole(rolesDefinition)
-          } || rbacSecurity.default == this.getAdminRole(rolesDefinition)
+          }
         }
     logger.debug("RBAC ${rbacSecurity.id} - $user has default admin rbac role: $isAdmin")
     return isAdmin
@@ -225,7 +228,7 @@ open class CsmRbac(
         } else {
           groups.any {
             verifyPermissionFromRole(permission, getEntityRole(rbacSecurity, it), rolesDefinition)
-          } || verifyPermissionFromRole(permission, rbacSecurity.default, rolesDefinition)
+          }
         }
     logger.debug("RBAC ${rbacSecurity.id} - $user has permission $permission in ACL: $isAuthorized")
     return isAuthorized
@@ -251,9 +254,15 @@ open class CsmRbac(
       rolesDefinition: RolesDefinition,
       user: String,
       groups: List<String>,
-  ): Boolean =
-      (this.verifyDefault(rbacSecurity, permission, rolesDefinition) ||
-          this.verifyUser(rbacSecurity, permission, rolesDefinition, user, groups))
+  ): Boolean {
+    if (
+        rbacSecurity.accessControlList.any { it.id == user } ||
+            rbacSecurity.accessControlList.any { groups.contains(it.id) }
+    ) {
+      return this.verifyUser(rbacSecurity, permission, rolesDefinition, user, groups)
+    }
+    return this.verifyDefault(rbacSecurity, permission, rolesDefinition)
+  }
 
   internal fun verifyPermissionFromRole(
       permission: String,
