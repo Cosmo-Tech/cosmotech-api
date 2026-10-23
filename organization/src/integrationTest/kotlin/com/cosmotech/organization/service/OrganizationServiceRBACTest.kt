@@ -33,6 +33,7 @@ import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -50,10 +52,20 @@ import org.springframework.test.context.ActiveProfiles
 @EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
 @Suppress("FunctionName")
 class OrganizationServiceRBACTest : CsmTestBase() {
+
+  private val logger = LoggerFactory.getLogger(OrganizationServiceRBACTest::class.java)
+
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val TEST_USER_MAIL = "testuser@mail.fr"
+  val ROLE_LIST =
+      listOf(
+          ROLE_VIEWER,
+          ROLE_EDITOR,
+          ROLE_USER,
+          ROLE_NONE,
+          ROLE_ADMIN,
+      )
 
-  // NEEDED: recreate indexes in redis
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
@@ -72,6 +84,54 @@ class OrganizationServiceRBACTest : CsmTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Organization::class.java)
   }
+
+  @TestFactory
+  fun `test security visibility with default role`() =
+      mapOf(
+              ROLE_VIEWER to ROLE_LIST,
+              ROLE_EDITOR to ROLE_LIST,
+              ROLE_USER to ROLE_LIST,
+              ROLE_NONE to ROLE_LIST,
+              ROLE_ADMIN to ROLE_LIST,
+          )
+          .map { (defaultRole, aclRolePossible) ->
+            DynamicTest.dynamicTest("test security visibility with default role : $defaultRole") {
+              aclRolePossible.forEach { aclRole ->
+                logger.info("ACL user role: $aclRole")
+                val organisationCreated =
+                    organizationApiService.createOrganization(
+                        makeOrganizationCreateRequest(
+                            id = TEST_USER_MAIL,
+                            role = aclRole,
+                            defaultRole = defaultRole,
+                        ),
+                    )
+                if (aclRole == ROLE_NONE) {
+                  val exception =
+                      assertThrows<CsmAccessForbiddenException> {
+                        organizationApiService.getOrganization(
+                            organisationCreated.id,
+                        )
+                      }
+                  assertEquals(
+                      "RBAC ${organisationCreated.id} - User does not have permission read",
+                      exception.message,
+                  )
+                } else {
+                  val organizationRetrieved =
+                      organizationApiService.getOrganization(
+                          organisationCreated.id,
+                      )
+                  logger.info(organizationRetrieved.security.toString())
+                  if (aclRole == ROLE_VIEWER) {
+                    assertTrue { organizationRetrieved.security.accessControlList.size == 1 }
+                  } else {
+                    assertTrue { organizationRetrieved.security.accessControlList.size == 2 }
+                  }
+                }
+              }
+            }
+          }
 
   @TestFactory
   fun `test RBAC listOrganizations`() =
@@ -536,12 +596,16 @@ class OrganizationServiceRBACTest : CsmTestBase() {
             }
           }
 
-  fun makeOrganizationCreateRequest(id: String, role: String): OrganizationCreateRequest {
+  fun makeOrganizationCreateRequest(
+      id: String,
+      role: String,
+      defaultRole: String = ROLE_NONE,
+  ): OrganizationCreateRequest {
     return OrganizationCreateRequest(
         name = "Organization Name",
         security =
             OrganizationSecurity(
-                default = ROLE_NONE,
+                default = defaultRole,
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
