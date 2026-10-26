@@ -75,7 +75,7 @@ val awsSpringVersion = "4.2.0"
 val bcpkixVersion = "1.86"
 val keycloakAdminClientVersion = "26.0.12"
 val springdocOpenapiMcpVersion = "3.1.1"
-val springAiStarterMcpVersion = "2.0.1"
+val springAiStarterMcpVersion = "2.0.2"
 val springAiSecurityMcpVersion = "0.1.14"
 
 // Checks
