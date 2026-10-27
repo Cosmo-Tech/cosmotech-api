@@ -101,6 +101,10 @@ dependencyCheck {
   nvd { apiKey = System.getenv("NVD_API_key") }
 }
 
+dependencyLocking {
+  lockAllConfigurations()
+}
+
 licenseReport {
   outputDir = "$rootDir/doc/licenses"
   allowedLicensesFile =
