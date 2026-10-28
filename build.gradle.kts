@@ -74,7 +74,7 @@ val commonCompressVersion = "1.28.0"
 val awsSpringVersion = "4.2.0"
 val bcpkixVersion = "1.86"
 val keycloakAdminClientVersion = "26.0.12"
-val springdocOpenapiMcpVersion = "3.1.1"
+val springdocOpenapiMcpVersion = "3.2.0"
 val springAiStarterMcpVersion = "2.0.2"
 val springAiSecurityMcpVersion = "0.1.14"
 
