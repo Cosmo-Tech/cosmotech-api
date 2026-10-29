@@ -165,6 +165,7 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
           "projectName" to "cosmotech-api",
           "packageName" to "cosmotech_api",
           "pythonAttrNoneIfUnset" to true,
+          "lazyImports" to true,
           "httpUserAgent" to "cosmotech-api-python/${project.version}",
       ),
   )
