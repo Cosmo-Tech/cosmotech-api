@@ -7,10 +7,12 @@ import ch.qos.logback.classic.LoggerContext
 import com.cosmotech.common.utils.getCurrentAuthenticatedUserName
 import io.micrometer.common.KeyValue
 import io.micrometer.common.KeyValues
+import io.micrometer.core.instrument.MeterRegistry
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.InitializingBean
+import org.springframework.boot.micrometer.metrics.autoconfigure.MeterRegistryCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.server.observation.DefaultServerRequestObservationConvention
@@ -19,13 +21,20 @@ import org.springframework.http.server.observation.ServerRequestObservationConte
 /**
  * OpenTelemetry / Micrometer wiring shared by every Cosmo Tech API service.
  *
- * Traces and logs are produced through Micrometer Observation and exported over OTLP (see the
- * `management.opentelemetry.*` and `management.otlp.*` properties). Nothing is exported until
- * `OTEL_EXPORT_ENABLED=true` is set, so the defaults are safe for local runs. Metrics keep using
- * the existing Prometheus registry and are not affected by this configuration.
+ * Traces, metrics and logs are produced through Micrometer Observation and exported over OTLP (see
+ * the `management.opentelemetry.*` and `management.otlp.*` properties). Nothing is exported until
+ * `OTEL_EXPORT_ENABLED=true` is set, so the defaults are safe for local runs. Metrics are also
+ * still exposed through the Prometheus registry.
  */
 @Configuration(proxyBeanMethods = false)
 class ObservabilityConfig(private val csmPlatformProperties: CsmPlatformProperties) {
+
+  /** Tags applied to every meter, so metrics can be sliced per instance/environment. */
+  @Bean
+  fun observabilityCommonTags(): MeterRegistryCustomizer<MeterRegistry> =
+      MeterRegistryCustomizer { registry ->
+        registry.config().commonTags("application.instance", instanceId())
+      }
 
   @Bean
   fun apiServerRequestObservationConvention(): ApiServerRequestObservationConvention =
@@ -39,6 +48,9 @@ class ObservabilityConfig(private val csmPlatformProperties: CsmPlatformProperti
   @Bean
   fun openTelemetryAppenderInitializer(openTelemetry: OpenTelemetry) =
       OpenTelemetryLogbackAppenderInitializer(openTelemetry)
+
+  private fun instanceId(): String =
+      System.getenv("HOSTNAME") ?: System.getenv("POD_NAME") ?: "local"
 }
 
 /**
@@ -47,7 +59,7 @@ class ObservabilityConfig(private val csmPlatformProperties: CsmPlatformProperti
  * user/request specific is exposed as high cardinality data, attached to spans only.
  */
 class ApiServerRequestObservationConvention(
-    private val csmPlatformProperties: CsmPlatformProperties
+    private val csmPlatformProperties: CsmPlatformProperties,
 ) : DefaultServerRequestObservationConvention() {
 
   override fun getName() = "http.server.requests"
@@ -63,9 +75,10 @@ class ApiServerRequestObservationConvention(
         )
   }
 
-  private fun currentUserOrAnonymous(): String =
-      runCatching { getCurrentAuthenticatedUserName(csmPlatformProperties) }
-          .getOrDefault("anonymous")
+  private fun currentUserOrAnonymous(): String = runCatching {
+    getCurrentAuthenticatedUserName(csmPlatformProperties)
+  }
+      .getOrDefault("anonymous")
 
   private companion object {
     const val ENDUSER_ID = "enduser.id"
@@ -97,12 +110,12 @@ class OpenTelemetryLogbackAppenderInitializer(private val openTelemetry: OpenTel
           setCaptureCodeAttributes(true)
           setCaptureMarkerAttribute(true)
           setCaptureKeyValuePairAttributes(true)
-          setCaptureLoggerContext(true)
           setCaptureMdcAttributes("*")
           start()
         }
-    OpenTelemetryAppender.install(openTelemetry)
     rootLogger.addAppender(appender)
+    // install() only wires appenders already attached to a logger
+    OpenTelemetryAppender.install(openTelemetry)
   }
 
   private companion object {

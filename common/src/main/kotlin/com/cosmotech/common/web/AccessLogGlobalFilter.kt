@@ -34,12 +34,12 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 @Suppress("MagicNumber")
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
-class AuditLogFilter(
+class AccessLogGlobalFilter(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val tracer: Tracer,
 ) : OncePerRequestFilter() {
 
-  private val logger = LoggerFactory.getLogger(AuditLogFilter::class.java)
+  private val logger = LoggerFactory.getLogger(AccessLogGlobalFilter::class.java)
 
   override fun doFilterInternal(
       request: HttpServletRequest,
@@ -60,9 +60,10 @@ class AuditLogFilter(
       startTime: Long,
   ) {
     val durationMs = System.currentTimeMillis() - startTime
-    val user =
-        runCatching { getCurrentAuthenticatedUserName(csmPlatformProperties) }
-            .getOrDefault("anonymous")
+    val user = runCatching {
+      getCurrentAuthenticatedUserName(csmPlatformProperties)
+    }
+        .getOrDefault("anonymous")
     val span = tracer.currentSpan()?.context()
     val traceId = span?.traceId() ?: "-"
     val spanId = span?.spanId() ?: "-"

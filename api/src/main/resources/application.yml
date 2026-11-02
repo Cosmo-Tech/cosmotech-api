@@ -68,16 +68,13 @@ management:
         include: "*"
   server:
     port: 8081
-  # spring-boot-starter-opentelemetry pulls in micrometer-registry-otlp, which is auto-enabled;
-  # metrics keep using the existing Prometheus registry (below), and there is no OTLP metrics
-  # receiver configured on the collector side (e.g. Jaeger only ingests traces on :4318), so this
-  # must stay disabled independently of OTEL_EXPORT_ENABLED to avoid "404" publish failures.
   otlp:
     metrics:
       export:
-        enabled: false
-  # Tags added to every span and log resource, for multi-instance drill-down (metrics keep
-  # using the existing Prometheus registry and its own management.metrics.tags, untouched here)
+        enabled: "${OTEL_EXPORT_ENABLED:false}"
+        url: "${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/metrics"
+        step: 30s
+  # Tags added to every meter and to every span/log resource, for multi-instance drill-down
   observations:
     key-values:
       deployment.environment.name: "${DEPLOYMENT_ENVIRONMENT:local}"
@@ -93,8 +90,8 @@ management:
   tracing:
     sampling:
       probability: "${OTEL_TRACES_SAMPLER_ARG:1.0}"
-    # Nothing is shipped unless OTEL_EXPORT_ENABLED=true; spans/logs are still collected
-    # in-process and visible through the actuator endpoints.
+    # Nothing is shipped unless OTEL_EXPORT_ENABLED=true; spans/metrics/logs are still
+    # collected in-process and visible through the actuator endpoints.
     export:
       enabled: "${OTEL_EXPORT_ENABLED:false}"
   logging:
@@ -259,9 +256,9 @@ api:
   version: ${csm.platform.api.version}
 
 ---
-# In dev, compose.yaml starts a Jaeger container and Spring Boot injects its OTLP endpoint,
-# so span export can be turned on out of the box. Jaeger only ingests traces: metrics and
-# logs stay local (actuator/console).
+# In dev, spans are exported to the OpenTelemetry Collector started by cosmotech-gateway's
+# compose.yaml (OTEL_EXPORTER_OTLP_ENDPOINT, default http://localhost:4318). Metrics and logs
+# are only exported with OTEL_EXPORT_ENABLED=true.
 spring:
   config:
     activate:
