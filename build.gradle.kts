@@ -38,7 +38,7 @@ plugins {
   id("org.springframework.boot") version "4.1.2" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "13.0.0"
-  id("com.github.jk1.dependency-license-report") version "3.1.4"
+  id("com.github.jk1.dependency-license-report") version "3.1.5"
   id("org.jetbrains.kotlinx.kover") version "0.9.11"
   id("dev.detekt") version "2.0.0-alpha.6"
   id("org.openapi.generator") version "7.26.0" apply false
