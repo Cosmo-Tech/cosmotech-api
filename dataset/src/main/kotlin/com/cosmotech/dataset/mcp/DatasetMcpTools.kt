@@ -2,15 +2,9 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset.mcp
 
-import com.cosmotech.common.mcp.Base64DecodedMultipartFile
-import com.cosmotech.common.mcp.MAX_FILE_SIZE_BYTES
-import com.cosmotech.common.mcp.MAX_FILE_SIZE_MB
-import com.cosmotech.common.mcp.requireMaxFileSize
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCreateRequest
-import com.cosmotech.dataset.domain.DatasetPartCreateRequest
-import com.cosmotech.dataset.domain.DatasetPartTypeEnum
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetUpdateRequest
 import org.springframework.ai.mcp.annotation.McpTool
@@ -26,11 +20,10 @@ class DatasetMcpTools(private val datasetApiService: DatasetApiServiceInterface)
   @McpTool(
       name = CREATE_DATASET_TOOL,
       description =
-          "Create a new dataset in the workspace. The dataset is initialized with specified " +
-              "parts (can be empty), each part carrying its base64 encoded file. " +
-              "The dataset can also be populated later through dataset parts. " +
-              "Returns the created dataset. File size limit: the total decoded size of all " +
-              "part files must not exceed $MAX_FILE_SIZE_MB MiB ($MAX_FILE_SIZE_BYTES bytes).",
+          "Create a new dataset in the workspace. The dataset cannot be initialized with specified " +
+              "parts (the dataset parts list will be empty)." +
+              "Dataset part should be added/updated/replaced using " +
+              "respectively create_dataset_part/update_dataset_part/replace_dataset_part tools.",
       annotations = McpTool.McpAnnotations(destructiveHint = false),
   )
   fun createDataset(
@@ -43,16 +36,7 @@ class DatasetMcpTools(private val datasetApiService: DatasetApiServiceInterface)
       additionalData: Map<String, Any>?,
       @McpToolParam(description = "the Dataset security information", required = false)
       security: DatasetSecurity?,
-      @McpToolParam(
-          description =
-              "the Dataset parts to create with their files. Part sourceNames must be unique",
-          required = false,
-      )
-      parts: List<DatasetPartMcpInput>?,
   ): Dataset {
-    val datasetParts = parts.orEmpty()
-    val files = datasetParts.map { Base64DecodedMultipartFile.of(it.sourceName, it.file) }
-    requireMaxFileSize(files)
 
     val datasetCreateRequest =
         DatasetCreateRequest(
@@ -60,7 +44,6 @@ class DatasetMcpTools(private val datasetApiService: DatasetApiServiceInterface)
             description = description,
             tags = tags?.toMutableList(),
             additionalData = additionalData?.toMutableMap(),
-            parts = datasetParts.map { it.toDatasetPartCreateRequest() }.toMutableList(),
             security = security,
         )
 
@@ -68,7 +51,7 @@ class DatasetMcpTools(private val datasetApiService: DatasetApiServiceInterface)
         organizationId,
         workspaceId,
         datasetCreateRequest,
-        files.toTypedArray(),
+        null,
     )
   }
 
@@ -76,10 +59,9 @@ class DatasetMcpTools(private val datasetApiService: DatasetApiServiceInterface)
       name = UPDATE_DATASET_TOOL,
       description =
           "Update dataset information and return the updated dataset. Omitted fields are left " +
-              "unchanged. If parts is provided (even empty), ALL existing dataset parts and " +
-              "their data are deleted and replaced by the given parts, each part carrying its " +
-              "base64 encoded file. File size limit: the total decoded size of all part files " +
-              "must not exceed $MAX_FILE_SIZE_MB MiB ($MAX_FILE_SIZE_BYTES bytes).",
+              "unchanged. Dataset parts cannot be updated using this tools. They'll remain the same. " +
+              "To modified them, use adequate tools like " +
+              "create_dataset_part/update_dataset_part/replace_dataset_part/delete_dataset_part tools.",
   )
   fun updateDataset(
       @McpToolParam(description = "the Organization identifier") organizationId: String,
@@ -91,16 +73,7 @@ class DatasetMcpTools(private val datasetApiService: DatasetApiServiceInterface)
       @McpToolParam(description = "the new list of tags", required = false) tags: List<String>?,
       @McpToolParam(description = "the new free form additional data", required = false)
       additionalData: Map<String, Any>?,
-      @McpToolParam(
-          description =
-              "the Dataset parts replacing all existing ones, with their files. " +
-                  "Part sourceNames must be unique. Omit to keep existing parts",
-          required = false,
-      )
-      parts: List<DatasetPartMcpInput>?,
   ): Dataset {
-    val files = parts.orEmpty().map { Base64DecodedMultipartFile.of(it.sourceName, it.file) }
-    requireMaxFileSize(files)
 
     val datasetUpdateRequest =
         DatasetUpdateRequest(
@@ -108,7 +81,6 @@ class DatasetMcpTools(private val datasetApiService: DatasetApiServiceInterface)
             description = description,
             tags = tags?.toMutableList(),
             additionalData = additionalData?.toMutableMap(),
-            parts = parts?.map { it.toDatasetPartCreateRequest() }?.toMutableList(),
         )
 
     return datasetApiService.updateDataset(
@@ -116,44 +88,7 @@ class DatasetMcpTools(private val datasetApiService: DatasetApiServiceInterface)
         workspaceId,
         datasetId,
         datasetUpdateRequest,
-        files.toTypedArray(),
+        null,
     )
   }
-}
-
-data class DatasetPartMcpInput(
-    @field:McpToolParam(
-        description =
-            "Base64 encoded file content (RFC 4648, no data URI prefix). " +
-                "Counts toward the $MAX_FILE_SIZE_MB MiB total size limit",
-    )
-    val file: String,
-    @field:McpToolParam(description = "the Dataset Part name") val name: String,
-    @field:McpToolParam(
-        description =
-            "the uploaded file name, including its extension (used for file type detection)",
-    )
-    val sourceName: String,
-    @field:McpToolParam(description = "the Dataset Part description", required = false)
-    val description: String? = null,
-    @field:McpToolParam(description = "the list of tags", required = false)
-    val tags: List<String>? = null,
-    @field:McpToolParam(description = "Free form additional data", required = false)
-    val additionalData: Map<String, Any>? = null,
-    @field:McpToolParam(
-        description =
-            "'File' for file storage or 'DB' for database storage (CSV only). Defaults to 'File'",
-        required = false,
-    )
-    val type: DatasetPartTypeEnum = DatasetPartTypeEnum.File,
-) {
-  fun toDatasetPartCreateRequest() =
-      DatasetPartCreateRequest(
-          name = name,
-          sourceName = sourceName,
-          description = description,
-          tags = tags?.toMutableList(),
-          additionalData = additionalData?.toMutableMap(),
-          type = type,
-      )
 }
