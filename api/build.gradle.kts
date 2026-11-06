@@ -121,6 +121,7 @@ tasks.register<GenerateTask>("openApiTypescriptGenerate") {
           "npmName" to "@cosmotech/api-ts",
           "httpUserAgent" to "cosmotech-api-typescript/${project.version}",
           "licenseName" to "CosmoTech",
+          "supportsES6" to true,
       ),
   )
 }
