@@ -84,7 +84,7 @@ val detektKotlinVersion = "2.4.10"
 
 // Tests
 val jUnitBomVersion = "6.1.3"
-val mockkVersion = "1.14.11"
+val mockkVersion = "1.14.12"
 val awaitilityKVersion = "4.3.0"
 val springMockkVersion = "5.0.1"
 
