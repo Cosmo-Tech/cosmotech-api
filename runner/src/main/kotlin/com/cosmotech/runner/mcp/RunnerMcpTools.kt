@@ -7,11 +7,12 @@ import com.cosmotech.common.exceptions.CsmResourceNotFoundException
 import com.cosmotech.runner.RunnerApiServiceInterface
 import io.awspring.cloud.s3.S3Exception
 import io.awspring.cloud.s3.S3Template
+import java.io.InputStream
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
 import org.slf4j.LoggerFactory
 import org.springframework.ai.mcp.annotation.McpTool
 import org.springframework.ai.mcp.annotation.McpToolParam
-import org.springframework.core.io.InputStreamResource
-import org.springframework.core.io.Resource
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.awscore.exception.AwsServiceException
 import software.amazon.awssdk.core.exception.SdkClientException
@@ -86,35 +87,56 @@ class RunnerMcpTools(
   @McpTool(
       name = DOWNLOAD_OUTPUT_FILE_TOOL,
       description =
-          "Download a specific output file data (probe). " +
+          "Download a range of data lines of a specific output file data (probe). " +
               "The output file data is a basic CSV file. " +
               "The connected user should have access to the runner to download a file. " +
-              "'..' is not allowed in output file name  (security issue). ",
+              "'..' is not allowed in output file name  (security issue). " +
+              "Lines are 1-based, inclusive and do not count the header line. " +
+              "The CSV header is always returned as the first line of the response.",
   )
   fun downloadOutputFile(
       @McpToolParam(description = "the Organization identifier") organizationId: String,
       @McpToolParam(description = "the Workspace identifier") workspaceId: String,
       @McpToolParam(description = "the Runner identifier") runnerId: String,
       @McpToolParam(description = "the output file name") outputFileName: String,
+      @McpToolParam(description = "the first data line to return (1-based, header excluded)")
+      startLine: Int,
+      @McpToolParam(description = "the last data line to return (inclusive, header excluded)")
+      endLine: Int,
   ): String {
     require(".." !in outputFileName) { "Invalid filename: '$outputFileName'. '..' is not allowed" }
+    require(startLine >= 1) { "Invalid startLine: '$startLine'. It must be greater than 0" }
+    require(endLine >= startLine) {
+      "Invalid endLine: '$endLine'. It must be greater than or equal to startLine ($startLine)"
+    }
     runnerApiService.getRunner(organizationId, workspaceId, runnerId)
 
-    var fileResource: Resource
+    val inputStream: InputStream
     try {
-      fileResource =
-          InputStreamResource(
-              s3Template
-                  .download(
-                      csmPlatformProperties.s3.bucketName,
-                      "${runnerId}/$outputFileName",
-                  )
-                  .inputStream,
-          )
+      inputStream =
+          s3Template
+              .download(
+                  csmPlatformProperties.s3.bucketName,
+                  "${runnerId}/$outputFileName",
+              )
+              .inputStream
     } catch (exception: NoSuchKeyException) {
       throw CsmResourceNotFoundException("$outputFileName does not exist.", exception)
     }
 
-    return fileResource.getContentAsString(Charsets.UTF_8)
+    val readFormat = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).get()
+
+    inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
+      val parser = readFormat.parse(reader)
+      val writeFormat =
+          CSVFormat.DEFAULT.builder().setHeader(*parser.headerNames.toTypedArray()).get()
+      val output = StringBuilder()
+      CSVPrinter(output, writeFormat).use { printer ->
+        parser.asSequence().drop(startLine - 1).take(endLine - startLine + 1).forEach {
+          printer.printRecord(it)
+        }
+      }
+      return output.toString()
+    }
   }
 }
