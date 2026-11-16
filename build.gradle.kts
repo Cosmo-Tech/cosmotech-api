@@ -44,7 +44,7 @@ plugins {
   id("org.openapi.generator") version "7.27.0" apply false
   id("com.google.cloud.tools.jib") version "3.5.4" apply false
   id("org.cyclonedx.bom") version "3.6.0"
-  id("org.sonarqube") version "7.5.0.8588"
+  id("org.sonarqube") version "7.6.0.18749"
 }
 
 scmVersion { tag { prefix.set("") } }
