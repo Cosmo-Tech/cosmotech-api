@@ -16,7 +16,7 @@
 | **runnerId** | **String** | the Runner Id | [optional] [default to null] |
 | **solutionId** | **String** | the Solution Id | [optional] [default to null] |
 | **runTemplateId** | **String** | the Solution Run Template id | [optional] [default to null] |
-| **computeSize** | **String** | the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic | [optional] [default to null] |
+| **computeSize** | **String** | The compute size copied from the Run Template. This value can remain null even though the run uses the basic node pool. Effective resource sizing is resolved at run start from Runner.runSizing, then RunTemplate.runSizing, then the computeSize preset.  | [optional] [default to null] |
 | **datasetList** | **List** | the list of Dataset Id associated to this Run | [optional] [default to null] |
 | **parametersValues** | [**List**](RunTemplateParameterValue.md) | the list of Run Template parameters values | [optional] [default to null] |
 | **nodeLabel** | **String** | the node label request | [optional] [default to null] |
