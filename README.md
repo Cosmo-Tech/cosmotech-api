@@ -30,6 +30,14 @@ This API is continuously deployed at the following URLs, so you can easily explo
 
 Note that the repositories for all these client libraries are automatically updated and kept in sync, if there is any change in the OpenAPI definition files (in the `main` branch of this repo).
 
+## Null values in the API
+
+For optional fields in resource update request objects, an omitted field or an
+explicit `null` keeps the existing field value; it does not delete it. Empty
+strings, arrays, and objects are distinct values and remain subject to validation.
+See [Null values in the API](doc/null-values.md) for creation, update, nested-object,
+and response examples.
+
 ## Building
 
 ### Prerequisites
