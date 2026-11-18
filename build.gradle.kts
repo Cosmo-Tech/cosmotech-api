@@ -144,7 +144,7 @@ allprojects {
         // CVE-2026-68525, CVE-2026-65905, CVE-2026-65182
         force("org.apache.tomcat.embed:tomcat-embed-core:11.0.27")
         force("org.apache.tomcat.embed:tomcat-embed-el:11.0.27")
-        force("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.27")
+        force("org.apache.tomcat.embed:tomcat-embed-websocket:11.0.29")
       }
     }
   }
