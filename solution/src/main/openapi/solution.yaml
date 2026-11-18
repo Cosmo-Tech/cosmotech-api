@@ -1283,9 +1283,18 @@ components:
             type: string
         computeSize:
           type: string
-          description: The compute size needed for this Run Template
+          description: |
+            The compute size used to select the node pool for this Run Template.
+            When null, runs use the basic node pool and the stored value remains null.
         runSizing:
-          $ref: "#/components/schemas/RunTemplateResourceSizing"
+          allOf:
+            - $ref: "#/components/schemas/RunTemplateResourceSizing"
+          description: |
+            Resource requests and limits for this Run Template.
+            When null, run sizing falls back to Runner.runSizing, if set, or to the
+            computeSize preset. The stored value remains null. Presets set both
+            requests and limits: basic is 3 CPU and 4Gi memory, highcpu is 70 CPU
+            and 130Gi memory, and highmemory is 7 CPU and 57Gi memory.
         parameterGroups:
           type: array
           description: The ordered list of parameters groups for the Run Template
@@ -1294,7 +1303,9 @@ components:
             description: A Run Template Group Parameter id
         executionTimeout:
           type: integer
-          description: An optional duration in seconds in which a workflow is allowed to run
+          description: |
+            Maximum workflow duration in seconds. When null, runs use the platform
+            default of 28,800 seconds (8 hours); the stored value remains null.
       required:
         - id
         - parameterGroups
@@ -1326,9 +1337,18 @@ components:
             type: string
         computeSize:
           type: string
-          description: The compute size needed for this Run Template
+          description: |
+            The compute size used to select the node pool for this Run Template.
+            If omitted or null, the stored value is null and runs use the basic node pool.
         runSizing:
-          $ref: "#/components/schemas/RunTemplateResourceSizing"
+          allOf:
+            - $ref: "#/components/schemas/RunTemplateResourceSizing"
+          description: |
+            Resource requests and limits for this Run Template.
+            If omitted or null, the stored value is null. Run sizing falls back to
+            Runner.runSizing, if set, or to the computeSize preset. Presets set
+            both requests and limits: basic is 3 CPU and 4Gi memory, highcpu is
+            70 CPU and 130Gi memory, and highmemory is 7 CPU and 57Gi memory.
         parameterGroups:
           type: array
           default: []
@@ -1338,7 +1358,9 @@ components:
             description: A Run Template Group Parameter id
         executionTimeout:
           type: integer
-          description: An optional duration in seconds in which a workflow is allowed to run
+          description: |
+            Maximum workflow duration in seconds. If omitted or null, the stored
+            value is null and runs use the platform default of 28,800 seconds (8 hours).
       required:
         - id
 
@@ -1363,9 +1385,20 @@ components:
             type: string
         computeSize:
           type: string
-          description: The compute size needed for this Run Template
+          description: |
+            The compute size used to select the node pool for this Run Template.
+            If omitted or null, the existing value is kept, not cleared.
+            An existing null value makes runs use the basic node pool.
         runSizing:
-          $ref: "#/components/schemas/RunTemplateResourceSizing"
+          allOf:
+            - $ref: "#/components/schemas/RunTemplateResourceSizing"
+          description: |
+            Resource requests and limits for this Run Template.
+            If omitted or null, the existing value is kept, not cleared.
+            An existing null value falls back to Runner.runSizing, if set, or the
+            computeSize preset. Presets set both requests and limits: basic is
+            3 CPU and 4Gi memory, highcpu is 70 CPU and 130Gi memory, and
+            highmemory is 7 CPU and 57Gi memory.
         parameterGroups:
           type: array
           description: The ordered list of parameters groups for the Run Template
@@ -1374,12 +1407,19 @@ components:
             description: A Run Template Group Parameter id
         executionTimeout:
           type: integer
-          description: An optional duration in seconds in which a workflow is allowed to run
+          description: |
+            Maximum workflow duration in seconds. If omitted or null, the existing
+            value is kept, not cleared. An existing null value makes runs use the
+            platform default of 28,800 seconds (8 hours).
 
     RunTemplateResourceSizing:
       type: object
       description: |
-        A description object for resource requests and limits
+        A description object for resource requests and limits.
+        At run start, Runner.runSizing takes precedence over RunTemplate.runSizing.
+        If both are null, the computeSize preset supplies both requests and limits:
+        basic uses 3 CPU and 4Gi memory, highcpu uses 70 CPU and 130Gi memory,
+        and highmemory uses 7 CPU and 57Gi memory. A null computeSize uses basic.
         Values must follow the Kubernetes resource requirements/limits syntax: 
         See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes
       properties:

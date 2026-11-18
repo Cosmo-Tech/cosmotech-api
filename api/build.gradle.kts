@@ -84,7 +84,12 @@ openApiMerger {
     openApiVersion.set("3.0.3")
     info {
       title.set("Cosmo Tech Platform API")
-      description.set("Cosmo Tech Platform API")
+      description.set(
+          "Cosmo Tech Platform API. In generated model tables, [default to null] describes " +
+              "the model's unset value; it does not define the server's behavior when a " +
+              "request field is omitted or explicitly null. That behavior depends on the " +
+              "field and operation and is documented in the property description where relevant.",
+      )
       version.set(project.version.toString())
       contact {
         name.set("Repository")

@@ -19,7 +19,7 @@
 | **runTemplateName** | **String** | the Solution Run Template name associated with this Runner | [optional] [default to null] |
 | **additionalData** | [**Map**](AnyType.md) | Free form additional data | [optional] [default to null] |
 | **datasets** | [**RunnerDatasets**](RunnerDatasets.md) | definition of datasets used by the runner | [default to null] |
-| **runSizing** | [**RunnerResourceSizing**](RunnerResourceSizing.md) | definition of resources needed for the runner run | [optional] [default to null] |
+| **runSizing** | [**RunnerResourceSizing**](RunnerResourceSizing.md) | Resource requests and limits for this Runner&#39;s runs. When null, runs use the Run Template&#39;s runSizing, or its computeSize preset if the template&#39;s runSizing is also null. Presets set both requests and limits: basic is 3 CPU and 4Gi memory, highcpu is 70 CPU and 130Gi memory, and highmemory is 7 CPU and 57Gi memory.  | [optional] [default to null] |
 | **parametersValues** | [**List**](RunnerRunTemplateParameterValue.md) | the list of Solution Run Template parameters values | [default to null] |
 | **lastRunInfo** | [**LastRunInfo**](LastRunInfo.md) | last run info from current runner | [default to null] |
 | **status** | [**RunnerStatus**](RunnerStatus.md) |  | [optional] [default to Ok] |

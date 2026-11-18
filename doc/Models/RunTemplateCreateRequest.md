@@ -8,10 +8,10 @@
 | **labels** | **Map** | A translated label with key as ISO 639-1 code | [optional] [default to null] |
 | **description** | **String** | The Run Template description | [optional] [default to null] |
 | **tags** | **List** | The list of Run Template tags | [optional] [default to null] |
-| **computeSize** | **String** | The compute size needed for this Run Template | [optional] [default to null] |
-| **runSizing** | [**RunTemplateResourceSizing**](RunTemplateResourceSizing.md) |  | [optional] [default to null] |
+| **computeSize** | **String** | The compute size used to select the node pool for this Run Template. If omitted or null, the stored value is null and runs use the basic node pool.  | [optional] [default to null] |
+| **runSizing** | [**RunTemplateResourceSizing**](RunTemplateResourceSizing.md) | Resource requests and limits for this Run Template. If omitted or null, the stored value is null. Run sizing falls back to Runner.runSizing, if set, or to the computeSize preset. Presets set both requests and limits: basic is 3 CPU and 4Gi memory, highcpu is 70 CPU and 130Gi memory, and highmemory is 7 CPU and 57Gi memory.  | [optional] [default to null] |
 | **parameterGroups** | **List** | The ordered list of parameters groups for the Run Template | [optional] [default to []] |
-| **executionTimeout** | **Integer** | An optional duration in seconds in which a workflow is allowed to run | [optional] [default to null] |
+| **executionTimeout** | **Integer** | Maximum workflow duration in seconds. If omitted or null, the stored value is null and runs use the platform default of 28,800 seconds (8 hours).  | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
