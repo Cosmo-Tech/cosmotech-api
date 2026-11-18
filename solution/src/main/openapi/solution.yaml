@@ -1283,9 +1283,18 @@ components:
             type: string
         computeSize:
           type: string
-          description: The compute size needed for this Run Template
+          description: |
+            The compute size used to select the node pool for this Run Template.
+            When null, runs use basic without changing the stored null value.
+            This size also selects the resource sizing preset when neither the
+            Runner nor the Run Template provides runSizing.
         runSizing:
-          $ref: "#/components/schemas/RunTemplateResourceSizing"
+          allOf:
+            - $ref: "#/components/schemas/RunTemplateResourceSizing"
+          description: |
+            Resource requests and limits for this Run Template.
+            When null, runs use the computeSize preset unless the Runner provides
+            runSizing. The stored value remains null.
         parameterGroups:
           type: array
           description: The ordered list of parameters groups for the Run Template
@@ -1326,9 +1335,18 @@ components:
             type: string
         computeSize:
           type: string
-          description: The compute size needed for this Run Template
+          description: |
+            The compute size used to select the node pool for this Run Template.
+            If omitted or null, the stored value is null and runs use basic.
+            This size also selects the resource sizing preset when neither the
+            Runner nor the Run Template provides runSizing.
         runSizing:
-          $ref: "#/components/schemas/RunTemplateResourceSizing"
+          allOf:
+            - $ref: "#/components/schemas/RunTemplateResourceSizing"
+          description: |
+            Resource requests and limits for this Run Template.
+            If omitted or null, the stored value is null. At run start, the
+            computeSize preset is used unless the Runner provides runSizing.
         parameterGroups:
           type: array
           default: []
@@ -1363,9 +1381,18 @@ components:
             type: string
         computeSize:
           type: string
-          description: The compute size needed for this Run Template
+          description: |
+            The compute size used to select the node pool for this Run Template.
+            If omitted or null, the existing value is kept, not reset to basic.
+            An existing null value makes runs use basic.
         runSizing:
-          $ref: "#/components/schemas/RunTemplateResourceSizing"
+          allOf:
+            - $ref: "#/components/schemas/RunTemplateResourceSizing"
+          description: |
+            Resource requests and limits for this Run Template.
+            If omitted or null, the existing value is kept, not cleared.
+            An existing null value uses the computeSize preset at run start
+            unless the Runner provides runSizing.
         parameterGroups:
           type: array
           description: The ordered list of parameters groups for the Run Template
@@ -1379,7 +1406,12 @@ components:
     RunTemplateResourceSizing:
       type: object
       description: |
-        A description object for resource requests and limits
+        A description object for resource requests and limits.
+        At run start, Runner.runSizing takes precedence over RunTemplate.runSizing.
+        If both are null, the computeSize preset supplies both requests and limits:
+        basic uses 3 CPU and 4Gi memory, highcpu uses 70 CPU and 130Gi memory,
+        and highmemory uses 7 CPU and 57Gi memory. A null computeSize uses basic;
+        other compute sizes use basic resource sizing.
         Values must follow the Kubernetes resource requirements/limits syntax: 
         See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes
       properties:

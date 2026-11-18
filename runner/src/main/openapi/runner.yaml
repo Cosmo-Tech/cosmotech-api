@@ -650,7 +650,10 @@ components:
         runSizing:
           allOf:
             - $ref: "#/components/schemas/RunnerResourceSizing"
-          description: definition of resources needed for the runner run
+          description: |
+            Resource requests and limits for this Runner's runs.
+            When null, runs use the Run Template's runSizing, or its computeSize
+            preset if the template's runSizing is also null.
         parametersValues:
           type: array
           description: the list of Solution Run Template parameters values
@@ -730,7 +733,11 @@ components:
         runSizing:
           allOf:
             - $ref: "#/components/schemas/RunnerResourceSizing"
-          description: definition of resources needed for the runner run
+          description: |
+            Resource requests and limits for this Runner's runs.
+            If omitted or null, the stored value is null. Runs use the Run
+            Template's runSizing, or its computeSize preset if the template's
+            runSizing is also null.
         parametersValues:
           type: array
           description: the list of Solution Run Template parameters values
@@ -788,7 +795,11 @@ components:
         runSizing:
           allOf:
             - $ref: "#/components/schemas/RunnerResourceSizing"
-          description: definition of resources needed for the runner run
+          description: |
+            Resource requests and limits for this Runner's runs.
+            If omitted or null, the existing value is kept, not cleared.
+            An existing null value uses the Run Template's runSizing, or its
+            computeSize preset if the template's runSizing is also null.
         parametersValues:
           type: array
           description: the list of Solution Run Template parameters values
@@ -858,7 +869,12 @@ components:
         A description object for resource requests and limits.
         Values must follow the Kubernetes resource requirements/limits syntax: 
         See https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes
-        Default configuration is basic sizing
+        A non-null value overrides the Run Template's runSizing and computeSize
+        resource preset. When both Runner.runSizing and RunTemplate.runSizing are
+        null, runs use the template's computeSize preset: basic uses 3 CPU and 4Gi
+        memory, highcpu uses 70 CPU and 130Gi memory, and highmemory uses 7 CPU and
+        57Gi memory, for both requests and limits. A null computeSize uses basic;
+        other compute sizes use basic resource sizing.
       properties:
         requests:
           $ref: '#/components/schemas/ResourceSizeInfo'
