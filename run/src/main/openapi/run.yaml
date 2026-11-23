@@ -386,7 +386,12 @@ components:
         computeSize:
           type: string
           readOnly: true
-          description: the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic
+          description: |
+            The compute size copied from the Run Template.
+            This value can remain null even though the run uses the basic node
+            pool. Effective resource requests and limits are resolved at run start
+            from Runner.runSizing, then RunTemplate.runSizing, then the computeSize
+            preset.
         datasetList:
           type: array
           readOnly: true
