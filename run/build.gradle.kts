@@ -7,7 +7,7 @@ plugins { id("org.jetbrains.kotlinx.kover") }
 val argoClientJavaVersion = "v3.6.13"
 val retroFitVersion = "3.0.0"
 val okHttpBom = "5.5.1"
-val springPlatformBomVersion = "4.1.2"
+val springPlatformBomVersion = "4.2.0"
 
 dependencies {
   implementation(projects.cosmotechDatasetApi)
