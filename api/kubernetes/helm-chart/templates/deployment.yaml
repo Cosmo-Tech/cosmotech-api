@@ -70,6 +70,10 @@ spec:
               # The properties file for the 'helm' profile is mounted as a Volume in the Container,
               # using a configured Kubernetes Secret containing all the 'config.*' properties
               value: "helm"
+            - name: JDK_JAVA_OPTIONS
+              # Java4shell mitigation November 2026
+              # https://adoptium.net/news/2026/11/temurin-november-2026-cspu-java4shell
+              value: "-XX:-UseBASE64Intrinsics"
           volumeMounts:
             - mountPath: /tmp
               name: tmp-dir
